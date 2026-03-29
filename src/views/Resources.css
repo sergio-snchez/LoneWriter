@@ -1,0 +1,249 @@
+/* ============================================
+   RESOURCES VIEW
+   ============================================ */
+
+.resources-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Header */
+.resources-view__header {
+  padding: 24px 26px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.resources-view__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Toolbar */
+.resources-toolbar {
+  padding: 12px 26px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+/* Tag filters */
+.resources-tag-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+.resources-tag-filter {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  transition: all var(--trans-fast);
+}
+.resources-tag-filter:hover {
+  border-color: rgba(255,255,255,0.15);
+  color: var(--text-primary);
+}
+.resources-tag-filter--active {
+  background: var(--accent-dim);
+  border-color: var(--border-accent);
+  color: var(--accent-light);
+}
+
+/* Stats bar */
+.resources-stats {
+  padding: 10px 26px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+}
+.resources-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.resources-stat__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.resources-stat__count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.resources-stat__label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* File list */
+.resources-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  align-content: start;
+  gap: 12px;
+}
+
+/* Resource row */
+.res-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  transition: all var(--trans-mid);
+}
+.res-row:hover {
+  border-color: var(--border-accent);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-sm);
+}
+
+.res-row__icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.res-row__info {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.res-row__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.res-row__desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.res-row__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.res-row__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex-shrink: 0;
+  min-width: 130px;
+}
+.res-row__detail {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.res-row__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--trans-fast);
+}
+.res-row:hover .res-row__actions { opacity: 1; }
+
+.res-action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--trans-fast);
+}
+.res-action-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: rgba(255,255,255,0.15);
+}
+.res-action-btn--danger:hover {
+  background: rgba(224,112,112,0.15);
+  color: var(--red);
+  border-color: rgba(224,112,112,0.3);
+}
+
+/* Empty state */
+.resources-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-muted);
+}
+.resources-empty p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.resources-empty span { font-size: 13px; }
+
+/* Drop zone */
+.resources-dropzone {
+  margin: 12px 20px 16px;
+  padding: 16px 24px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: all var(--trans-mid);
+}
+.resources-dropzone:hover {
+  border-color: var(--border-accent);
+  color: var(--accent-light);
+  background: var(--accent-dim);
+}

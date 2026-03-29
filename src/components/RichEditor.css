@@ -1,0 +1,123 @@
+/* ============================================
+   RICH EDITOR (TIPTAP) STYLING
+   ============================================ */
+
+.rich-editor {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  height: 100%;
+}
+
+.rich-editor__toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.toolbar-group {
+  display: flex;
+  gap: 4px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+.toolbar-group button {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary); /* Color más suave */
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toolbar-group button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+.toolbar-group button.is-active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--border-accent);
+}
+
+.toolbar-group button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.rich-editor__content-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg-base);
+}
+
+/* TipTap area */
+.tiptap-editor {
+  padding: 40px 20px; /* 20px de "aire" mantenido */
+  outline: none;
+  font-family: 'Merriweather', serif;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  min-height: 100%;
+}
+
+/* Text elements */
+.tiptap-editor h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+}
+
+.tiptap-editor h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  margin-bottom: 16px;
+  margin-top: 24px;
+  color: var(--text-primary);
+}
+
+.tiptap-editor p {
+  margin-bottom: 16px;
+}
+
+.tiptap-editor blockquote {
+  border-left: 3px solid var(--border-accent);
+  padding-left: 16px;
+  margin: 20px 0;
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.tiptap-editor ul, .tiptap-editor ol {
+  padding-left: 24px;
+  margin-bottom: 16px;
+}
+
+.tiptap-editor li {
+  margin-bottom: 8px;
+}
