@@ -1,6 +1,6 @@
 # LoneWriter v1.0 🖋️
 
-![LoneWriter Banner](lonewriter_banner_1774773353318.png)
+![LoneWriter Banner](banner-lonewriter.png)
 
 > **Tu compañero inteligente para escribir grandes historias.**
 >
