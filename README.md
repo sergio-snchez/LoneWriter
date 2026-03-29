@@ -4,7 +4,9 @@
 
 > **Tu compañero inteligente para escribir grandes historias.**
 >
-> 🌐 **Acceso Directo (Web/PWA):** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
+> 🌐 **Versión Web/PWA:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
+>
+> 💻 **Versión de Escritorio (Windows):** [Descargar Instalador (.exe)](https://github.com/sergio-snchez/LoneWriter/releases/latest)
 
 LoneWriter es una aplicación minimalista y potente diseñada para escritores que buscan un entorno zen pero con capacidades de inteligencia artificial de última generación. Gestiona tu estructura narrativa, crea un compendio detallado de tu mundo y recibe ayuda de asistentes literarios expertos, todo en un solo lugar.
 
