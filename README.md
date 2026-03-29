@@ -3,6 +3,8 @@
 ![LoneWriter Banner](lonewriter_banner_1774773353318.png)
 
 > **Tu compañero inteligente para escribir grandes historias.**
+>
+> 🌐 **Acceso Directo (Web/PWA):** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
 
 LoneWriter es una aplicación minimalista y potente diseñada para escritores que buscan un entorno zen pero con capacidades de inteligencia artificial de última generación. Gestiona tu estructura narrativa, crea un compendio detallado de tu mundo y recibe ayuda de asistentes literarios expertos, todo en un solo lugar.
 
@@ -60,7 +62,7 @@ Para ejecutar el proyecto localmente:
 
 ## 📜 Créditos
 
-Diseñado y desarrollado con ♥ por **Sergio Sánchez** & Antigravity.
+Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
 
 ---
 *LoneWriter v1.0 - Transformando la forma en que escribimos ficción.*
