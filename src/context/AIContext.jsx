@@ -1,0 +1,314 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { db } from '../db/database';
+import { useNovel } from './NovelContext';
+
+const AIContext = createContext();
+
+export const useAI = () => {
+  const context = useContext(AIContext);
+  if (!context) {
+    throw new Error('useAI must be used within an AIProvider');
+  }
+  return context;
+};
+
+const DEFAULT_MODELS = {
+  google:      'gemini-2.0-flash',
+  openai:      'gpt-4o-mini',
+  anthropic:   'claude-3-5-sonnet-20241022',
+  openrouter:  'openrouter/auto',
+  local:       'local-model',
+};
+
+const DEFAULT_PROMPTS = {
+  style: 'Reescribe el siguiente texto para mejorar su estilo literario, haciéndolo más sugerente y evocador, pero manteniendo el significado original.',
+  tone: 'Ajusta el tono emocional del siguiente texto para que sea más [TONO], manteniendo la coherencia con el resto de la narrativa.',
+  length: 'Modifica la longitud del siguiente texto para que sea más [LONGITUD], sin perder la esencia de lo que se cuenta.',
+  clarity: 'Mejora la claridad y legibilidad del siguiente texto, eliminando redundancias y simplificando frases complejas.',
+  rhythm: 'Optimiza el ritmo narrativo del siguiente texto, alternando frases cortas y largas para crear una cadencia más dinámica y envolvente.',
+  cohesion: 'Mejora la cohesión y la fluidez entre las frases del siguiente texto, asegurando que las transiciones sean naturales y lógicas.',
+  character: 'Reescribe el siguiente texto desde el punto de vista (POV) de [PERSONAJE], reflejando su voz única, sus pensamientos y su forma de ver el mundo.'
+};
+
+export const DEFAULT_DEBATE_AGENTS = [
+  {
+    id: 'editor',
+    name: 'Editor',
+    color: '#6b9fd4',
+    initials: 'ED',
+    desc: 'Estructura y narrativa',
+    active: true,
+    systemPrompt: `Eres un editor literario experto especializado en narrativa de ficción. Tu rol en este foro es analizar la estructura narrativa, el arco de personajes, el ritmo de la trama y la coherencia del mundo ficticio. Quando respondas:
+- Sé constructivo y específico. Señala exactamente qué funciona y qué no.
+- Propón alternativas concretas cuando identifiques un problema.
+- Mantén un tono profesional pero accesible.
+- Recuerda el contexto de toda la conversación anterior.
+- Responde siempre en español y de forma concisa (máximo 3-4 párrafos).`,
+  },
+  {
+    id: 'critic',
+    name: 'Crítico',
+    color: '#e07070',
+    initials: 'CR',
+    desc: 'Análisis y valoración',
+    active: true,
+    systemPrompt: `Eres un crítico literario con amplia experiencia en narrativa española e internacional. Tu rol es ofrecer una valoración analítica y honesta del texto, sin suavizar los problemas pero tampoco siendo innecesariamente duro. Cuando respondas:
+- Aporta perspectiva comparativa (referencias a otros autores o técnicas cuando sea relevante).
+- Distingue entre problemas de fondo (concepto, personaje, trama) y de forma (estilo, prosa).
+- No repitas lo que ya han dicho los demás participantes; añade una perspectiva nueva.
+- Recuerda el contexto de toda la conversación anterior.
+- Responde siempre en español y de forma concisa (máximo 3-4 párrafos).`,
+  },
+  {
+    id: 'corrector',
+    name: 'Corrector',
+    color: '#5cb98a',
+    initials: 'CO',
+    desc: 'Gramática y estilo',
+    active: true,
+    systemPrompt: `Eres un corrector de estilo especializado en narrativa literaria en español. Tu rol es identificar problemas de gramática, ortografía, puntuación, registro, y estilo a nivel de frase y párrafo. Cuando respondas:
+- Cita literalmente las frases problemáticas y propón la corrección exacta.
+- Explica brevemente el motivo de cada corrección.
+- Comenta sobre tics de escritura o patrones repetitivos que notes en el texto.
+- Recuerda el contexto de toda la conversación anterior.
+- Responde siempre en español y de forma concisa (máximo 3-4 párrafos).`,
+  },
+];
+
+export const AIProvider = ({ children }) => {
+  const { activeNovel } = useNovel();
+  const [provider, setProvider] = useState(() => localStorage.getItem('ai_provider') || 'google');
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('ai_api_key') || '');
+  const [localBaseUrl, setLocalBaseUrlState] = useState(() => localStorage.getItem('ai_local_base_url') || 'http://localhost:1234/v1');
+  const [selectedModels, setSelectedModels] = useState(() => {
+    const saved = localStorage.getItem('ai_selected_models');
+    return saved ? JSON.parse(saved) : { ...DEFAULT_MODELS };
+  });
+  const [prompts, setPrompts] = useState(() => {
+    const saved = localStorage.getItem('ai_custom_prompts');
+    return saved ? JSON.parse(saved) : DEFAULT_PROMPTS;
+  });
+  
+  const [selection, setSelection] = useState('');
+  const [lastRewrite, setLastRewrite] = useState('');
+
+  // ── Debate Agents & Sessions (Async Dexie) ────────────────────────
+  const [debateAgents, setDebateAgents] = useState(DEFAULT_DEBATE_AGENTS);
+  const [debateSessions, setDebateSessions] = useState([]);
+  const [activeSessionId, setActiveSessionId] = useState(null);
+
+  // Derived history for the active session to maintain compatibility with AIPanel
+  const debateHistory = debateSessions.find(s => s.id === activeSessionId)?.messages || [];
+
+  useEffect(() => {
+    const loadDebateData = async () => {
+      if (!activeNovel) {
+        setDebateAgents(DEFAULT_DEBATE_AGENTS);
+        setDebateSessions([]);
+        setActiveSessionId(null);
+        return;
+      }
+
+      // Load agents for this novel
+      let agents = await db.debateAgents.where('novelId').equals(activeNovel.id).toArray();
+      if (agents.length === 0) {
+        // First time loading for this novel: import defaults
+        const defaultAgentsToInsert = DEFAULT_DEBATE_AGENTS.map(({ id, ...rest }) => ({ ...rest, novelId: activeNovel.id }));
+        await db.debateAgents.bulkAdd(defaultAgentsToInsert);
+        agents = await db.debateAgents.where('novelId').equals(activeNovel.id).toArray();
+      }
+      setDebateAgents(agents);
+
+      // Load sessions
+      let sessions = await db.debateSessions.where('novelId').equals(activeNovel.id).toArray();
+      
+      // MIGRATION: Check if there's old localStorage data that needs rescuing
+      const oldHistoryStr = localStorage.getItem('debate_history');
+      if (oldHistoryStr) {
+        const oldHistory = JSON.parse(oldHistoryStr);
+        if (oldHistory.length > 0) {
+          const legacySession = {
+            novelId: activeNovel.id,
+            title: 'Debate Anterior',
+            updatedAt: new Date().toISOString(),
+            messages: oldHistory
+          };
+          const newId = await db.debateSessions.add(legacySession);
+          legacySession.id = newId;
+          sessions.push(legacySession);
+          localStorage.removeItem('debate_history'); // Burn the bridge
+        }
+      }
+
+      sessions.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      setDebateSessions(sessions);
+      
+      if (sessions.length > 0) {
+        setActiveSessionId(sessions[0].id);
+      } else {
+        // Create an initial empty session if none exists
+        const newSession = {
+          novelId: activeNovel.id,
+          title: 'Nuevo debate',
+          updatedAt: new Date().toISOString(),
+          messages: []
+        };
+        const newId = await db.debateSessions.add(newSession);
+        newSession.id = newId;
+        setDebateSessions([newSession]);
+        setActiveSessionId(newId);
+      }
+    };
+
+    loadDebateData();
+  }, [activeNovel]);
+
+  // Session mutators
+  const addDebateSession = async (title = 'Nuevo debate') => {
+    if (!activeNovel) return;
+    const session = {
+      novelId: activeNovel.id,
+      title,
+      updatedAt: new Date().toISOString(),
+      messages: []
+    };
+    const id = await db.debateSessions.add(session);
+    session.id = id;
+    setDebateSessions(prev => [session, ...prev]);
+    setActiveSessionId(id);
+  };
+
+  const switchDebateSession = (id) => {
+    setActiveSessionId(id);
+  };
+
+  const renameDebateSession = async (id, title) => {
+    const date = new Date().toISOString();
+    await db.debateSessions.update(id, { title, updatedAt: date });
+    setDebateSessions(prev => prev.map(s => s.id === id ? { ...s, title, updatedAt: date } : s).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)));
+  };
+
+  const deleteDebateSession = async (id) => {
+    await db.debateSessions.delete(id);
+    setDebateSessions(prev => {
+      const filtered = prev.filter(s => s.id !== id);
+      if (activeSessionId === id) {
+        if (filtered.length > 0) {
+          setActiveSessionId(filtered[0].id);
+        } else {
+          setActiveSessionId(null); 
+          // Async call outside of set state, but we can just use setTimeout to break the synchronous flow
+          setTimeout(() => addDebateSession('Nuevo debate'), 0);
+        }
+      }
+      return filtered;
+    });
+  };
+
+  const clearDebateHistory = async () => {
+    if (!activeSessionId) return;
+    const date = new Date().toISOString();
+    await db.debateSessions.update(activeSessionId, { messages: [], updatedAt: date });
+    setDebateSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [], updatedAt: date } : s));
+  };
+
+  const addDebateMessage = async (msg) => {
+    if (!activeSessionId) return;
+    setDebateSessions(prev => {
+      const date = new Date().toISOString();
+      const newSessions = prev.map(s => {
+        if (s.id === activeSessionId) {
+          const updatedMessages = [...s.messages, { ...msg, id: Date.now() + Math.random() }];
+          db.debateSessions.update(activeSessionId, { messages: updatedMessages, updatedAt: date });
+          return { ...s, messages: updatedMessages, updatedAt: date };
+        }
+        return s;
+      });
+      return newSessions.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    });
+  };
+
+  // Agent mutators
+  const updateDebateAgent = async (id, changes) => {
+    await db.debateAgents.update(id, changes);
+    setDebateAgents(prev => prev.map(a => a.id === id ? { ...a, ...changes } : a));
+  };
+
+  const addDebateAgent = async (agent) => {
+    if (!activeNovel) return;
+    const newAgent = { ...agent, novelId: activeNovel.id, active: true };
+    const id = await db.debateAgents.add(newAgent);
+    newAgent.id = id;
+    setDebateAgents(prev => [...prev, newAgent]);
+  };
+
+  const removeDebateAgent = async (id) => {
+    await db.debateAgents.delete(id);
+    setDebateAgents(prev => prev.filter(a => a.id !== id));
+  };
+
+  const toggleDebateAgent = async (id) => {
+    const agent = debateAgents.find(a => a.id === id);
+    if (!agent) return;
+    const newActiveState = !agent.active;
+    await db.debateAgents.update(id, { active: newActiveState });
+    setDebateAgents(prev => prev.map(a => a.id === id ? { ...a, active: newActiveState } : a));
+  };
+
+  useEffect(() => {
+    localStorage.setItem('ai_provider', provider);
+  }, [provider]);
+
+  useEffect(() => {
+    localStorage.setItem('ai_api_key', apiKey);
+  }, [apiKey]);
+
+  useEffect(() => {
+    localStorage.setItem('ai_selected_models', JSON.stringify(selectedModels));
+  }, [selectedModels]);
+
+  const setModelForProvider = (prov, modelId) => {
+    setSelectedModels(prev => ({ ...prev, [prov]: modelId }));
+  };
+
+  const setLocalBaseUrl = (val) => {
+    setLocalBaseUrlState(val);
+    localStorage.setItem('ai_local_base_url', val);
+  };
+
+  const currentModel = selectedModels[provider] || DEFAULT_MODELS[provider] || '';
+
+  useEffect(() => {
+    localStorage.setItem('ai_custom_prompts', JSON.stringify(prompts));
+  }, [prompts]);
+
+  const updatePrompt = (id, value) => {
+    setPrompts(prev => ({ ...prev, [id]: value }));
+  };
+
+  const resetPrompt = (id) => {
+    setPrompts(prev => ({ ...prev, [id]: DEFAULT_PROMPTS[id] }));
+  };
+
+  const value = {
+    provider, setProvider,
+    apiKey, setApiKey,
+    localBaseUrl, setLocalBaseUrl,
+    selectedModels, setModelForProvider,
+    currentModel,
+    prompts, updatePrompt, resetPrompt,
+    selection, setSelection,
+    lastRewrite, setLastRewrite,
+    debateAgents, debateHistory,
+    addDebateMessage, clearDebateHistory,
+    updateDebateAgent, addDebateAgent, removeDebateAgent, toggleDebateAgent,
+    debateSessions,
+    activeSessionId,
+    addDebateSession,
+    switchDebateSession,
+    renameDebateSession,
+    deleteDebateSession,
+  };
+
+  return <AIContext.Provider value={value}>{children}</AIContext.Provider>;
+};
