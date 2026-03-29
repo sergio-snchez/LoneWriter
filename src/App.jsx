@@ -140,7 +140,7 @@ export default function App() {
                 LoneWriter v1.0
               </p>
               <p style={{ margin: '4px 0 0 0', fontSize: '12px', opacity: 0.7 }}>
-                Diseñado y desarrollado con ♥ por <strong>Sergio Sánchez</strong> & Antigravity
+                Diseñado y desarrollado con ♥ por <strong>Sergio Sánchez</strong> con Antigravity.
               </p>
             </footer>
           </div>
