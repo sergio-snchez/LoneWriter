@@ -142,6 +142,18 @@ export default function App() {
               <p style={{ margin: '4px 0 0 0', fontSize: '12px', opacity: 0.7 }}>
                 Diseñado y desarrollado con ♥ por <strong>Sergio Sánchez</strong> con Antigravity.
               </p>
+              <div style={{ marginTop: '20px' }}>
+                <a 
+                  href="https://buymeacoffee.com/sergio.snchez" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="btn btn-ghost"
+                  style={{ fontSize: '12px', gap: '8px', opacity: 0.8 }}
+                >
+                  <Sparkles size={14} />
+                  Apoyar el proyecto (Invítame a un café)
+                </a>
+              </div>
             </footer>
           </div>
         </div>

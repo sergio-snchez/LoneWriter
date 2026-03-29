@@ -21,7 +21,8 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "public/pwa-512x512.png"
+      "icon": "public/pwa-512x512.png",
+      "artifactName": "LoneWriter Setup v1.0.exe"
     }
   },
   "keywords": [],
