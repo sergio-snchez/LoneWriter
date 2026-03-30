@@ -7,6 +7,31 @@ import { useNovel } from '../context/NovelContext'
 import { useModal } from '../context/ModalContext'
 import './Compendium.css'
 
+/* ---- Curated Color Palette ---- */
+const COLOR_PALETTE = [
+  '#6b9fd4', '#5cb98a', '#d4a853', '#e07070',
+  '#9b72cf', '#5bb4c4', '#d4845a', '#d4688a',
+  '#b0b0b0', '#c4b090', '#a07850', '#7ab87a',
+  '#7a72d4', '#d4a07a', '#8899aa', '#e8c47a',
+];
+
+function ColorPicker({ value, onChange }) {
+  return (
+    <div className="color-picker">
+      {COLOR_PALETTE.map(color => (
+        <button
+          key={color}
+          type="button"
+          className={`color-swatch ${value === color ? 'color-swatch--active' : ''}`}
+          style={{ background: color }}
+          onClick={() => onChange(color)}
+          title={color}
+        />
+      ))}
+    </div>
+  );
+}
+
 /* ---- Panel de Formulario Lateral ---- */
 function CompendiumPanel({ type, item, characters, onClose, onSave }) {
   const [formData, setFormData] = useState(item || {});
@@ -116,44 +141,53 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
             </div>
             <div className="compendium-form-group">
               <label>Relaciones</label>
-              {(formData.relations || []).map((rel, i) => (
-                <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
-                  <select 
-                    value={rel.name} 
-                    onChange={e => handleRelationChange(i, 'name', e.target.value)}
-                    style={{ flex: 1, padding: '8px', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--bg-base)', color: 'var(--text-primary)' }}
-                  >
-                    <option value="" disabled>Seleccionar personaje...</option>
-                    {(characters || []).map(c => c.name !== formData.name && (
-                      <option key={c.id} value={c.name}>{c.name}</option>
-                    ))}
-                  </select>
-                  <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <input 
-                      placeholder="Para mí es... (ej: Sobrino)" 
-                      value={rel.type} 
-                      onChange={e => handleRelationChange(i, 'type', e.target.value)}
-                      style={{ width: '100%' }}
-                    />
-                    <input 
-                      placeholder="Para él soy... (ej: Tía)" 
-                      value={rel.reverseType} 
-                      onChange={e => handleRelationChange(i, 'reverseType', e.target.value)}
-                      style={{ width: '100%', fontSize: '11px', opacity: 0.8 }}
-                    />
-                  </div>
-                  <button className="btn btn-ghost text-danger" onClick={() => removeRelation(i)} style={{ padding: '0 8px', alignSelf: 'flex-start', marginTop: '4px' }} title="Eliminar relación">
-                    <Trash2 size={14} />
+              {characters && characters.filter(c => c.name !== formData.name).length === 0 ? (
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
+                  Añade más personajes al compendio para crear vínculos.
+                </p>
+              ) : (
+                <>
+                  {(formData.relations || []).map((rel, i) => (
+                    <div key={i} className="relation-row">
+                      <select
+                        value={rel.name}
+                        onChange={e => handleRelationChange(i, 'name', e.target.value)}
+                      >
+                        <option value="" disabled>Seleccionar personaje...</option>
+                        {(characters || []).map(c => c.name !== formData.name && (
+                          <option key={c.id} value={c.name}>{c.name}</option>
+                        ))}
+                      </select>
+                      <div className="relation-row__fields">
+                        <input
+                          placeholder="Para mí es... (ej: Sobrino)"
+                          value={rel.type}
+                          onChange={e => handleRelationChange(i, 'type', e.target.value)}
+                        />
+                        <input
+                          placeholder="Para él/ella soy... (ej: Tía)"
+                          value={rel.reverseType}
+                          onChange={e => handleRelationChange(i, 'reverseType', e.target.value)}
+                          style={{ fontSize: '12px', opacity: 0.85 }}
+                        />
+                      </div>
+                      <button className="btn btn-ghost btn-icon text-danger" onClick={() => removeRelation(i)} title="Eliminar relación">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  <button className="btn btn-ghost" onClick={addRelation} style={{ alignSelf: 'flex-start', fontSize: 12, marginTop: '4px' }}>
+                    <Plus size={13} /> Añadir vínculo
                   </button>
-                </div>
-              ))}
-              <button className="btn btn-ghost" onClick={addRelation} style={{ alignSelf: 'flex-start', fontSize: 13, marginTop: '4px' }}>
-                <Plus size={13} style={{marginRight: 4}}/> Añadir vínculo explícito
-              </button>
+                </>
+              )}
             </div>
             <div className="compendium-form-group">
               <label>Color representativo</label>
-              <input type="color" name="color" value={formData.color || '#6b9fd4'} onChange={handleChange} />
+              <ColorPicker
+                value={formData.color || '#6b9fd4'}
+                onChange={(c) => setFormData(prev => ({ ...prev, color: c }))}
+              />
             </div>
           </>
         )}
@@ -180,9 +214,40 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
               <label>Etiquetas / Tags (separados por coma)</label>
               <input name="_rawTags" value={formData._rawTags || ''} onChange={handleChange} placeholder="Magia, Peligro, Imperial" />
             </div>
+            {characters && characters.length > 0 && (
+              <div className="compendium-form-group">
+                <label>Personajes asociados al lugar</label>
+                <div className="relation-chars-grid">
+                  {characters.map(c => {
+                    const assoc = formData.associatedCharacters || [];
+                    const isChecked = assoc.includes(c.name);
+                    return (
+                      <label key={c.id} className="relation-char-check">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              associatedCharacters: isChecked
+                                ? (prev.associatedCharacters || []).filter(n => n !== c.name)
+                                : [...(prev.associatedCharacters || []), c.name]
+                            }));
+                          }}
+                        />
+                        <span style={{ color: c.color || 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }}>{c.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <div className="compendium-form-group">
               <label>Color en el mapa</label>
-              <input type="color" name="color" value={formData.color || '#5cb98a'} onChange={handleChange} />
+              <ColorPicker
+                value={formData.color || '#5cb98a'}
+                onChange={(c) => setFormData(prev => ({ ...prev, color: c }))}
+              />
             </div>
           </>
         )}
@@ -196,6 +261,14 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
             <div className="compendium-form-group">
               <label>Tipo</label>
               <input name="type" value={formData.type || ''} onChange={handleChange} placeholder="Arma, Documento, Joya..." />
+            </div>
+            <div className="compendium-form-group">
+              <label>Importancia narrativa</label>
+              <select name="importance" value={formData.importance || 'Secundario'} onChange={handleChange}>
+                <option value="Secundario">Secundario</option>
+                <option value="Relevante">Relevante</option>
+                <option value="MacGuffin">MacGuffin (elemento clave)</option>
+              </select>
             </div>
             <div className="compendium-form-group">
               <label>Portador actual</label>
@@ -264,6 +337,7 @@ function CharacterCard({ char, onEdit, onDelete }) {
       className={`char-card card ${expanded ? 'char-card--expanded' : ''}`}
       id={`char-card-${char.id}`}
       onClick={() => setExpanded(e => !e)}
+      style={{ borderLeft: `3px solid ${char.color || '#6b9fd4'}` }}
     >
       <div className="char-card__top">
         <div className="char-card__avatar" style={{ background: char.color + '22', borderColor: char.color + '44' }}>
@@ -343,6 +417,16 @@ function LocationCard({ loc, onEdit, onDelete }) {
             <span className="char-card__section-label">Clima</span>
             <span className="loc-card__climate-val">{loc.climate}</span>
           </div>
+          {loc.associatedCharacters && loc.associatedCharacters.length > 0 && (
+            <div>
+              <span className="char-card__section-label">Personajes asociados</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: 4 }}>
+                {loc.associatedCharacters.map(name => (
+                  <span key={name} className="tag">{name}</span>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="loc-card__all-tags">
             {loc.tags?.map(t => <span key={t} className="tag">{t}</span>)}
           </div>
@@ -380,6 +464,13 @@ function ObjectCard({ obj, onEdit, onDelete }) {
       {expanded && (
         <div className="obj-card__body">
           <p className="obj-card__desc">{obj.description}</p>
+          {obj.importance && obj.importance !== 'Secundario' && (
+            <div style={{ marginBottom: 8 }}>
+              <span className={`badge ${obj.importance === 'MacGuffin' ? 'badge-gold' : 'badge-blue'}`}>
+                {obj.importance === 'MacGuffin' ? '⚡ MacGuffin' : '★ Relevante'}
+              </span>
+            </div>
+          )}
           <div className="obj-card__meta">
             <span className="char-card__section-label">Origen</span>
             <span className="obj-card__origin">{obj.origin}</span>
@@ -730,8 +821,24 @@ export default function CompendiumView() {
             (activeSection === 'locations' && locations.length === 0) ||
             (activeSection === 'objects' && objects.length === 0) ||
             (activeSection === 'lore' && lore.length === 0)) && (
-              <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                No hay entradas en esta categoría. Haz clic en "Añadir entrada".
+              <div className="compendium-empty-state">
+                <div className="compendium-empty-state__icon">
+                  {activeSection === 'characters' && <Users size={36} />}
+                  {activeSection === 'locations' && <MapPin size={36} />}
+                  {activeSection === 'objects' && <Package size={36} />}
+                  {activeSection === 'lore' && <BookOpen size={36} />}
+                </div>
+                <p className="compendium-empty-state__title">
+                  {activeSection === 'characters' && 'Sin personajes todavía'}
+                  {activeSection === 'locations' && 'Sin localizaciones todavía'}
+                  {activeSection === 'objects' && 'Sin objetos todavía'}
+                  {activeSection === 'lore' && 'Sin entradas de lore todavía'}
+                </p>
+                <p className="compendium-empty-state__sub">Da vida a tu mundo añadiendo la primera entrada.</p>
+                <button className="btn btn-primary" onClick={handleAdd}>
+                  <Plus size={14} />
+                  Añadir primera entrada
+                </button>
               </div>
           )}
         </div>
