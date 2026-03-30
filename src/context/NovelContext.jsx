@@ -19,9 +19,8 @@ export const NovelProvider = ({ children }) => {
   useEffect(() => {
     const initializeDB = async () => {
       // One-time wipe of example content for existing users
-      const hasWiped = localStorage.getItem('lw_v2_wiped'); // Changed key to ensure a fresh wipe
+      const hasWiped = localStorage.getItem('lw_v2_wiped');
       if (!hasWiped) {
-        console.log('Cleaning up example content...');
         await db.transaction('rw', [db.novels, db.acts, db.chapters, db.scenes, db.characters, db.locations, db.objects, db.lore, db.resources, db.dailyProgress], async () => {
           await db.novels.clear();
           await db.acts.clear();
@@ -179,14 +178,17 @@ export const NovelProvider = ({ children }) => {
       await refreshAllNovels();
       await switchNovel(novelId);
     } catch (error) {
-      console.error('Error creating novel:', error);
-      alert('Error crítico al crear la novela en la base de datos.');
+      console.error('[LoneWriter] Error creating novel:', error);
     }
   };
 
   const deleteNovel = async (id) => {
-    await db.transaction('rw', db.novels, db.acts, db.chapters, db.scenes, async () => {
-      await db.novels.delete(id);
+    await db.transaction('rw', [
+      db.novels, db.acts, db.chapters, db.scenes,
+      db.characters, db.locations, db.objects, db.lore,
+      db.resources, db.dailyProgress, db.debateAgents, db.debateSessions
+    ], async () => {
+      // Delete narrative structure
       const actsToDelete = await db.acts.where('novelId').equals(id).toArray();
       for (const act of actsToDelete) {
         const chapters = await db.chapters.where('actId').equals(act.id).toArray();
@@ -196,6 +198,18 @@ export const NovelProvider = ({ children }) => {
         await db.chapters.where('actId').equals(act.id).delete();
       }
       await db.acts.where('novelId').equals(id).delete();
+      // Delete compendium data
+      await db.characters.where('novelId').equals(id).delete();
+      await db.locations.where('novelId').equals(id).delete();
+      await db.objects.where('novelId').equals(id).delete();
+      await db.lore.where('novelId').equals(id).delete();
+      await db.resources.where('novelId').equals(id).delete();
+      await db.dailyProgress.where('novelId').equals(id).delete();
+      // Delete AI debate data
+      await db.debateAgents.where('novelId').equals(id).delete();
+      await db.debateSessions.where('novelId').equals(id).delete();
+      // Delete the novel itself
+      await db.novels.delete(id);
     });
     setAllNovels(prev => prev.filter(n => n.id !== id));
     if (activeNovel?.id === id) setActiveNovel(null);

@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import {
   FileText, Image, BookOpen, Music, Video, Map, Link as LinkIcon,
   Upload, Search, FolderOpen, Tag, Calendar, HardDrive,
-  ExternalLink, Trash2, Eye, MoreHorizontal, Filter, Plus, Zap, AlertCircle, X
+  ExternalLink, Trash2, Eye, MoreHorizontal, Plus, Zap, AlertCircle, X
 } from 'lucide-react'
 import { useNovel } from '../context/NovelContext'
 import './Resources.css'
@@ -194,10 +194,6 @@ export default function ResourcesView() {
           <p className="section-subtitle">{resources.length} archivos · {totalSize} total</p>
         </div>
         <div className="resources-view__header-actions">
-          <button className="btn btn-ghost" id="resources-filter-btn">
-            <Filter size={13} />
-            Filtros
-          </button>
           <button className="btn btn-primary" id="resources-upload-btn" onClick={() => fileInputRef.current?.click()}>
             <Upload size={13} />
             Cargar archivo
