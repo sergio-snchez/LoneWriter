@@ -400,9 +400,9 @@ function LocationCard({ loc, onEdit, onDelete }) {
         <div className="loc-card__info">
           <span className="loc-card__name">{loc.name}</span>
           <span className="loc-card__type">{loc.type}</span>
-        </div>
-        <div className="loc-card__tags">
-          {loc.tags?.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
+          <div className="loc-card__tags">
+            {loc.tags?.slice(0, 3).map(t => <span key={t} className="tag">{t}</span>)}
+          </div>
         </div>
         <div className="compendium-card-actions">
           <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(loc); }} title="Editar"><PenLine size={14} /></button>
@@ -450,10 +450,10 @@ function ObjectCard({ obj, onEdit, onDelete }) {
         <div className="obj-card__info">
           <span className="obj-card__name">{obj.name}</span>
           <span className="obj-card__type">{obj.type}</span>
-        </div>
-        <div className="obj-card__owner">
-          <span className="char-card__section-label">Portador</span>
-          <span className="obj-card__owner-name">{obj.currentOwner}</span>
+          <div className="obj-card__tags">
+            {obj.currentOwner && <span className="badge badge-muted">Portador: {obj.currentOwner}</span>}
+            {obj.tags?.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
+          </div>
         </div>
         <div className="compendium-card-actions">
           <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(obj); }} title="Editar"><PenLine size={14} /></button>
@@ -498,9 +498,9 @@ function LoreCard({ entry, onEdit, onDelete }) {
         <div className="lore-card__info">
           <span className="lore-card__title">{entry.title}</span>
           <span className="lore-card__cat">{entry.category}</span>
-        </div>
-        <div className="lore-card__tags">
-          {entry.tags?.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
+          <div className="lore-card__tags">
+            {entry.tags?.slice(0, 3).map(t => <span key={t} className="tag">{t}</span>)}
+          </div>
         </div>
         <div className="compendium-card-actions">
           <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(entry); }} title="Editar"><PenLine size={14} /></button>

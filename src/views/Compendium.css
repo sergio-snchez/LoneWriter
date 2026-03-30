@@ -298,7 +298,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 110px 14px 16px; /* Gutter de 110px a la derecha para acciones */
+  padding: 14px 90px 14px 16px; /* Gutter de seguridad para botones */
 }
 
 .char-card__avatar {
@@ -377,7 +377,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 110px 14px 16px; /* Gutter de 110px a la derecha para acciones */
+  padding: 14px 90px 14px 16px;
 }
 .loc-card__dot {
   width: 12px;
@@ -388,6 +388,9 @@
 .loc-card__info {
   flex: 1;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 .loc-card__name {
   display: block;
@@ -401,7 +404,12 @@
   font-size: 11px;
   color: var(--text-muted);
 }
-.loc-card__tags { display: flex; gap: 5px; flex-shrink: 0; flex-wrap: wrap; }
+.loc-card__tags { 
+  display: flex; 
+  flex-wrap: wrap;
+  gap: 4px; 
+  margin-top: 2px;
+}
 .loc-card__body {
   padding: 4px 16px 16px;
   border-top: 1px solid var(--border);
@@ -426,10 +434,16 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 110px 14px 16px; /* Gutter de 110px a la derecha para acciones */
+  padding: 14px 90px 14px 16px;
 }
 .obj-card__icon { color: var(--accent); flex-shrink: 0; }
-.obj-card__info { flex: 1; overflow: hidden; }
+.obj-card__info { 
+  flex: 1; 
+  overflow: hidden; 
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
 .obj-card__name {
   display: block;
   font-size: 14px;
@@ -438,8 +452,12 @@
   font-family: 'Playfair Display', serif;
 }
 .obj-card__type { display: block; font-size: 11px; color: var(--text-muted); }
-.obj-card__owner { flex-shrink: 0; text-align: right; }
-.obj-card__owner-name { font-size: 12px; color: var(--text-secondary); }
+.obj-card__tags { 
+  display: flex; 
+  flex-wrap: wrap;
+  gap: 4px; 
+  margin-top: 2px;
+}
 .obj-card__body {
   padding: 4px 16px 16px;
   border-top: 1px solid var(--border);
@@ -464,7 +482,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 110px 14px 16px; /* Gutter de 110px a la derecha para acciones */
+  padding: 14px 90px 14px 16px;
 }
 .lore-card__cat-dot {
   width: 8px;
@@ -473,7 +491,13 @@
   background: var(--accent);
   flex-shrink: 0;
 }
-.lore-card__info { flex: 1; overflow: hidden; }
+.lore-card__info { 
+  flex: 1; 
+  overflow: hidden; 
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
 .lore-card__title {
   display: block;
   font-size: 14px;
@@ -482,7 +506,12 @@
   font-family: 'Playfair Display', serif;
 }
 .lore-card__cat { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-.lore-card__tags { display: flex; gap: 5px; flex-shrink: 0; flex-wrap: wrap; }
+.lore-card__tags { 
+  display: flex; 
+  flex-wrap: wrap;
+  gap: 4px; 
+  margin-top: 2px;
+}
 .lore-card__body {
   padding: 4px 16px 16px;
   border-top: 1px solid var(--border);
