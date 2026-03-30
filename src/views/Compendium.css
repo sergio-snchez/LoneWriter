@@ -167,23 +167,28 @@
 /* ---- Card Actions (Edit/Delete) ---- */
 .compendium-card-actions {
   position: absolute;
-  top: 10px;
-  right: 32px; /* Espacio para el chevron si existe */
+  top: 50%;
+  right: 40px; /* Separado del chevron */
+  transform: translateY(-50%) translateX(10px);
   display: flex;
   align-items: center;
   gap: 4px;
   opacity: 0;
-  transform: translateX(10px);
   transition: all var(--trans-fast);
   pointer-events: none;
   z-index: 10;
+  background: var(--bg-surface);
+  padding: 4px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 .char-card:hover .compendium-card-actions,
 .loc-card:hover .compendium-card-actions,
 .obj-card:hover .compendium-card-actions,
 .lore-card:hover .compendium-card-actions {
   opacity: 1;
-  transform: translateX(0);
+  transform: translateY(-50%) translateX(0);
   pointer-events: auto;
 }
 
@@ -193,6 +198,7 @@
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
+  pointer-events: none;
 }
 .char-card__chevron--open, .loc-card__chevron--open, .obj-card__chevron--open, .lore-card__chevron--open {
   transform: translateY(-50%) rotate(90deg);
@@ -383,6 +389,7 @@
 .loc-card__info {
   flex: 1;
   overflow: hidden;
+  padding-right: 80px; /* Seguridad para tags + botones floating */
 }
 .loc-card__name {
   display: block;
@@ -424,7 +431,7 @@
   padding: 14px 16px;
 }
 .obj-card__icon { color: var(--accent); flex-shrink: 0; }
-.obj-card__info { flex: 1; overflow: hidden; }
+.obj-card__info { flex: 1; overflow: hidden; padding-right: 80px; }
 .obj-card__name {
   display: block;
   font-size: 14px;
@@ -468,7 +475,7 @@
   background: var(--accent);
   flex-shrink: 0;
 }
-.lore-card__info { flex: 1; overflow: hidden; }
+.lore-card__info { flex: 1; overflow: hidden; padding-right: 80px; }
 .lore-card__title {
   display: block;
   font-size: 14px;
