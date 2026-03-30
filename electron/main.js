@@ -119,7 +119,7 @@ ipcMain.on('start-google-auth', (event, { clientId, scopes }) => {
 
   // Abrir navegador externo
   const redirectUri = 'http://localhost:42813/callback';
-  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scopes}`;
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scopes)}`;
   shell.openExternal(authUrl);
 });
 
