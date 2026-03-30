@@ -349,7 +349,7 @@ export default function EditorView() {
   } = useNovel()
   const { openModal } = useModal()
   
-  const [isSaving, setIsSaving] = useState(false)
+  const [isSaving, setIsSaving] = useState(null) // null = never saved, false = saved, true = saving
   const [expandedIds, setExpandedIds] = useState(new Set())
   const [activeDragId, setActiveDragId] = useState(null)
   const [streak, setStreak] = useState(0)
@@ -867,12 +867,13 @@ export default function EditorView() {
                     <FileDown size={14} />
                     Word
                   </button>
-                  {isSaving ? (
+                  {isSaving === true && (
                     <div className="save-indicator">
                       <Loader2 size={12} className="spinner" />
                       <span>Guardando...</span>
                     </div>
-                  ) : (
+                  )}
+                  {isSaving === false && (
                     <div className="save-indicator save-indicator--done">
                       <Save size={12} />
                       <span>Guardado</span>
@@ -894,10 +895,12 @@ export default function EditorView() {
                   <FileText size={12} />
                   <span>{activeScene.wordCount?.toLocaleString('es-ES') || 0} palabras en esta escena</span>
                 </div>
-                <div className="editor-footer__item">
-                  <Target size={12} />
-                  <span>Meta: 1.500 palabras</span>
-                </div>
+                {activeScene.wordCount > 0 && (
+                  <div className="editor-footer__item">
+                    <Target size={12} />
+                    <span>Meta: {Math.round((activeNovel?.targetWords || 100000) / (activeNovel?.targetScenes || 60)).toLocaleString('es-ES')} palabras por escena</span>
+                  </div>
+                )}
               </div>
             </div>
           ) : (

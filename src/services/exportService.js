@@ -102,8 +102,7 @@ export const ExportService = {
       saveAs(blob, `${title}.docx`);
       return true;
     } catch (error) {
-      console.error('Error exporting to Word:', error);
-      alert('Hubo un error al generar el archivo Word. Revisa la consola para más detalles.');
+      console.error('[LoneWriter] Error exporting to Word:', error);
       throw error;
     }
   },
@@ -184,8 +183,7 @@ export const ExportService = {
       saveAs(blob, fileName);
       return true;
     } catch (error) {
-      console.error('Error detallado al exportar la novela completa:', error);
-      alert('Error crítico al exportar el manuscrito. Por favor, revisa que todas las escenas contengan texto válido.');
+      console.error('[LoneWriter] Error al exportar novela completa:', error);
       throw error;
     }
   }

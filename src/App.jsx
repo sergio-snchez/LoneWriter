@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { 
   Sparkles, Loader2, Download, Upload, FileDown, 
   ChevronDown, BookOpen, CheckCircle2, Plus, Trash2, PenLine,
-  Settings
+  Settings, Heart
 } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 import AIPanel from './components/AIPanel'
@@ -150,7 +150,7 @@ export default function App() {
                   className="btn btn-ghost"
                   style={{ fontSize: '12px', gap: '8px', opacity: 0.8 }}
                 >
-                  <Sparkles size={14} />
+                  <Heart size={14} />
                   Apoyar el proyecto (Invítame a un café)
                 </a>
               </div>
