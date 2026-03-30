@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 import AIPanel from './components/AIPanel'
+import SettingsModal from './components/SettingsModal'
 import EditorView from './views/Editor'
 import CompendiumView from './views/Compendium'
 import ResourcesView from './views/Resources'
@@ -13,23 +14,60 @@ import { useNovel } from './context/NovelContext'
 import { useAI } from './context/AIContext'
 import { useModal } from './context/ModalContext'
 import { ExportService } from './services/exportService'
+import { GoogleDriveService } from './services/googleDriveService'
+import { db } from './db/database'
 import './App.css'
 
 export default function App() {
   const [activeView, setActiveView] = useState('editor')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsTab, setSettingsTab] = useState('cloud')
   const [menuOpen, setMenuOpen] = useState(false)
   
   const { openModal } = useModal();
   
   const { 
     activeNovel, activeScene, allNovels, loading, acts,
-    switchNovel, createNovel, deleteNovel 
+    switchNovel, createNovel, deleteNovel, updateNovelTarget
   } = useNovel();
   
   const fileInputRef = useRef(null);
   const projectMenuRef = useRef(null);
+
+  // Cloud Restore Listener
+  useEffect(() => {
+    const handleCloudVersion = (e) => {
+      const { date } = e.detail;
+      openModal('confirm', {
+        title: 'Versión en la nube disponible',
+        message: `Se ha detectado una copia de seguridad en Google Drive más reciente (${new Date(date).toLocaleString()}). ¿Deseas restaurar tus proyectos ahora? Se sobrescribirá la base de datos local.`,
+        confirmLabel: 'Restaurar ahora',
+        onConfirm: async () => {
+          try {
+             const cloudData = await GoogleDriveService.downloadBackup();
+             if (cloudData) {
+               await db.transaction('rw', db.tables, async () => {
+                 for (const table of db.tables) {
+                   await table.clear();
+                   if (cloudData.tables[table.name]) {
+                     await table.bulkAdd(cloudData.tables[table.name]);
+                   }
+                 }
+               });
+               window.location.reload();
+             }
+          } catch (err) {
+            alert('Error al restaurar: ' + err.message);
+          }
+        }
+      });
+    };
+
+    window.addEventListener('cloud-version-available', handleCloudVersion);
+    return () => window.removeEventListener('cloud-version-available', handleCloudVersion);
+  }, [openModal]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -304,11 +342,25 @@ export default function App() {
             <Sparkles size={14} />
             IA
           </button>
-          <button className="btn btn-ghost btn-icon topbar-settings-btn" title="Configuración">
+          <button 
+            className="btn btn-ghost btn-icon topbar-settings-btn" 
+            title="Configuración"
+            onClick={() => {
+              setSettingsTab('general');
+              setSettingsOpen(true);
+            }}
+          >
             <Settings size={16} />
           </button>
         </div>
       </header>
+
+      {/* Modals */}
+      <SettingsModal 
+        isOpen={settingsOpen} 
+        onClose={() => setSettingsOpen(false)} 
+        initialTab={settingsTab}
+      />
 
       {/* Main layout */}
       <div className="app-body">
@@ -321,10 +373,15 @@ export default function App() {
         <main className="app-main">
           {renderView()}
         </main>
+        
         <AIPanel 
           open={aiPanelOpen} 
           onClose={() => setAiPanelOpen(false)} 
           activeScene={activeScene}
+          onOpenSettings={(tab) => {
+            setSettingsTab(tab || 'ia');
+            setSettingsOpen(true);
+          }}
         />
       </div>
     </div>

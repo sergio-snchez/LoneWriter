@@ -1,6 +1,6 @@
 {
   "name": "lonewriter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -22,7 +22,7 @@
     "win": {
       "target": "nsis",
       "icon": "public/pwa-512x512.png",
-      "artifactName": "LoneWriter Setup v1.0.exe"
+      "artifactName": "LoneWriter Setup v1.1-cloud.exe"
     }
   },
   "keywords": [],
