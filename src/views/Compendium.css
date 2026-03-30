@@ -298,7 +298,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 14px 110px 14px 16px; /* Gutter de 110px a la derecha para acciones */
 }
 
 .char-card__avatar {
@@ -321,7 +321,6 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding-right: 40px; /* Evitar solapamiento con botones flotantes */
 }
 .char-card__name {
   font-size: 14px;
@@ -378,7 +377,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 14px 110px 14px 16px; /* Gutter de 110px a la derecha para acciones */
 }
 .loc-card__dot {
   width: 12px;
@@ -389,7 +388,6 @@
 .loc-card__info {
   flex: 1;
   overflow: hidden;
-  padding-right: 80px; /* Seguridad para tags + botones floating */
 }
 .loc-card__name {
   display: block;
@@ -428,10 +426,10 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 14px 110px 14px 16px; /* Gutter de 110px a la derecha para acciones */
 }
 .obj-card__icon { color: var(--accent); flex-shrink: 0; }
-.obj-card__info { flex: 1; overflow: hidden; padding-right: 80px; }
+.obj-card__info { flex: 1; overflow: hidden; }
 .obj-card__name {
   display: block;
   font-size: 14px;
@@ -466,7 +464,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 14px 110px 14px 16px; /* Gutter de 110px a la derecha para acciones */
 }
 .lore-card__cat-dot {
   width: 8px;
@@ -475,7 +473,7 @@
   background: var(--accent);
   flex-shrink: 0;
 }
-.lore-card__info { flex: 1; overflow: hidden; padding-right: 80px; }
+.lore-card__info { flex: 1; overflow: hidden; }
 .lore-card__title {
   display: block;
   font-size: 14px;
