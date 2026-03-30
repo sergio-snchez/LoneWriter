@@ -352,8 +352,8 @@ function CharacterCard({ char, onEdit, onDelete }) {
           </div>
         </div>
         <div className="compendium-card-actions">
-          <button className="btn btn-ghost" onClick={(e) => { e.stopPropagation(); onEdit(char); }} title="Editar"><PenLine size={14} /> Editar</button>
-          <button className="btn btn-ghost text-danger" onClick={(e) => { e.stopPropagation(); onDelete(char.id); }} title="Eliminar"><Trash2 size={14} /> Eliminar</button>
+          <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(char); }} title="Editar"><PenLine size={14} /></button>
+          <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(char.id); }} title="Eliminar"><Trash2 size={14} /></button>
         </div>
         <ChevronRight size={14} className={`char-card__chevron ${expanded ? 'char-card__chevron--open' : ''}`} />
       </div>
@@ -405,8 +405,8 @@ function LocationCard({ loc, onEdit, onDelete }) {
           {loc.tags?.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
         </div>
         <div className="compendium-card-actions">
-          <button className="btn btn-ghost" onClick={(e) => { e.stopPropagation(); onEdit(loc); }} title="Editar"><PenLine size={14} /> Editar</button>
-          <button className="btn btn-ghost text-danger" onClick={(e) => { e.stopPropagation(); onDelete(loc.id); }} title="Eliminar"><Trash2 size={14} /> Eliminar</button>
+          <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(loc); }} title="Editar"><PenLine size={14} /></button>
+          <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(loc.id); }} title="Eliminar"><Trash2 size={14} /></button>
         </div>
         <ChevronRight size={14} className={`loc-card__chevron ${expanded ? 'loc-card__chevron--open' : ''}`} />
       </div>
@@ -456,8 +456,8 @@ function ObjectCard({ obj, onEdit, onDelete }) {
           <span className="obj-card__owner-name">{obj.currentOwner}</span>
         </div>
         <div className="compendium-card-actions">
-          <button className="btn btn-ghost" onClick={(e) => { e.stopPropagation(); onEdit(obj); }} title="Editar"><PenLine size={14} /> Editar</button>
-          <button className="btn btn-ghost text-danger" onClick={(e) => { e.stopPropagation(); onDelete(obj.id); }} title="Eliminar"><Trash2 size={14} /> Eliminar</button>
+          <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(obj); }} title="Editar"><PenLine size={14} /></button>
+          <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(obj.id); }} title="Eliminar"><Trash2 size={14} /></button>
         </div>
         <ChevronRight size={14} className={`obj-card__chevron ${expanded ? 'obj-card__chevron--open' : ''}`} />
       </div>
@@ -503,8 +503,8 @@ function LoreCard({ entry, onEdit, onDelete }) {
           {entry.tags?.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
         </div>
         <div className="compendium-card-actions">
-          <button className="btn btn-ghost" onClick={(e) => { e.stopPropagation(); onEdit(entry); }} title="Editar"><PenLine size={14} /> Editar</button>
-          <button className="btn btn-ghost text-danger" onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }} title="Eliminar"><Trash2 size={14} /> Eliminar</button>
+          <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(entry); }} title="Editar"><PenLine size={14} /></button>
+          <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }} title="Eliminar"><Trash2 size={14} /></button>
         </div>
         <ChevronRight size={14} className={`lore-card__chevron ${expanded ? 'lore-card__chevron--open' : ''}`} />
       </div>

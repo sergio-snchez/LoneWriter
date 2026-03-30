@@ -166,19 +166,36 @@
 
 /* ---- Card Actions (Edit/Delete) ---- */
 .compendium-card-actions {
+  position: absolute;
+  top: 10px;
+  right: 32px; /* Espacio para el chevron si existe */
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-right: 8px;
   opacity: 0;
-  transition: opacity var(--trans-fast);
-  flex-shrink: 0;
+  transform: translateX(10px);
+  transition: all var(--trans-fast);
+  pointer-events: none;
+  z-index: 10;
 }
 .char-card:hover .compendium-card-actions,
 .loc-card:hover .compendium-card-actions,
 .obj-card:hover .compendium-card-actions,
 .lore-card:hover .compendium-card-actions {
   opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* Ajuste específico para que el chevron no quede debajo */
+.char-card__chevron, .loc-card__chevron, .obj-card__chevron, .lore-card__chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.char-card__chevron--open, .loc-card__chevron--open, .obj-card__chevron--open, .lore-card__chevron--open {
+  transform: translateY(-50%) rotate(90deg);
 }
 
 /* ---- Right Slide Panel ---- */
@@ -269,6 +286,7 @@
   cursor: pointer;
   padding: 0;
   overflow: hidden;
+  position: relative;
 }
 .char-card__top {
   display: flex;
@@ -297,6 +315,7 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
+  padding-right: 40px; /* Evitar solapamiento con botones flotantes */
 }
 .char-card__name {
   font-size: 14px;
@@ -348,7 +367,7 @@
 /* ============================================================
    LOCATION CARD
    ============================================================ */
-.loc-card { cursor: pointer; padding: 0; overflow: hidden; }
+.loc-card { cursor: pointer; padding: 0; overflow: hidden; position: relative; }
 .loc-card__top {
   display: flex;
   align-items: center;
@@ -397,7 +416,7 @@
 /* ============================================================
    OBJECT CARD
    ============================================================ */
-.obj-card { cursor: pointer; padding: 0; overflow: hidden; }
+.obj-card { cursor: pointer; padding: 0; overflow: hidden; position: relative; }
 .obj-card__top {
   display: flex;
   align-items: center;
@@ -435,7 +454,7 @@
 /* ============================================================
    LORE CARD
    ============================================================ */
-.lore-card { cursor: pointer; padding: 0; overflow: hidden; }
+.lore-card { cursor: pointer; padding: 0; overflow: hidden; position: relative; }
 .lore-card__top {
   display: flex;
   align-items: center;
