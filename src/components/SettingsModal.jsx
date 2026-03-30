@@ -38,10 +38,11 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
       await GoogleDriveService.authenticate();
       setIsCloudLinked(true);
       toggleCloudSync(true);
+    } catch (error) {
       console.error('Error linking Google Drive:', error);
       const msg = !import.meta.env.VITE_GOOGLE_CLIENT_ID 
-        ? 'No se ha configurado el Client ID de Google. Crea un archivo .env con VITE_GOOGLE_CLIENT_ID=tu_id'
-        : 'Error al conectar con Google. Verifica que localhost esté autorizado en la consola de Google Cloud.';
+        ? 'No se ha configurado el Client ID de Google. Crea un archivo .env o variable de entorno.'
+        : 'Error al conectar con Google. Verifica que la URL actual (Vercel) esté autorizada en la consola de Google Cloud.';
       alert(msg);
     } finally {
       setIsSyncing(false);
