@@ -75,20 +75,22 @@ ipcMain.on('start-google-auth', (event, { clientId, scopes }) => {
     
     // Google devuelve el token en el fragmento (#), por lo que necesitamos un poco de JS en el navegador
     // para enviarlo como query param al servidor local.
-    if (reqUrl.pathname === '/callback') {
+    if (reqUrl.pathname === '/' || reqUrl.pathname === '/callback') {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
       res.end(`
         <html>
-          <body style="font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #1a1a1f; color: #fff;">
-            <h2>✔ ¡Autenticación completada!</h2>
-            <p>Puedes cerrar esta pestaña y volver a LoneWriter.</p>
-            <script>
-              const hash = window.location.hash.substring(1);
-              if (hash) {
-                // Enviar el fragmento al servidor de nuevo como query string
-                window.location.href = '/token?' + hash;
-              }
-            </script>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #1a1b1e; color: #fff; margin: 0;">
+            <div style="text-align: center; padding: 20px;">
+              <h2 style="margin-bottom: 10px;">✔ ¡Autenticación completada!</h2>
+              <p style="color: #909296;">LoneWriter ya ha recibido la autorización. Puedes cerrar esta pestaña y volver a la aplicación.</p>
+              <script>
+                const hash = window.location.hash.substring(1);
+                if (hash) {
+                  // Enviar el fragmento al servidor de nuevo como query string
+                  window.location.href = '/token?' + hash;
+                }
+              </script>
+            </div>
           </body>
         </html>
       `);
@@ -107,7 +109,7 @@ ipcMain.on('start-google-auth', (event, { clientId, scopes }) => {
       }
 
       res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
-      res.end('<html><body style="background: #1a1a1f; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh;"><h2>Listo. Puedes cerrar esta ventana.</h2></body></html>');
+      res.end('<html><body style="background: #1a1b1e; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh;"><h2>Listo. Puedes cerrar esta ventana.</h2></body></html>');
       
       // Cerrar el servidor local tras recibir el token
       setTimeout(() => {
@@ -118,7 +120,7 @@ ipcMain.on('start-google-auth', (event, { clientId, scopes }) => {
   }).listen(42813);
 
   // Abrir navegador externo
-  const redirectUri = 'http://localhost:42813/callback';
+  const redirectUri = 'http://localhost:42813';
   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scopes)}`;
   shell.openExternal(authUrl);
 });
