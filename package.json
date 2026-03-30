@@ -23,6 +23,16 @@
       "target": "nsis",
       "icon": "public/pwa-512x512.png",
       "artifactName": "LoneWriter Setup v1.1-cloud.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "LoneWriter",
+      "runAfterFinish": true,
+      "displayLanguageSelection": true,
+      "installerHeaderIcon": "public/pwa-512x512.png"
     }
   },
   "keywords": [],
