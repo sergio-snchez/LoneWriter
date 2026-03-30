@@ -1,4 +1,4 @@
-# LoneWriter v1.0 🖋️
+# LoneWriter v1.1-cloud 🖋️ (Beta)
 
 ![LoneWriter Banner](banner-lonewriter.png)
 
@@ -29,10 +29,11 @@ LoneWriter es una aplicación minimalista y potente diseñada para escritores qu
 - **Construcción de Mundo:** Gestiona lugares, objetos clave y reglas de tu universo.
 - **Base de Conocimiento:** Sube archivos de referencia (PDF, TXT, MD) para que la IA los use como contexto.
 
-### 💾 Portabilidad y Exportación
-- **Sin Costes de Nube:** Tus datos se guardan localmente en tu navegador o sistema (IndexedDB).
+### 💾 Portabilidad y Sincronización en la Nube **(¡Novedad!)**
+- **Cloud Sync:** Conexión nativa con **Google Drive** para respaldos automáticos y persistencia contra borrado de caché.
+- **Sin Costes Ocultos:** Tus datos son tuyos. Se guardan localmente (IndexedDB) y opcionalmente en tu propio espacio personal de Google.
 - **Exportación Versátil:** Descarga tu proyecto completo en formato `.lwrt` o genera un documento de Word (`.docx`) listo para enviar a editoriales.
-- **Multiplataforma:** Úsalo como aplicación de escritorio (Electron), instalalo como PWA o accede vía web.
+- **Multiplataforma:** Úsalo como aplicación de escritorio (Electron), instálalo como PWA o accede vía web.
 
 ## 🛠️ Tecnologías
 
@@ -69,4 +70,4 @@ Para ejecutar el proyecto localmente:
 Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
 
 ---
-*LoneWriter v1.0 - Transformando la forma en que escribimos ficción.*
+*LoneWriter v1.1-cloud - Tu obra, siempre protegida y asistida por IA.*

@@ -796,11 +796,10 @@ function AgentEditForm({ agent, colors, onSave, onCancel, isNew, canDelete, onDe
 }
 
 // ─── Main AI Panel ────────────────────────────────────────────
-export default function AIPanel({ open, onClose, activeScene }) {
+export default function AIPanel({ open, onClose, activeScene, onOpenSettings }) {
   const { openModal } = useModal()
   const [activeTab, setActiveTab] = useState('rewrite')
-  const [showApiSettings, setShowApiSettings] = useState(false)
-  const { provider, setProvider, apiKey, setApiKey, localBaseUrl, setLocalBaseUrl, selectedModels, setModelForProvider, currentModel } = useAI()
+  const { apiKey, currentModel } = useAI()
 
   return (
     <>
@@ -814,8 +813,8 @@ export default function AIPanel({ open, onClose, activeScene }) {
           
           <div className="ai-panel__header-right">
             <button 
-              className={`ai-panel__api-btn ${showApiSettings ? 'active' : ''} ${!apiKey ? 'needs-key' : ''}`}
-              onClick={() => setShowApiSettings(!showApiSettings)}
+              className={`ai-panel__api-btn ${!apiKey ? 'needs-key' : ''}`}
+              onClick={() => onOpenSettings('ia')}
               title="Configurar API"
             >
               <Key size={13} />
@@ -829,81 +828,7 @@ export default function AIPanel({ open, onClose, activeScene }) {
           </div>
         </div>
 
-        {/* API Settings Overlay */}
-        {showApiSettings && (
-            <div className="ai-api-settings">
-            <div className="ai-api-settings__group">
-              <label>Proveedor</label>
-              <select value={provider} onChange={(e) => setProvider(e.target.value)}>
-                <option value="google">Google</option>
-                <option value="openai">OpenAI</option>
-                <option value="anthropic">Anthropic</option>
-                <option value="openrouter">OpenRouter</option>
-                <option value="local">Local (LM Studio / Ollama)</option>
-              </select>
-            </div>
-            <div className="ai-api-settings__group">
-              <label>Modelo</label>
-              <input
-                type="text"
-                className="ai-api-settings__custom-input"
-                style={{ marginTop: 0 }}
-                value={selectedModels[provider] || ''}
-                onChange={(e) => setModelForProvider(provider, e.target.value)}
-                placeholder={provider === 'local' ? 'ej: llama3.2, qwen2.5...' : 'ej: gpt-4-turbo, claude-3-opus...'}
-              />
-              {provider !== 'local' && (
-                <p className="ai-api-settings__model-hint">
-                  {{
-                    google:     <a href="https://ai.google.dev/gemini-api/docs/models" target="_blank" rel="noreferrer">Ver modelos disponibles</a>,
-                    openai:     <a href="https://platform.openai.com/docs/models" target="_blank" rel="noreferrer">Ver modelos disponibles</a>,
-                    anthropic:  <a href="https://docs.anthropic.com/en/docs/about-claude/models" target="_blank" rel="noreferrer">Ver modelos disponibles</a>,
-                    openrouter: <a href="https://openrouter.ai/models?q=:free" target="_blank" rel="noreferrer">Ver modelos gratuitos</a>,
-                  }[provider]}
-                </p>
-              )}
-            </div>
-            {provider === 'local' ? (
-              <div className="ai-api-settings__group">
-                <label>URL del servidor local</label>
-                <input 
-                  type="text"
-                  value={localBaseUrl}
-                  onChange={(e) => setLocalBaseUrl(e.target.value)}
-                  placeholder="http://localhost:1234/v1"
-                />
-                <p className="ai-api-settings__model-hint">
-                  LM Studio: <code>http://localhost:1234/v1</code><br/>
-                  Ollama: <code>http://localhost:11434/v1</code>
-                </p>
-              </div>
-            ) : (
-              <div className="ai-api-settings__group">
-                <label>API Key</label>
-                <input 
-                  type="password" 
-                  value={apiKey} 
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Introduce tu clave de API..."
-                />
-                <p className="ai-api-settings__hint">
-                  Se guarda solo en tu navegador. Nunca se envía a terceros.
-                </p>
-                <p className="ai-api-settings__model-hint">
-                  {{
-                    google:     <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">Obtener clave API</a>,
-                    openai:     <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer">Obtener clave API</a>,
-                    anthropic:  <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">Obtener clave API</a>,
-                    openrouter: <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer">Obtener clave API</a>,
-                  }[provider]}
-                </p>
-              </div>
-            )}
-            <button className="btn btn-primary btn-sm btn-block" onClick={() => setShowApiSettings(false)}>
-              Listo
-            </button>
-          </div>
-        )}
+        {/* API settings logic moved to global SettingsModal */}
 
         {/* Tabs */}
         <div className="ai-panel__tabs">
