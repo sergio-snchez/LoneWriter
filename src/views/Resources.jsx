@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import {
   FileText, Image, BookOpen, Music, Video, Map, Link as LinkIcon,
   Upload, Search, FolderOpen, Tag, Calendar, HardDrive,
-  ExternalLink, Trash2, Eye, MoreHorizontal, Plus, Zap, AlertCircle, X
+  ExternalLink, Trash2, Eye, MoreHorizontal, Filter, Plus, Zap, AlertCircle, X, ChevronDown
 } from 'lucide-react'
 import { useNovel } from '../context/NovelContext'
 import './Resources.css'
@@ -108,16 +108,45 @@ export default function ResourcesView() {
   const { resources, addCompendiumEntry, deleteCompendiumEntry, updateCompendiumEntry } = useNovel()
   const [query, setQuery] = useState('')
   const [activeTag, setActiveTag] = useState(null)
+  const [activeTypes, setActiveTypes] = useState([])
+  const [showFilters, setShowFilters] = useState(false)
   
   const [viewingRes, setViewingRes] = useState(null)
   const fileInputRef = useRef(null)
 
+  const TYPE_FILTER_GROUPS = [
+    { label: 'PDFs', types: ['PDF'] },
+    { label: 'eBooks', types: ['eBook'] },
+    { label: 'Imágenes', types: ['Imagen', 'ZIP (imágenes)'] },
+    { label: 'Word', types: ['Documento Word'] },
+    { label: 'Texto', types: ['Markdown', 'TXT', 'JSON', 'CSV'] },
+    { label: 'Video', types: ['Video'] },
+    { label: 'Otros', types: ['Enlace', 'Música', 'Otro'] },
+  ];
+
+  const toggleType = (types) => {
+    setActiveTypes(prev => {
+      const key = types[0];
+      const isActive = types.some(t => prev.includes(t));
+      return isActive ? prev.filter(t => !types.includes(t)) : [...prev, ...types];
+    });
+  };
+
+  const clearFilters = () => {
+    setActiveTypes([]);
+    setActiveTag(null);
+    setQuery('');
+  };
+
   const ALL_TAGS = [...new Set(resources.flatMap(r => r.tags || []))]
+
+  const hasActiveFilters = activeTypes.length > 0 || activeTag || query;
 
   const filtered = resources.filter(r => {
     const matchQ = !query || r.name.toLowerCase().includes(query.toLowerCase()) || r.description?.toLowerCase().includes(query.toLowerCase())
     const matchT = !activeTag || r.tags?.includes(activeTag)
-    return matchQ && matchT
+    const matchType = activeTypes.length === 0 || activeTypes.includes(r.type)
+    return matchQ && matchT && matchType
   })
 
   const totalBytes = resources.reduce((acc, r) => acc + (r.sizeRaw || 0), 0)
@@ -194,6 +223,20 @@ export default function ResourcesView() {
           <p className="section-subtitle">{resources.length} archivos · {totalSize} total</p>
         </div>
         <div className="resources-view__header-actions">
+          <button
+            className={`btn btn-ghost ${showFilters ? 'active' : ''}`}
+            id="resources-filter-btn"
+            onClick={() => setShowFilters(v => !v)}
+            style={hasActiveFilters ? { borderColor: 'var(--accent)', color: 'var(--accent-light)' } : {}}
+          >
+            <Filter size={13} />
+            Filtros
+            {hasActiveFilters && (
+              <span style={{ background: 'var(--accent)', color: '#1a1710', borderRadius: '99px', fontSize: '10px', fontWeight: 700, padding: '0 5px', lineHeight: '16px' }}>
+                {activeTypes.length + (activeTag ? 1 : 0) + (query ? 1 : 0)}
+              </span>
+            )}
+          </button>
           <button className="btn btn-primary" id="resources-upload-btn" onClick={() => fileInputRef.current?.click()}>
             <Upload size={13} />
             Cargar archivo
@@ -218,6 +261,37 @@ export default function ResourcesView() {
           </div>
         </div>
       </div>
+
+      {/* Filter panel */}
+      {showFilters && (
+        <div style={{ margin: '0 26px 0', padding: '14px 16px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tipo de archivo</span>
+            {hasActiveFilters && (
+              <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '2px 8px', height: 'auto' }} onClick={clearFilters}>
+                <X size={11} /> Limpiar filtros
+              </button>
+            )}
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {TYPE_FILTER_GROUPS.map(({ label, types }) => {
+              const isActive = types.some(t => activeTypes.includes(t));
+              const count = resources.filter(r => types.includes(r.type)).length;
+              return (
+                <button
+                  key={label}
+                  onClick={() => toggleType(types)}
+                  className="tag"
+                  style={isActive ? { background: 'var(--accent-dim)', borderColor: 'var(--border-accent)', color: 'var(--accent-light)', fontWeight: 600 } : {}}
+                >
+                  {label}
+                  <span style={{ opacity: 0.6, fontSize: '10px' }}>({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Toolbar */}
       <div className="resources-toolbar">
