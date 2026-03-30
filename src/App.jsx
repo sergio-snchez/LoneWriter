@@ -56,6 +56,10 @@ export default function App() {
                    }
                  }
                });
+               // Stamp lw_last_cloud_sync with the cloud's timestamp so that
+               // after reload the Electron app knows it's already in sync with
+               // this version and won't trigger the conflict modal again.
+               localStorage.setItem('lw_last_cloud_sync', date);
                window.location.reload();
              }
           } catch (err) {

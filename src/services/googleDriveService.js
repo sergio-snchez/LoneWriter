@@ -34,29 +34,29 @@ export const GoogleDriveService = {
         // --- FLUJO ESPECIAL PARA ELECTRON ---
         if (isElectron) {
           const { ipcRenderer } = window.require('electron');
-          
+
           // Escuchar éxito una sola vez
           ipcRenderer.once('google-auth-success', (event, { access_token, expires_in }) => {
             accessToken = access_token;
             tokenExpiry = Date.now() + (expires_in * 1000);
-            
+
             localStorage.setItem('lw_google_access_token', accessToken);
             localStorage.setItem('lw_google_token_expiry', tokenExpiry);
-            
+
             resolve(accessToken);
           });
 
           // Disparar autenticación externa
-          ipcRenderer.send('start-google-auth', { 
-            clientId: CLIENT_ID, 
-            scopes: SCOPES 
+          ipcRenderer.send('start-google-auth', {
+            clientId: CLIENT_ID,
+            scopes: SCOPES
           });
           return;
         }
 
         // --- FLUJO ESTÁNDAR PARA WEB ---
         if (!window.google || !window.google.accounts) {
-           throw new Error('No se pudo cargar la librería de Google Identity Services.');
+          throw new Error('No se pudo cargar la librería de Google Identity Services.');
         }
 
         const client = window.google.accounts.oauth2.initTokenClient({
@@ -69,10 +69,10 @@ export const GoogleDriveService = {
             }
             accessToken = response.access_token;
             tokenExpiry = Date.now() + (response.expires_in * 1000);
-            
+
             localStorage.setItem('lw_google_access_token', accessToken);
             localStorage.setItem('lw_google_token_expiry', tokenExpiry);
-            
+
             resolve(accessToken);
           },
         });
@@ -101,10 +101,11 @@ export const GoogleDriveService = {
   findBackupFile: async () => {
     if (!GoogleDriveService.isAuthenticated()) await GoogleDriveService.authenticate();
 
-    const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILENAME}' and trashed=false`, {
-      headers: { 'Authorization': `Bearer ${accessToken}` }
-    });
-    
+    const response = await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILENAME}' and trashed=false&fields=files(id,name,modifiedTime)`,
+      { headers: { 'Authorization': `Bearer ${accessToken}` } }
+    );
+
     const data = await response.json();
     return data.files && data.files.length > 0 ? data.files[0] : null;
   },
@@ -142,7 +143,7 @@ export const GoogleDriveService = {
       });
 
       if (!response.ok) throw new Error('Error al subir a Google Drive');
-      
+
       const result = await response.json();
       return result;
     } catch (error) {
@@ -166,7 +167,7 @@ export const GoogleDriveService = {
       });
 
       if (!response.ok) throw new Error('Error al descargar de Google Drive');
-      
+
       return await response.json();
     } catch (error) {
       console.error('[GoogleDrive] Download error:', error);
