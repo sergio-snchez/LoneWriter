@@ -31,9 +31,7 @@
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
       "shortcutName": "LoneWriter",
-      "runAfterFinish": true,
-      "displayLanguageSelection": true,
-      "installerHeaderIcon": "public/pwa-512x512.png"
+      "runAfterFinish": true
     }
   },
   "keywords": [],
