@@ -97,7 +97,31 @@ export const NovelProvider = ({ children }) => {
     
     setCloudSyncStatus('syncing');
     try {
-      // Get the full database export
+      // ── SAFETY CHECK: Verify cloud isn't newer before uploading ──────────
+      // This prevents overwriting a backup made from another device/session.
+      if (GoogleDriveService.isAuthenticated()) {
+        const cloudFile = await GoogleDriveService.findBackupFile();
+        if (cloudFile && cloudFile.modifiedTime) {
+          const cloudDate = new Date(cloudFile.modifiedTime);
+          // lastCloudSync is the timestamp of OUR last successful upload.
+          // If Drive was modified AFTER our last upload, another source wrote it.
+          const localSyncDate = lastCloudSync ? new Date(lastCloudSync) : new Date(0);
+
+          if (cloudDate > localSyncDate) {
+            console.warn('[LoneWriter] La nube tiene datos más recientes. Abortando subida para evitar sobreescribir.');
+            setCloudSyncStatus('idle');
+            setPendingSync(false);
+            // Surface the "restore from cloud?" dialog
+            window.dispatchEvent(new CustomEvent('cloud-version-available', {
+              detail: { date: cloudFile.modifiedTime, id: cloudFile.id }
+            }));
+            return;
+          }
+        }
+      }
+      // ─────────────────────────────────────────────────────────────────────
+
+      // Build the full database export
       const data = {
         version: 1,
         exportedAt: new Date().toISOString(),
