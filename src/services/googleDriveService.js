@@ -23,10 +23,40 @@ export const GoogleDriveService = {
    * Returns a promise that resolves with the access token
    */
   authenticate: () => {
+    const isElectron = window.navigator.userAgent.includes('Electron') || (window.process && window.process.versions && window.process.versions.electron);
+
     return new Promise((resolve, reject) => {
       try {
         if (!CLIENT_ID) {
           throw new Error('Configuración de Google Drive no encontrada (falta Client ID)');
+        }
+
+        // --- FLUJO ESPECIAL PARA ELECTRON ---
+        if (isElectron) {
+          const { ipcRenderer } = window.require('electron');
+          
+          // Escuchar éxito una sola vez
+          ipcRenderer.once('google-auth-success', (event, { access_token, expires_in }) => {
+            accessToken = access_token;
+            tokenExpiry = Date.now() + (expires_in * 1000);
+            
+            localStorage.setItem('lw_google_access_token', accessToken);
+            localStorage.setItem('lw_google_token_expiry', tokenExpiry);
+            
+            resolve(accessToken);
+          });
+
+          // Disparar autenticación externa
+          ipcRenderer.send('start-google-auth', { 
+            clientId: CLIENT_ID, 
+            scopes: SCOPES 
+          });
+          return;
+        }
+
+        // --- FLUJO ESTÁNDAR PARA WEB ---
+        if (!window.google || !window.google.accounts) {
+           throw new Error('No se pudo cargar la librería de Google Identity Services.');
         }
 
         const client = window.google.accounts.oauth2.initTokenClient({
@@ -38,7 +68,6 @@ export const GoogleDriveService = {
               return;
             }
             accessToken = response.access_token;
-            // Response has expires_in (seconds)
             tokenExpiry = Date.now() + (response.expires_in * 1000);
             
             localStorage.setItem('lw_google_access_token', accessToken);
