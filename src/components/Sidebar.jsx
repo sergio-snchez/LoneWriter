@@ -80,7 +80,7 @@ export default function Sidebar({ active, onNavigate, collapsed, onToggle }) {
       {/* Bottom spacer / version */}
       {!collapsed && (
         <div className="sidebar__footer">
-          <span className="sidebar__version">LoneWriter v1.1-cloud · Sergio Sánchez</span>
+          <span className="sidebar__version">LoneWriter v1.2-cloud · Sergio Sánchez</span>
         </div>
       )}
     </aside>

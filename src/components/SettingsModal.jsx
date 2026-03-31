@@ -119,7 +119,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
                 <div className="settings-section" style={{ marginTop: '10px' }}>
                   <div className="sync-toggle-group">
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      <label>Sincronización automática (v1.1)</label>
+                      <label>Sincronización automática (v1.2)</label>
                       <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Protección activa en tiempo real contra limpieza de caché</span>
                     </div>
                     <input 
@@ -203,7 +203,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
               <span className="settings-section__title">Información de la Aplicación</span>
               <div className="settings-info-grid">
                 <span className="settings-info-label">Versión</span>
-                <span className="settings-info-value">1.1-cloud</span>
+                <span className="settings-info-value">1.2-cloud</span>
                 <span className="settings-info-label">Base de Datos</span>
                 <span className="settings-info-value">IndexedDB (Dexie.js)</span>
                 <span className="settings-info-label">Plataforma</span>
