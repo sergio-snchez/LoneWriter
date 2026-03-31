@@ -179,7 +179,7 @@ export default function App() {
 
             <footer style={{ marginTop: 'auto', paddingTop: '60px', paddingBottom: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
               <p style={{ margin: 0, fontSize: '13px' }}>
-                LoneWriter v1.0
+                LoneWriter v1.2-cloud
               </p>
               <p style={{ margin: '4px 0 0 0', fontSize: '12px', opacity: 0.7 }}>
                 Diseñado y desarrollado con ♥ por <strong>Sergio Sánchez</strong> con Antigravity.
