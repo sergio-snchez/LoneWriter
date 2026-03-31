@@ -1,16 +1,14 @@
-# LoneWriter v1.1-cloud 🖋️ (Beta)
+# LoneWriter v1.2-cloud 🖋️ (Stable)
 
 ![LoneWriter Banner](banner-lonewriter.png)
 
-> **Tu compañero inteligente para escribir grandes historias.**
+> **Tu compañero inteligente para escribir grandes historias, ahora puramente en la nube y optimizado como PWA.**
 >
-> 🌐 **Versión Web/PWA:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
->
-> 💻 **Versión de Escritorio (Windows):** [Descargar Instalador (.exe)](https://github.com/sergio-snchez/LoneWriter/releases/latest)
+> 🌐 **Acceso Web:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
 >
 > ☕ **Apoya el proyecto:** [Invítame a un café](https://buymeacoffee.com/sergio.snchez)
 
-LoneWriter es una aplicación minimalista y potente diseñada para escritores que buscan un entorno zen pero con capacidades de inteligencia artificial de última generación. Gestiona tu estructura narrativa, crea un compendio detallado de tu mundo y recibe ayuda de asistentes literarios expertos, todo en un solo lugar.
+LoneWriter es una aplicación minimalista y potente diseñada para escritores que buscan un entorno zen pero con capacidades de inteligencia artificial de última generación. Gestiona tu estructura narrativa, crea un compendio detallado de tu mundo y recibe ayuda de asistentes literarios expertos, todo desde tu navegador o instalado como una aplicación nativa gracias a su tecnología PWA.
 
 ## ✨ Características Principales
 
@@ -19,34 +17,33 @@ LoneWriter es una aplicación minimalista y potente diseñada para escritores qu
 - **Enfoque Zen:** Interfaz limpia diseñada para minimizar las distracciones y maximizar la creatividad.
 - **Estadísticas en Tiempo Real:** Controla tu progreso de palabras y objetivos diarios.
 
-### 🧠 Asistente de IA Integrado
+### 🧠 Asistente de IA Integrado (Oracle)
 - **Múltiples Modelos:** Soporte para Gemini, GPT-4o, Claude 3.5 y modelos locales (LM Studio/Ollama).
 - **Herramientas Literarias:** Reescribe escenas, ajusta el tono, mejora el ritmo o cambia el punto de vista (POV) con un clic.
-- **Debate Creativo:** Interactúa con agentes especializados (Editor, Crítico, Corrector) para pulir tu manuscrito.
+- **Búsqueda Semántica Local:** Integra tu lore directamente en las consultas de IA para un contexto perfecto sin salir de la app (vía Transformers.js y Orama).
 
 ### 📚 Compendio y Lore
 - **Biblioteca de Personajes:** Fichas detalladas con rasgos, motivaciones y arcos.
 - **Construcción de Mundo:** Gestiona lugares, objetos clave y reglas de tu universo.
 - **Base de Conocimiento:** Sube archivos de referencia (PDF, TXT, MD) para que la IA los use como contexto.
 
-### 💾 Portabilidad y Sincronización en la Nube **(¡Novedad!)**
-- **Cloud Sync:** Conexión nativa con **Google Drive** para respaldos automáticos y persistencia contra borrado de caché.
-- **Sin Costes Ocultos:** Tus datos son tuyos. Se guardan localmente (IndexedDB) y opcionalmente en tu propio espacio personal de Google.
-- **Exportación Versátil:** Descarga tu proyecto completo en formato `.lwrt` o genera un documento de Word (`.docx`) listo para enviar a editoriales.
-- **Multiplataforma:** Úsalo como aplicación de escritorio (Electron), instálalo como PWA o accede vía web.
+### 💾 Portabilidad y Sincronización
+- **Cloud Sync:** Conexión nativa con **Google Drive** para respaldos automáticos y persistencia total.
+- **Privacidad Primero:** Tus datos se guardan localmente (IndexedDB) y opcionalmente en tu propio espacio personal de Google.
+- **Exportación Versátil:** Descarga tu proyecto completo en formato `.lwrt` o genera un documento de Word (`.docx`).
 
 ## 🛠️ Tecnologías
 
-- **Frontend:** React + Vite
-- **Base de Datos:** Dexie.js (IndexedDB)
-- **Estilos:** Vanilla CSS (Aesthetic Minimalist)
-- **Escritorio:** Electron
-- **Despliegue:** Vercel (PWA ready)
-- **Iconos:** Lucide React
+- **Core:** React + Vite
+- **Base de Datos:** Dexie.js (IndexedDB) + Orama (Búsqueda Vectorial)
+- **PWA:** Vite PWA Plugin (Service Workers, Offline support)
+- **IA Local:** Transformers.js (Embeddings)
+- **Sincronización:** Google Drive API (GSI)
+- **Despliegue:** Vercel
 
-## 🚀 Instalación y Desarrollo
+## 🚀 Instalación y Desarrollo Local
 
-Para ejecutar el proyecto localmente:
+Si deseas probar LoneWriter en tu propio entorno:
 
 1. Clona el repositorio:
    ```bash
@@ -60,9 +57,9 @@ Para ejecutar el proyecto localmente:
    ```bash
    npm run dev
    ```
-4. Para la versión de escritorio (Electron):
+4. Construye la versión de producción:
    ```bash
-   npm run electron:dev
+   npm run build
    ```
 
 ## 📜 Créditos
@@ -70,4 +67,4 @@ Para ejecutar el proyecto localmente:
 Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
 
 ---
-*LoneWriter v1.1-cloud - Tu obra, siempre protegida y asistida por IA.*
+*LoneWriter v1.2-cloud - Tu obra, siempre protegida y asistida por IA.*

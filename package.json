@@ -1,38 +1,10 @@
 {
   "name": "lonewriter",
-  "version": "1.1.0",
-  "main": "electron/main.js",
+  "version": "1.2.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "npm run build && electron-builder"
-  },
-  "build": {
-    "appId": "com.lonewriter.app",
-    "productName": "LoneWriter",
-    "directories": {
-      "output": "dist-electron"
-    },
-    "files": [
-      "dist/**/*",
-      "electron/main.js"
-    ],
-    "win": {
-      "target": "nsis",
-      "icon": "public/pwa-512x512.png",
-      "artifactName": "LoneWriter Setup v1.1-cloud.exe"
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": "always",
-      "createStartMenuShortcut": true,
-      "shortcutName": "LoneWriter",
-      "runAfterFinish": true
-    }
+    "preview": "vite preview"
   },
   "keywords": [],
   "author": "",
@@ -56,13 +28,9 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.0.0",
-    "concurrently": "^9.2.1",
-    "electron": "^41.1.0",
-    "electron-builder": "^26.8.1",
     "sharp": "^0.34.5",
     "vite": "^7.3.1",
     "vite-plugin-node-polyfills": "^0.25.0",
-    "vite-plugin-pwa": "^1.2.0",
-    "wait-on": "^9.0.4"
+    "vite-plugin-pwa": "^1.2.0"
   }
 }
