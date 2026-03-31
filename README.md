@@ -57,10 +57,6 @@ Si deseas probar LoneWriter en tu propio entorno:
    ```bash
    npm run dev
    ```
-4. Construye la versión de producción:
-   ```bash
-   npm run build
-   ```
 
 ## 📜 Créditos
 
