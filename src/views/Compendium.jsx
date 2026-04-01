@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   Users, MapPin, Package, BookOpen, Star, ExternalLink,
   Search, Filter, ChevronRight, Plus, Tag, PenLine, Trash2, X
 } from 'lucide-react'
 import { useNovel } from '../context/NovelContext'
 import { useModal } from '../context/ModalContext'
+import { extractKeywords, TABLE_CONFIG } from '../services/compendiumSearch'
 import './Compendium.css'
 
 /* ---- Curated Color Palette ---- */
@@ -692,6 +693,45 @@ export default function CompendiumView() {
     setIsPanelOpen(false);
   };
 
+  const matchesQuery = (item) => {
+    if (!query) return true;
+    const config = TABLE_CONFIG[activeSection];
+    if (!config) return true;
+    const keywords = extractKeywords(query);
+    if (keywords.length === 0) {
+      const lowerQuery = query.toLowerCase();
+      const nameField = config.nameField;
+      if (item[nameField]?.toLowerCase().includes(lowerQuery)) return true;
+      return false;
+    }
+    let totalMatches = 0;
+    for (const field of config.searchableFields) {
+      const value = item[field];
+      if (Array.isArray(value)) {
+        for (const v of value) {
+          if (typeof v === 'string') {
+            for (const kw of keywords) {
+              if (v.toLowerCase().includes(kw)) totalMatches++;
+            }
+          } else if (typeof v === 'object' && v !== null) {
+            for (const val of Object.values(v)) {
+              if (typeof val === 'string') {
+                for (const kw of keywords) {
+                  if (val.toLowerCase().includes(kw)) totalMatches++;
+                }
+              }
+            }
+          }
+        }
+      } else if (typeof value === 'string') {
+        for (const kw of keywords) {
+          if (value.toLowerCase().includes(kw)) totalMatches++;
+        }
+      }
+    }
+    return totalMatches > 0;
+  };
+
   return (
     <div className="compendium-view">
       {/* Left column – section tabs */}
@@ -746,7 +786,7 @@ export default function CompendiumView() {
           <div className="search-bar" style={{ flex: 1, maxWidth: 320 }}>
             <Search size={14} color="var(--text-muted)" />
             <input
-              placeholder={`Buscar en ${SECTIONS.find(s=>s.id===activeSection)?.label.toLowerCase()}...`}
+              placeholder={`Buscar en ${SECTIONS.find(s=>s.id===activeSection)?.label.toLowerCase()} (nombre, descripción, tags)...`}
               value={query}
               onChange={e => setQuery(e.target.value)}
               id="compendium-search-input"
@@ -797,22 +837,22 @@ export default function CompendiumView() {
         {/* Cards */}
         <div className="compendium-cards">
           {activeSection === 'characters' && characters
-            .filter(c => !query || c.name.toLowerCase().includes(query.toLowerCase()))
+            .filter(matchesQuery)
             .filter(matchesFilters)
             .map(c => <CharacterCard key={c.id} char={c} onEdit={handleEdit} onDelete={handleDelete} />)}
 
           {activeSection === 'locations' && locations
-            .filter(l => !query || l.name.toLowerCase().includes(query.toLowerCase()))
+            .filter(matchesQuery)
             .filter(matchesFilters)
             .map(l => <LocationCard key={l.id} loc={l} onEdit={handleEdit} onDelete={handleDelete} />)}
 
           {activeSection === 'objects' && objects
-            .filter(o => !query || o.name.toLowerCase().includes(query.toLowerCase()))
+            .filter(matchesQuery)
             .filter(matchesFilters)
             .map(o => <ObjectCard key={o.id} obj={o} onEdit={handleEdit} onDelete={handleDelete} />)}
 
           {activeSection === 'lore' && lore
-            .filter(e => !query || e.title.toLowerCase().includes(query.toLowerCase()))
+            .filter(matchesQuery)
             .filter(matchesFilters)
             .map(e => <LoreCard key={e.id} entry={e} onEdit={handleEdit} onDelete={handleDelete} />)}
             

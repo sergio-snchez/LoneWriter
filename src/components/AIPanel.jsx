@@ -3,12 +3,14 @@ import { Sparkles, MessageSquare, X, ChevronRight, ChevronLeft,
   Wand2, Send, RefreshCw, Copy, Check, RotateCcw, Trash2,
   User, Pencil, AlertTriangle, CheckCheck, Bot,
   Lightbulb, Zap, AlignLeft, Type, Minimize2, Maximize2,
-  ChevronDown, MoreHorizontal, ThumbsUp, ThumbsDown, Key, Save
+  ChevronDown, MoreHorizontal, ThumbsUp, ThumbsDown, Key, Save, BookOpen, Eye, Loader2
 } from 'lucide-react'
 import { useAI } from '../context/AIContext'
 import { AIService } from '../services/aiService'
 import { useNovel } from '../context/NovelContext'
 import { useModal } from '../context/ModalContext'
+import { createDebouncedSearch } from '../services/compendiumSearch'
+import { extractKeywords, searchCompendium, formatSearchResults } from '../services/compendiumSearch'
 import './AIPanel.css'
 
 // ─── Mock data ────────────────────────────────────────────────
@@ -100,7 +102,7 @@ function AgentAvatar({ agentId, size = 28 }) {
 function RewriteTab({ activeScene }) {
   const { 
     selection, provider, apiKey, localBaseUrl, prompts, currentModel,
-    lastRewrite, setLastRewrite, updatePrompt 
+    lastRewrite, setLastRewrite, saveLastRewrite, updatePrompt 
   } = useAI();
   const { resources } = useNovel();
   const { openModal } = useModal();
@@ -138,7 +140,7 @@ function RewriteTab({ activeScene }) {
         pov: activeScene?.pov,
         knowledgeBase
       });
-      setLastRewrite(result);
+      saveLastRewrite(result, activeGoal, instruction, selection);
     } catch (error) {
       openModal('confirm', {
         title: 'Error de IA',
@@ -155,7 +157,6 @@ function RewriteTab({ activeScene }) {
     if (!lastRewrite) return;
     const event = new CustomEvent('ai-apply-rewrite', { detail: lastRewrite });
     window.dispatchEvent(event);
-    // Limpiar el resultado después de aplicar para evitar duplicados y cerrar la vista de resultado
     setLastRewrite('');
     setInstruction('');
   };
@@ -250,10 +251,6 @@ function RewriteTab({ activeScene }) {
 
       {/* Actions */}
       <div className="rewrite-actions">
-        <button className="btn btn-ghost" id="rewrite-clear-btn" onClick={() => { setInstruction(''); setLastRewrite(''); }}>
-          <RotateCcw size={12} />
-          Limpiar
-        </button>
         <button 
           className="btn btn-primary rewrite-actions__main" 
           id="rewrite-submit-btn" 
@@ -297,6 +294,7 @@ function RewriteTab({ activeScene }) {
           </div>
           <div className="rewrite-result__apply">
             <button className="btn btn-ghost" style={{ flex: 1 }} id="rewrite-discard-btn" onClick={() => setLastRewrite('')}>
+              <Trash2 size={12} />
               Descartar
             </button>
             <button className="btn btn-primary" style={{ flex: 1 }} id="rewrite-apply-btn" onClick={handleApply}>
@@ -319,17 +317,21 @@ function DebateTab({ activeScene }) {
     toggleDebateAgent, updateDebateAgent, addDebateAgent, removeDebateAgent,
     debateSessions, activeSessionId, switchDebateSession, renameDebateSession, deleteDebateSession, addDebateSession
   } = useAI()
-  const { resources } = useNovel()
+  const { resources, activeNovel, acts } = useNovel()
   const { openModal } = useModal()
 
   const [input, setInput] = useState('')
-  const [loadingAgents, setLoadingAgents] = useState({}) // { agentId: true/false }
-  const [view, setView] = useState('chat') // 'chat' | 'agents'
-  const [editingAgent, setEditingAgent] = useState(null) // agent id being edited
-  const [newAgent, setNewAgent] = useState(null) // draft for new agent
+  const [loadingAgents, setLoadingAgents] = useState({})
+  const [view, setView] = useState('chat')
+  const [editingAgent, setEditingAgent] = useState(null)
+  const [expandedMessages, setExpandedMessages] = useState(new Set())
+  const [newAgent, setNewAgent] = useState(null)
   const [useSceneContext, setUseSceneContext] = useState(true)
+  const [useCompendiumContext, setUseCompendiumContext] = useState(true)
+  const [compendiumContext, setCompendiumContext] = useState('')
   const [rounds, setRounds] = useState(1)
   const messagesEndRef = useRef(null)
+  const debouncedSearchRef = useRef(createDebouncedSearch(600))
 
   // Session Dropdown State
   const [sessionsMenuOpen, setSessionsMenuOpen] = useState(false)
@@ -355,6 +357,16 @@ function DebateTab({ activeScene }) {
   const isAnyLoading = Object.values(loadingAgents).some(Boolean)
   const activeSessionTitle = debateSessions.find(s => s.id === activeSessionId)?.title || 'Nuevo debate';
 
+  const getSceneChapterLabel = (scene) => {
+    if (!scene || !acts) return null
+    for (const act of acts) {
+      if (!act.chapters) continue
+      const ch = act.chapters.find(c => c.id === scene.chapterId)
+      if (ch) return { chapterNumber: ch.number, sceneTitle: scene.title }
+    }
+    return null
+  }
+
   const handleSend = async () => {
     if (!input.trim() || isAnyLoading) return
     const text = input.trim()
@@ -367,7 +379,24 @@ function DebateTab({ activeScene }) {
     }
     addDebateMessage(userMsg)
 
-    // Fire each active agent sequentially for N rounds
+    let compendiumInfo = ''
+    if (useCompendiumContext && activeNovel) {
+      try {
+        const searchResult = await debouncedSearchRef.current(text, activeNovel.id)
+        if (searchResult?.formatted) {
+          compendiumInfo = `\n\n--- INFORMACIÓN DEL COMPENDIO (contexto relevante) ---\n${searchResult.formatted}`
+          setCompendiumContext(searchResult.formatted)
+        } else {
+          setCompendiumContext('')
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('[LoneWriter] Error buscando en compendio:', err)
+        }
+        setCompendiumContext('')
+      }
+    }
+
     const historyWithUser = [...debateHistory, userMsg]
     for (let r = 0; r < rounds; r++) {
       for (const agent of activeAgents) {
@@ -395,7 +424,8 @@ function DebateTab({ activeScene }) {
             : null;
 
           const response = await AIService.agentChat(agent, historyWithUser, {
-            provider, apiKey, model: currentModel, localBaseUrl, sceneContent, pov, roundInstruction, knowledgeBase
+            provider, apiKey, model: currentModel, localBaseUrl, sceneContent, pov, roundInstruction, knowledgeBase,
+            compendiumContext: compendiumInfo || null
           })
 
           const agentMsg = {
@@ -543,7 +573,11 @@ function DebateTab({ activeScene }) {
               <div className="debate-sessions-dropdown">
                 <button 
                   className="debate-session-new-btn"
-                  onClick={() => { addDebateSession(); setSessionsMenuOpen(false); }}
+                  onClick={() => {
+                    const sceneInfo = getSceneChapterLabel(activeScene)
+                    addDebateSession(null, sceneInfo)
+                    setSessionsMenuOpen(false)
+                  }}
                 >
                   <span>+ Nuevo debate</span>
                 </button>
@@ -630,6 +664,13 @@ function DebateTab({ activeScene }) {
           >
             <AlignLeft size={13} />
           </button>
+          <button
+            className={`debate-context-btn ${useCompendiumContext ? 'debate-context-btn--active' : ''}`}
+            onClick={() => setUseCompendiumContext(p => !p)}
+            title={useCompendiumContext ? 'Desactivar contexto del Compendio' : 'Activar contexto del Compendio'}
+          >
+            <BookOpen size={13} />
+          </button>
           <button className="debate-manage-btn" onClick={() => setView('agents')} title="Gestionar participantes">
             <MoreHorizontal size={15} />
           </button>
@@ -687,6 +728,10 @@ function DebateTab({ activeScene }) {
             )
           }
           const color = msg.agentColor || '#888'
+          const text = msg.text || ''
+          const msgKey = String(msg.id)
+          const isExpanded = expandedMessages.has(msgKey)
+
           return (
             <div key={msg.id} className="debate-msg debate-msg--agent">
               <div className="debate-msg__agent-header">
@@ -697,7 +742,29 @@ function DebateTab({ activeScene }) {
                 <span className="debate-msg__time">{msg.time}</span>
               </div>
               <div className="debate-msg__bubble debate-msg__bubble--agent" style={{ borderLeftColor: color + '70' }}>
-                {msg.text}
+                <div className={`debate-msg__text ${!isExpanded ? 'debate-msg__text--clamped' : ''}`}>
+                  {text}
+                </div>
+                {!isExpanded && (
+                  <button
+                    className="debate-msg__read-more"
+                    onClick={() => setExpandedMessages(prev => new Set(prev).add(msgKey))}
+                  >
+                    Leer más
+                  </button>
+                )}
+                {isExpanded && (
+                  <button
+                    className="debate-msg__read-more"
+                    onClick={() => setExpandedMessages(prev => {
+                      const next = new Set(prev);
+                      next.delete(msgKey);
+                      return next;
+                    })}
+                  >
+                    Mostrar menos
+                  </button>
+                )}
               </div>
             </div>
           )
@@ -795,11 +862,363 @@ function AgentEditForm({ agent, colors, onSave, onCancel, isNew, canDelete, onDe
   )
 }
 
-// ─── Main AI Panel ────────────────────────────────────────────
-export default function AIPanel({ open, onClose, activeScene, onOpenSettings }) {
+// ─── Tab: Oracle ──────────────────────────────────────────────
+function OracleTab({ activeScene }) {
+  const { provider, apiKey, localBaseUrl, currentModel, oracleHistory, addOracleEntry, clearOracleHistory, deleteOracleEntry, oracleStatus, checkOracleResponse, resetOracleStatus } = useAI()
+  const { activeNovel, acts } = useNovel()
   const { openModal } = useModal()
-  const [activeTab, setActiveTab] = useState('rewrite')
+
+  const [isChecking, setIsChecking] = useState(false)
+  const [error, setError] = useState('')
+  const [copiedId, setCopiedId] = useState(null)
+  const [compContextUsed, setCompContextUsed] = useState('')
+  const [checkedEntries, setCheckedEntries] = useState(new Set())
+  const [expandedEntries, setExpandedEntries] = useState(new Set())
+  const historyEndRef = useRef(null)
+
+  const getChapterInfo = (chapterId) => {
+    if (!chapterId || !acts) return null
+    for (const act of acts) {
+      if (!act.chapters) continue
+      const ch = act.chapters.find(c => c.id === chapterId)
+      if (ch) return { number: ch.number, title: ch.title }
+    }
+    return null
+  }
+
+  useEffect(() => {
+    historyEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [oracleHistory])
+
+  const stripJsonBlock = (text) => {
+    return text.replace(/\{[\s\S]*"hasContradiction"[\s\S]*\}/g, '').trim()
+  }
+
+  const handleCheck = async () => {
+    if (!activeScene?.content) {
+      setError('No hay texto en la escena actual para analizar.')
+      return
+    }
+    if (!apiKey && provider !== 'local') {
+      setError('Se requiere una clave API configurada. Ve a Configuración > IA.')
+      return
+    }
+
+    setIsChecking(true)
+    setError('')
+
+    try {
+      const plainText = activeScene.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+      if (!plainText || plainText.length < 10) {
+        setError('El texto es demasiado corto para un análisis significativo.')
+        setIsChecking(false)
+        return
+      }
+
+      let compendiumInfo = ''
+      if (activeNovel) {
+        const keywords = extractKeywords(plainText)
+        const compResults = await searchCompendium(keywords, activeNovel.id)
+        compendiumInfo = formatSearchResults(compResults)
+      }
+      setCompContextUsed(compendiumInfo)
+
+      const oraclePrompt = `Actúa como el Oráculo de LoneWriter, un asistente muy crítico cuya función es validar la coherencia del texto.
+Tu único objetivo es detectar contradicciones entre el texto del usuario y las fichas del Compendio que te proporciono.
+Compara CADA afirmación del texto contra CADA ficha del Compendio. Presta especial atención a:
+- Roles, ocupaciones y descripciones de personajes
+- Relaciones entre personajes
+- Propiedades de objetos (origen, dueño, tipo, importancia)
+- Características de localizaciones (tipo, clima, descripción)
+- Datos del Lore (categorías, resúmenes, hechos establecidos)
+Si el usuario dice algo que contradice el Compendio (ej: dice que una moto es de gasolina cuando el Lore dice que es eléctrica), debes corregirle de forma profesional y educada.
+Si no hay contradicciones, simplemente di que todo está en orden, pero con tu habitual tono profesional.
+Responde siempre en español y de forma concisa (máximo 3-4 párrafos).
+Cita específicamente qué parte del texto contradice qué ficha del Compendio cuando encuentres un error.
+No seas complaciente: tu trabajo es encontrar errores, no halagar al autor.`
+
+      const fullPrompt = `${oraclePrompt}
+
+--- TEXTO DEL COMPENDIO (fichas relevantes encontradas) ---
+${compendiumInfo || 'No se encontraron fichas relevantes del Compendio para este texto.'}
+
+--- TEXTO A ANALIZAR ---
+${plainText}
+
+--- TU RESPUESTA ---`
+
+      const response = await AIService.rewrite(fullPrompt, 'style', '', {
+        provider,
+        apiKey,
+        model: currentModel,
+        localBaseUrl,
+      })
+
+      const parsed = checkOracleResponse(response)
+
+      const chapterInfo = getChapterInfo(activeScene.chapterId)
+
+      addOracleEntry({
+        text: response,
+        time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+        sceneId: activeScene.id,
+        sceneTitle: activeScene.title,
+        chapterId: activeScene.chapterId || null,
+        chapterNumber: chapterInfo?.number || null,
+        compendiumUsed: compendiumInfo,
+      })
+    } catch (err) {
+      setError(`Error al consultar al Oráculo: ${err.message}`)
+    } finally {
+      setIsChecking(false)
+    }
+  }
+
+  const handleCopy = (id) => {
+    const entry = oracleHistory.find(e => e.id === id)
+    if (!entry) return
+    navigator.clipboard.writeText(stripJsonBlock(entry.text))
+    setCopiedId(id)
+    setTimeout(() => setCopiedId(null), 2000)
+  }
+
+  const handleClear = () => {
+    if (oracleHistory.length === 0) return
+    openModal('confirm', {
+      title: 'Limpiar historial del Oráculo',
+      message: '¿Estás seguro de que quieres borrar todos los veredictos del Oráculo?',
+      isDanger: true,
+      confirmLabel: 'Limpiar Todo',
+      onConfirm: () => clearOracleHistory()
+    })
+  }
+
+  const handleDeleteEntry = (id) => {
+    deleteOracleEntry(id)
+    setCheckedEntries(prev => {
+      const next = new Set(prev)
+      next.delete(id)
+      return next
+    })
+    setExpandedEntries(prev => {
+      const next = new Set(prev)
+      next.delete(id)
+      return next
+    })
+  }
+
+  const toggleChecked = (id) => {
+    setCheckedEntries(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleExpanded = (id) => {
+    setExpandedEntries(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  return (
+    <div className="oracle-tab">
+      {/* Traffic Light Indicator */}
+      <div className="oracle-tab__traffic-light">
+        <div className={`oracle-traffic-light oracle-traffic-light--${oracleStatus.status}`}>
+          <div className="oracle-traffic-light__dot" />
+          <span className="oracle-traffic-light__label">
+            {oracleStatus.status === 'idle' && 'Párrafo coherente'}
+            {oracleStatus.status === 'suspicious' && (
+              <span className="oracle-entities-wrapper">
+                <span className="oracle-entities-label">Coincidencias halladas en el Compendio:</span>
+                <span className="oracle-entities-list">
+                  {oracleStatus.detectedEntities.map((e, i) => (
+                    <span key={e.name} className="oracle-entity-tag">
+                      {e.name}
+                    </span>
+                  ))}
+                </span>
+              </span>
+            )}
+            {oracleStatus.status === 'error' && (
+              <span className="oracle-entities-wrapper">
+                <span className="oracle-entities-label">Coincidencias halladas en el Compendio:</span>
+                <span className="oracle-entities-list">
+                  {oracleStatus.detectedEntities.map((e, i) => (
+                    <span key={e.name} className="oracle-entity-tag oracle-entity-tag--error">
+                      {e.name}
+                    </span>
+                  ))}
+                </span>
+              </span>
+            )}
+          </span>
+        </div>
+      </div>
+
+      {/* Scene tag */}
+      {activeScene && (
+        <span className="oracle-tab__scene-tag">
+          <Eye size={11} /> Escena: {activeScene.title}
+        </span>
+      )}
+
+      {/* Error */}
+      {error && (
+        <div className="oracle-tab__error">
+          <AlertTriangle size={14} />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* History */}
+      <div className="oracle-tab__history">
+        {oracleHistory.map(entry => {
+          const isExpanded = expandedEntries.has(entry.id)
+          const isChecked = checkedEntries.has(entry.id)
+          const cleanText = stripJsonBlock(entry.text)
+          return (
+            <div key={entry.id} className={`oracle-tab__entry ${isChecked ? 'oracle-tab__entry--checked' : ''}`}>
+              <div className="oracle-tab__entry-header">
+                <div className="oracle-tab__entry-left">
+                  <button
+                    className="oracle-tab__check-btn"
+                    onClick={() => toggleChecked(entry.id)}
+                    title={isChecked ? 'Marcar como pendiente' : 'Marcar como corregido'}
+                  >
+                    {isChecked ? <CheckCheck size={14} /> : <Check size={14} />}
+                  </button>
+                  <div className="oracle-tab__entry-info">
+                    <div className="oracle-tab__entry-label">
+                      <Eye size={12} />
+                      Veredicto del Oráculo
+                    </div>
+                    {(entry.chapterNumber || entry.sceneTitle) && (
+                      <span className="oracle-tab__entry-location">
+                        {entry.chapterNumber ? `Cap. ${entry.chapterNumber}` : 'Sin cap.'} / {entry.sceneTitle || 'Sin escena'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="oracle-tab__entry-meta">
+                  <span className="oracle-tab__entry-time">{entry.time}</span>
+                  <button
+                    className="oracle-tab__action-btn"
+                    onClick={() => handleCopy(entry.id)}
+                    title="Copiar"
+                  >
+                    {copiedId === entry.id ? <Check size={12} /> : <Copy size={12} />}
+                  </button>
+                  <button
+                    className="oracle-tab__action-btn oracle-tab__action-btn--delete"
+                    onClick={() => handleDeleteEntry(entry.id)}
+                    title="Eliminar veredicto"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              </div>
+              <div className={`oracle-tab__entry-text ${isExpanded ? 'oracle-tab__entry-text--expanded' : 'oracle-tab__entry-text--clamped'}`}>
+                {cleanText}
+              </div>
+              {cleanText.length > 300 && (
+                <button
+                  className="oracle-tab__read-more"
+                  onClick={() => toggleExpanded(entry.id)}
+                >
+                  {isExpanded ? 'Mostrar menos' : 'Leer más'}
+                </button>
+              )}
+            </div>
+          )
+        })}
+
+        {/* Loading */}
+        {isChecking && (
+          <div className="oracle-tab__entry oracle-tab__entry--loading">
+            <Loader2 size={16} className="spinner" />
+            <span>El Oráculo consulta las fichas del Compendio...</span>
+          </div>
+        )}
+
+        <div ref={historyEndRef} />
+      </div>
+
+      {/* Compendium context */}
+      {compContextUsed && (
+        <details className="oracle-tab__context-details">
+          <summary>Ver contexto del Compendio usado</summary>
+          <pre className="oracle-tab__context-pre">{compContextUsed}</pre>
+        </details>
+      )}
+
+      {/* Fixed bottom section */}
+      <div className="oracle-tab__bottom">
+        <div className="oracle-tab__intro">
+          <p><strong>El Oráculo analizará la coherencia de tu texto según las coincidencias encontradas, en base a la información del Compendio.</strong></p>
+        </div>
+        <div className="oracle-tab__actions">
+          <button
+            className="btn btn-ghost oracle-tab__clear-btn"
+            onClick={handleClear}
+            disabled={oracleHistory.length === 0}
+          >
+            <Trash2 size={12} />
+            Limpiar
+          </button>
+          <button
+            className={`btn oracle-tab__check-btn-main ${
+              oracleStatus.status === 'error' ? 'btn-danger' :
+              oracleStatus.status === 'suspicious' ? 'oracle-tab__check-btn--alert' :
+              'btn-primary'
+            }`}
+            onClick={handleCheck}
+            disabled={isChecking || !activeScene?.content}
+          >
+            {isChecking ? (
+              <>
+                <Loader2 size={13} className="spinner" />
+                Consultando...
+              </>
+            ) : oracleStatus.status === 'error' ? (
+              <>
+                <AlertTriangle size={13} />
+                Re-consultar al Oráculo
+              </>
+            ) : oracleStatus.status === 'suspicious' ? (
+              <>
+                <AlertTriangle size={13} />
+                Consultar al Oráculo
+              </>
+            ) : (
+              <>
+                <Eye size={13} />
+                Consultar al Oráculo
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Main AI Panel ────────────────────────────────────────────
+export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewrite', onOpenSettings }) {
+  const { openModal } = useModal()
+  const [activeTab, setActiveTab] = useState(defaultTab)
   const { apiKey, currentModel } = useAI()
+
+  useEffect(() => {
+    if (defaultTab && open) {
+      setActiveTab(defaultTab);
+    }
+  }, [defaultTab, open]);
 
   return (
     <>
@@ -846,7 +1265,15 @@ export default function AIPanel({ open, onClose, activeScene, onOpenSettings }) 
             onClick={() => setActiveTab('debate')}
           >
             <MessageSquare size={13} />
-            Foro de debate
+            Debate
+          </button>
+          <button
+            id="ai-tab-oracle"
+            className={`ai-panel__tab ${activeTab === 'oracle' ? 'ai-panel__tab--active' : ''}`}
+            onClick={() => setActiveTab('oracle')}
+          >
+            <Eye size={13} />
+            Oráculo
           </button>
         </div>
 
@@ -854,6 +1281,7 @@ export default function AIPanel({ open, onClose, activeScene, onOpenSettings }) 
         <div className="ai-panel__content">
           {activeTab === 'rewrite' && <RewriteTab activeScene={activeScene} />}
           {activeTab === 'debate' && <DebateTab activeScene={activeScene} />}
+          {activeTab === 'oracle' && <OracleTab activeScene={activeScene} />}
         </div>
       </div>
     </>

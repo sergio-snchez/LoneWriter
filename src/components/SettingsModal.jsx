@@ -61,6 +61,39 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
     setIsSyncing(false);
   };
 
+  const AI_PROVIDER_LINKS = {
+    google: {
+      apiKeyUrl: 'https://aistudio.google.com/apikey',
+      modelsUrl: 'https://ai.google.dev/gemini-api/docs/models/gemini',
+      apiKeyLabel: 'Obtener API Key en Google AI Studio',
+      modelsLabel: 'Ver modelos Gemini disponibles',
+    },
+    openai: {
+      apiKeyUrl: 'https://platform.openai.com/api-keys',
+      modelsUrl: 'https://platform.openai.com/docs/models',
+      apiKeyLabel: 'Obtener API Key en OpenAI',
+      modelsLabel: 'Ver modelos OpenAI disponibles',
+    },
+    anthropic: {
+      apiKeyUrl: 'https://console.anthropic.com/settings/keys',
+      modelsUrl: 'https://docs.anthropic.com/en/docs/about-claude/models/all-models',
+      apiKeyLabel: 'Obtener API Key en Anthropic',
+      modelsLabel: 'Ver modelos Claude disponibles',
+    },
+    openrouter: {
+      apiKeyUrl: 'https://openrouter.ai/keys',
+      modelsUrl: 'https://openrouter.ai/models',
+      apiKeyLabel: 'Obtener API Key en OpenRouter',
+      modelsLabel: 'Ver todos los modelos en OpenRouter',
+    },
+    local: {
+      modelsUrl: 'https://ollama.com/library',
+      modelsLabel: 'Explorar modelos en Ollama',
+      modelsUrlAlt: 'https://lmstudio.ai/models',
+      modelsLabelAlt: 'Modelos para LM Studio',
+    },
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'cloud':
@@ -168,6 +201,23 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
                   onChange={(e) => setModelForProvider(provider, e.target.value)}
                   placeholder={provider === 'local' ? 'ej: llama3.2' : 'ej: gpt-4o, gemini-1.5-pro...'}
                 />
+                <div className="ai-settings-links">
+                  {AI_PROVIDER_LINKS[provider]?.modelsUrl && (
+                    <a href={AI_PROVIDER_LINKS[provider].modelsUrl} target="_blank" rel="noopener noreferrer" className="ai-settings-link">
+                      <ExternalLink size={11} />
+                      {AI_PROVIDER_LINKS[provider].modelsLabel}
+                    </a>
+                  )}
+                  {AI_PROVIDER_LINKS[provider]?.modelsUrlAlt && (
+                    <>
+                      <span className="ai-settings-link-sep">·</span>
+                      <a href={AI_PROVIDER_LINKS[provider].modelsUrlAlt} target="_blank" rel="noopener noreferrer" className="ai-settings-link">
+                        <ExternalLink size={11} />
+                        {AI_PROVIDER_LINKS[provider].modelsLabelAlt}
+                      </a>
+                    </>
+                  )}
+                </div>
               </div>
 
               {provider === 'local' ? (
@@ -191,6 +241,14 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
                     onChange={(e) => setApiKey(e.target.value)}
                     placeholder="Pega aquí tu clave secreta..."
                   />
+                  <div className="ai-settings-links">
+                    {AI_PROVIDER_LINKS[provider]?.apiKeyUrl && (
+                      <a href={AI_PROVIDER_LINKS[provider].apiKeyUrl} target="_blank" rel="noopener noreferrer" className="ai-settings-link">
+                        <ExternalLink size={11} />
+                        {AI_PROVIDER_LINKS[provider].apiKeyLabel}
+                      </a>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

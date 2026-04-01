@@ -4,12 +4,37 @@ import {
   Bold, Italic, List, ListOrdered, Quote, 
   Heading1, Heading2, Undo, Redo, Eraser
 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useAI } from '../context/AIContext';
 import './RichEditor.css';
 
+function createDebouncedOracleScan(callback, delay = 3000) {
+  let timeoutId = null;
+  return {
+    schedule: (getParagraph) => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        const text = getParagraph();
+        callback(text);
+      }, delay);
+    },
+    cancel: () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = null;
+    },
+  };
+}
+
 export default function RichEditor({ content, onChange, placeholder }) {
-  const { setSelection } = useAI();
+  const { setSelection, setOracleText } = useAI();
+  const editorRef = useRef(null);
+  const oracleScanRef = useRef(null);
+
+  if (!oracleScanRef.current) {
+    oracleScanRef.current = createDebouncedOracleScan((text) => {
+      setOracleText(text);
+    }, 3000);
+  }
 
   const editor = useEditor({
     extensions: [
@@ -20,10 +45,21 @@ export default function RichEditor({ content, onChange, placeholder }) {
       }),
     ],
     content: content,
+    onCreate: ({ editor }) => {
+      editorRef.current = editor;
+    },
     onUpdate: ({ editor }) => {
+      editorRef.current = editor;
       onChange(editor.getHTML());
+      oracleScanRef.current.schedule(() => {
+        const ed = editorRef.current;
+        if (!ed) return '';
+        const { $from } = ed.state.selection;
+        return ed.state.doc.textBetween($from.start(), $from.end(), ' ').trim();
+      });
     },
     onSelectionUpdate: ({ editor }) => {
+      editorRef.current = editor;
       const { from, to } = editor.state.selection;
       if (from === to) {
         setSelection('');
@@ -38,6 +74,12 @@ export default function RichEditor({ content, onChange, placeholder }) {
       },
     },
   });
+
+  useEffect(() => {
+    return () => {
+      oracleScanRef.current?.cancel();
+    };
+  }, []);
 
   useEffect(() => {
     const handleApply = (e) => {

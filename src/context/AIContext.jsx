@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { db } from '../db/database';
 import { useNovel } from './NovelContext';
+import { createDebouncedEntityDetector, parseOracleResponse } from '../services/entityDetector';
 
 const AIContext = createContext();
 
@@ -76,7 +77,7 @@ export const DEFAULT_DEBATE_AGENTS = [
 ];
 
 export const AIProvider = ({ children }) => {
-  const { activeNovel } = useNovel();
+  const { activeNovel, activeScene } = useNovel();
   const [provider, setProvider] = useState(() => localStorage.getItem('ai_provider') || 'google');
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('ai_api_key') || '');
   const [localBaseUrl, setLocalBaseUrlState] = useState(() => localStorage.getItem('ai_local_base_url') || 'http://localhost:1234/v1');
@@ -91,6 +92,16 @@ export const AIProvider = ({ children }) => {
   
   const [selection, setSelection] = useState('');
   const [lastRewrite, setLastRewrite] = useState('');
+  const [oracleText, setOracleText] = useState('');
+
+  // ── Oracle History & Status (Async Dexie) ────────────────────────────────
+  const [oracleHistory, setOracleHistory] = useState([]);
+  const [oracleStatus, setOracleStatus] = useState({
+    status: 'idle',
+    detectedEntities: [],
+    lastContradiction: null,
+  });
+  const entityDetectorRef = useRef(createDebouncedEntityDetector(() => {}, 2000));
 
   // ── Debate Agents & Sessions (Async Dexie) ────────────────────────
   const [debateAgents, setDebateAgents] = useState(DEFAULT_DEBATE_AGENTS);
@@ -106,6 +117,8 @@ export const AIProvider = ({ children }) => {
         setDebateAgents(DEFAULT_DEBATE_AGENTS);
         setDebateSessions([]);
         setActiveSessionId(null);
+        setOracleHistory([]);
+        setLastRewrite('');
         return;
       }
 
@@ -146,7 +159,6 @@ export const AIProvider = ({ children }) => {
       if (sessions.length > 0) {
         setActiveSessionId(sessions[0].id);
       } else {
-        // Create an initial empty session if none exists
         const newSession = {
           novelId: activeNovel.id,
           title: 'Nuevo debate',
@@ -158,17 +170,160 @@ export const AIProvider = ({ children }) => {
         setDebateSessions([newSession]);
         setActiveSessionId(newId);
       }
+
+      // Load oracle history for this novel
+      const oracleEntries = await db.oracleEntries.where('novelId').equals(activeNovel.id).sortBy('createdAt');
+      setOracleHistory(oracleEntries);
     };
 
     loadDebateData();
   }, [activeNovel]);
 
-  // Session mutators
-  const addDebateSession = async (title = 'Nuevo debate') => {
+  // Restore last rewrite when activeScene changes
+  useEffect(() => {
+    const restoreLastRewrite = async () => {
+      if (!activeNovel || !activeScene) {
+        setLastRewrite('');
+        return;
+      }
+      const entry = await db.lastRewrite
+        .where({ novelId: activeNovel.id, sceneId: activeScene.id })
+        .first();
+      if (entry) {
+        setLastRewrite(entry.text);
+      } else {
+        setLastRewrite('');
+      }
+    };
+    restoreLastRewrite();
+  }, [activeNovel, activeScene]);
+
+  // Persisted lastRewrite
+  const saveLastRewrite = async (text, goal, instruction, originalText) => {
+    if (!activeNovel || !activeScene) return;
+    setLastRewrite(text);
+    // Delete any previous entry for this scene
+    const existing = await db.lastRewrite
+      .where({ novelId: activeNovel.id, sceneId: activeScene.id })
+      .toArray();
+    for (const e of existing) {
+      await db.lastRewrite.delete(e.id);
+    }
+    // Insert new entry
+    await db.lastRewrite.add({
+      novelId: activeNovel.id,
+      sceneId: activeScene.id,
+      text,
+      goal,
+      instruction,
+      originalText,
+      savedAt: new Date().toISOString(),
+    });
+  };
+
+  // Oracle mutators
+  const addOracleEntry = async (entry) => {
     if (!activeNovel) return;
+    const newEntry = {
+      ...entry,
+      id: undefined,
+      novelId: activeNovel.id,
+      sceneId: entry.sceneId || null,
+      createdAt: new Date().toISOString(),
+    };
+    const id = await db.oracleEntries.add(newEntry);
+    newEntry.id = id;
+    setOracleHistory(prev => [...prev, newEntry]);
+  };
+
+  const clearOracleHistory = async () => {
+    if (!activeNovel) return;
+    await db.oracleEntries.where('novelId').equals(activeNovel.id).delete();
+    setOracleHistory([]);
+  };
+
+  const deleteOracleEntry = async (entryId) => {
+    if (!activeNovel) return;
+    await db.oracleEntries.delete(entryId);
+    setOracleHistory(prev => prev.filter(e => e.id !== entryId));
+  };
+
+  // Entity detection + traffic light status (only current paragraph/selection)
+  useEffect(() => {
+    if (!activeNovel || !oracleText) {
+      setOracleStatus({ status: 'idle', detectedEntities: [], lastContradiction: null });
+      entityDetectorRef.current.cancel();
+      return;
+    }
+
+    const plainText = oracleText.trim();
+    if (plainText.length < 3) {
+      setOracleStatus({ status: 'idle', detectedEntities: [], lastContradiction: null });
+      return;
+    }
+
+    entityDetectorRef.current.immediate(plainText, activeNovel.id)
+      .then(({ detections }) => {
+        if (detections.length > 0) {
+          setOracleStatus(prev => ({
+            ...prev,
+            status: 'suspicious',
+            detectedEntities: detections,
+          }));
+        } else {
+          setOracleStatus(prev => ({
+            ...prev,
+            status: 'idle',
+            detectedEntities: [],
+          }));
+        }
+      })
+      .catch(err => {
+        if (err.name !== 'AbortError') {
+          console.error('[LoneWriter] Entity detection error:', err);
+        }
+      });
+  }, [activeNovel, oracleText]);
+
+  const markOracleContradiction = (message) => {
+    setOracleStatus(prev => ({
+      ...prev,
+      status: 'error',
+      lastContradiction: message,
+    }));
+  };
+
+  const resetOracleStatus = () => {
+    setOracleStatus({ status: 'idle', detectedEntities: [], lastContradiction: null });
+  };
+
+  const checkOracleResponse = (aiResponse) => {
+    const result = parseOracleResponse(aiResponse);
+    if (result.hasContradiction) {
+      markOracleContradiction(result.message);
+    } else {
+      setOracleStatus(prev => ({
+        ...prev,
+        status: 'idle',
+        lastContradiction: null,
+      }));
+    }
+    return result;
+  };
+
+  // Session mutators
+  const addDebateSession = async (title = null, scene = null) => {
+    if (!activeNovel) return;
+    let sessionTitle = title;
+    if (!sessionTitle && scene) {
+      sessionTitle = scene.chapterNumber ? `Cap. ${scene.chapterNumber} / ${scene.sceneTitle}` : scene.sceneTitle || 'Nuevo debate';
+    }
+    if (!sessionTitle) {
+      sessionTitle = 'Nuevo debate';
+    }
     const session = {
       novelId: activeNovel.id,
-      title,
+      title: sessionTitle,
       updatedAt: new Date().toISOString(),
       messages: []
     };
@@ -298,7 +453,10 @@ export const AIProvider = ({ children }) => {
     currentModel,
     prompts, updatePrompt, resetPrompt,
     selection, setSelection,
-    lastRewrite, setLastRewrite,
+    oracleText, setOracleText,
+    lastRewrite, setLastRewrite, saveLastRewrite,
+    oracleHistory, addOracleEntry, clearOracleHistory, deleteOracleEntry,
+    oracleStatus, checkOracleResponse, resetOracleStatus, markOracleContradiction,
     debateAgents, debateHistory,
     addDebateMessage, clearDebateHistory,
     updateDebateAgent, addDebateAgent, removeDebateAgent, toggleDebateAgent,

@@ -22,6 +22,16 @@ export default function App() {
   const [activeView, setActiveView] = useState('editor')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
+  const [aiPanelTab, setAiPanelTab] = useState('rewrite')
+
+  useEffect(() => {
+    const handleOpenOracle = () => {
+      setAiPanelTab('oracle');
+      setAiPanelOpen(true);
+    };
+    window.addEventListener('open-oracle-panel', handleOpenOracle);
+    return () => window.removeEventListener('open-oracle-panel', handleOpenOracle);
+  }, []);
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsTab, setSettingsTab] = useState('cloud')
   const [menuOpen, setMenuOpen] = useState(false)
@@ -56,9 +66,6 @@ export default function App() {
                    }
                  }
                });
-               // Stamp lw_last_cloud_sync with the cloud's timestamp so that
-               // after reload the Electron app knows it's already in sync with
-               // this version and won't trigger the conflict modal again.
                localStorage.setItem('lw_last_cloud_sync', date);
                window.location.reload();
              }
@@ -382,6 +389,7 @@ export default function App() {
           open={aiPanelOpen} 
           onClose={() => setAiPanelOpen(false)} 
           activeScene={activeScene}
+          defaultTab={aiPanelTab}
           onOpenSettings={(tab) => {
             setSettingsTab(tab || 'ia');
             setSettingsOpen(true);
