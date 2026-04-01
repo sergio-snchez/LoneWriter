@@ -1,14 +1,16 @@
-# LoneWriter v1.2-cloud 🖋️ (Stable)
+# LoneWriter v1.3-oraculo (beta) 🖋️
 
 ![LoneWriter Banner](banner-lonewriter.png)
 
-> **Tu compañero inteligente para escribir grandes historias, ahora puramente en la nube y optimizado como PWA.**
+> **Tu compañero inteligente para escribir grandes historias, ahora con capacidades de IA avanzadas y optimizado como PWA.**
 >
 > 🌐 **Acceso Web:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
 >
 > ☕ **Apoya el proyecto:** [Invítame a un café](https://buymeacoffee.com/sergio.snchez)
 
 LoneWriter es una aplicación minimalista y potente diseñada para escritores que buscan un entorno zen pero con capacidades de inteligencia artificial de última generación. Gestiona tu estructura narrativa, crea un compendio detallado de tu mundo y recibe ayuda de asistentes literarios expertos, todo desde tu navegador o instalado como una aplicación nativa gracias a su tecnología PWA.
+
+Esta versión introduce capacidades avanzadas de IA para mejorar tu proceso creativo:
 
 ## ✨ Características Principales
 
@@ -35,9 +37,8 @@ LoneWriter es una aplicación minimalista y potente diseñada para escritores qu
 ## 🛠️ Tecnologías
 
 - **Core:** React + Vite
-- **Base de Datos:** Dexie.js (IndexedDB) + Orama (Búsqueda Vectorial)
+- **Base de Datos:** Dexie.js (IndexedDB)
 - **PWA:** Vite PWA Plugin (Service Workers, Offline support)
-- **IA Local:** Transformers.js (Embeddings)
 - **Sincronización:** Google Drive API (GSI)
 - **Despliegue:** Vercel
 
