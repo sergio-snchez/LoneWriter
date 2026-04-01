@@ -130,9 +130,9 @@
   color: var(--text-primary);
 }
 .app-topbar__ai-btn--active {
-  background: var(--accent-dim) !important;
+  background: var(--accent) !important;
   border-color: var(--border-accent) !important;
-  color: var(--accent-light) !important;
+  color: #1a1710 !important;
 }
 
 /* ---- Loading state ---- */
