@@ -262,3 +262,32 @@
     border-color: var(--accent);
     outline: none;
 }
+
+.ai-settings-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.ai-settings-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+    transition: color var(--trans-fast);
+}
+
+.ai-settings-link:hover {
+    color: var(--accent-light);
+    text-decoration: underline;
+}
+
+.ai-settings-link-sep {
+    font-size: 11px;
+    color: var(--text-muted);
+    user-select: none;
+}

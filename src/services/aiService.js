@@ -62,15 +62,18 @@ export const AIService = {
    * @param {Object} config - { provider, apiKey, model, localBaseUrl, sceneContent }
    */
   agentChat: async (agent, history, config) => {
-    const { provider, apiKey, model, localBaseUrl, sceneContent, pov, roundInstruction, knowledgeBase } = config;
+    const { provider, apiKey, model, localBaseUrl, sceneContent, pov, roundInstruction, knowledgeBase, compendiumContext } = config;
 
     if (!apiKey && provider !== 'local') throw new Error('Se requiere una clave API para usar la IA.');
 
-    // Build the system prompt, optionally injecting scene content
     let systemPrompt = agent.systemPrompt + `\n\n[DIRECTRIZ CRÍTICA]: Eres ÚNICA y EXCLUSIVAMENTE el ${agent.name}. NUNCA te salgas de tu rol. Habla SIEMPRE en primera persona del singular ("yo", "mi opinión"). NO hables de ti mismo en tercera persona. NO seas genérico ni complaciente. Aporta valor a través de tu especialidad única, y exprésate con tu propia voz. Si discrepas con otros, argumenta tu postura en lugar de simplemente darles la razón.`;
 
     if (knowledgeBase) {
       systemPrompt += `\n\n[BASE DE CONOCIMIENTO Y REFERENCIAS DEL AUTOR]:\n${knowledgeBase}\n---\nTEN EN CUENTA ESTA BASE DE CONOCIMIENTO AL RESPONDER Y EVALUAR.`;
+    }
+
+    if (compendiumContext) {
+      systemPrompt += `\n\n${compendiumContext}\n---\nUSA ESTA INFORMACIÓN DEL COMPENDIO PARA DAR OPINIONES MÁS PRECISAS Y FIELES AL UNIVERSO DE LA NOVELA.`;
     }
 
     if (sceneContent || pov) {

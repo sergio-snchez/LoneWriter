@@ -12,6 +12,23 @@
   height: 100%;
 }
 
+/* Traffic Light Indicator */
+.rich-editor__traffic-light {
+  padding: 6px 12px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+
+.rich-editor__traffic-light .oracle-traffic-light__label {
+  font-size: 11px;
+}
+
+.rich-editor__traffic-light .oracle-traffic-light__dot {
+  width: 10px;
+  height: 10px;
+}
+
 .rich-editor__toolbar {
   display: flex;
   align-items: center;

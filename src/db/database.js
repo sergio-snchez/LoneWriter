@@ -18,4 +18,9 @@ db.version(2).stores({
   debateSessions: '++id, novelId, title, updatedAt'
 });
 
+db.version(3).stores({
+  oracleEntries: '++id, novelId, sceneId, createdAt',
+  lastRewrite: '++id, novelId, sceneId'
+});
+
 export default db;

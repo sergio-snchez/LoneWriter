@@ -23,6 +23,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useNovel } from '../context/NovelContext'
+import { useAI } from '../context/AIContext'
 import { useModal } from '../context/ModalContext'
 import { ExportService } from '../services/exportService'
 import RichEditor from '../components/RichEditor'
@@ -348,6 +349,7 @@ export default function EditorView() {
     updateNovelTarget, getStreak, activeScene, setActiveScene
   } = useNovel()
   const { openModal } = useModal()
+  const { oracleStatus } = useAI()
   
   const [isSaving, setIsSaving] = useState(null) // null = never saved, false = saved, true = saving
   const [expandedIds, setExpandedIds] = useState(new Set())
@@ -867,18 +869,23 @@ export default function EditorView() {
                     <FileDown size={14} />
                     Word
                   </button>
-                  {isSaving === true && (
-                    <div className="save-indicator">
-                      <Loader2 size={12} className="spinner" />
-                      <span>Guardando...</span>
-                    </div>
-                  )}
-                  {isSaving === false && (
-                    <div className="save-indicator save-indicator--done">
-                      <Save size={12} />
-                      <span>Guardado</span>
-                    </div>
-                  )}
+                  <div
+                    className={`oracle-traffic-light oracle-traffic-light--${oracleStatus.status} editor-traffic-light`}
+                    data-tooltip="Analiza el párrafo donde está el cursor tras 3 segundos de inactividad"
+                    onClick={() => {
+                      if (oracleStatus.status !== 'idle') {
+                        window.dispatchEvent(new CustomEvent('open-oracle-panel'));
+                      }
+                    }}
+                    style={oracleStatus.status !== 'idle' ? { cursor: 'pointer' } : {}}
+                  >
+                    <div className="oracle-traffic-light__dot" />
+                    <span className="oracle-traffic-light__label">
+                      {oracleStatus.status === 'idle' && 'Párrafo coherente'}
+                      {oracleStatus.status === 'suspicious' && 'Coincidencias halladas en este párrafo'}
+                      {oracleStatus.status === 'error' && 'Contradicción en este párrafo'}
+                    </span>
+                  </div>
                 </div>
               </div>
               
