@@ -122,12 +122,14 @@
 /* ---- AI toggle button ---- */
 .app-topbar__ai-btn {
   gap: 6px;
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
+  border: 1px solid var(--border-accent);
+  background: var(--accent-dim);
+  color: var(--accent-light);
 }
 .app-topbar__ai-btn:hover {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
+  background: var(--accent);
+  border-color: var(--border-accent);
+  color: #1a1710;
 }
 .app-topbar__ai-btn--active {
   background: var(--accent) !important;
