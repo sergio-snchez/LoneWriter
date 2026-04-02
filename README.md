@@ -1,4 +1,4 @@
-# LoneWriter v1.3-oraculo (Beta) 🖋️
+# LoneWriter v1.3-oráculo (Beta) 🖋️
 
 ![LoneWriter Banner](banner-lonewriter.png)
 
@@ -67,4 +67,4 @@ Si deseas probar LoneWriter en tu propio entorno:
 Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
 
 ---
-*LoneWriter v1.3-oraculo - Tu obra, siempre protegida y asistida por IA.*
+*LoneWriter v1.3-oráculo - Tu espacio personal para dar vida a grandes historias.*

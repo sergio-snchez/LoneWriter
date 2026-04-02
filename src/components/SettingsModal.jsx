@@ -261,7 +261,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
               <span className="settings-section__title">Información de la Aplicación</span>
               <div className="settings-info-grid">
                 <span className="settings-info-label">Versión</span>
-                <span className="settings-info-value">1.3-oraculo</span>
+                <span className="settings-info-value">1.3-oráculo</span>
                 <span className="settings-info-label">Base de Datos</span>
                 <span className="settings-info-value">IndexedDB (Dexie.js)</span>
                 <span className="settings-info-label">Plataforma</span>

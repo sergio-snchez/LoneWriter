@@ -194,4 +194,6 @@
 .sidebar__version {
   font-size: 10px;
   color: var(--text-muted);
+  display: block;
+  text-align: center;
 }
