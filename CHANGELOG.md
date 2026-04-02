@@ -1,6 +1,6 @@
 # Changelog
 
-## [LoneWriter v1.3-oraculo (Beta)] - 2026-04-02
+## [LoneWriter v1.3-oráculo (Beta)] - 2026-04-02
 
 ### Added
 - **Sistema de Tooltips**: Nuevo componente `Tooltip.jsx` reemplaza los atributos `title` nativos en toda la UI (Sidebar, AIPanel, Editor, Compendium, App topbar) para tooltips consistentes y enriquecidos
@@ -14,7 +14,7 @@
 - **Función `fetchDetectedEntityData`**: Reemplaza la búsqueda semántica anterior por datos directos de entidades detectadas en el compendio
 
 ### Changed
-- **Versionado completo**: `v1.2-cloud` → `v1.3-oraculo` en Sidebar, App.jsx footer, SettingsModal (sincronización y sección "Información de la aplicación"), y README.md
+- **Versionado completo**: `v1.2-cloud` → `v1.3-oráculo` en Sidebar, App.jsx footer, SettingsModal (sincronización y sección "Información de la aplicación"), y README.md
 - **Cloud Sync mejorado**: Protección contra race conditions con `cloudCheckInProgress`, lectura directa de `localStorage` para evitar problemas de timing, tolerancia de 5s en detección de versiones en la nube
 - **`refreshAfterRestore()`**: Nueva función para recargar la UI tras restaurar desde la nube sin necesidad de `window.location.reload()`
 - **Confirmación al descartar reescritura**: Modal de confirmación antes de eliminar permanentemente una reescritura
