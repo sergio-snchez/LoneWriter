@@ -1,4 +1,4 @@
-# LoneWriter v1.3-oraculo (beta) 🖋️
+# LoneWriter v1.3-oraculo (Beta) 🖋️
 
 ![LoneWriter Banner](banner-lonewriter.png)
 

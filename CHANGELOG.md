@@ -1,6 +1,6 @@
 # Changelog
 
-## [LoneWriter v1.3-oraculo (beta)] - 2026-04-02
+## [LoneWriter v1.3-oraculo (Beta)] - 2026-04-02
 
 ### Added
 - **Sistema de Tooltips**: Nuevo componente `Tooltip.jsx` reemplaza los atributos `title` nativos en toda la UI (Sidebar, AIPanel, Editor, Compendium, App topbar) para tooltips consistentes y enriquecidos
