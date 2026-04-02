@@ -22,7 +22,10 @@ Esta versión introduce capacidades avanzadas de IA para mejorar tu proceso crea
 ### 🧠 Asistente de IA Integrado (Oracle)
 - **Múltiples Modelos:** Soporte para Gemini, GPT-4o, Claude 3.5 y modelos locales (LM Studio/Ollama).
 - **Herramientas Literarias:** Reescribe escenas, ajusta el tono, mejora el ritmo o cambia el punto de vista (POV) con un clic.
-- **Búsqueda Semántica Local:** Integra tu lore directamente en las consultas de IA para un contexto perfecto sin salir de la app (vía Transformers.js y Orama).
+- **Contexto Inteligente del Compendio:** Detecta automáticamente entidades de tu lore (personajes, lugares, objetos) y las integra en las consultas de IA para coherencia narrativa perfecta.
+- **Sistema de Debate:** Múltiples agentes IA debaten entre sí sobre tu escena con rondas configurables y sesiones persistentes.
+- **Veredictos del Oracle:** Análisis de coherencia párrafo a párrafo con detección de contradicciones en tiempo real.
+- **Exclusión Selectiva:** Controla qué entidades del Compendio participan en el análisis de coherencia con un clic.
 
 ### 📚 Compendio y Lore
 - **Biblioteca de Personajes:** Fichas detalladas con rasgos, motivaciones y arcos.
@@ -64,4 +67,4 @@ Si deseas probar LoneWriter en tu propio entorno:
 Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
 
 ---
-*LoneWriter v1.2-cloud - Tu obra, siempre protegida y asistida por IA.*
+*LoneWriter v1.3-oraculo - Tu obra, siempre protegida y asistida por IA.*

@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
 import {
   Users, MapPin, Package, BookOpen, Star, ExternalLink,
-  Search, Filter, ChevronRight, Plus, Tag, PenLine, Trash2, X
+  Search, Filter, ChevronRight, Plus, Tag, PenLine, Trash2, X, Zap
 } from 'lucide-react'
 import { useNovel } from '../context/NovelContext'
 import { useModal } from '../context/ModalContext'
 import { extractKeywords, TABLE_CONFIG } from '../services/compendiumSearch'
+import { Tooltip } from '../components/Tooltip'
 import './Compendium.css'
 
 /* ---- Curated Color Palette ---- */
@@ -20,14 +21,14 @@ function ColorPicker({ value, onChange }) {
   return (
     <div className="color-picker">
       {COLOR_PALETTE.map(color => (
-        <button
-          key={color}
-          type="button"
-          className={`color-swatch ${value === color ? 'color-swatch--active' : ''}`}
-          style={{ background: color }}
-          onClick={() => onChange(color)}
-          title={color}
-        />
+        <Tooltip key={color} content={color}>
+          <button
+            type="button"
+            className={`color-swatch ${value === color ? 'color-swatch--active' : ''}`}
+            style={{ background: color }}
+            onClick={() => onChange(color)}
+          />
+        </Tooltip>
       ))}
     </div>
   );
@@ -172,9 +173,11 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
                           style={{ fontSize: '12px', opacity: 0.85 }}
                         />
                       </div>
-                      <button className="btn btn-ghost btn-icon text-danger" onClick={() => removeRelation(i)} title="Eliminar relación">
-                        <Trash2 size={14} />
-                      </button>
+                      <Tooltip content="Eliminar relación">
+                        <button className="btn btn-ghost btn-icon text-danger" onClick={() => removeRelation(i)}>
+                          <Trash2 size={14} />
+                        </button>
+                      </Tooltip>
                     </div>
                   ))}
                   <button className="btn btn-ghost" onClick={addRelation} style={{ alignSelf: 'flex-start', fontSize: 12, marginTop: '4px' }}>
@@ -331,11 +334,11 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
 }
 
 /* ---- Character card ---- */
-function CharacterCard({ char, onEdit, onDelete }) {
+function CharacterCard({ char, onEdit, onDelete, onToggleIgnore }) {
   const [expanded, setExpanded] = useState(false)
   return (
     <div
-      className={`char-card card ${expanded ? 'char-card--expanded' : ''}`}
+      className={`char-card card ${expanded ? 'char-card--expanded' : ''} ${char.ignoredForOracle ? 'card--ignored' : ''}`}
       id={`char-card-${char.id}`}
       onClick={() => setExpanded(e => !e)}
       style={{ borderLeft: `3px solid ${char.color || '#6b9fd4'}` }}
@@ -346,6 +349,13 @@ function CharacterCard({ char, onEdit, onDelete }) {
         </div>
         <div className="char-card__info">
           <span className="char-card__name">{char.name}</span>
+          {char.ignoredForOracle !== 1 && (
+            <div style={{ marginTop: '4px' }}>
+              <span style={{ color: '#d4a853', fontSize: '10px', fontWeight: 600, background: 'rgba(212, 168, 83, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Zap size={10} style={{ fill: 'currentColor' }} /> Contexto IA
+              </span>
+            </div>
+          )}
           <span className="char-card__occupation">{char.occupation}</span>
           <div className="char-card__tags">
             <span className="badge badge-muted">{char.role}</span>
@@ -353,8 +363,20 @@ function CharacterCard({ char, onEdit, onDelete }) {
           </div>
         </div>
         <div className="compendium-card-actions">
-          <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(char); }} title="Editar"><PenLine size={14} /></button>
-          <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(char.id); }} title="Eliminar"><Trash2 size={14} /></button>
+          <Tooltip content={char.ignoredForOracle === 1 ? "Excluido del análisis de coherencia" : "Incluido en análisis de coherencia"}>
+            <button 
+              className={`btn btn-ghost btn-icon ${char.ignoredForOracle !== 1 ? 'compendium-zap-active' : ''}`}
+              onClick={(e) => { e.stopPropagation(); onToggleIgnore(char); }}
+            >
+              <Zap size={14} style={{ fill: char.ignoredForOracle !== 1 ? 'currentColor' : 'none' }} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Editar">
+            <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(char); }}><PenLine size={14} /></button>
+          </Tooltip>
+          <Tooltip content="Eliminar">
+            <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(char.id); }}><Trash2 size={14} /></button>
+          </Tooltip>
         </div>
         <ChevronRight size={14} className={`char-card__chevron ${expanded ? 'char-card__chevron--open' : ''}`} />
       </div>
@@ -388,11 +410,11 @@ function CharacterCard({ char, onEdit, onDelete }) {
 }
 
 /* ---- Location card ---- */
-function LocationCard({ loc, onEdit, onDelete }) {
+function LocationCard({ loc, onEdit, onDelete, onToggleIgnore }) {
   const [expanded, setExpanded] = useState(false)
   return (
     <div
-      className={`loc-card card ${expanded ? 'loc-card--expanded' : ''}`}
+      className={`loc-card card ${expanded ? 'loc-card--expanded' : ''} ${loc.ignoredForOracle ? 'card--ignored' : ''}`}
       id={`loc-card-${loc.id}`}
       onClick={() => setExpanded(e => !e)}
     >
@@ -400,14 +422,33 @@ function LocationCard({ loc, onEdit, onDelete }) {
         <div className="loc-card__dot" style={{ background: loc.color || '#5cb98a' }} />
         <div className="loc-card__info">
           <span className="loc-card__name">{loc.name}</span>
+          {loc.ignoredForOracle !== 1 && (
+            <div style={{ marginTop: '4px' }}>
+              <span style={{ color: '#d4a853', fontSize: '10px', fontWeight: 600, background: 'rgba(212, 168, 83, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Zap size={10} style={{ fill: 'currentColor' }} /> Contexto IA
+              </span>
+            </div>
+          )}
           <span className="loc-card__type">{loc.type}</span>
           <div className="loc-card__tags">
             {loc.tags?.slice(0, 3).map(t => <span key={t} className="tag">{t}</span>)}
           </div>
         </div>
         <div className="compendium-card-actions">
-          <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(loc); }} title="Editar"><PenLine size={14} /></button>
-          <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(loc.id); }} title="Eliminar"><Trash2 size={14} /></button>
+          <Tooltip content={loc.ignoredForOracle === 1 ? "Excluido del análisis de coherencia" : "Incluido en análisis de coherencia"}>
+            <button 
+              className={`btn btn-ghost btn-icon ${loc.ignoredForOracle !== 1 ? 'compendium-zap-active' : ''}`}
+              onClick={(e) => { e.stopPropagation(); onToggleIgnore(loc); }}
+            >
+              <Zap size={14} style={{ fill: loc.ignoredForOracle !== 1 ? 'currentColor' : 'none' }} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Editar">
+            <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(loc); }}><PenLine size={14} /></button>
+          </Tooltip>
+          <Tooltip content="Eliminar">
+            <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(loc.id); }}><Trash2 size={14} /></button>
+          </Tooltip>
         </div>
         <ChevronRight size={14} className={`loc-card__chevron ${expanded ? 'loc-card__chevron--open' : ''}`} />
       </div>
@@ -438,11 +479,11 @@ function LocationCard({ loc, onEdit, onDelete }) {
 }
 
 /* ---- Object card ---- */
-function ObjectCard({ obj, onEdit, onDelete }) {
+function ObjectCard({ obj, onEdit, onDelete, onToggleIgnore }) {
   const [expanded, setExpanded] = useState(false)
   return (
     <div
-      className="obj-card card"
+      className={`obj-card card ${obj.ignoredForOracle ? 'card--ignored' : ''}`}
       id={`obj-card-${obj.id}`}
       onClick={() => setExpanded(e => !e)}
     >
@@ -450,6 +491,13 @@ function ObjectCard({ obj, onEdit, onDelete }) {
         <Package size={16} className="obj-card__icon" />
         <div className="obj-card__info">
           <span className="obj-card__name">{obj.name}</span>
+          {obj.ignoredForOracle !== 1 && (
+            <div style={{ marginTop: '4px' }}>
+              <span style={{ color: '#d4a853', fontSize: '10px', fontWeight: 600, background: 'rgba(212, 168, 83, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Zap size={10} style={{ fill: 'currentColor' }} /> Contexto IA
+              </span>
+            </div>
+          )}
           <span className="obj-card__type">{obj.type}</span>
           <div className="obj-card__tags">
             {obj.currentOwner && <span className="badge badge-muted">Portador: {obj.currentOwner}</span>}
@@ -457,8 +505,20 @@ function ObjectCard({ obj, onEdit, onDelete }) {
           </div>
         </div>
         <div className="compendium-card-actions">
-          <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(obj); }} title="Editar"><PenLine size={14} /></button>
-          <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(obj.id); }} title="Eliminar"><Trash2 size={14} /></button>
+          <Tooltip content={obj.ignoredForOracle === 1 ? "Excluido del análisis de coherencia" : "Incluido en análisis de coherencia"}>
+            <button 
+              className={`btn btn-ghost btn-icon ${obj.ignoredForOracle !== 1 ? 'compendium-zap-active' : ''}`}
+              onClick={(e) => { e.stopPropagation(); onToggleIgnore(obj); }}
+            >
+              <Zap size={14} style={{ fill: obj.ignoredForOracle !== 1 ? 'currentColor' : 'none' }} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Editar">
+            <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(obj); }}><PenLine size={14} /></button>
+          </Tooltip>
+          <Tooltip content="Eliminar">
+            <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(obj.id); }}><Trash2 size={14} /></button>
+          </Tooltip>
         </div>
         <ChevronRight size={14} className={`obj-card__chevron ${expanded ? 'obj-card__chevron--open' : ''}`} />
       </div>
@@ -486,11 +546,11 @@ function ObjectCard({ obj, onEdit, onDelete }) {
 }
 
 /* ---- Lore entry card ---- */
-function LoreCard({ entry, onEdit, onDelete }) {
+function LoreCard({ entry, onEdit, onDelete, onToggleIgnore }) {
   const [expanded, setExpanded] = useState(false)
   return (
     <div
-      className="lore-card card"
+      className={`lore-card card ${entry.ignoredForOracle ? 'card--ignored' : ''}`}
       id={`lore-card-${entry.id}`}
       onClick={() => setExpanded(e => !e)}
     >
@@ -498,14 +558,33 @@ function LoreCard({ entry, onEdit, onDelete }) {
         <div className="lore-card__cat-dot" />
         <div className="lore-card__info">
           <span className="lore-card__title">{entry.title}</span>
+          {entry.ignoredForOracle !== 1 && (
+            <div style={{ marginTop: '4px' }}>
+              <span style={{ color: '#d4a853', fontSize: '10px', fontWeight: 600, background: 'rgba(212, 168, 83, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Zap size={10} style={{ fill: 'currentColor' }} /> Contexto IA
+              </span>
+            </div>
+          )}
           <span className="lore-card__cat">{entry.category}</span>
           <div className="lore-card__tags">
             {entry.tags?.slice(0, 3).map(t => <span key={t} className="tag">{t}</span>)}
           </div>
         </div>
         <div className="compendium-card-actions">
-          <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(entry); }} title="Editar"><PenLine size={14} /></button>
-          <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }} title="Eliminar"><Trash2 size={14} /></button>
+          <Tooltip content={entry.ignoredForOracle === 1 ? "Excluido del análisis de coherencia" : "Incluido en análisis de coherencia"}>
+            <button 
+              className={`btn btn-ghost btn-icon ${entry.ignoredForOracle !== 1 ? 'compendium-zap-active' : ''}`}
+              onClick={(e) => { e.stopPropagation(); onToggleIgnore(entry); }}
+            >
+              <Zap size={14} style={{ fill: entry.ignoredForOracle !== 1 ? 'currentColor' : 'none' }} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Editar">
+            <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(entry); }}><PenLine size={14} /></button>
+          </Tooltip>
+          <Tooltip content="Eliminar">
+            <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }}><Trash2 size={14} /></button>
+          </Tooltip>
         </div>
         <ChevronRight size={14} className={`lore-card__chevron ${expanded ? 'lore-card__chevron--open' : ''}`} />
       </div>
@@ -623,6 +702,22 @@ export default function CompendiumView() {
   const handleAdd = () => {
     setEditingItem(null);
     setIsPanelOpen(true);
+  };
+
+  const getTableForSection = (section) => {
+    const map = {
+      characters: 'characters',
+      locations: 'locations',
+      objects: 'objects',
+      lore: 'lore'
+    };
+    return map[section] || section;
+  };
+
+  const handleToggleIgnore = async (item) => {
+    const table = getTableForSection(activeSection);
+    const newValue = item.ignoredForOracle === 1 ? 0 : 1;
+    await updateCompendiumEntry(table, item.id, { ignoredForOracle: newValue });
   };
 
   const handleSavePanel = async (data) => {
@@ -839,22 +934,22 @@ export default function CompendiumView() {
           {activeSection === 'characters' && characters
             .filter(matchesQuery)
             .filter(matchesFilters)
-            .map(c => <CharacterCard key={c.id} char={c} onEdit={handleEdit} onDelete={handleDelete} />)}
+            .map(c => <CharacterCard key={c.id} char={c} onEdit={handleEdit} onDelete={handleDelete} onToggleIgnore={handleToggleIgnore} />)}
 
           {activeSection === 'locations' && locations
             .filter(matchesQuery)
             .filter(matchesFilters)
-            .map(l => <LocationCard key={l.id} loc={l} onEdit={handleEdit} onDelete={handleDelete} />)}
+            .map(l => <LocationCard key={l.id} loc={l} onEdit={handleEdit} onDelete={handleDelete} onToggleIgnore={handleToggleIgnore} />)}
 
           {activeSection === 'objects' && objects
             .filter(matchesQuery)
             .filter(matchesFilters)
-            .map(o => <ObjectCard key={o.id} obj={o} onEdit={handleEdit} onDelete={handleDelete} />)}
+            .map(o => <ObjectCard key={o.id} obj={o} onEdit={handleEdit} onDelete={handleDelete} onToggleIgnore={handleToggleIgnore} />)}
 
           {activeSection === 'lore' && lore
             .filter(matchesQuery)
             .filter(matchesFilters)
-            .map(e => <LoreCard key={e.id} entry={e} onEdit={handleEdit} onDelete={handleDelete} />)}
+            .map(e => <LoreCard key={e.id} entry={e} onEdit={handleEdit} onDelete={handleDelete} onToggleIgnore={handleToggleIgnore} />)}
             
           {/* Empty state visual fallback */}
           {((activeSection === 'characters' && characters.length === 0) ||

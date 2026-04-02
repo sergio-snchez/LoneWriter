@@ -247,3 +247,66 @@
   color: var(--accent-light);
   background: var(--accent-dim);
 }
+
+.res-action-btn--ignored {
+  opacity: 0.5;
+}
+
+.res-action-btn--ai-active {
+  background: #d4a853 !important;
+  border-color: #d4a853 !important;
+  color: #fff !important;
+}
+
+/* ============================================
+   RENDERED MARKDOWN IN RESOURCE VIEWER
+   ============================================ */
+
+.resource-viewer__content :where(p) {
+  margin: 0.5em 0;
+}
+.resource-viewer__content :where(p:first-child) {
+  margin-top: 0;
+}
+.resource-viewer__content :where(p:last-child) {
+  margin-bottom: 0;
+}
+.resource-viewer__content :where(strong, b) {
+  font-weight: 700;
+}
+.resource-viewer__content :where(em, i) {
+  font-style: italic;
+}
+.resource-viewer__content :where(ul, ol) {
+  padding-left: 1.2em;
+  margin: 0.3em 0;
+}
+.resource-viewer__content :where(li) {
+  margin: 0.15em 0;
+}
+.resource-viewer__content :where(code) {
+  background: rgba(0,0,0,0.06);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: 'Fira Code', 'Consolas', monospace;
+}
+.resource-viewer__content :where(blockquote) {
+  border-left: 3px solid rgba(0,0,0,0.15);
+  padding-left: 0.75em;
+  margin: 0.4em 0;
+  color: rgba(0,0,0,0.7);
+}
+.resource-viewer__content :where(h1, h2, h3, h4, h5, h6) {
+  margin: 0.8em 0 0.4em;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.resource-viewer__content :where(h1:first-child, h2:first-child, h3:first-child) {
+  margin-top: 0;
+}
+.resource-viewer__content :where(hr) {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1em 0;
+}

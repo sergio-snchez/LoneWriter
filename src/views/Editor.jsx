@@ -26,6 +26,7 @@ import { useNovel } from '../context/NovelContext'
 import { useAI } from '../context/AIContext'
 import { useModal } from '../context/ModalContext'
 import { ExportService } from '../services/exportService'
+import { Tooltip } from '../components/Tooltip'
 import RichEditor from '../components/RichEditor'
 import debounce from 'lodash/debounce'
 import './Editor.css'
@@ -81,13 +82,14 @@ function EditableTitle({ title, onSave, className, isPlayfair, isBold }) {
   }
 
   return (
-    <span 
-      className={className} 
-      onDoubleClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
-      title="Doble clic para editar"
-    >
-      {title}
-    </span>
+    <Tooltip content="Doble clic para editar">
+      <span 
+        className={className} 
+        onDoubleClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+      >
+        {title}
+      </span>
+    </Tooltip>
   )
 }
 
@@ -346,17 +348,18 @@ export default function EditorView() {
     acts, activeNovel, characters, updateScene, 
     addAct, deleteAct, updateAct, addChapter, deleteChapter, updateChapter, addScene, deleteScene,
     updateActOrder, updateChapterOrder, updateSceneOrder, moveScene, moveChapter,
-    updateNovelTarget, getStreak, activeScene, setActiveScene
+    updateNovelTarget, getStreak, activeScene, setActiveScene,
+    getNovelUIExpanded, updateNovelUIExpanded
   } = useNovel()
   const { openModal } = useModal()
   const { oracleStatus } = useAI()
   
-  const [isSaving, setIsSaving] = useState(null) // null = never saved, false = saved, true = saving
+  const [isSaving, setIsSaving] = useState(null)
   const [expandedIds, setExpandedIds] = useState(new Set())
   const [activeDragId, setActiveDragId] = useState(null)
   const [streak, setStreak] = useState(0)
   const [showGoalEditor, setShowGoalEditor] = useState(false)
-  const [isStatsExpanded, setIsStatsExpanded] = useState(true)
+  const [isStatsExpanded, setIsStatsExpanded] = useState(false)
   const goalEditorRef = useRef(null)
   const hoverTimerRef = useRef(null)
 
@@ -398,6 +401,14 @@ export default function EditorView() {
     fetchStreak();
   }, [activeNovel, getStreak]);
 
+  useEffect(() => {
+    if (activeNovel?.id) {
+      getNovelUIExpanded(activeNovel.id).then(setExpandedIds);
+    } else {
+      setExpandedIds(new Set());
+    }
+  }, [activeNovel?.id, getNovelUIExpanded]);
+
   const GOAL_TEMPLATES = [
     { label: 'Micro-relato', words: 1000, targetScenes: 2, scenesRange: '1-2', wps: '500-1000' },
     { label: 'Cuento corto', words: 5000, targetScenes: 5, scenesRange: '3-6', wps: '1000-1500' },
@@ -414,6 +425,14 @@ export default function EditorView() {
       return next
     })
   }
+
+  useEffect(() => {
+    if (!activeNovel?.id) return;
+    const timeoutId = setTimeout(() => {
+      updateNovelUIExpanded(activeNovel.id, expandedIds);
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  }, [expandedIds, activeNovel?.id, updateNovelUIExpanded]);
 
   const handleExpandAll = () => {
     const allIds = new Set();
@@ -447,7 +466,7 @@ export default function EditorView() {
     if (!activeScene && acts.length > 0) {
       const firstAct = acts[0]
       if (firstAct.chapters?.length > 0) {
-        setExpandedIds(prev => new Set([...prev, firstAct.id, firstAct.chapters[0].id]))
+        setExpandedIds(prev => new Set([...prev, `act-${firstAct.id}`, `ch-${firstAct.chapters[0].id}`]))
         const firstChapter = firstAct.chapters[0]
         if (firstChapter.scenes?.length > 0) {
           const sceneToOpen = firstChapter.scenes.find(s => s.content) || firstChapter.scenes[0]
@@ -767,12 +786,16 @@ export default function EditorView() {
           </div>
           <div className="tree-header__actions">
             <div className="tree-header__bulk-btns">
-              <button className="btn btn-ghost btn-icon" onClick={handleExpandAll} title="Expandir todo">
-                <ChevronsUpDown size={14} />
-              </button>
-              <button className="btn btn-ghost btn-icon" onClick={handleCollapseAll} title="Contraer todo">
-                <ChevronsDownUp size={14} />
-              </button>
+              <Tooltip content="Expandir todo">
+                <button className="btn btn-ghost btn-icon" onClick={handleExpandAll}>
+                  <ChevronsUpDown size={14} />
+                </button>
+              </Tooltip>
+              <Tooltip content="Contraer todo">
+                <button className="btn btn-ghost btn-icon" onClick={handleCollapseAll}>
+                  <ChevronsDownUp size={14} />
+                </button>
+              </Tooltip>
             </div>
             <button className="btn btn-primary" onClick={handleAddAct}>
               <Plus size={14} />
@@ -865,27 +888,30 @@ export default function EditorView() {
                   </div>
                 </div>
                 <div className="editor-header__status-row">
-                  <button className="btn btn-ghost btn-sm" onClick={handleExportScene} title="Exportar escena a Word">
-                    <FileDown size={14} />
-                    Word
-                  </button>
-                  <div
-                    className={`oracle-traffic-light oracle-traffic-light--${oracleStatus.status} editor-traffic-light`}
-                    data-tooltip="Analiza el párrafo donde está el cursor tras 3 segundos de inactividad"
-                    onClick={() => {
-                      if (oracleStatus.status !== 'idle') {
-                        window.dispatchEvent(new CustomEvent('open-oracle-panel'));
-                      }
-                    }}
-                    style={oracleStatus.status !== 'idle' ? { cursor: 'pointer' } : {}}
-                  >
-                    <div className="oracle-traffic-light__dot" />
-                    <span className="oracle-traffic-light__label">
-                      {oracleStatus.status === 'idle' && 'Párrafo coherente'}
-                      {oracleStatus.status === 'suspicious' && 'Coincidencias halladas en este párrafo'}
-                      {oracleStatus.status === 'error' && 'Contradicción en este párrafo'}
-                    </span>
-                  </div>
+                  <Tooltip content="Exportar escena a Word">
+                    <button className="btn btn-ghost btn-sm" onClick={handleExportScene}>
+                      <FileDown size={14} />
+                      Word
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Analiza el párrafo donde está el cursor tras 3 segundos de inactividad">
+                    <div
+                      className={`oracle-traffic-light oracle-traffic-light--${oracleStatus.status} editor-traffic-light`}
+                      onClick={() => {
+                        if (oracleStatus.status !== 'idle') {
+                          window.dispatchEvent(new CustomEvent('open-oracle-panel'));
+                        }
+                      }}
+                      style={oracleStatus.status !== 'idle' ? { cursor: 'pointer' } : {}}
+                    >
+                      <div className="oracle-traffic-light__dot" />
+                      <span className="oracle-traffic-light__label">
+                        {oracleStatus.status === 'idle' && 'Párrafo coherente'}
+                        {oracleStatus.status === 'suspicious' && 'Coincidencias halladas en este párrafo'}
+                        {oracleStatus.status === 'error' && 'Contradicción en este párrafo'}
+                      </span>
+                    </div>
+                  </Tooltip>
                 </div>
               </div>
               

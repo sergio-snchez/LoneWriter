@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { db } from '../db/database';
 import { ExportService } from '../services/exportService';
 import { GoogleDriveService } from '../services/googleDriveService';
@@ -22,7 +22,6 @@ export const NovelProvider = ({ children }) => {
   const [cloudSyncStatus, setCloudSyncStatus] = useState('idle'); // 'idle', 'syncing', 'success', 'error'
   const [lastCloudSync, setLastCloudSync] = useState(localStorage.getItem('lw_last_cloud_sync'));
   const [pendingSync, setPendingSync] = useState(false);
-  const cloudCheckInProgress = useRef(false);
 
   // Initial seeding and loading
   useEffect(() => {
@@ -62,23 +61,16 @@ export const NovelProvider = ({ children }) => {
   }, []);
 
   const checkCloudBackupStatus = async () => {
-    if (cloudCheckInProgress.current) return;
-    cloudCheckInProgress.current = true;
-
     try {
       if (!GoogleDriveService.isAuthenticated()) return;
-      
       const cloudFile = await GoogleDriveService.findBackupFile();
       if (cloudFile && cloudFile.modifiedTime) {
         const cloudDate = new Date(cloudFile.modifiedTime);
-        // Leer directamente de localStorage para evitar problemas de timing con el estado
-        const localSync = localStorage.getItem('lw_last_cloud_sync');
-        const localDate = localSync ? new Date(localSync) : new Date(0);
+        const localDate = lastCloudSync ? new Date(lastCloudSync) : new Date(0);
         
         if (cloudDate > localDate) {
           console.log('[LoneWriter] Versión en la nube encontrada más reciente.');
-          // Pequeño delay para evitar race conditions con otros eventos
-          await new Promise(resolve => setTimeout(resolve, 100));
+          // Emitir un evento para que la UI pueda preguntar al usuario
           window.dispatchEvent(new CustomEvent('cloud-version-available', { 
             detail: { date: cloudFile.modifiedTime, id: cloudFile.id } 
           }));
@@ -86,8 +78,6 @@ export const NovelProvider = ({ children }) => {
       }
     } catch (e) {
       console.warn('[LoneWriter] Error verificando backup en la nube al inicio');
-    } finally {
-      cloudCheckInProgress.current = false;
     }
   };
 
@@ -104,11 +94,8 @@ export const NovelProvider = ({ children }) => {
 
   const performCloudSync = async () => {
     if (!isCloudSyncEnabled) return;
-    if (cloudCheckInProgress.current) return;
     
     setCloudSyncStatus('syncing');
-    cloudCheckInProgress.current = true;
-
     try {
       // ── SAFETY CHECK: Verify cloud isn't newer before uploading ──────────
       // This prevents overwriting a backup made from another device/session.
@@ -116,9 +103,9 @@ export const NovelProvider = ({ children }) => {
         const cloudFile = await GoogleDriveService.findBackupFile();
         if (cloudFile && cloudFile.modifiedTime) {
           const cloudDate = new Date(cloudFile.modifiedTime);
-          // Leer directamente de localStorage para evitar problemas de timing
-          const localSync = localStorage.getItem('lw_last_cloud_sync');
-          const localSyncDate = localSync ? new Date(localSync) : new Date(0);
+          // lastCloudSync is the timestamp of OUR last successful upload.
+          // If Drive was modified AFTER our last upload, another source wrote it.
+          const localSyncDate = lastCloudSync ? new Date(lastCloudSync) : new Date(0);
           const tolerance = 5000; // 5 segundos de tolerancia
 
           if (cloudDate.getTime() > localSyncDate.getTime() + tolerance) {
@@ -126,7 +113,6 @@ export const NovelProvider = ({ children }) => {
             setCloudSyncStatus('idle');
             setPendingSync(false);
             // Surface the "restore from cloud?" dialog
-            await new Promise(resolve => setTimeout(resolve, 100));
             window.dispatchEvent(new CustomEvent('cloud-version-available', {
               detail: { date: cloudFile.modifiedTime, id: cloudFile.id }
             }));
@@ -159,8 +145,6 @@ export const NovelProvider = ({ children }) => {
     } catch (error) {
       console.error('[LoneWriter] Error en auto-sincronización:', error);
       setCloudSyncStatus('error');
-    } finally {
-      cloudCheckInProgress.current = false;
     }
   };
 
@@ -177,18 +161,6 @@ export const NovelProvider = ({ children }) => {
     setAllNovels(sorted);
     
     // Auto-load removed per user request: "siempre mostrar pantalla de bienvenida"
-  };
-
-  const refreshAfterRestore = async () => {
-    await refreshAllNovels();
-    setActiveNovel(null);
-    setActiveScene(null);
-    setActs([]);
-    setCharacters([]);
-    setLocations([]);
-    setObjects([]);
-    setLore([]);
-    setResources([]);
   };
 
   const syncNovelWordCount = async (novelId) => {
@@ -213,10 +185,11 @@ export const NovelProvider = ({ children }) => {
   const switchNovel = async (id) => {
     const novel = await db.novels.get(id);
     if (novel) {
+      // Sync word count on switch to fix any discrepancies
       const realWords = await syncNovelWordCount(id);
-      await reloadData(id);
       setActiveNovel({ ...novel, wordCount: realWords });
       localStorage.setItem('activeNovelId', id);
+      await reloadData(id);
     }
   };
 
@@ -252,26 +225,6 @@ export const NovelProvider = ({ children }) => {
       setActiveNovel(prev => ({ ...prev, ...data }));
     }
   };
-
-  const getNovelUIExpanded = useCallback(async (novelId) => {
-    const novel = await db.novels.get(novelId);
-    if (novel?.uiExpanded) {
-      try {
-        return new Set(JSON.parse(novel.uiExpanded));
-      } catch {
-        return new Set();
-      }
-    }
-    return new Set();
-  }, []);
-
-  const updateNovelUIExpanded = useCallback(async (novelId, expandedIds) => {
-    const data = { uiExpanded: JSON.stringify([...expandedIds]) };
-    await db.novels.update(novelId, data);
-    if (activeNovel?.id === novelId) {
-      setActiveNovel(prev => ({ ...prev, ...data }));
-    }
-  }, [activeNovel?.id]);
 
   const trackDailyProgress = async (novelId, wordsDiff) => {
     if (wordsDiff === 0) return;
@@ -576,8 +529,6 @@ export const NovelProvider = ({ children }) => {
     moveScene,
     moveChapter,
     updateNovelTarget,
-    getNovelUIExpanded,
-    updateNovelUIExpanded,
     getStreak,
     addCompendiumEntry,
     updateCompendiumEntry,
@@ -586,8 +537,7 @@ export const NovelProvider = ({ children }) => {
     cloudSyncStatus,
     lastCloudSync,
     toggleCloudSync,
-    performCloudSync,
-    refreshAfterRestore
+    performCloudSync
   };
 
   return <NovelContext.Provider value={value}>{children}</NovelContext.Provider>;

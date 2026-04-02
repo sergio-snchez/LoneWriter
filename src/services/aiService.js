@@ -38,7 +38,7 @@ export const AIService = {
       fullPrompt += `\n\n[BASE DE CONOCIMIENTO Y REFERENCIAS DEL AUTOR]:\n${knowledgeBase}\n---\nTEN EN CUENTA ESTA BASE DE CONOCIMIENTO AL RESPONDER.`;
     }
 
-    fullPrompt += `\n\nRESCRITURA:`;
+    fullPrompt += `\n\nRESCRITURA (Responde ÚNICAMENTE con el texto reescrito en formato HTML válido. Usa etiquetas <p>, <strong>, <em>, etc. NO uses Markdown. NO añadas introducciones ni explicaciones):`;
 
     if (provider === 'google') {
       return await AIService._callGemini(fullPrompt, apiKey, model);

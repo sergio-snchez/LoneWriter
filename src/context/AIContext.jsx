@@ -119,6 +119,7 @@ export const AIProvider = ({ children }) => {
         setActiveSessionId(null);
         setOracleHistory([]);
         setLastRewrite('');
+        localStorage.removeItem('activeDebateSessionId');
         return;
       }
 
@@ -157,7 +158,9 @@ export const AIProvider = ({ children }) => {
       setDebateSessions(sessions);
       
       if (sessions.length > 0) {
-        setActiveSessionId(sessions[0].id);
+        const savedSessionId = localStorage.getItem('activeDebateSessionId');
+        const sessionExists = savedSessionId && sessions.some(s => String(s.id) === String(savedSessionId));
+        setActiveSessionId(sessionExists ? Number(savedSessionId) : sessions[0].id);
       } else {
         const newSession = {
           novelId: activeNovel.id,
@@ -169,6 +172,7 @@ export const AIProvider = ({ children }) => {
         newSession.id = newId;
         setDebateSessions([newSession]);
         setActiveSessionId(newId);
+        localStorage.setItem('activeDebateSessionId', newId);
       }
 
       // Load oracle history for this novel
@@ -221,6 +225,14 @@ export const AIProvider = ({ children }) => {
     });
   };
 
+  const discardLastRewrite = async () => {
+    if (!activeNovel || !activeScene) return;
+    setLastRewrite('');
+    await db.lastRewrite
+      .where({ novelId: activeNovel.id, sceneId: activeScene.id })
+      .delete();
+  };
+
   // Oracle mutators
   const addOracleEntry = async (entry) => {
     if (!activeNovel) return;
@@ -264,11 +276,20 @@ export const AIProvider = ({ children }) => {
 
     entityDetectorRef.current.immediate(plainText, activeNovel.id)
       .then(({ detections }) => {
-        if (detections.length > 0) {
+        const criticalDetections = detections.filter(d => d.severity === 'critical');
+        const doubtfulDetections = detections.filter(d => d.severity === 'doubtful');
+        
+        if (criticalDetections.length > 0) {
           setOracleStatus(prev => ({
             ...prev,
             status: 'suspicious',
-            detectedEntities: detections,
+            detectedEntities: criticalDetections,
+          }));
+        } else if (doubtfulDetections.length >= 2) {
+          setOracleStatus(prev => ({
+            ...prev,
+            status: 'suspicious',
+            detectedEntities: doubtfulDetections,
           }));
         } else {
           setOracleStatus(prev => ({
@@ -331,10 +352,12 @@ export const AIProvider = ({ children }) => {
     session.id = id;
     setDebateSessions(prev => [session, ...prev]);
     setActiveSessionId(id);
+    localStorage.setItem('activeDebateSessionId', id);
   };
 
   const switchDebateSession = (id) => {
     setActiveSessionId(id);
+    localStorage.setItem('activeDebateSessionId', id);
   };
 
   const renameDebateSession = async (id, title) => {
@@ -350,6 +373,7 @@ export const AIProvider = ({ children }) => {
       if (activeSessionId === id) {
         if (filtered.length > 0) {
           setActiveSessionId(filtered[0].id);
+          localStorage.setItem('activeDebateSessionId', filtered[0].id);
         } else {
           setActiveSessionId(null); 
           // Async call outside of set state, but we can just use setTimeout to break the synchronous flow
@@ -454,7 +478,7 @@ export const AIProvider = ({ children }) => {
     prompts, updatePrompt, resetPrompt,
     selection, setSelection,
     oracleText, setOracleText,
-    lastRewrite, setLastRewrite, saveLastRewrite,
+    lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite,
     oracleHistory, addOracleEntry, clearOracleHistory, deleteOracleEntry,
     oracleStatus, checkOracleResponse, resetOracleStatus, markOracleContradiction,
     debateAgents, debateHistory,

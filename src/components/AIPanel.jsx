@@ -9,8 +9,9 @@ import { useAI } from '../context/AIContext'
 import { AIService } from '../services/aiService'
 import { useNovel } from '../context/NovelContext'
 import { useModal } from '../context/ModalContext'
-import { createDebouncedSearch } from '../services/compendiumSearch'
-import { extractKeywords, searchCompendium, formatSearchResults } from '../services/compendiumSearch'
+import { createDebouncedSearch, fetchDetectedEntityData } from '../services/compendiumSearch'
+import { Tooltip } from './Tooltip'
+import { renderMarkdown } from '../utils/renderMarkdown'
 import './AIPanel.css'
 
 // ─── Mock data ────────────────────────────────────────────────
@@ -82,19 +83,20 @@ function AgentAvatar({ agentId, size = 28 }) {
   const agent = AI_AGENTS[agentId]
   if (!agent) return null
   return (
-    <div
-      className="agent-avatar"
-      style={{
-        width: size, height: size,
-        fontSize: size < 30 ? 9 : 11,
-        background: agent.bgColor,
-        border: `1.5px solid ${agent.color}44`,
-        color: agent.color,
-      }}
-      title={agent.name}
-    >
-      {agent.initials}
-    </div>
+    <Tooltip content={agent.name}>
+      <div
+        className="agent-avatar"
+        style={{
+          width: size, height: size,
+          fontSize: size < 30 ? 9 : 11,
+          background: agent.bgColor,
+          border: `1.5px solid ${agent.color}44`,
+          color: agent.color,
+        }}
+      >
+        {agent.initials}
+      </div>
+    </Tooltip>
   )
 }
 
@@ -102,7 +104,7 @@ function AgentAvatar({ agentId, size = 28 }) {
 function RewriteTab({ activeScene }) {
   const { 
     selection, provider, apiKey, localBaseUrl, prompts, currentModel,
-    lastRewrite, setLastRewrite, saveLastRewrite, updatePrompt 
+    lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite, updatePrompt 
   } = useAI();
   const { resources } = useNovel();
   const { openModal } = useModal();
@@ -188,13 +190,14 @@ function RewriteTab({ activeScene }) {
         <div className="rewrite-section__label">
           <Zap size={12} />
           Objetivo rápido
-          <button 
-            className="rewrite-section__edit-prompt" 
-            onClick={() => setIsEditingPrompt(!isEditingPrompt)}
-            title="Editar prompt base"
-          >
-            {isEditingPrompt ? 'Cerrar editor' : 'Ver prompt'}
-          </button>
+          <Tooltip content="Editar prompt base">
+            <button 
+              className="rewrite-section__edit-prompt" 
+              onClick={() => setIsEditingPrompt(!isEditingPrompt)}
+            >
+              {isEditingPrompt ? 'Cerrar editor' : 'Ver prompt'}
+            </button>
+          </Tooltip>
         </div>
         
         {isEditingPrompt && (
@@ -212,17 +215,17 @@ function RewriteTab({ activeScene }) {
         )}
 
         <div className="rewrite-goals">
-          {QUICK_GOALS.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              id={`rewrite-goal-${id}`}
-              className={`rewrite-goal ${activeGoal === id ? 'rewrite-goal--active' : ''}`}
-              onClick={() => setActiveGoal(id)}
-              title={QUICK_GOALS.find(g => g.id === id)?.desc}
-            >
-              <Icon size={11} />
-              {label}
-            </button>
+          {QUICK_GOALS.map(({ id, label, icon: Icon, desc }) => (
+            <Tooltip key={id} content={desc}>
+              <button
+                id={`rewrite-goal-${id}`}
+                className={`rewrite-goal ${activeGoal === id ? 'rewrite-goal--active' : ''}`}
+                onClick={() => setActiveGoal(id)}
+              >
+                <Icon size={11} />
+                {label}
+              </button>
+            </Tooltip>
           ))}
         </div>
       </div>
@@ -257,7 +260,7 @@ function RewriteTab({ activeScene }) {
           onClick={handleRewrite}
           disabled={isGenerating || !selection}
         >
-          {isGenerating ? <RefreshCw size={13} className="spinner" /> : <Wand2 size={13} />}
+          {isGenerating ? <RefreshCw size={13} className="spinner rewrite-spinner" /> : <Wand2 size={13} />}
           {isGenerating ? 'Generando...' : 'Reescribir'}
         </button>
       </div>
@@ -271,29 +274,38 @@ function RewriteTab({ activeScene }) {
               Propuesta de reescritura
             </div>
             <div className="rewrite-result__actions">
-              <button
-                className="res-action-btn"
-                id="rewrite-copy-btn"
-                onClick={handleCopy}
-                title="Copiar"
-              >
-                {copied ? <Check size={12} /> : <Copy size={12} />}
-              </button>
-              <button className="res-action-btn" id="rewrite-refresh-btn" title="Regenerar" onClick={handleRewrite}>
-                <RefreshCw size={12} />
-              </button>
+              <Tooltip content="Copiar">
+                <button
+                  className="res-action-btn"
+                  id="rewrite-copy-btn"
+                  onClick={handleCopy}
+                >
+                  {copied ? <Check size={12} /> : <Copy size={12} />}
+                </button>
+              </Tooltip>
+              <Tooltip content="Regenerar">
+                <button className="res-action-btn" id="rewrite-refresh-btn" onClick={handleRewrite}>
+                  <RefreshCw size={12} />
+                </button>
+              </Tooltip>
             </div>
           </div>
-          <div className="rewrite-result__text">
-            {lastRewrite}
-          </div>
+          <div className="rewrite-result__text" dangerouslySetInnerHTML={{ __html: renderMarkdown(lastRewrite) }}></div>
           <div className="rewrite-result__footer">
             <span className="rewrite-result__goal-tag">
               <Zap size={10} /> {QUICK_GOALS.find(g => g.id === activeGoal)?.label} aplicado
             </span>
           </div>
           <div className="rewrite-result__apply">
-            <button className="btn btn-ghost" style={{ flex: 1 }} id="rewrite-discard-btn" onClick={() => setLastRewrite('')}>
+            <button className="btn btn-ghost" style={{ flex: 1 }} id="rewrite-discard-btn" onClick={() => {
+              openModal('confirm', {
+                title: 'Descartar reescritura',
+                message: 'Esta reescritura se eliminará permanentemente. ¿Continuar?',
+                isDanger: true,
+                confirmLabel: 'Descartar',
+                onConfirm: () => discardLastRewrite()
+              });
+            }}>
               <Trash2 size={12} />
               Descartar
             </button>
@@ -369,6 +381,17 @@ function DebateTab({ activeScene }) {
 
   const handleSend = async () => {
     if (!input.trim() || isAnyLoading) return
+
+    if (activeSessionTitle === 'Nuevo debate') {
+      const sceneInfo = getSceneChapterLabel(activeScene)
+      if (sceneInfo) {
+        const newTitle = sceneInfo.chapterNumber
+          ? `Cap. ${sceneInfo.chapterNumber} / ${sceneInfo.sceneTitle}`
+          : sceneInfo.sceneTitle
+        renameDebateSession(activeSessionId, newTitle)
+      }
+    }
+
     const text = input.trim()
     setInput('')
 
@@ -522,9 +545,11 @@ function DebateTab({ activeScene }) {
                     </div>
                   </div>
                   <div className="debate-agent-card__actions">
-                    <button className="debate-agent-card__btn" onClick={() => setEditingAgent(agent.id)} title="Editar">
-                      <Pencil size={13} />
-                    </button>
+                    <Tooltip content="Editar">
+                      <button className="debate-agent-card__btn" onClick={() => setEditingAgent(agent.id)}>
+                        <Pencil size={13} />
+                      </button>
+                    </Tooltip>
                   </div>
                 </div>
               ))}
@@ -545,29 +570,31 @@ function DebateTab({ activeScene }) {
       <div className="debate-toolbar">
         <div className="debate-agents__list">
           {debateAgents.map(agent => (
-            <button
-              key={agent.id}
-              id={`debate-agent-${agent.id}`}
-              className={`debate-agent-btn ${agent.active ? 'debate-agent-btn--active' : ''}`}
-              style={agent.active ? { borderColor: agent.color + '60', background: agent.color + '18', color: agent.color } : {}}
-              onClick={() => toggleDebateAgent(agent.id)}
-              title={`${agent.name} — click para activar/desactivar`}
-            >
-              <span className="debate-agent-btn__avatar" style={{ background: agent.color + '30', color: agent.color }}>
-                {agent.initials}
-              </span>
-              <span>{agent.name}</span>
-            </button>
+            <Tooltip key={agent.id} content={`${agent.name} — click para activar/desactivar`}>
+              <button
+                id={`debate-agent-${agent.id}`}
+                className={`debate-agent-btn ${agent.active ? 'debate-agent-btn--active' : ''}`}
+                style={agent.active ? { borderColor: agent.color + '60', background: agent.color + '18', color: agent.color } : {}}
+                onClick={() => toggleDebateAgent(agent.id)}
+              >
+                <span className="debate-agent-btn__avatar" style={{ background: agent.color + '30', color: agent.color }}>
+                  {agent.initials}
+                </span>
+                <span>{agent.name}</span>
+              </button>
+            </Tooltip>
           ))}
         </div>
         <div className="debate-toolbar__actions">
           {/* Sessions Dropdown */}
           <div className="debate-sessions-wrapper" ref={dropdownRef}>
-            <button className="debate-sessions-trigger" onClick={() => setSessionsMenuOpen(!sessionsMenuOpen)} title="Cambiar de chat">
-              <MessageSquare size={13} />
-              <span className="debate-sessions-truncate">{activeSessionTitle}</span>
-              <ChevronDown size={12} style={{ opacity: 0.6 }} />
-            </button>
+            <Tooltip content="Cambiar de chat">
+              <button className="debate-sessions-trigger" onClick={() => setSessionsMenuOpen(!sessionsMenuOpen)}>
+                <MessageSquare size={13} />
+                <span className="debate-sessions-truncate">{activeSessionTitle}</span>
+                <ChevronDown size={12} style={{ opacity: 0.6 }} />
+              </button>
+            </Tooltip>
 
             {sessionsMenuOpen && (
               <div className="debate-sessions-dropdown">
@@ -615,33 +642,35 @@ function DebateTab({ activeScene }) {
                       )}
                       
                       <div className="debate-session-actions">
-                        <button 
-                          className="debate-session-action-btn"
-                          title="Renombrar chat"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSessionEditTitle(session.title);
-                            setSessionEditingId(session.id);
-                          }}
-                        >
-                          <Pencil size={11} />
-                        </button>
-                        <button 
-                          className="debate-session-action-btn"
-                          title="Borrar chat"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openModal('confirm', {
-                              title: 'Borrar chat',
-                              message: `¿Seguro que quieres borrar el historial de "${session.title}" permanentemente?`,
-                              isDanger: true,
-                              confirmLabel: 'Borrar Chat',
-                              onConfirm: () => deleteDebateSession(session.id)
-                            });
-                          }}
-                        >
-                          <Trash2 size={11} />
-                        </button>
+                        <Tooltip content="Renombrar chat">
+                          <button 
+                            className="debate-session-action-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSessionEditTitle(session.title);
+                              setSessionEditingId(session.id);
+                            }}
+                          >
+                            <Pencil size={11} />
+                          </button>
+                        </Tooltip>
+                        <Tooltip content="Borrar chat">
+                          <button 
+                            className="debate-session-action-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openModal('confirm', {
+                                title: 'Borrar chat',
+                                message: `¿Seguro que quieres borrar el historial de "${session.title}" permanentemente?`,
+                                isDanger: true,
+                                confirmLabel: 'Borrar Chat',
+                                onConfirm: () => deleteDebateSession(session.id)
+                              });
+                            }}
+                          >
+                            <Trash2 size={11} />
+                          </button>
+                        </Tooltip>
                       </div>
                     </div>
                   ))}
@@ -649,47 +678,54 @@ function DebateTab({ activeScene }) {
               </div>
             )}
           </div>
-          <div className="debate-rounds" title="Número de veces que los agentes se responderán entre sí">
-            <RotateCcw size={13} strokeWidth={2.5} />
-            <select value={rounds} onChange={(e) => setRounds(Number(e.target.value))}>
-              <option value={1}>1</option>
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-            </select>
-          </div>
-          <button
-            className={`debate-context-btn ${useSceneContext ? 'debate-context-btn--active' : ''}`}
-            onClick={() => setUseSceneContext(p => !p)}
-            title={useSceneContext ? 'Desactivar contexto de escena' : 'Activar contexto de escena actual'}
-          >
-            <AlignLeft size={13} />
-          </button>
-          <button
-            className={`debate-context-btn ${useCompendiumContext ? 'debate-context-btn--active' : ''}`}
-            onClick={() => setUseCompendiumContext(p => !p)}
-            title={useCompendiumContext ? 'Desactivar contexto del Compendio' : 'Activar contexto del Compendio'}
-          >
-            <BookOpen size={13} />
-          </button>
-          <button className="debate-manage-btn" onClick={() => setView('agents')} title="Gestionar participantes">
-            <MoreHorizontal size={15} />
-          </button>
-          {debateHistory.length > 0 && (
+          <Tooltip content="Número de veces que los agentes se responderán entre sí">
+            <div className="debate-rounds">
+              <RotateCcw size={13} strokeWidth={2.5} />
+              <select value={rounds} onChange={(e) => setRounds(Number(e.target.value))}>
+                <option value={1}>1</option>
+                <option value={2}>2</option>
+                <option value={3}>3</option>
+              </select>
+            </div>
+          </Tooltip>
+          <Tooltip content={useSceneContext ? 'Desactivar contexto de escena' : 'Activar contexto de escena actual'}>
             <button
-              className="debate-clear-btn"
-              onClick={() => {
-                openModal('confirm', {
-                  title: 'Limpiar chat',
-                  message: '¿Estás seguro de que quieres borrar todo el historial de este debate?',
-                  isDanger: true,
-                  confirmLabel: 'Limpiar Todo',
-                  onConfirm: () => clearDebateHistory()
-                });
-              }}
-              title="Borrar historial"
+              className={`debate-context-btn ${useSceneContext ? 'debate-context-btn--active' : ''}`}
+              onClick={() => setUseSceneContext(p => !p)}
             >
-              <Trash2 size={13} />
+              <AlignLeft size={13} />
             </button>
+          </Tooltip>
+          <Tooltip content={useCompendiumContext ? 'Desactivar contexto del Compendio' : 'Activar contexto del Compendio'}>
+            <button
+              className={`debate-context-btn ${useCompendiumContext ? 'debate-context-btn--active' : ''}`}
+              onClick={() => setUseCompendiumContext(p => !p)}
+            >
+              <BookOpen size={13} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Gestionar participantes">
+            <button className="debate-manage-btn" onClick={() => setView('agents')}>
+              <MoreHorizontal size={15} />
+            </button>
+          </Tooltip>
+          {debateHistory.length > 0 && (
+            <Tooltip content="Borrar historial">
+              <button
+                className="debate-clear-btn"
+                onClick={() => {
+                  openModal('confirm', {
+                    title: 'Limpiar chat',
+                    message: '¿Estás seguro de que quieres borrar todo el historial de este debate?',
+                    isDanger: true,
+                    confirmLabel: 'Limpiar Todo',
+                    onConfirm: () => clearDebateHistory()
+                  });
+                }}
+              >
+                <Trash2 size={13} />
+              </button>
+            </Tooltip>
           )}
         </div>
       </div>
@@ -711,7 +747,7 @@ function DebateTab({ activeScene }) {
           if (msg.role === 'user') {
             return (
               <div key={msg.id} className="debate-msg debate-msg--user">
-                <div className="debate-msg__bubble debate-msg__bubble--user">{msg.text}</div>
+                <div className="debate-msg__bubble debate-msg__bubble--user" dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.text) }}></div>
                 <div className="debate-msg__meta debate-msg__meta--user">
                   <span className="debate-msg__time">{msg.time}</span>
                   <div className="debate-msg__avatar debate-msg__avatar--user"><User size={11} /></div>
@@ -723,7 +759,7 @@ function DebateTab({ activeScene }) {
             return (
               <div key={msg.id} className="debate-msg debate-msg--error">
                 <AlertTriangle size={13} />
-                <span><strong>{msg.agentName}:</strong> {msg.text}</span>
+                <span><strong>{msg.agentName}:</strong> <span dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.text) }} /></span>
               </div>
             )
           }
@@ -742,8 +778,7 @@ function DebateTab({ activeScene }) {
                 <span className="debate-msg__time">{msg.time}</span>
               </div>
               <div className="debate-msg__bubble debate-msg__bubble--agent" style={{ borderLeftColor: color + '70' }}>
-                <div className={`debate-msg__text ${!isExpanded ? 'debate-msg__text--clamped' : ''}`}>
-                  {text}
+                <div className={`debate-msg__text ${!isExpanded ? 'debate-msg__text--clamped' : ''}`} dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }}>
                 </div>
                 {!isExpanded && (
                   <button
@@ -916,10 +951,8 @@ function OracleTab({ activeScene }) {
       }
 
       let compendiumInfo = ''
-      if (activeNovel) {
-        const keywords = extractKeywords(plainText)
-        const compResults = await searchCompendium(keywords, activeNovel.id)
-        compendiumInfo = formatSearchResults(compResults)
+      if (activeNovel && oracleStatus.detectedEntities?.length > 0) {
+        compendiumInfo = await fetchDetectedEntityData(oracleStatus.detectedEntities, activeNovel.id)
       }
       setCompContextUsed(compendiumInfo)
 
@@ -1038,9 +1071,17 @@ ${plainText}
                 <span className="oracle-entities-label">Coincidencias halladas en el Compendio:</span>
                 <span className="oracle-entities-list">
                   {oracleStatus.detectedEntities.map((e, i) => (
-                    <span key={e.name} className="oracle-entity-tag">
-                      {e.name}
-                    </span>
+                    <Tooltip key={e.name} content={
+                      <div>
+                        <strong>{e.name}</strong> ({e.label})
+                        <br />
+                        Palabras detectadas: {e.matchedTerms.join(', ')}
+                      </div>
+                    }>
+                      <span className="oracle-entity-tag oracle-entity-tag--hoverable">
+                        {e.name}
+                      </span>
+                    </Tooltip>
                   ))}
                 </span>
               </span>
@@ -1050,9 +1091,17 @@ ${plainText}
                 <span className="oracle-entities-label">Coincidencias halladas en el Compendio:</span>
                 <span className="oracle-entities-list">
                   {oracleStatus.detectedEntities.map((e, i) => (
-                    <span key={e.name} className="oracle-entity-tag oracle-entity-tag--error">
-                      {e.name}
-                    </span>
+                    <Tooltip key={e.name} content={
+                      <div>
+                        <strong>{e.name}</strong> ({e.label})
+                        <br />
+                        Palabras detectadas: {e.matchedTerms.join(', ')}
+                      </div>
+                    }>
+                      <span className="oracle-entity-tag oracle-entity-tag--error oracle-entity-tag--hoverable">
+                        {e.name}
+                      </span>
+                    </Tooltip>
                   ))}
                 </span>
               </span>
@@ -1086,13 +1135,14 @@ ${plainText}
             <div key={entry.id} className={`oracle-tab__entry ${isChecked ? 'oracle-tab__entry--checked' : ''}`}>
               <div className="oracle-tab__entry-header">
                 <div className="oracle-tab__entry-left">
-                  <button
-                    className="oracle-tab__check-btn"
-                    onClick={() => toggleChecked(entry.id)}
-                    title={isChecked ? 'Marcar como pendiente' : 'Marcar como corregido'}
-                  >
-                    {isChecked ? <CheckCheck size={14} /> : <Check size={14} />}
-                  </button>
+                  <Tooltip content={isChecked ? 'Marcar como pendiente' : 'Marcar como corregido'}>
+                    <button
+                      className="oracle-tab__check-btn"
+                      onClick={() => toggleChecked(entry.id)}
+                    >
+                      {isChecked ? <CheckCheck size={14} /> : <Check size={14} />}
+                    </button>
+                  </Tooltip>
                   <div className="oracle-tab__entry-info">
                     <div className="oracle-tab__entry-label">
                       <Eye size={12} />
@@ -1107,24 +1157,25 @@ ${plainText}
                 </div>
                 <div className="oracle-tab__entry-meta">
                   <span className="oracle-tab__entry-time">{entry.time}</span>
-                  <button
-                    className="oracle-tab__action-btn"
-                    onClick={() => handleCopy(entry.id)}
-                    title="Copiar"
-                  >
-                    {copiedId === entry.id ? <Check size={12} /> : <Copy size={12} />}
-                  </button>
-                  <button
-                    className="oracle-tab__action-btn oracle-tab__action-btn--delete"
-                    onClick={() => handleDeleteEntry(entry.id)}
-                    title="Eliminar veredicto"
-                  >
-                    <Trash2 size={12} />
-                  </button>
+                  <Tooltip content="Copiar">
+                    <button
+                      className="oracle-tab__action-btn"
+                      onClick={() => handleCopy(entry.id)}
+                    >
+                      {copiedId === entry.id ? <Check size={12} /> : <Copy size={12} />}
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Eliminar veredicto">
+                    <button
+                      className="oracle-tab__action-btn oracle-tab__action-btn--delete"
+                      onClick={() => handleDeleteEntry(entry.id)}
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </Tooltip>
                 </div>
               </div>
-              <div className={`oracle-tab__entry-text ${isExpanded ? 'oracle-tab__entry-text--expanded' : 'oracle-tab__entry-text--clamped'}`}>
-                {cleanText}
+              <div className={`oracle-tab__entry-text ${isExpanded ? 'oracle-tab__entry-text--expanded' : 'oracle-tab__entry-text--clamped'}`} dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanText) }}>
               </div>
               {cleanText.length > 300 && (
                 <button
@@ -1231,16 +1282,17 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
           </div>
           
           <div className="ai-panel__header-right">
-            <button 
-              className={`ai-panel__api-btn ${!apiKey ? 'needs-key' : ''}`}
-              onClick={() => onOpenSettings('ia')}
-              title="Configurar API"
-            >
-              <Key size={13} />
-              <span className="ai-panel__api-btn-text" style={{ maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {currentModel || 'API'}
-              </span>
-            </button>
+            <Tooltip content="Configurar API">
+              <button 
+                className={`ai-panel__api-btn ${!apiKey ? 'needs-key' : ''}`}
+                onClick={() => onOpenSettings('ia')}
+              >
+                <Key size={13} />
+                <span className="ai-panel__api-btn-text" style={{ maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {currentModel || 'API'}
+                </span>
+              </button>
+            </Tooltip>
             <button className="ai-panel__close" id="ai-panel-close-btn" onClick={onClose} aria-label="Cerrar panel IA">
               <X size={15} />
             </button>
