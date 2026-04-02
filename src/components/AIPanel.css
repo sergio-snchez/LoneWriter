@@ -389,6 +389,10 @@
   color: var(--text-muted);
 }
 
+.rewrite-spinner {
+  color: #1a1710 !important;
+}
+
 /* Actions */
 .rewrite-actions {
   display: flex;
@@ -1623,4 +1627,127 @@
   background: rgba(224, 112, 112, 0.12);
   border-color: rgba(224, 112, 112, 0.25);
   color: var(--red);
+}
+
+.oracle-entity-tag--hoverable {
+  cursor: pointer;
+  position: relative;
+}
+.oracle-entity-tag--hoverable::after {
+  content: '?';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  margin-left: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  color: inherit;
+  opacity: 0.6;
+}
+
+/* ============================================
+   RENDERED MARKDOWN STYLES
+   ============================================ */
+
+/* Debate messages */
+.debate-msg__text :where(p) {
+  margin: 0.4em 0;
+}
+.debate-msg__text :where(p:first-child) {
+  margin-top: 0;
+}
+.debate-msg__text :where(p:last-child) {
+  margin-bottom: 0;
+}
+.debate-msg__text :where(strong, b) {
+  font-weight: 700;
+}
+.debate-msg__text :where(em, i) {
+  font-style: italic;
+}
+.debate-msg__text :where(ul, ol) {
+  padding-left: 1.2em;
+  margin: 0.3em 0;
+}
+.debate-msg__text :where(li) {
+  margin: 0.15em 0;
+}
+.debate-msg__text :where(code) {
+  background: rgba(255,255,255,0.08);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: 'Fira Code', 'Consolas', monospace;
+}
+.debate-msg__text :where(blockquote) {
+  border-left: 3px solid rgba(255,255,255,0.2);
+  padding-left: 0.75em;
+  margin: 0.4em 0;
+  color: rgba(255,255,255,0.7);
+}
+
+/* Oracle entries */
+.oracle-tab__entry-text :where(p) {
+  margin: 0.4em 0;
+}
+.oracle-tab__entry-text :where(p:first-child) {
+  margin-top: 0;
+}
+.oracle-tab__entry-text :where(p:last-child) {
+  margin-bottom: 0;
+}
+.oracle-tab__entry-text :where(strong, b) {
+  font-weight: 700;
+}
+.oracle-tab__entry-text :where(em, i) {
+  font-style: italic;
+}
+.oracle-tab__entry-text :where(ul, ol) {
+  padding-left: 1.2em;
+  margin: 0.3em 0;
+}
+.oracle-tab__entry-text :where(li) {
+  margin: 0.15em 0;
+}
+.oracle-tab__entry-text :where(code) {
+  background: rgba(0,0,0,0.06);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: 'Fira Code', 'Consolas', monospace;
+}
+.oracle-tab__entry-text :where(blockquote) {
+  border-left: 3px solid rgba(0,0,0,0.15);
+  padding-left: 0.75em;
+  margin: 0.4em 0;
+  color: rgba(0,0,0,0.7);
+}
+
+/* Rewrite results */
+.rewrite-result__text :where(p) {
+  margin: 0.6em 0;
+}
+.rewrite-result__text :where(p:first-child) {
+  margin-top: 0;
+}
+.rewrite-result__text :where(p:last-child) {
+  margin-bottom: 0;
+}
+.rewrite-result__text :where(strong, b) {
+  font-weight: 700;
+}
+.rewrite-result__text :where(em, i) {
+  font-style: italic;
+}
+.rewrite-result__text :where(ul, ol) {
+  padding-left: 1.2em;
+  margin: 0.3em 0;
+}
+.rewrite-result__text :where(li) {
+  margin: 0.15em 0;
 }

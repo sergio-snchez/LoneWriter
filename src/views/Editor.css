@@ -682,21 +682,45 @@
 }
 
 .meta-select {
-  background: transparent;
-  border: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
   color: var(--text-secondary);
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
-  padding: 2px 4px;
+  padding: 4px 28px 4px 8px;
   border-radius: 4px;
-  transition: background 0.2s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
   font-family: 'Inter', sans-serif;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b6879' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
 }
 
 .meta-select:hover {
-  background: var(--bg-hover);
+  background-color: var(--bg-hover);
+  border-color: rgba(255,255,255,0.12);
   color: var(--text-primary);
+}
+
+.meta-select:focus {
+  outline: none;
+  background-color: var(--bg-hover);
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.meta-select:active {
+  background-color: var(--bg-hover);
+  border-color: var(--accent);
+}
+
+.meta-select option {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  padding: 6px;
 }
 
 .editor-header__status-row {
@@ -715,26 +739,6 @@
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   position: relative;
-}
-
-.editor-traffic-light[data-tooltip]:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 4px;
-  padding: 4px 8px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-  color: var(--text-muted);
-  white-space: normal;
-  max-width: 280px;
-  text-align: center;
-  z-index: 100;
-  pointer-events: none;
-  box-shadow: var(--shadow-sm);
 }
 
 .editor-traffic-light .oracle-traffic-light__dot {
@@ -1111,4 +1115,13 @@
 
 .progress-item__bar {
   height: 6px !important;
+}
+
+.editor-view__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 48px);
+  color: var(--text-muted);
+  font-size: 14px;
 }

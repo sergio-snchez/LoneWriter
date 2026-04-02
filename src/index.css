@@ -225,3 +225,25 @@ body {
   width: 100%;
 }
 .search-bar input::placeholder { color: var(--text-muted); }
+
+/* ---- Tooltip ---- */
+.tooltip-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip-content {
+  padding: 5px 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: normal;
+  max-width: 280px;
+  text-align: center;
+  z-index: 9999;
+  pointer-events: none;
+  box-shadow: var(--shadow-sm);
+  line-height: 1.4;
+}

@@ -1,32 +1,14 @@
 import { useState, useRef } from 'react'
 import {
-  FileText, Image, BookOpen, Music, Video, Map, Link as LinkIcon,
-  Upload, Search, FolderOpen, Tag, Calendar, HardDrive,
-  ExternalLink, Trash2, Eye, MoreHorizontal, Filter, Plus, Zap, AlertCircle, X, ChevronDown
+  FileText, Upload, Search, FolderOpen, Tag, Calendar, HardDrive,
+  ExternalLink, Trash2, Eye, Filter, Plus, Zap, AlertCircle, X
 } from 'lucide-react'
 import { useNovel } from '../context/NovelContext'
+import { Tooltip } from '../components/Tooltip'
+import { renderMarkdown } from '../utils/renderMarkdown'
 import './Resources.css'
 
-const ICON_MAP = {
-  'file-text': FileText,
-  'image':     Image,
-  'book-open': BookOpen,
-  'music':     Music,
-  'video':     Video,
-  'map':       Map,
-}
-
-const TYPE_COLORS = {
-  'PDF':            { bg: '#e0707022', color: '#e07070', badge: 'badge-red'   },
-  'ZIP (imágenes)': { bg: '#6b9fd422', color: '#6b9fd4', badge: 'badge-blue'  },
-  'eBook':          { bg: '#d4a85322', color: '#d4a853', badge: 'badge-gold'  },
-  'Documento Word': { bg: '#6b9fd422', color: '#6b9fd4', badge: 'badge-blue'  },
-  'Imagen':         { bg: '#5cb98a22', color: '#5cb98a', badge: 'badge-green' },
-  'Enlace':         { bg: '#9b72cf22', color: '#9b72cf', badge: 'badge-muted' },
-  'Video':          { bg: '#e0707022', color: '#e07070', badge: 'badge-red'   },
-  'Markdown':       { bg: '#d4a85322', color: '#d4a853', badge: 'badge-gold'  },
-  'Otro':           { bg: '#ffffff11', color: '#9e9bab', badge: 'badge-muted' },
-}
+const ALLOWED_EXTENSIONS = ['txt', 'md', 'json', 'csv']
 
 function formatBytes(bytes, decimals = 2) {
   if (!+bytes) return '0 Bytes'
@@ -37,26 +19,26 @@ function formatBytes(bytes, decimals = 2) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
 }
 
-function ResourceRow({ res, onDelete, onToggleAI, onView }) {
-  const IconComp = ICON_MAP[res.icon] || FileText
-  const typeStyle = TYPE_COLORS[res.type] || { bg: '#ffffff11', color: '#9e9bab', badge: 'badge-muted' }
+function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
   const dateStr = res.dateAdded ? new Date(res.dateAdded).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '--'
 
   return (
     <div className="res-row" id={`resource-${res.id}`}>
-      <div className="res-row__icon-wrap" style={{ background: typeStyle.bg }}>
-        <IconComp size={18} style={{ color: typeStyle.color }} />
+      <div className="res-row__icon-wrap" style={{ background: 'rgba(212,168,83,0.12)' }}>
+        <FileText size={18} style={{ color: 'var(--accent)' }} />
       </div>
 
       <div className="res-row__info">
-        <div className="res-row__title-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="res-row__title-wrap">
           <span className="res-row__name" style={{ flexShrink: 1 }}>{res.name}</span>
-          {res.activeForAI && (
-            <span style={{ color: 'var(--accent)', fontSize: '10px', fontWeight: 600, background: 'var(--accent-dim)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+        </div>
+        {res.ignoredForOracle !== 1 && (
+          <div style={{ marginTop: '4px' }}>
+            <span style={{ color: '#d4a853', fontSize: '10px', fontWeight: 600, background: 'rgba(212, 168, 83, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
               <Zap size={10} style={{ fill: 'currentColor' }} /> Contexto IA
             </span>
-          )}
-        </div>
+          </div>
+        )}
         <span className="res-row__desc">{res.description}</span>
         <div className="res-row__tags">
           {res.tags?.map(t => <span key={t} className="tag">{t}</span>)}
@@ -64,17 +46,11 @@ function ResourceRow({ res, onDelete, onToggleAI, onView }) {
       </div>
 
       <div className="res-row__meta">
-        <span className={`badge ${typeStyle.badge}`}>{res.type}</span>
+        <span className="badge badge-gold">{res.type}</span>
         <div className="res-row__detail">
           <HardDrive size={11} />
           {res.size}
         </div>
-        {res.pages && (
-          <div className="res-row__detail">
-            <FileText size={11} />
-            {res.pages} págs.
-          </div>
-        )}
         <div className="res-row__detail">
           <Calendar size={11} />
           {dateStr}
@@ -82,23 +58,25 @@ function ResourceRow({ res, onDelete, onToggleAI, onView }) {
       </div>
 
       <div className="res-row__actions">
-        {res.content && (
+        <Tooltip content={res.ignoredForOracle === 1 ? "Excluido del análisis de coherencia" : "Incluido en análisis de coherencia"}>
           <button 
-            className="res-action-btn"
-            style={res.activeForAI ? { background: 'var(--accent)', borderColor: 'var(--accent)', color: '#fff' } : {}}
-            aria-label="Usar como contexto para IA" 
-            title={res.activeForAI ? "Desactivar contexto IA" : "Activar contexto IA"}
-            onClick={() => onToggleAI(res)}
+            className={`res-action-btn ${res.ignoredForOracle !== 1 ? 'res-action-btn--ai-active' : ''}`}
+            aria-label="Ignorar en coherencia del Oráculo" 
+            onClick={() => onToggleIgnore(res)}
           >
-            <Zap size={14} style={{ fill: res.activeForAI ? 'currentColor' : 'none' }} />
+            <Zap size={14} style={{ fill: res.ignoredForOracle !== 1 ? 'currentColor' : 'none' }} />
           </button>
-        )}
-        <button className="res-action-btn" aria-label="Ver archivo" title="Ver" onClick={() => onView(res)}>
-          <Eye size={14} />
-        </button>
-        <button className="res-action-btn res-action-btn--danger" aria-label="Eliminar" title="Eliminar" onClick={() => onDelete(res.id)}>
-          <Trash2 size={14} />
-        </button>
+        </Tooltip>
+        <Tooltip content="Ver">
+          <button className="res-action-btn" aria-label="Ver archivo" onClick={() => onView(res)}>
+            <Eye size={14} />
+          </button>
+        </Tooltip>
+        <Tooltip content="Eliminar">
+          <button className="res-action-btn res-action-btn--danger" aria-label="Eliminar" onClick={() => onDelete(res.id)}>
+            <Trash2 size={14} />
+          </button>
+        </Tooltip>
       </div>
     </div>
   )
@@ -108,103 +86,64 @@ export default function ResourcesView() {
   const { resources, addCompendiumEntry, deleteCompendiumEntry, updateCompendiumEntry } = useNovel()
   const [query, setQuery] = useState('')
   const [activeTag, setActiveTag] = useState(null)
-  const [activeTypes, setActiveTypes] = useState([])
   const [showFilters, setShowFilters] = useState(false)
   
   const [viewingRes, setViewingRes] = useState(null)
   const fileInputRef = useRef(null)
 
-  const TYPE_FILTER_GROUPS = [
-    { label: 'PDFs', types: ['PDF'] },
-    { label: 'eBooks', types: ['eBook'] },
-    { label: 'Imágenes', types: ['Imagen', 'ZIP (imágenes)'] },
-    { label: 'Word', types: ['Documento Word'] },
-    { label: 'Texto', types: ['Markdown', 'TXT', 'JSON', 'CSV'] },
-    { label: 'Video', types: ['Video'] },
-    { label: 'Otros', types: ['Enlace', 'Música', 'Otro'] },
-  ];
-
-  const toggleType = (types) => {
-    setActiveTypes(prev => {
-      const key = types[0];
-      const isActive = types.some(t => prev.includes(t));
-      return isActive ? prev.filter(t => !types.includes(t)) : [...prev, ...types];
-    });
-  };
-
   const clearFilters = () => {
-    setActiveTypes([]);
-    setActiveTag(null);
-    setQuery('');
-  };
+    setActiveTag(null)
+    setQuery('')
+  }
 
   const ALL_TAGS = [...new Set(resources.flatMap(r => r.tags || []))]
 
-  const hasActiveFilters = activeTypes.length > 0 || activeTag || query;
+  const hasActiveFilters = activeTag || query
 
   const filtered = resources.filter(r => {
     const matchQ = !query || r.name.toLowerCase().includes(query.toLowerCase()) || r.description?.toLowerCase().includes(query.toLowerCase())
     const matchT = !activeTag || r.tags?.includes(activeTag)
-    const matchType = activeTypes.length === 0 || activeTypes.includes(r.type)
-    return matchQ && matchT && matchType
+    return matchQ && matchT
   })
 
   const totalBytes = resources.reduce((acc, r) => acc + (r.sizeRaw || 0), 0)
   const totalSize = formatBytes(totalBytes)
 
-  const statGroups = [
-    { label: 'PDFs y eBooks', types: ['PDF','eBook'], color: 'var(--red)' },
-    { label: 'Imágenes y Zips', types: ['ZIP (imágenes)','Imagen'], color: 'var(--green)' },
-    { label: 'Documentos text', types: ['Documento Word','Markdown', 'TXT', 'JSON', 'CSV'], color: 'var(--accent)' },
-    { label: 'Otros', types: ['Video','Música','Enlace', 'Otro'], color: 'var(--blue)' },
-  ];
-
   const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    const ext = file.name.split('.').pop().toLowerCase();
-    const isTextFormat = ['txt', 'md', 'json', 'csv'].includes(ext);
-    
-    let type = 'Otro';
-    let icon = 'file-text';
-    if (['pdf'].includes(ext)) { type = 'PDF'; icon = 'book-open'; }
-    else if (['jpg','jpeg','png','gif','webp'].includes(ext)) { type = 'Imagen'; icon = 'image'; }
-    else if (['doc','docx'].includes(ext)) { type = 'Documento Word'; icon = 'file-text'; }
-    else if (['epub','mobi'].includes(ext)) { type = 'eBook'; icon = 'book-open'; }
-    else if (['mp4','mov','avi'].includes(ext)) { type = 'Video'; icon = 'video'; }
-    else if (['mp3','wav'].includes(ext)) { type = 'Música'; icon = 'music'; }
-    else if (['zip','rar','7z'].includes(ext)) { type = 'ZIP (imágenes)'; icon = 'folder-open'; }
-    else if (ext === 'md') { type = 'Markdown'; icon = 'file-text'; }
-    else if (['txt', 'csv', 'json'].includes(ext)) { type = ext.toUpperCase(); icon = 'file-text'; }
+    const ext = file.name.split('.').pop().toLowerCase()
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      alert(`Formato .${ext} no soportado. Formatos aceptados: .txt, .md, .csv, .json`)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
+
+    const typeMap = { txt: 'TXT', md: 'Markdown', json: 'JSON', csv: 'CSV' }
 
     const newRes = {
       name: file.name,
       description: 'Archivo importado',
-      type,
-      icon,
+      type: typeMap[ext],
+      icon: 'file-text',
       size: formatBytes(file.size),
       sizeRaw: file.size,
       dateAdded: new Date().toISOString(),
       tags: [],
-      activeForAI: isTextFormat, // Por defecto se activa si es texto procesable
+      activeForAI: true,
       content: null
-    };
-
-    if (isTextFormat) {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        newRes.content = event.target.result;
-        await addCompendiumEntry('resources', newRes);
-      };
-      reader.readAsText(file);
-    } else {
-      addCompendiumEntry('resources', newRes);
     }
+
+    const reader = new FileReader()
+    reader.onload = async (event) => {
+      newRes.content = event.target.result
+      await addCompendiumEntry('resources', newRes)
+    }
+    reader.readAsText(file)
     
-    // Reset file input
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   return (
     <div className="resources-view">
@@ -213,7 +152,8 @@ export default function ResourcesView() {
         type="file" 
         ref={fileInputRef} 
         style={{ display: 'none' }} 
-        onChange={handleFileChange} 
+        onChange={handleFileChange}
+        accept=".txt,.md,.json,.csv" 
       />
 
       {/* Header */}
@@ -233,7 +173,7 @@ export default function ResourcesView() {
             Filtros
             {hasActiveFilters && (
               <span style={{ background: 'var(--accent)', color: '#1a1710', borderRadius: '99px', fontSize: '10px', fontWeight: 700, padding: '0 5px', lineHeight: '16px' }}>
-                {activeTypes.length + (activeTag ? 1 : 0) + (query ? 1 : 0)}
+                {(activeTag ? 1 : 0) + (query ? 1 : 0)}
               </span>
             )}
           </button>
@@ -245,18 +185,21 @@ export default function ResourcesView() {
       </div>
 
       <div className="resources-alerts" style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px 26px 4px' }}>
-        <div style={{ padding: '12px 16px', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: '8px', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-          <AlertCircle size={16} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: '2px' }} />
+        {/* Beta Warning + Formatos */}
+        <div style={{ padding: '12px 16px', background: 'rgba(224,112,112,0.08)', border: '1px solid rgba(224,112,112,0.25)', borderRadius: '8px', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexShrink: 0, marginTop: '1px' }}>
+            <span style={{ background: 'var(--red)', color: '#fff', borderRadius: '99px', fontSize: '10px', fontWeight: 700, padding: '2px 8px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Beta</span>
+          </span>
           <div style={{ lineHeight: '1.5' }}>
-            <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>Formatos integrados con la IA</strong> 
-            Solo los archivos de texto (<code>.txt</code>, <code>.md</code>, <code>.csv</code>, <code>.json</code>) podrán usarse como Base de Conocimiento para la IA en esta versión. Activa el icono del Rayo en cada archivo para incluirlo. Otros formatos solo quedarán guardados aquí como referencia para ti.
+            <strong style={{ color: 'var(--red)', display: 'block', marginBottom: '4px' }}>Funcionalidad en desarrollo</strong>
+            Solo se procesan archivos de texto plano (<code>.txt</code>, <code>.md</code>, <code>.csv</code>, <code>.json</code>). Activa el icono del Rayo en cada archivo para incluirlo como Base de Conocimiento para la IA. El soporte para PDF, eBooks y otros formatos se irá añadiendo en futuras actualizaciones.
           </div>
         </div>
         
-        <div style={{ padding: '12px 16px', background: 'rgba(224,112,112,0.1)', border: '1px solid rgba(224,112,112,0.25)', borderRadius: '8px', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-          <Zap size={16} style={{ color: 'var(--red)', flexShrink: 0, marginTop: '2px' }} />
+        <div style={{ padding: '12px 16px', background: 'rgba(212,168,83,0.1)', border: '1px solid rgba(212,168,83,0.25)', borderRadius: '8px', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+          <Zap size={16} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: '2px' }} />
           <div style={{ lineHeight: '1.5' }}>
-            <strong style={{ color: 'var(--red)', display: 'block', marginBottom: '4px' }}>Impacto en Tokens de IA</strong> 
+            <strong style={{ color: 'var(--accent-light)', display: 'block', marginBottom: '4px' }}>Impacto en Tokens de IA</strong> 
             Si subes y activas archivos de texto muy largos (ej: un documento de 10.000 palabras de lore), todo ese contenido se enviará en <strong>cada</strong> petición a la IA, consumiendo bastantes tokens. Úsalo con moderación.
           </div>
         </div>
@@ -264,32 +207,13 @@ export default function ResourcesView() {
 
       {/* Filter panel */}
       {showFilters && (
-        <div style={{ margin: '0 26px 0', padding: '14px 16px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tipo de archivo</span>
-            {hasActiveFilters && (
-              <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '2px 8px', height: 'auto' }} onClick={clearFilters}>
-                <X size={11} /> Limpiar filtros
-              </button>
-            )}
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {TYPE_FILTER_GROUPS.map(({ label, types }) => {
-              const isActive = types.some(t => activeTypes.includes(t));
-              const count = resources.filter(r => types.includes(r.type)).length;
-              return (
-                <button
-                  key={label}
-                  onClick={() => toggleType(types)}
-                  className="tag"
-                  style={isActive ? { background: 'var(--accent-dim)', borderColor: 'var(--border-accent)', color: 'var(--accent-light)', fontWeight: 600 } : {}}
-                >
-                  {label}
-                  <span style={{ opacity: 0.6, fontSize: '10px' }}>({count})</span>
-                </button>
-              );
-            })}
-          </div>
+        <div style={{ margin: '0 26px 0', padding: '14px 16px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Filtros activos</span>
+          {hasActiveFilters && (
+            <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '2px 8px', height: 'auto' }} onClick={clearFilters}>
+              <X size={11} /> Limpiar filtros
+            </button>
+          )}
         </div>
       )}
 
@@ -327,17 +251,6 @@ export default function ResourcesView() {
         </div>
       </div>
 
-      {/* Stats bar */}
-      <div className="resources-stats">
-        {statGroups.map(({ label, types, color }) => (
-          <div key={label} className="resources-stat">
-            <span className="resources-stat__dot" style={{ background: color }} />
-            <span className="resources-stat__count">{resources.filter(r => types.includes(r.type)).length}</span>
-            <span className="resources-stat__label">{label}</span>
-          </div>
-        ))}
-      </div>
-
       {/* File list */}
       {filtered.length === 0 ? (
         <div className="resources-empty">
@@ -352,7 +265,7 @@ export default function ResourcesView() {
               key={res.id} 
               res={res} 
               onDelete={(id) => deleteCompendiumEntry('resources', id)}
-              onToggleAI={(r) => updateCompendiumEntry('resources', r.id, { activeForAI: !r.activeForAI })}
+              onToggleIgnore={(r) => updateCompendiumEntry('resources', r.id, { ignoredForOracle: r.ignoredForOracle ? 0 : 1 })}
               onView={setViewingRes}
             />
           ))}
@@ -384,9 +297,7 @@ export default function ResourcesView() {
             </div>
             <div className="modal-body" style={{ padding: 20, overflowY: 'auto', flex: 1 }}>
               {viewingRes.content ? (
-                <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', margin: 0, color: 'var(--text-secondary)', fontSize: 14 }}>
-                  {viewingRes.content}
-                </pre>
+                <div className="resource-viewer__content" dangerouslySetInnerHTML={{ __html: renderMarkdown(viewingRes.content) }}></div>
               ) : (
                 <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                   <Eye size={32} style={{ opacity: 0.5, marginBottom: 12 }} />

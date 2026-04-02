@@ -7,7 +7,6 @@ import {
 import Sidebar from './components/Sidebar'
 import AIPanel from './components/AIPanel'
 import SettingsModal from './components/SettingsModal'
-import { Tooltip } from './components/Tooltip'
 import EditorView from './views/Editor'
 import CompendiumView from './views/Compendium'
 import ResourcesView from './views/Resources'
@@ -41,7 +40,7 @@ export default function App() {
   
   const { 
     activeNovel, activeScene, allNovels, loading, acts,
-    switchNovel, createNovel, deleteNovel, updateNovelTarget, refreshAfterRestore
+    switchNovel, createNovel, deleteNovel, updateNovelTarget
   } = useNovel();
   
   const fileInputRef = useRef(null);
@@ -49,8 +48,6 @@ export default function App() {
 
   // Cloud Restore Listener
   useEffect(() => {
-    let isRestoring = false;
-
     const handleCloudVersion = (e) => {
       const { date } = e.detail;
       openModal('confirm', {
@@ -58,9 +55,6 @@ export default function App() {
         message: `Se ha detectado una copia de seguridad en Google Drive más reciente (${new Date(date).toLocaleString()}). ¿Deseas restaurar tus proyectos ahora? Se sobrescribirá la base de datos local.`,
         confirmLabel: 'Restaurar ahora',
         onConfirm: async () => {
-          if (isRestoring) return;
-          isRestoring = true;
-
           try {
              const cloudData = await GoogleDriveService.downloadBackup();
              if (cloudData) {
@@ -73,12 +67,10 @@ export default function App() {
                  }
                });
                localStorage.setItem('lw_last_cloud_sync', date);
-               await refreshAfterRestore();
+               window.location.reload();
              }
           } catch (err) {
             alert('Error al restaurar: ' + err.message);
-          } finally {
-            isRestoring = false;
           }
         }
       });
@@ -86,7 +78,7 @@ export default function App() {
 
     window.addEventListener('cloud-version-available', handleCloudVersion);
     return () => window.removeEventListener('cloud-version-available', handleCloudVersion);
-  }, [openModal, refreshAfterRestore]);
+  }, [openModal]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -301,14 +293,13 @@ export default function App() {
                       <span style={{flex: 1}}>{n.title}</span>
                       {activeNovel?.id === n.id && <CheckCircle2 size={12} className="text-success" />}
                     </button>
-                    <Tooltip content="Eliminar proyecto">
-                      <button 
-                        className="project-delete-btn" 
-                        onClick={(e) => handleDeleteProject(e, n.id)}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </Tooltip>
+                    <button 
+                      className="project-delete-btn" 
+                      onClick={(e) => handleDeleteProject(e, n.id)}
+                      title="Eliminar proyecto"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 ))}
                 
@@ -336,45 +327,42 @@ export default function App() {
           <span className="app-topbar__divider">|</span>
           <span className="app-topbar__novel">{activeNovel?.title || 'Sin título'}</span>
         </div>
-        <Tooltip content="Ver estadísticas detalladas">
-          <div 
-            className="app-topbar__center" 
-            onClick={() => window.dispatchEvent(new CustomEvent('toggle-stats'))}
-            style={{ cursor: 'pointer' }}
-          >
-            <div className="app-topbar__word-count">
-              <span className="app-topbar__word-num">{activeNovel?.wordCount?.toLocaleString('es-ES') || 0}</span>
-              <span className="app-topbar__word-label">palabras escritas</span>
-            </div>
-            <div className="app-topbar__divider-v" />
-            <div className="app-topbar__word-count">
-              <span className="app-topbar__word-num">{wordPct}%</span>
-              <span className="app-topbar__word-label">del objetivo</span>
-            </div>
+        <div 
+          className="app-topbar__center" 
+          onClick={() => window.dispatchEvent(new CustomEvent('toggle-stats'))}
+          style={{ cursor: 'pointer' }}
+          title="Ver estadísticas detalladas"
+        >
+          <div className="app-topbar__word-count">
+            <span className="app-topbar__word-num">{activeNovel?.wordCount?.toLocaleString('es-ES') || 0}</span>
+            <span className="app-topbar__word-label">palabras escritas</span>
           </div>
-        </Tooltip>
+          <div className="app-topbar__divider-v" />
+          <div className="app-topbar__word-count">
+            <span className="app-topbar__word-num">{wordPct}%</span>
+            <span className="app-topbar__word-label">del objetivo</span>
+          </div>
+        </div>
         <div className="app-topbar__right">
-          <Tooltip content="Asistente IA">
-            <button
-              className={`btn app-topbar__ai-btn ${aiPanelOpen ? 'app-topbar__ai-btn--active' : ''}`}
-              id="topbar-ai-btn"
-              onClick={() => setAiPanelOpen(o => !o)}
-            >
-              <Sparkles size={14} />
-              IA
-            </button>
-          </Tooltip>
-          <Tooltip content="Configuración">
-            <button 
-              className="btn btn-ghost btn-icon topbar-settings-btn" 
-              onClick={() => {
-                setSettingsTab('general');
-                setSettingsOpen(true);
-              }}
-            >
-              <Settings size={16} />
-            </button>
-          </Tooltip>
+          <button
+            className={`btn app-topbar__ai-btn ${aiPanelOpen ? 'app-topbar__ai-btn--active' : ''}`}
+            id="topbar-ai-btn"
+            onClick={() => setAiPanelOpen(o => !o)}
+            title="Asistente IA"
+          >
+            <Sparkles size={14} />
+            IA
+          </button>
+          <button 
+            className="btn btn-ghost btn-icon topbar-settings-btn" 
+            title="Configuración"
+            onClick={() => {
+              setSettingsTab('general');
+              setSettingsOpen(true);
+            }}
+          >
+            <Settings size={16} />
+          </button>
         </div>
       </header>
 

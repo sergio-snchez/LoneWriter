@@ -288,6 +288,33 @@ export async function searchCompendium(keywords, novelId) {
   return allResults;
 }
 
+export async function fetchDetectedEntityData(detectedEntities, novelId) {
+  if (!detectedEntities || detectedEntities.length === 0 || !novelId) return '';
+
+  const lines = [];
+  for (const entity of detectedEntities) {
+    const table = entity.type;
+    const config = TABLE_CONFIG[table];
+    if (!config) continue;
+
+    const nameField = config.nameField;
+    const entityName = entity.name;
+
+    const items = await db[table].where('novelId').equals(novelId).toArray();
+    const match = items.find(item => {
+      const itemName = (item[nameField] || item.title || '').toLowerCase();
+      return itemName === entityName.toLowerCase();
+    });
+
+    if (match) {
+      const desc = buildDescription(match, table);
+      lines.push(`[${CATEGORY_LABELS[table]}]: ${match[nameField] || match.title || 'Sin nombre'} - ${desc}`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
 export function formatSearchResults(results) {
   if (!results || results.length === 0) return '';
 

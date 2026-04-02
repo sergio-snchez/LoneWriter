@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useCallback } from 'react';
 import { useAI } from '../context/AIContext';
+import { Tooltip } from './Tooltip';
 import './RichEditor.css';
 
 function createDebouncedOracleScan(callback, delay = 3000) {
@@ -99,81 +100,94 @@ export default function RichEditor({ content, onChange, placeholder }) {
     <div className="rich-editor">
       <div className="rich-editor__toolbar">
         <div className="toolbar-group">
-          <button
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            disabled={!editor.can().chain().focus().toggleBold().run()}
-            className={editor.isActive('bold') ? 'is-active' : ''}
-            title="Negrita"
-          >
-            <Bold size={16} />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            disabled={!editor.can().chain().focus().toggleItalic().run()}
-            className={editor.isActive('italic') ? 'is-active' : ''}
-            title="Cursiva"
-          >
-            <Italic size={16} />
-          </button>
+          <Tooltip content="Negrita">
+            <button
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              disabled={!editor.can().chain().focus().toggleBold().run()}
+              className={editor.isActive('bold') ? 'is-active' : ''}
+            >
+              <Bold size={16} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Cursiva">
+            <button
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              disabled={!editor.can().chain().focus().toggleItalic().run()}
+              className={editor.isActive('italic') ? 'is-active' : ''}
+            >
+              <Italic size={16} />
+            </button>
+          </Tooltip>
         </div>
 
         <div className="toolbar-divider" />
 
         <div className="toolbar-group">
-          <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-            className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}
-            title="Título 1"
-          >
-            <Heading1 size={16} />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
-            title="Título 2"
-          >
-            <Heading2 size={16} />
-          </button>
+          <Tooltip content="Título 1">
+            <button
+              onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+              className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}
+            >
+              <Heading1 size={16} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Título 2">
+            <button
+              onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+              className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
+            >
+              <Heading2 size={16} />
+            </button>
+          </Tooltip>
         </div>
 
         <div className="toolbar-divider" />
 
         <div className="toolbar-group">
-          <button
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={editor.isActive('bulletList') ? 'is-active' : ''}
-            title="Lista"
-          >
-            <List size={16} />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={editor.isActive('orderedList') ? 'is-active' : ''}
-            title="Lista numerada"
-          >
-            <ListOrdered size={16} />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={editor.isActive('blockquote') ? 'is-active' : ''}
-            title="Cita"
-          >
-            <Quote size={16} />
-          </button>
+          <Tooltip content="Lista">
+            <button
+              onClick={() => editor.chain().focus().toggleBulletList().run()}
+              className={editor.isActive('bulletList') ? 'is-active' : ''}
+            >
+              <List size={16} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Lista numerada">
+            <button
+              onClick={() => editor.chain().focus().toggleOrderedList().run()}
+              className={editor.isActive('orderedList') ? 'is-active' : ''}
+            >
+              <ListOrdered size={16} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Cita">
+            <button
+              onClick={() => editor.chain().focus().toggleBlockquote().run()}
+              className={editor.isActive('blockquote') ? 'is-active' : ''}
+            >
+              <Quote size={16} />
+            </button>
+          </Tooltip>
         </div>
 
         <div className="toolbar-divider" />
 
         <div className="toolbar-group">
-          <button onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Deshacer">
-            <Undo size={16} />
-          </button>
-          <button onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title="Rehacer">
-            <Redo size={16} />
-          </button>
-          <button onClick={() => editor.chain().focus().unsetAllMarks().run()} title="Limpiar formato">
-            <Eraser size={16} />
-          </button>
+          <Tooltip content="Deshacer">
+            <button onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}>
+              <Undo size={16} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Rehacer">
+            <button onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}>
+              <Redo size={16} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Limpiar formato">
+            <button onClick={() => editor.chain().focus().unsetAllMarks().run()}>
+              <Eraser size={16} />
+            </button>
+          </Tooltip>
         </div>
       </div>
 

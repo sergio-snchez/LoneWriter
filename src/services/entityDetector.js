@@ -10,46 +10,109 @@ const ENTITY_LABELS = {
   resources: 'recurso',
 };
 
-const SEARCHABLE_FIELDS = {
-  characters: ['name', 'role', 'occupation', 'description', 'traits'],
-  locations: ['name', 'type', 'climate', 'description', 'tags', 'associatedCharacters'],
-  objects: ['name', 'type', 'importance', 'currentOwner', 'origin', 'description', 'tags'],
-  lore: ['title', 'category', 'summary', 'tags'],
-  resources: ['name', 'description', 'tags'],
+const STOPWORDS = new Set([
+  'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas',
+  'de', 'del', 'al',
+  'a', 'en', 'con', 'por', 'para', 'sin', 'sobre', 'entre', 'hasta', 'desde', 'hacia',
+  'y', 'e', 'o', 'u', 'pero', 'ni', 'que', 'si', 'no', 'ya', 'así', 'como', 'porque',
+  'es', 'son', 'está', 'están', 'ser', 'siendo', 'sido', 'estar', 'he', 'ha', 'han', 'hay',
+  'este', 'esta', 'esto', 'estos', 'estas', 'ese', 'esa', 'eso', 'esos', 'esas',
+  'aquel', 'aquella', 'aquello', 'aquellos', 'aquellas',
+  'mi', 'tu', 'su', 'nuestro', 'nuestra', 'mis', 'tus', 'sus', 'nuestros', 'nuestras',
+  'me', 'te', 'se', 'nos', 'os',
+  'lo', 'le', 'les',
+  'mas', 'más', 'muy', 'todo', 'toda', 'todos', 'todas', 'cada',
+  'cual', 'cuales', 'donde', 'cuando', 'cuanto', 'cuanta',
+  'otro', 'otra', 'otros', 'otras',
+  'mismo', 'misma', 'mismos', 'mismas',
+  'primero', 'primera', 'último', 'última',
+  'gran', 'grande', 'grandes', 'pequeño', 'pequeña', 'pequeños', 'pequeñas',
+  'nuevo', 'nueva', 'nuevos', 'nuevas', 'viejo', 'vieja', 'viejos', 'viejas',
+  'bueno', 'buena', 'buenos', 'buenas', 'malo', 'mala', 'malos', 'malas',
+  'poco', 'poca', 'pocos', 'pocas', 'mucho', 'mucha', 'muchos', 'muchas',
+  'ahora', 'antes', 'después', 'siempre', 'nunca', 'jamás',
+  'aquí', 'allí', 'allá', 'aca', 'ahí',
+  'bien', 'mal', 'mejor', 'peor',
+  'solo', 'sólo', 'sola',
+]);
+
+const CRITICAL_FIELDS = {
+  characters: ['name', 'role', 'occupation', 'traits'],
+  locations: ['name', 'type', 'climate', 'tags'],
+  objects: ['name', 'type', 'importance', 'tags'],
+  lore: ['title', 'category', 'tags'],
+  resources: ['name', 'tags'],
 };
+
+const DOUBTFUL_FIELDS = ['description', 'summary'];
+
+const MIN_LENGTH_DOUBTFUL = 4;
+const MIN_LENGTH_NAME = 2; // Solo para personajes (nombres cortos como "Ana", "Paz")
+
+function normalizeText(text) {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[.,;:!¡?¿"'"()\[\]{}—–\-]/g, ' ')
+    .trim();
+}
+
+function tokenize(text) {
+  return normalizeText(text).split(/\s+/).filter(word => word.length > 0);
+}
+
+function extractTerms(entity, table) {
+  const criticalFields = CRITICAL_FIELDS[table] || [];
+  const terms = [];
+  
+  for (const [field, value] of Object.entries(entity)) {
+    if (!value) continue;
+    
+    const isCritical = criticalFields.includes(field);
+    const isDoubtful = DOUBTFUL_FIELDS.includes(field);
+    
+    if (!isCritical && !isDoubtful) continue;
+    
+    // Longitud mínima: personajes = 2 (nombres cortos como "Ana"), resto = 4
+    const isName = field === 'name' || field === 'title';
+    const minLength = (table === 'characters' && isName) ? MIN_LENGTH_NAME : MIN_LENGTH_DOUBTFUL;
+    
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (typeof item === 'string' && item.trim()) {
+          const normalized = normalizeText(item);
+          const words = tokenize(normalized);
+          for (const word of words) {
+            if (word.length >= minLength) {
+              terms.push({ word, isCritical });
+            }
+          }
+        }
+      }
+    } else if (typeof value === 'string' && value.trim()) {
+      const normalized = normalizeText(value);
+      const words = tokenize(normalized);
+      for (const word of words) {
+        if (word.length >= minLength) {
+          terms.push({ word, isCritical });
+        }
+      }
+    }
+  }
+  
+  return terms;
+}
 
 export async function loadAllEntityData(novelId) {
   if (!novelId) return { characters: [], locations: [], objects: [], lore: [], resources: [] };
 
   const result = {};
   for (const table of ENTITY_TABLES) {
-    result[table] = await db[table].where('novelId').equals(novelId).toArray();
+    const allItems = await db[table].where('novelId').equals(novelId).toArray();
+    result[table] = allItems.filter(item => item.ignoredForOracle !== 1);
   }
   return result;
-}
-
-function extractSearchTerms(entity, fields) {
-  const terms = new Set();
-  for (const field of fields) {
-    const value = entity[field];
-    if (!value) continue;
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        if (typeof item === 'string' && item.trim().length >= 2) {
-          terms.add(item.trim());
-        } else if (typeof item === 'object' && item !== null) {
-          for (const v of Object.values(item)) {
-            if (typeof v === 'string' && v.trim().length >= 2) {
-              terms.add(v.trim());
-            }
-          }
-        }
-      }
-    } else if (typeof value === 'string' && value.trim().length >= 2) {
-      terms.add(value.trim());
-    }
-  }
-  return [...terms];
 }
 
 export function detectEntitiesInText(text, entityData) {
@@ -57,42 +120,46 @@ export function detectEntitiesInText(text, entityData) {
 
   const detections = [];
   const seen = new Set();
-  const lowerText = text.toLowerCase();
+  const cleanedText = normalizeText(text);
+  const textTokens = tokenize(cleanedText);
 
   for (const [table, items] of Object.entries(entityData)) {
-    const fields = SEARCHABLE_FIELDS[table];
-    if (!fields) continue;
+    if (!items || items.length === 0) continue;
 
     for (const item of items) {
-      const terms = extractSearchTerms(item, fields);
-      let matched = false;
-      let primaryName = item.name || item.title || '';
+      const primaryName = item.name || item.title || '';
+      if (!primaryName) continue;
 
-      for (const term of terms) {
-        const lowerTerm = term.toLowerCase();
+      const key = `${table}:${normalizeText(primaryName)}`;
+      if (seen.has(key)) continue;
 
-        if (lowerText.includes(lowerTerm)) {
-          matched = true;
-          break;
-        }
+      const terms = extractTerms(item, table);
+      const criticalMatches = new Set();
+      const doubtfulMatches = new Set();
 
-        const parts = lowerTerm.split(/\s+/);
-        for (const part of parts) {
-          if (part.length >= 3 && lowerText.includes(part)) {
-            matched = true;
-            break;
+      for (const { word, isCritical } of terms) {
+        if (isCritical) {
+          if (textTokens.includes(word)) {
+            criticalMatches.add(word);
+          }
+        } else {
+          if (word.length >= MIN_LENGTH_DOUBTFUL && textTokens.includes(word)) {
+            doubtfulMatches.add(word);
           }
         }
-        if (matched) break;
       }
 
-      const key = `${table}:${primaryName.toLowerCase()}`;
-      if (matched && !seen.has(key)) {
+      const hasCritical = criticalMatches.size > 0;
+      const hasDoubtful = doubtfulMatches.size >= 2;
+
+      if (hasCritical || hasDoubtful) {
         seen.add(key);
         detections.push({
           type: table,
           label: ENTITY_LABELS[table],
           name: primaryName,
+          severity: hasCritical ? 'critical' : 'doubtful',
+          matchedTerms: [...criticalMatches, ...doubtfulMatches],
         });
       }
     }
@@ -172,7 +239,6 @@ export function parseOracleResponse(text) {
       };
     }
   } catch (e) {
-    // fallback to keyword detection
   }
 
   const contradictionKeywords = [
