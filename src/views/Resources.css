@@ -310,3 +310,84 @@
   border-top: 1px solid var(--border);
   margin: 1em 0;
 }
+
+/* ============================================
+   RESPONSIVE – MOBILE (< 768px)
+   ============================================ */
+@media (max-width: 767px) {
+  .resources-view__header {
+    padding: 16px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .resources-toolbar {
+    padding: 10px 16px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .resources-stats {
+    padding: 10px 16px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .resources-list {
+    grid-template-columns: 1fr;
+    padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    gap: 10px;
+  }
+
+  .res-row {
+    flex-direction: column;
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .res-row__meta {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    min-width: auto;
+    flex-wrap: wrap;
+  }
+
+  .res-row__actions {
+    flex-direction: row;
+    opacity: 1;
+    gap: 6px;
+  }
+
+  .res-action-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .resources-dropzone {
+    margin: 12px 16px;
+    padding: 20px;
+  }
+
+  .resources-tag-filter {
+    padding: 8px 14px;
+    min-height: 36px;
+    font-size: 13px;
+  }
+
+  .res-row__name {
+    font-size: 14px;
+  }
+
+  .res-row__desc {
+    font-size: 13px;
+  }
+
+  .res-row__icon-wrap {
+    width: 40px;
+    height: 40px;
+  }
+}

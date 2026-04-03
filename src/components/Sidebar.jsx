@@ -58,25 +58,24 @@ export default function Sidebar({ active, onNavigate, collapsed, onToggle }) {
       {/* Nav items */}
       <nav className="sidebar__nav">
         {NAV.map(({ id, label, sublabel, icon: Icon }) => (
-          <Tooltip key={id} content={collapsed ? label : ''} position="right">
-            <button
-              id={`nav-${id}`}
-              className={`sidebar__nav-item ${active === id ? 'sidebar__nav-item--active' : ''}`}
-              onClick={() => onNavigate(id)}
-              aria-current={active === id ? 'page' : undefined}
-            >
-              <span className="sidebar__nav-icon">
-                <Icon size={18} />
+          <button
+            key={id}
+            id={`nav-${id}`}
+            className={`sidebar__nav-item ${active === id ? 'sidebar__nav-item--active' : ''}`}
+            onClick={() => onNavigate(id)}
+            aria-current={active === id ? 'page' : undefined}
+          >
+            <span className="sidebar__nav-icon">
+              <Icon size={20} />
+            </span>
+            {!collapsed && (
+              <span className="sidebar__nav-labels">
+                <span className="sidebar__nav-label">{label}</span>
+                <span className="sidebar__nav-sublabel">{sublabel}</span>
               </span>
-              {!collapsed && (
-                <span className="sidebar__nav-labels">
-                  <span className="sidebar__nav-label">{label}</span>
-                  <span className="sidebar__nav-sublabel">{sublabel}</span>
-                </span>
-              )}
-              {active === id && <span className="sidebar__nav-indicator" />}
-            </button>
-          </Tooltip>
+            )}
+            {active === id && <span className="sidebar__nav-indicator" />}
+          </button>
         ))}
       </nav>
 

@@ -291,3 +291,122 @@
     color: var(--text-muted);
     user-select: none;
 }
+
+/* ============================================
+   RESPONSIVE – MOBILE (< 768px)
+   ============================================ */
+@media (max-width: 767px) {
+  .settings-modal {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+    flex-direction: column;
+    position: fixed;
+    inset: 0;
+    z-index: 2001;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+  }
+
+  .settings-modal__sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+
+  .settings-modal__sidebar-header {
+    padding: 0 16px 12px;
+  }
+
+  .settings-modal__sidebar-title {
+    font-size: 16px;
+  }
+
+  .settings-modal__nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0 8px;
+    gap: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .settings-modal__nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .settings-modal__nav-item {
+    padding: 8px 14px;
+    min-height: 36px;
+    white-space: nowrap;
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .settings-modal__header {
+    padding: 12px 16px;
+  }
+
+  .settings-modal__title {
+    font-size: 15px;
+  }
+
+  .settings-modal__close {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .settings-modal__body {
+    padding: 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .settings-section {
+    gap: 16px;
+  }
+
+  .settings-section__title {
+    font-size: 13px;
+  }
+
+  .cloud-sync-card {
+    padding: 16px;
+  }
+
+  .ai-settings-input,
+  .ai-settings-select {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .sync-toggle-group {
+    padding: 12px;
+  }
+
+  .sync-toggle-group label {
+    font-size: 14px;
+  }
+
+  .settings-info-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ai-settings-links {
+    gap: 8px;
+  }
+
+  .ai-settings-link {
+    font-size: 12px;
+  }
+}

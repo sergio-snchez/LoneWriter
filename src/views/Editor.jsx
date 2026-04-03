@@ -195,7 +195,7 @@ function SortableChapterAccordion({ chapter, chapterIndex, actIndex, isOpen, onT
                   <CheckCircle2 size={12} className="chapter-accordion__status-icon" />
                 )}
               </span>
-              <span className="chapter-accordion__words">{chapterWords.toLocaleString()} {t('capitulo.palabras', { count: chapterWords })}</span>
+              <span className="chapter-accordion__words">{t('capitulo.palabras', { count: chapterWords })}</span>
             </div>
             <EditableTitle 
               title={chapter.title} 
@@ -239,7 +239,7 @@ function SortableChapterAccordion({ chapter, chapterIndex, actIndex, isOpen, onT
 }
 
 function SortableActSection({ 
-  act, actIndex, isOpen, onToggle, activeSceneId, onSelectScene, 
+  act, actIndex, chapterOffset, isOpen, onToggle, activeSceneId, onSelectScene, 
   onAddChapter, onAddScene, onDeleteScene, onDeleteChapter, 
   onDeleteAct, onUpdateAct, onUpdateChapter, onUpdateScene, expandedIds, onSubToggle
 }) {
@@ -303,23 +303,26 @@ function SortableActSection({
       {isOpen && (
         <div className="act-section__body">
           <SortableContext items={act.chapters?.map(c => `ch-${c.id}`) || []} strategy={verticalListSortingStrategy}>
-            {act.chapters?.map((ch, chIdx) => (
-              <SortableChapterAccordion 
-                key={ch.id} 
-                chapter={ch} 
-                chapterIndex={chIdx}
-                actIndex={actIndex}
-                isOpen={expandedIds.has(`ch-${ch.id}`)} 
-                onToggle={() => onSubToggle(`ch-${ch.id}`)}
-                activeSceneId={activeSceneId}
-                onSelectScene={onSelectScene}
-                onAddScene={onAddScene}
-                onDeleteScene={onDeleteScene}
-                onDeleteChapter={onDeleteChapter}
-                onUpdateChapter={onUpdateChapter}
-                onUpdateScene={onUpdateScene}
-              />
-            ))}
+            {act.chapters?.map((ch, chIdx) => {
+                const globalChapterIndex = chapterOffset + chIdx;
+                return (
+                  <SortableChapterAccordion 
+                    key={ch.id} 
+                    chapter={ch} 
+                    chapterIndex={globalChapterIndex}
+                    actIndex={actIndex}
+                    isOpen={expandedIds.has(`ch-${ch.id}`)} 
+                    onToggle={() => onSubToggle(`ch-${ch.id}`)}
+                    activeSceneId={activeSceneId}
+                    onSelectScene={onSelectScene}
+                    onAddScene={onAddScene}
+                    onDeleteScene={onDeleteScene}
+                    onDeleteChapter={onDeleteChapter}
+                    onUpdateChapter={onUpdateChapter}
+                    onUpdateScene={onUpdateScene}
+                  />
+                );
+              })}
           </SortableContext>
           <button className="act-section__add-ch btn btn-ghost" onClick={() => onAddChapter(act.id)}>
             <Plus size={13} />
@@ -369,6 +372,7 @@ export default function EditorView() {
   const [streak, setStreak] = useState(0)
   const [showGoalEditor, setShowGoalEditor] = useState(false)
   const [isStatsExpanded, setIsStatsExpanded] = useState(false)
+  const [mobileTreeOpen, setMobileTreeOpen] = useState(false)
   const goalEditorRef = useRef(null)
   const hoverTimerRef = useRef(null)
 
@@ -419,11 +423,11 @@ export default function EditorView() {
   }, [activeNovel?.id, getNovelUIExpanded]);
 
   const GOAL_TEMPLATES = [
-    { label: t('objetivos.plantillas.micro_relato'), words: 1000, targetScenes: 2, scenesRange: '1-2', wps: '500-1000' },
-    { label: t('objetivos.plantillas.cuento_corto'), words: 5000, targetScenes: 5, scenesRange: '3-6', wps: '1000-1500' },
-    { label: t('objetivos.plantillas.novela_corta'), words: 30000, targetScenes: 25, scenesRange: '20-30', wps: '1000-1500' },
-    { label: t('objetivos.plantillas.novela_estandar'), words: 80000, targetScenes: 70, scenesRange: '60-80', wps: '1200-1500' },
-    { label: t('objetivos.plantillas.novela_fantasia'), words: 110000, targetScenes: 100, scenesRange: '80-100', wps: '1200-1500' },
+    { label: t('objetivos.plantillas.micro_relato'), words: 1000, targetScenes: 2, scenesRange: '1-2', wps: '500-1000', chaptersRange: '—' },
+    { label: t('objetivos.plantillas.cuento_corto'), words: 5000, targetScenes: 5, scenesRange: '3-6', wps: '1000-1500', chaptersRange: '1-3' },
+    { label: t('objetivos.plantillas.novela_corta'), words: 30000, targetScenes: 25, scenesRange: '20-30', wps: '1000-1500', chaptersRange: '5-10' },
+    { label: t('objetivos.plantillas.novela_estandar'), words: 80000, targetScenes: 70, scenesRange: '60-80', wps: '1200-1500', chaptersRange: '15-25' },
+    { label: t('objetivos.plantillas.novela_fantasia'), words: 110000, targetScenes: 100, scenesRange: '80-100', wps: '1200-1500', chaptersRange: '20-35' },
   ];
 
   const toggleExpand = (id) => {
@@ -787,6 +791,78 @@ export default function EditorView() {
 
   return (
     <div className="editor-view">
+      {/* Mobile tree toggle button */}
+      <button
+        className="mobile-tree-toggle"
+        onClick={() => setMobileTreeOpen(o => !o)}
+        aria-label={t('arbol.titulo')}
+      >
+        <BookOpen size={18} />
+      </button>
+
+      {/* Mobile overlay */}
+      {mobileTreeOpen && (
+        <div className="mobile-tree-overlay" onClick={() => setMobileTreeOpen(false)}>
+          <div className="mobile-tree-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="mobile-tree-drawer__header">
+              <span className="mobile-tree-drawer__title">{t('arbol.titulo')}</span>
+              <button className="mobile-tree-drawer__close" onClick={() => setMobileTreeOpen(false)}>
+                <ChevronRight size={20} />
+              </button>
+            </div>
+            <div className="mobile-tree-drawer__body">
+              <div className="editor-view__acts">
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragStart={handleDragStart}
+                  onDragOver={handleDragOver}
+                  onDragEnd={handleDragEnd}
+                  onDragCancel={handleDragCancel}
+                >
+                  <SortableContext items={acts.map(a => `act-${a.id}`)} strategy={verticalListSortingStrategy}>
+                    {acts.map((act, idx) => {
+                      const chapterOffset = acts.slice(0, idx).reduce((sum, a) => sum + (a.chapters?.length || 0), 0);
+                      return (
+                        <SortableActSection
+                          key={act.id}
+                          act={act}
+                          actIndex={idx}
+                          chapterOffset={chapterOffset}
+                          isOpen={expandedIds.has(`act-${act.id}`)}
+                          onToggle={() => toggleExpand(`act-${act.id}`)}
+                          activeSceneId={activeScene?.id}
+                          onSelectScene={setActiveScene}
+                          onAddChapter={handleAddChapter}
+                          onAddScene={handleAddScene}
+                          onDeleteScene={confirmDeleteScene}
+                          onDeleteChapter={confirmDeleteChapter}
+                          onDeleteAct={confirmDeleteAct}
+                          onUpdateAct={updateAct}
+                          onUpdateChapter={updateChapter}
+                          onUpdateScene={updateScene}
+                          expandedIds={expandedIds}
+                          onSubToggle={toggleExpand}
+                        />
+                      );
+                    })}
+                  </SortableContext>
+                  <DragOverlay dropAnimation={{ duration: 150, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
+                    {activeDragId ? (
+                      <div className="drag-overlay-ghost">
+                        <GripVertical size={14} />
+                        <span>{getDragLabel(activeDragId)}</span>
+                      </div>
+                    ) : null}
+                  </DragOverlay>
+                </DndContext>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop tree panel */}
       <div className="editor-view__tree">
         <div className="editor-view__tree-header">
           <div className="tree-header__left">
@@ -814,36 +890,40 @@ export default function EditorView() {
         </div>
 
         <div className="editor-view__acts">
-          <DndContext 
+          <DndContext
             sensors={sensors}
-            collisionDetection={closestCenter} 
+            collisionDetection={closestCenter}
             onDragStart={handleDragStart}
             onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
             onDragCancel={handleDragCancel}
           >
             <SortableContext items={acts.map(a => `act-${a.id}`)} strategy={verticalListSortingStrategy}>
-              {acts.map((act, idx) => (
-                <SortableActSection 
-                  key={act.id} 
-                  act={act} 
-                  actIndex={idx}
-                  isOpen={expandedIds.has(`act-${act.id}`)}
-                  onToggle={() => toggleExpand(`act-${act.id}`)}
-                  activeSceneId={activeScene?.id}
-                  onSelectScene={setActiveScene}
-                  onAddChapter={handleAddChapter}
-                  onAddScene={handleAddScene}
-                  onDeleteScene={confirmDeleteScene}
-                  onDeleteChapter={confirmDeleteChapter}
-                  onDeleteAct={confirmDeleteAct}
-                  onUpdateAct={updateAct}
-                  onUpdateChapter={updateChapter}
-                  onUpdateScene={updateScene}
-                  expandedIds={expandedIds}
-                  onSubToggle={toggleExpand}
-                />
-              ))}
+              {acts.map((act, idx) => {
+                const chapterOffset = acts.slice(0, idx).reduce((sum, a) => sum + (a.chapters?.length || 0), 0);
+                return (
+                  <SortableActSection
+                    key={act.id}
+                    act={act}
+                    actIndex={idx}
+                    chapterOffset={chapterOffset}
+                    isOpen={expandedIds.has(`act-${act.id}`)}
+                    onToggle={() => toggleExpand(`act-${act.id}`)}
+                    activeSceneId={activeScene?.id}
+                    onSelectScene={setActiveScene}
+                    onAddChapter={handleAddChapter}
+                    onAddScene={handleAddScene}
+                    onDeleteScene={confirmDeleteScene}
+                    onDeleteChapter={confirmDeleteChapter}
+                    onDeleteAct={confirmDeleteAct}
+                    onUpdateAct={updateAct}
+                    onUpdateChapter={updateChapter}
+                    onUpdateScene={updateScene}
+                    expandedIds={expandedIds}
+                    onSubToggle={toggleExpand}
+                  />
+                );
+              })}
             </SortableContext>
             <DragOverlay dropAnimation={{ duration: 150, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
               {activeDragId ? (
@@ -1032,7 +1112,8 @@ export default function EditorView() {
                             <span className="goal-template-btn__words">{t('objetivos.plantilla_palabras', { count: g.words })}</span>
                           </div>
                           <div className="goal-template-btn__meta">
-                            {t('objetivos.plantilla_meta', { scenes: g.scenesRange, wps: g.wps })}
+                            <span className="goal-template-btn__meta-row">{t('objetivos.plantilla_meta', { scenes: g.scenesRange, wps: g.wps })}</span>
+                            <span className="goal-template-btn__meta-row goal-template-btn__chapters">{t('objetivos.plantilla_capitulos', { count: g.chaptersRange })}</span>
                           </div>
                         </button>
                       ))}

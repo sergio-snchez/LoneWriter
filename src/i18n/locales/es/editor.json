@@ -95,7 +95,8 @@
       "novela_fantasia": "Novela Fantasía"
     },
     "plantilla_palabras": "{{count}} pal.",
-    "plantilla_meta": "{{scenes}} escenas · {{wps}} pal/escena"
+    "plantilla_meta": "{{scenes}} escenas · {{wps}} pal/escena",
+    "plantilla_capitulos": "{{count}} cap."
   },
   "acto_inicial": "Acto I: Inicio"
 }
