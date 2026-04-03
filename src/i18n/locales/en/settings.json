@@ -28,7 +28,7 @@
     "sincronizar_ahora": "Sync now",
     "sincronizacion_automatica": "Automatic sync",
     "proteccion_cache": "Active real-time protection against cache clearing",
-    "seguridad_hint": "<0>Security:</0> LoneWriter only has access to its own backup files. Your private documents are not visible to the application."
+    "seguridad_hint": "<strong>Security:</strong> LoneWriter only has access to its own backup files. Your private documents are not visible to the application."
   },
   "ia": {
     "seccion_titulo": "Artificial Intelligence Settings",
