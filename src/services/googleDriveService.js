@@ -3,6 +3,8 @@
  * Using Google Identity Services (GSI) for Auth and REST API for Drive
  */
 
+import { compressToJson, decodeFromLwrt } from './exportService';
+
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 const BACKUP_FILENAME = 'lonewriter_backup.lwrt';
@@ -88,17 +90,18 @@ export const GoogleDriveService = {
   /**
    * Upload or update the backup file
    */
-  saveBackup: async (jsonContent) => {
+  saveBackup: async (dataObject) => {
     try {
       if (!GoogleDriveService.isAuthenticated()) await GoogleDriveService.authenticate();
 
       const existingFile = await GoogleDriveService.findBackupFile();
       const metadata = {
         name: BACKUP_FILENAME,
-        mimeType: 'application/json',
+        mimeType: 'application/octet-stream',
       };
 
-      const fileContent = new Blob([jsonContent], { type: 'application/json' });
+      const compressed = await compressToJson(dataObject);
+      const fileContent = new Blob([compressed], { type: 'application/octet-stream' });
       const form = new FormData();
       form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
       form.append('file', fileContent);
@@ -143,7 +146,8 @@ export const GoogleDriveService = {
 
       if (!response.ok) throw new Error('Error al descargar de Google Drive');
 
-      return await response.json();
+      const text = await response.text();
+      return await decodeFromLwrt(text);
     } catch (error) {
       console.error('[GoogleDrive] Download error:', error);
       throw error;

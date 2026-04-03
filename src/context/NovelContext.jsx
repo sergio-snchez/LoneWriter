@@ -145,9 +145,8 @@ export const NovelProvider = ({ children }) => {
       for (const table of db.tables) {
         data.tables[table.name] = await table.toArray();
       }
-      const json = JSON.stringify(data);
       
-      await GoogleDriveService.saveBackup(json);
+      await GoogleDriveService.saveBackup(data);
       
       const now = new Date().toISOString();
       setLastCloudSync(now);

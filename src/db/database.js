@@ -27,6 +27,10 @@ db.version(4).stores({
   novels: '++id, title, author, status, targetScenes, lastEdited, uiExpanded'
 });
 
+db.version(6).stores({
+  oracleEntries: '++id, novelId, sceneId, createdAt, isCorrected'
+});
+
 db.version(5).stores({
   characters: '++id, novelId, name, role, ignoredForOracle',
   locations: '++id, novelId, name, type, ignoredForOracle',
