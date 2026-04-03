@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   X, Cloud, RefreshCw, LogIn, LogOut, 
   Sparkles, Shield, Info, AlertTriangle, Key, ExternalLink 
@@ -6,9 +7,12 @@ import {
 import { useAI } from '../context/AIContext';
 import { useNovel } from '../context/NovelContext';
 import { GoogleDriveService } from '../services/googleDriveService';
+import LanguageSelector from './LanguageSelector';
 import './SettingsModal.css';
 
 const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
+  const { t } = useTranslation('settings');
+  const { t: tc } = useTranslation('common');
   const [activeTab, setActiveTab] = useState(initialTab);
   
   // Update activeTab when initialTab changes (e.g. when opening from different places)
@@ -41,8 +45,8 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
     } catch (error) {
       console.error('Error linking Google Drive:', error);
       const msg = !import.meta.env.VITE_GOOGLE_CLIENT_ID 
-        ? 'No se ha configurado el Client ID de Google. Crea un archivo .env o variable de entorno.'
-        : 'Error al conectar con Google. Verifica que la URL actual (Vercel) esté autorizada en la consola de Google Cloud.';
+        ? t('errores.client_id_no_configurado')
+        : t('errores.error_conexion_google');
       alert(msg);
     } finally {
       setIsSyncing(false);
@@ -65,32 +69,32 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
     google: {
       apiKeyUrl: 'https://aistudio.google.com/apikey',
       modelsUrl: 'https://ai.google.dev/gemini-api/docs/models/gemini',
-      apiKeyLabel: 'Obtener API Key en Google AI Studio',
-      modelsLabel: 'Ver modelos Gemini disponibles',
+      apiKeyLabel: t('ia.links.google_api_key'),
+      modelsLabel: t('ia.links.google_modelos'),
     },
     openai: {
       apiKeyUrl: 'https://platform.openai.com/api-keys',
       modelsUrl: 'https://platform.openai.com/docs/models',
-      apiKeyLabel: 'Obtener API Key en OpenAI',
-      modelsLabel: 'Ver modelos OpenAI disponibles',
+      apiKeyLabel: t('ia.links.openai_api_key'),
+      modelsLabel: t('ia.links.openai_modelos'),
     },
     anthropic: {
       apiKeyUrl: 'https://console.anthropic.com/settings/keys',
       modelsUrl: 'https://docs.anthropic.com/en/docs/about-claude/models/all-models',
-      apiKeyLabel: 'Obtener API Key en Anthropic',
-      modelsLabel: 'Ver modelos Claude disponibles',
+      apiKeyLabel: t('ia.links.anthropic_api_key'),
+      modelsLabel: t('ia.links.anthropic_modelos'),
     },
     openrouter: {
       apiKeyUrl: 'https://openrouter.ai/keys',
       modelsUrl: 'https://openrouter.ai/models',
-      apiKeyLabel: 'Obtener API Key en OpenRouter',
-      modelsLabel: 'Ver todos los modelos en OpenRouter',
+      apiKeyLabel: t('ia.links.openrouter_api_key'),
+      modelsLabel: t('ia.links.openrouter_modelos'),
     },
     local: {
       modelsUrl: 'https://ollama.com/library',
-      modelsLabel: 'Explorar modelos en Ollama',
+      modelsLabel: t('ia.links.ollama_modelos'),
       modelsUrlAlt: 'https://lmstudio.ai/models',
-      modelsLabelAlt: 'Modelos para LM Studio',
+      modelsLabelAlt: t('ia.links.lmstudio_modelos'),
     },
   };
 
@@ -100,9 +104,9 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
         return (
           <div className="settings-tab">
             <div className="settings-section">
-              <span className="settings-section__title">Google Drive Sync</span>
+              <span className="settings-section__title">{t('nube.seccion_titulo')}</span>
               <p className="settings-section__hint" style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px' }}>
-                Protege tus proyectos sincronizándolos automáticamente con tu propia cuenta de Google Drive.
+                {t('nube.seccion_hint')}
               </p>
               
               <div className="cloud-sync-card">
@@ -112,23 +116,23 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
                   </div>
                   <div className="cloud-sync-card__info">
                     <span className="cloud-sync-card__title">
-                      {isCloudLinked ? 'Cuenta vinculada' : 'No vinculado'}
+                      {isCloudLinked ? t('nube.cuenta_vinculada') : t('nube.no_vinculado')}
                     </span>
                     <span className={`cloud-sync-card__status ${isCloudLinked ? 'cloud-sync-card__status--online' : ''}`}>
-                      {isCloudLinked ? 'Google Drive Activo' : 'Conecta con Google Drive para empezar'}
+                      {isCloudLinked ? t('nube.google_drive_activo') : t('nube.conectar_hint')}
                     </span>
                   </div>
                   {!isCloudLinked ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <button className="btn btn-primary btn-sm" onClick={handleCloudLink} disabled={isSyncing}>
                         {isSyncing ? <RefreshCw size={12} className="spinner" /> : <LogIn size={12} />}
-                        Vincular Cuenta
+                        {t('nube.vincular_cuenta')}
                       </button>
                     </div>
                   ) : (
                     <button className="btn btn-ghost btn-sm" onClick={handleSignOut} style={{ color: 'var(--red)' }}>
                       <LogOut size={12} />
-                      Desconectar
+                      {t('nube.desconectar')}
                     </button>
                   )}
                 </div>
@@ -136,13 +140,13 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
                 {isCloudLinked && (
                   <div className="cloud-sync-card__footer">
                     <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginRight: 'auto' }}>
-                      {cloudSyncStatus === 'syncing' ? 'Sincronizando...' : 
-                       cloudSyncStatus === 'error' ? 'Error al guardar' :
-                       `Última copia: ${lastCloudSync ? new Date(lastCloudSync).toLocaleString() : 'Nunca'}`}
+                      {cloudSyncStatus === 'syncing' ? t('nube.sincronizando') : 
+                       cloudSyncStatus === 'error' ? t('nube.error_guardar') :
+                       `${t('nube.ultima_copia', { date: lastCloudSync ? new Date(lastCloudSync).toLocaleString() : t('nube.nunca') })}`}
                     </span>
                     <button className="btn btn-ghost btn-sm" onClick={handleManualSync} disabled={isSyncing || cloudSyncStatus === 'syncing'}>
                       <RefreshCw size={12} className={isSyncing || cloudSyncStatus === 'syncing' ? 'spinner' : ''} />
-                      Sincronizar ahora
+                      {t('nube.sincronizar_ahora')}
                     </button>
                   </div>
                 )}
@@ -152,8 +156,8 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
                 <div className="settings-section" style={{ marginTop: '10px' }}>
                   <div className="sync-toggle-group">
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      <label>Sincronización automática (v1.3)</label>
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Protección activa en tiempo real contra limpieza de caché</span>
+                      <label>{t('nube.sincronizacion_automatica')}</label>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{t('nube.proteccion_cache')}</span>
                     </div>
                     <input 
                       type="checkbox" 
@@ -166,8 +170,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
                   
                   <div className="settings-info-box" style={{ padding: '12px', background: 'var(--accent-dim)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-accent)', display: 'flex', gap: '10px' }}>
                      <Shield size={16} style={{ color: 'var(--accent-light)', flexShrink: 0 }} />
-                     <p style={{ fontSize: '11px', color: 'var(--accent-light)', margin: 0 }}>
-                        <strong>Seguridad:</strong> LoneWriter solo tiene acceso a sus propios archivos de backup. Tus documentos privados no son visibles para la aplicación.
+                     <p style={{ fontSize: '11px', color: 'var(--accent-light)', margin: 0 }} dangerouslySetInnerHTML={{ __html: t('nube.seguridad_hint', { interpolation: { escapeValue: false } }) }}>
                      </p>
                   </div>
                 </div>
@@ -179,27 +182,27 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
         return (
           <div className="settings-tab">
             <div className="settings-section">
-              <span className="settings-section__title">Configuración de Inteligencia Artificial</span>
+              <span className="settings-section__title">{t('ia.seccion_titulo')}</span>
               
               <div className="ai-settings-group">
-                <label>Proveedor de IA</label>
+                <label>{t('ia.proveedor_label')}</label>
                 <select className="ai-settings-select" value={provider} onChange={(e) => setProvider(e.target.value)}>
-                  <option value="google">Google Gemini</option>
-                  <option value="openai">OpenAI (GPT)</option>
-                  <option value="anthropic">Anthropic (Claude)</option>
-                  <option value="openrouter">OpenRouter (Múltiples)</option>
-                  <option value="local">Servidor Local (Ollama/LM Studio)</option>
+                  <option value="google">{t('ia.proveedores.google')}</option>
+                  <option value="openai">{t('ia.proveedores.openai')}</option>
+                  <option value="anthropic">{t('ia.proveedores.anthropic')}</option>
+                  <option value="openrouter">{t('ia.proveedores.openrouter')}</option>
+                  <option value="local">{t('ia.proveedores.local')}</option>
                 </select>
               </div>
 
               <div className="ai-settings-group">
-                <label>Modelo deseado</label>
+                <label>{t('ia.modelo_label')}</label>
                 <input
                   type="text"
                   className="ai-settings-input"
                   value={selectedModels[provider] || ''}
                   onChange={(e) => setModelForProvider(provider, e.target.value)}
-                  placeholder={provider === 'local' ? 'ej: llama3.2' : 'ej: gpt-4o, gemini-1.5-pro...'}
+                  placeholder={provider === 'local' ? t('ia.modelo_placeholder_local') : t('ia.modelo_placeholder_remoto')}
                 />
                 <div className="ai-settings-links">
                   {AI_PROVIDER_LINKS[provider]?.modelsUrl && (
@@ -222,24 +225,24 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
 
               {provider === 'local' ? (
                 <div className="ai-settings-group">
-                  <label>URL Base del Servidor</label>
+                  <label>{t('ia.servidor_url_label')}</label>
                   <input
                     type="text"
                     className="ai-settings-input"
                     value={localBaseUrl}
                     onChange={(e) => setLocalBaseUrl(e.target.value)}
-                    placeholder="http://localhost:1234/v1"
+                    placeholder={t('ia.servidor_url_placeholder')}
                   />
                 </div>
               ) : (
                 <div className="ai-settings-group">
-                  <label>Clave API (API Key)</label>
+                  <label>{t('ia.api_key_label')}</label>
                   <input
                     type="password"
                     className="ai-settings-input"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="Pega aquí tu clave secreta..."
+                    placeholder={t('ia.api_key_placeholder')}
                   />
                   <div className="ai-settings-links">
                     {AI_PROVIDER_LINKS[provider]?.apiKeyUrl && (
@@ -258,15 +261,22 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
         return (
           <div className="settings-tab">
             <div className="settings-section">
-              <span className="settings-section__title">Información de la Aplicación</span>
+              <span className="settings-section__title">{t('general.seccion_titulo')}</span>
               <div className="settings-info-grid">
-                <span className="settings-info-label">Versión</span>
-                <span className="settings-info-value">1.3-oráculo</span>
-                <span className="settings-info-label">Base de Datos</span>
-                <span className="settings-info-value">IndexedDB (Dexie.js)</span>
-                <span className="settings-info-label">Plataforma</span>
-                <span className="settings-info-value">Vite + Electron</span>
+                <span className="settings-info-label">{t('general.version')}</span>
+                <span className="settings-info-value">{t('general.version_valor')}</span>
+                <span className="settings-info-label">{t('general.base_datos')}</span>
+                <span className="settings-info-value">{t('general.base_datos_valor')}</span>
+                <span className="settings-info-label">{t('general.plataforma')}</span>
+                <span className="settings-info-value">{t('general.plataforma_valor')}</span>
               </div>
+            </div>
+            <div className="settings-section">
+              <span className="settings-section__title">{t('general.idioma')}</span>
+              <p className="settings-section__hint" style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px' }}>
+                {t('general.idioma_hint')}
+              </p>
+              <LanguageSelector />
             </div>
           </div>
         );
@@ -280,7 +290,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
       <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
         <div className="settings-modal__sidebar">
           <div className="settings-modal__sidebar-header">
-            <span className="settings-modal__sidebar-title">Configuración</span>
+            <span className="settings-modal__sidebar-title">{t('sidebar.titulo')}</span>
           </div>
           <nav className="settings-modal__nav">
             <button 
@@ -288,21 +298,21 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
               onClick={() => setActiveTab('cloud')}
             >
               <Cloud size={16} />
-              Nube y Backup
+              {t('sidebar.navegacion.nube')}
             </button>
             <button 
               className={`settings-modal__nav-item ${activeTab === 'ia' ? 'settings-modal__nav-item--active' : ''}`}
               onClick={() => setActiveTab('ia')}
             >
               <Sparkles size={16} />
-              Inteligencia Artificial
+              {t('sidebar.navegacion.ia')}
             </button>
             <button 
               className={`settings-modal__nav-item ${activeTab === 'general' ? 'settings-modal__nav-item--active' : ''}`}
               onClick={() => setActiveTab('general')}
             >
               <Info size={16} />
-              General
+              {t('sidebar.navegacion.general')}
             </button>
           </nav>
         </div>
@@ -310,9 +320,9 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
         <div className="settings-modal__content">
           <div className="settings-modal__header">
             <span className="settings-modal__title">
-              {activeTab === 'cloud' && 'Sincronización en la Nube'}
-              {activeTab === 'ia' && 'Parámetros de IA'}
-              {activeTab === 'general' && 'Información'}
+              {activeTab === 'cloud' && t('encabezados.nube')}
+              {activeTab === 'ia' && t('encabezados.ia')}
+              {activeTab === 'general' && t('encabezados.general')}
             </span>
             <button className="settings-modal__close" onClick={onClose}>
               <X size={18} />
