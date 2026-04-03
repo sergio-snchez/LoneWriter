@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Sparkles, MessageSquare, X, ChevronRight, ChevronLeft,
   Wand2, Send, RefreshCw, Copy, Check, RotateCcw, Trash2,
   User, Pencil, AlertTriangle, CheckCheck, Bot,
@@ -24,13 +25,13 @@ const REWRITTEN_TEXT = `El pergamino desprendía un olor a sal entremezclado con
 —No deberías tener eso —murmuró Lyra sin moverse de la puerta, los ojos fijos en el muelle en sombras que se extendía al otro lado del cristal.`
 
 const QUICK_GOALS = [
-  { id: 'style',     label: 'Estilo',    icon: Pencil,     desc: 'Cambiar el estilo literario' },
-  { id: 'tone',      label: 'Tono',      icon: Type,       desc: 'Ajustar el tono emocional' },
-  { id: 'character', label: 'Personaje', icon: User,       desc: 'Reescribir según el POV (voz del personaje)' },
-  { id: 'length',    label: 'Longitud',  icon: Minimize2,  desc: 'Acortar o alargar el texto' },
-  { id: 'clarity',   label: 'Claridad',  icon: Lightbulb,  desc: 'Mejorar la claridad' },
-  { id: 'rhythm',    label: 'Ritmo',     icon: Zap,        desc: 'Mejorar el ritmo narrativo' },
-  { id: 'cohesion',  label: 'Cohesión',  icon: AlignLeft,  desc: 'Mejorar la cohesión' },
+  { id: 'style',     label: 'estilo',    icon: Pencil,     desc: 'estilo_desc' },
+  { id: 'tone',      label: 'tono',      icon: Type,       desc: 'tono_desc' },
+  { id: 'character', label: 'personaje', icon: User,       desc: 'personaje_desc' },
+  { id: 'length',    label: 'longitud',  icon: Minimize2,  desc: 'longitud_desc' },
+  { id: 'clarity',   label: 'claridad',  icon: Lightbulb,  desc: 'claridad_desc' },
+  { id: 'rhythm',    label: 'ritmo',     icon: Zap,        desc: 'ritmo_desc' },
+  { id: 'cohesion',  label: 'cohesion',  icon: AlignLeft,  desc: 'cohesion_desc' },
 ]
 
 const AI_AGENTS = {
@@ -102,6 +103,7 @@ function AgentAvatar({ agentId, size = 28 }) {
 
 // ─── Tab: Rewrite ─────────────────────────────────────────────
 function RewriteTab({ activeScene }) {
+  const { t } = useTranslation('ai')
   const { 
     selection, provider, apiKey, localBaseUrl, prompts, currentModel,
     lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite, updatePrompt 
@@ -118,9 +120,9 @@ function RewriteTab({ activeScene }) {
   const handleRewrite = async () => {
     if (!selection) {
       openModal('confirm', {
-        title: 'Selección vacía',
-        message: 'Por favor, selecciona un texto en el editor primero para que la IA tenga algo que procesar.',
-        confirmLabel: 'Entendido',
+        title: t('rewrite.seleccion_vacia_titulo'),
+        message: t('rewrite.seleccion_vacia_mensaje'),
+        confirmLabel: t('rewrite.seleccion_vacia_boton'),
         onConfirm: () => {}
       });
       return;
@@ -145,9 +147,9 @@ function RewriteTab({ activeScene }) {
       saveLastRewrite(result, activeGoal, instruction, selection);
     } catch (error) {
       openModal('confirm', {
-        title: 'Error de IA',
-        message: `Hubo un problema al contactar con el proveedor: ${error.message}`,
-        confirmLabel: 'Cerrar',
+        title: t('rewrite.error_ia_titulo'),
+        message: t('rewrite.error_ia_mensaje', { error: error.message }),
+        confirmLabel: t('rewrite.error_ia_boton'),
         onConfirm: () => {}
       });
     } finally {
@@ -175,13 +177,13 @@ function RewriteTab({ activeScene }) {
       <div className="rewrite-section">
         <div className="rewrite-section__label">
           <AlignLeft size={12} />
-          Texto seleccionado
+          {t('rewrite.texto_seleccionado')}
           <span className="rewrite-section__meta">
-            {activeScene ? `${activeScene.title}` : 'Ninguna escena seleccionada'}
+            {activeScene ? `${activeScene.title}` : t('rewrite.ninguna_escena')}
           </span>
         </div>
         <div className={`rewrite-original ${!selection ? 'rewrite-original--empty' : ''}`}>
-          {selection || 'Selecciona un texto en el editor para comenzar a reescribir...'}
+          {selection || t('rewrite.seleccionar_placeholder')}
         </div>
       </div>
 
@@ -189,13 +191,13 @@ function RewriteTab({ activeScene }) {
       <div className="rewrite-section">
         <div className="rewrite-section__label">
           <Zap size={12} />
-          Objetivo rápido
-          <Tooltip content="Editar prompt base">
+          {t('rewrite.objetivo_rapido')}
+          <Tooltip content={t('rewrite.editar_prompt')}>
             <button 
               className="rewrite-section__edit-prompt" 
               onClick={() => setIsEditingPrompt(!isEditingPrompt)}
             >
-              {isEditingPrompt ? 'Cerrar editor' : 'Ver prompt'}
+              {isEditingPrompt ? t('rewrite.cerrar_editor') : t('rewrite.ver_prompt')}
             </button>
           </Tooltip>
         </div>
@@ -209,21 +211,21 @@ function RewriteTab({ activeScene }) {
               rows={3}
             />
             <p className="prompt-editor__hint">
-              Puedes usar [TONO], [LONGITUD] o [PERSONAJE] como variables.
+              {t('rewrite.hint_prompt')}
             </p>
           </div>
         )}
 
         <div className="rewrite-goals">
           {QUICK_GOALS.map(({ id, label, icon: Icon, desc }) => (
-            <Tooltip key={id} content={desc}>
+            <Tooltip key={id} content={t(`objetivos.${desc}`)}>
               <button
                 id={`rewrite-goal-${id}`}
                 className={`rewrite-goal ${activeGoal === id ? 'rewrite-goal--active' : ''}`}
                 onClick={() => setActiveGoal(id)}
               >
                 <Icon size={11} />
-                {label}
+                {t(`objetivos.${label}`)}
               </button>
             </Tooltip>
           ))}
@@ -234,16 +236,16 @@ function RewriteTab({ activeScene }) {
       <div className="rewrite-section">
         <div className="rewrite-section__label">
           <Pencil size={12} />
-          Instrucción personalizada
+          {t('rewrite.instruccion_personalizada')}
         </div>
         <div className="rewrite-instruction">
           <textarea
             id="rewrite-instruction-input"
             className="rewrite-instruction__textarea"
             placeholder={
-              activeGoal === 'tone' ? 'Ej: melancólico, eufórico, sarcástico...' :
-              activeGoal === 'length' ? 'Ej: mucho más corto, un párrafo extenso...' :
-              'Ej: hazlo más tenso y cinematográfico...'
+              activeGoal === 'tone' ? t('rewrite.instruccion_tono') :
+              activeGoal === 'length' ? t('rewrite.instruccion_longitud') :
+              t('rewrite.instruccion_defecto')
             }
             value={instruction}
             onChange={e => setInstruction(e.target.value)}
@@ -261,7 +263,7 @@ function RewriteTab({ activeScene }) {
           disabled={isGenerating || !selection}
         >
           {isGenerating ? <RefreshCw size={13} className="spinner rewrite-spinner" /> : <Wand2 size={13} />}
-          {isGenerating ? 'Generando...' : 'Reescribir'}
+          {isGenerating ? t('rewrite.generando') : t('rewrite.reescribir')}
         </button>
       </div>
 
@@ -271,7 +273,7 @@ function RewriteTab({ activeScene }) {
           <div className="rewrite-result__header">
             <div className="rewrite-result__label">
               <Sparkles size={12} />
-              Propuesta de reescritura
+              {t('rewrite.propuesta')}
             </div>
             <div className="rewrite-result__actions">
               <Tooltip content="Copiar">
@@ -293,25 +295,25 @@ function RewriteTab({ activeScene }) {
           <div className="rewrite-result__text" dangerouslySetInnerHTML={{ __html: renderMarkdown(lastRewrite) }}></div>
           <div className="rewrite-result__footer">
             <span className="rewrite-result__goal-tag">
-              <Zap size={10} /> {QUICK_GOALS.find(g => g.id === activeGoal)?.label} aplicado
+              <Zap size={10} /> {t('rewrite.aplicado', { goal: t(`objetivos.${QUICK_GOALS.find(g => g.id === activeGoal)?.label}`) })}
             </span>
           </div>
           <div className="rewrite-result__apply">
             <button className="btn btn-ghost" style={{ flex: 1 }} id="rewrite-discard-btn" onClick={() => {
               openModal('confirm', {
-                title: 'Descartar reescritura',
-                message: 'Esta reescritura se eliminará permanentemente. ¿Continuar?',
+                title: t('rewrite.descartar_titulo'),
+                message: t('rewrite.descartar_mensaje'),
                 isDanger: true,
-                confirmLabel: 'Descartar',
+                confirmLabel: t('rewrite.descartar_boton'),
                 onConfirm: () => discardLastRewrite()
               });
             }}>
               <Trash2 size={12} />
-              Descartar
+              {t('rewrite.descartar')}
             </button>
             <button className="btn btn-primary" style={{ flex: 1 }} id="rewrite-apply-btn" onClick={handleApply}>
               <Check size={13} />
-              Aplicar cambio
+              {t('rewrite.aplicar')}
             </button>
           </div>
         </div>
@@ -322,6 +324,7 @@ function RewriteTab({ activeScene }) {
 
 // ─── Tab: Debate forum ────────────────────────────────────────
 function DebateTab({ activeScene }) {
+  const { t } = useTranslation('ai')
   const {
     provider, apiKey, localBaseUrl, currentModel,
     debateAgents, debateHistory,
@@ -433,11 +436,11 @@ function DebateTab({ activeScene }) {
           let roundInstruction = ''
           if (rounds > 1) {
             if (r === 0) {
-              roundInstruction = `(NOTA DE SISTEMA: Ronda 1 de ${rounds}. Aún quedan más rondas, da tu opinión inicial e invita a los demás a debatirla).`
+              roundInstruction = t('debate.ronda_inicial', { total: rounds })
             } else if (r === rounds - 1) {
-              roundInstruction = `(NOTA DE SISTEMA: Ronda FINAL ${r + 1} de ${rounds}. Trata de acercar posturas o sacar una conclusión definitiva basándote en lo que han dicho tus compañeros).`
+              roundInstruction = t('debate.ronda_final', { actual: r + 1, total: rounds })
             } else {
-              roundInstruction = `(NOTA DE SISTEMA: Ronda ${r + 1} de ${rounds}. Lee a tus compañeros y responde, rebate o construye sobre sus argumentos).`
+              roundInstruction = t('debate.ronda_intermedia', { actual: r + 1, total: rounds })
             }
           }
 
@@ -507,9 +510,9 @@ function DebateTab({ activeScene }) {
       <div className="debate-tab">
         <div className="debate-manage-header">
           <button className="debate-back-btn" onClick={() => { setEditingAgent(null); setView('chat') }}>
-            ← Volver al debate
+            {t('debate.volver')}
           </button>
-          <span className="debate-manage-title">Gestionar participantes</span>
+          <span className="debate-manage-title">{t('debate.gestionar')}</span>
         </div>
 
         {/* Edit form for a specific agent */}
@@ -541,11 +544,11 @@ function DebateTab({ activeScene }) {
                     </div>
                     <div>
                       <div className="debate-agent-card__name">{agent.name}</div>
-                      <div className="debate-agent-card__desc">{agent.desc || 'Sin descripción'}</div>
+                      <div className="debate-agent-card__desc">{agent.desc || t('debate.sin_descripcion')}</div>
                     </div>
                   </div>
                   <div className="debate-agent-card__actions">
-                    <Tooltip content="Editar">
+                    <Tooltip content={t('debate.editar')}>
                       <button className="debate-agent-card__btn" onClick={() => setEditingAgent(agent.id)}>
                         <Pencil size={13} />
                       </button>
@@ -555,7 +558,7 @@ function DebateTab({ activeScene }) {
               ))}
             </div>
             <button className="btn btn-ghost debate-add-agent-btn" onClick={() => setNewAgent({})}>
-              + Añadir participante
+              {t('debate.anadir')}
             </button>
           </>
         )}
@@ -570,7 +573,7 @@ function DebateTab({ activeScene }) {
       <div className="debate-toolbar">
         <div className="debate-agents__list">
           {debateAgents.map(agent => (
-            <Tooltip key={agent.id} content={`${agent.name} — click para activar/desactivar`}>
+            <Tooltip key={agent.id} content={`${agent.name} — ${t('debate.activar_agente')}`}>
               <button
                 id={`debate-agent-${agent.id}`}
                 className={`debate-agent-btn ${agent.active ? 'debate-agent-btn--active' : ''}`}
@@ -588,7 +591,7 @@ function DebateTab({ activeScene }) {
         <div className="debate-toolbar__actions">
           {/* Sessions Dropdown */}
           <div className="debate-sessions-wrapper" ref={dropdownRef}>
-            <Tooltip content="Cambiar de chat">
+            <Tooltip content={t('debate.cambiar_chat')}>
               <button className="debate-sessions-trigger" onClick={() => setSessionsMenuOpen(!sessionsMenuOpen)}>
                 <MessageSquare size={13} />
                 <span className="debate-sessions-truncate">{activeSessionTitle}</span>
@@ -606,7 +609,7 @@ function DebateTab({ activeScene }) {
                     setSessionsMenuOpen(false)
                   }}
                 >
-                  <span>+ Nuevo debate</span>
+                  <span>{t('debate.nuevo_debate')}</span>
                 </button>
                 <div className="debate-sessions-list">
                   {debateSessions.map(session => (
@@ -642,7 +645,7 @@ function DebateTab({ activeScene }) {
                       )}
                       
                       <div className="debate-session-actions">
-                        <Tooltip content="Renombrar chat">
+                        <Tooltip content={t('debate.renombrar')}>
                           <button 
                             className="debate-session-action-btn"
                             onClick={(e) => {
@@ -654,16 +657,16 @@ function DebateTab({ activeScene }) {
                             <Pencil size={11} />
                           </button>
                         </Tooltip>
-                        <Tooltip content="Borrar chat">
+                        <Tooltip content={t('debate.borrar_chat')}>
                           <button 
                             className="debate-session-action-btn"
                             onClick={(e) => {
                               e.stopPropagation();
                               openModal('confirm', {
-                                title: 'Borrar chat',
-                                message: `¿Seguro que quieres borrar el historial de "${session.title}" permanentemente?`,
+                                title: t('debate.borrar_chat_titulo'),
+                                message: t('debate.borrar_chat_mensaje', { title: session.title }),
                                 isDanger: true,
-                                confirmLabel: 'Borrar Chat',
+                                confirmLabel: t('debate.borrar_chat_boton'),
                                 onConfirm: () => deleteDebateSession(session.id)
                               });
                             }}
@@ -678,7 +681,7 @@ function DebateTab({ activeScene }) {
               </div>
             )}
           </div>
-          <Tooltip content="Número de veces que los agentes se responderán entre sí">
+          <Tooltip content={t('debate.rondas')}>
             <div className="debate-rounds">
               <RotateCcw size={13} strokeWidth={2.5} />
               <select value={rounds} onChange={(e) => setRounds(Number(e.target.value))}>
@@ -688,7 +691,7 @@ function DebateTab({ activeScene }) {
               </select>
             </div>
           </Tooltip>
-          <Tooltip content={useSceneContext ? 'Desactivar contexto de escena' : 'Activar contexto de escena actual'}>
+          <Tooltip content={useSceneContext ? t('debate.contexto_escena_on') : t('debate.contexto_escena_off')}>
             <button
               className={`debate-context-btn ${useSceneContext ? 'debate-context-btn--active' : ''}`}
               onClick={() => setUseSceneContext(p => !p)}
@@ -696,7 +699,7 @@ function DebateTab({ activeScene }) {
               <AlignLeft size={13} />
             </button>
           </Tooltip>
-          <Tooltip content={useCompendiumContext ? 'Desactivar contexto del Compendio' : 'Activar contexto del Compendio'}>
+          <Tooltip content={useCompendiumContext ? t('debate.contexto_compendio_on') : t('debate.contexto_compendio_off')}>
             <button
               className={`debate-context-btn ${useCompendiumContext ? 'debate-context-btn--active' : ''}`}
               onClick={() => setUseCompendiumContext(p => !p)}
@@ -704,21 +707,21 @@ function DebateTab({ activeScene }) {
               <BookOpen size={13} />
             </button>
           </Tooltip>
-          <Tooltip content="Gestionar participantes">
+          <Tooltip content={t('debate.gestionar_participantes')}>
             <button className="debate-manage-btn" onClick={() => setView('agents')}>
               <MoreHorizontal size={15} />
             </button>
           </Tooltip>
           {debateHistory.length > 0 && (
-            <Tooltip content="Borrar historial">
+            <Tooltip content={t('debate.borrar_historial')}>
               <button
                 className="debate-clear-btn"
                 onClick={() => {
                   openModal('confirm', {
-                    title: 'Limpiar chat',
-                    message: '¿Estás seguro de que quieres borrar todo el historial de este debate?',
+                    title: t('debate.limpiar_titulo'),
+                    message: t('debate.limpiar_mensaje'),
                     isDanger: true,
-                    confirmLabel: 'Limpiar Todo',
+                    confirmLabel: t('debate.limpiar_boton'),
                     onConfirm: () => clearDebateHistory()
                   });
                 }}
@@ -735,10 +738,10 @@ function DebateTab({ activeScene }) {
         {debateHistory.length === 0 && (
           <div className="debate-empty">
             <MessageSquare size={28} />
-            <p>Escribe una pregunta o pega un fragmento de tu novela para comenzar el debate.</p>
+            <p>{t('debate.vacio')}</p>
             {activeScene && useSceneContext && (
               <span className="debate-context-tag">
-                <AlignLeft size={11} /> Con contexto: {activeScene.title}
+                <AlignLeft size={11} /> {t('debate.con_contexto', { title: activeScene.title })}
               </span>
             )}
           </div>
@@ -785,7 +788,7 @@ function DebateTab({ activeScene }) {
                     className="debate-msg__read-more"
                     onClick={() => setExpandedMessages(prev => new Set(prev).add(msgKey))}
                   >
-                    Leer más
+                    {t('debate.leer_mas')}
                   </button>
                 )}
                 {isExpanded && (
@@ -797,7 +800,7 @@ function DebateTab({ activeScene }) {
                       return next;
                     })}
                   >
-                    Mostrar menos
+                    {t('debate.mostrar_menos')}
                   </button>
                 )}
               </div>
@@ -817,7 +820,7 @@ function DebateTab({ activeScene }) {
                   {agent.initials}
                 </div>
                 <span className="debate-msg__agent-name" style={{ color: agent.color }}>{agent.name}</span>
-                <span className="debate-msg__time">escribiendo...</span>
+                <span className="debate-msg__time">{t('debate.escribiendo')}</span>
               </div>
               <div className="debate-msg__bubble debate-msg__bubble--agent debate-msg__typing" style={{ borderLeftColor: agent.color + '70' }}>
                 <span /><span /><span />
@@ -833,7 +836,7 @@ function DebateTab({ activeScene }) {
         <textarea
           id="debate-input"
           className="debate-input"
-          placeholder={activeAgents.length === 0 ? 'Activa al menos un participante...' : 'Escribe tu pregunta o pega un fragmento...'}
+          placeholder={activeAgents.length === 0 ? t('debate.placeholder_inactivo') : t('debate.placeholder_input')}
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -849,13 +852,14 @@ function DebateTab({ activeScene }) {
           {isAnyLoading ? <RefreshCw size={15} className="spinner" /> : <Send size={15} />}
         </button>
       </div>
-      <span className="debate-input-hint">Enter para enviar · Shift+Enter para nueva línea</span>
+      <span className="debate-input-hint">{t('debate.hint_input')}</span>
     </div>
   )
 }
 
 // ─── Agent Edit Form ──────────────────────────────────────────
 function AgentEditForm({ agent, colors, onSave, onCancel, isNew, canDelete, onDelete }) {
+  const { t } = useTranslation('ai')
   const [form, setForm] = useState({ ...agent })
   const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }))
   return (
@@ -864,33 +868,33 @@ function AgentEditForm({ agent, colors, onSave, onCancel, isNew, canDelete, onDe
         <div className="debate-agent-card__avatar" style={{ background: form.color + '30', color: form.color, fontSize: 14, width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
           {(form.initials || form.name?.slice(0, 2) || '??').toUpperCase()}
         </div>
-        <input className="agent-edit-form__input" value={form.name} onChange={e => set('name', e.target.value)} placeholder="Nombre del participante" />
+        <input className="agent-edit-form__input" value={form.name} onChange={e => set('name', e.target.value)} placeholder={t('debate.nombre_placeholder')} />
       </div>
-      <input className="agent-edit-form__input" value={form.desc} onChange={e => set('desc', e.target.value)} placeholder="Descripción breve (ej: Estructura y narrativa)" />
+      <input className="agent-edit-form__input" value={form.desc} onChange={e => set('desc', e.target.value)} placeholder={t('debate.desc_placeholder')} />
       <div className="agent-edit-form__colors">
         {colors.map(c => (
           <button key={c} className={`agent-color-dot ${form.color === c ? 'agent-color-dot--active' : ''}`} style={{ background: c, outlineColor: c }} onClick={() => set('color', c)} />
         ))}
       </div>
-      <label className="agent-edit-form__label">System Prompt</label>
-      <textarea className="agent-edit-form__prompt" value={form.systemPrompt} onChange={e => set('systemPrompt', e.target.value)} rows={7} placeholder="Define la personalidad y el rol de este agente..." />
-      <p className="agent-edit-form__hint">El prompt define cómo responde el agente. Puedes indicar su especialidad, tono, formato de respuesta y cualquier instrucción adicional.</p>
+      <label className="agent-edit-form__label">{t('debate.prompt_label')}</label>
+      <textarea className="agent-edit-form__prompt" value={form.systemPrompt} onChange={e => set('systemPrompt', e.target.value)} rows={7} placeholder={t('debate.prompt_placeholder')} />
+      <p className="agent-edit-form__hint">{t('debate.prompt_hint')}</p>
       <div className="agent-edit-form__footer">
         {!isNew && canDelete && (
           <button className="btn btn-ghost btn-danger-ghost" onClick={() => {
             openModal('confirm', {
-              title: 'Eliminar Participante',
-              message: `¿Seguro que quieres eliminar a ${agent.name} del foro de debate?`,
+              title: t('debate.eliminar_titulo'),
+              message: t('debate.eliminar_mensaje', { name: agent.name }),
               isDanger: true,
-              confirmLabel: 'Eliminar',
+              confirmLabel: t('debate.eliminar_boton'),
               onConfirm: onDelete
             });
-          }}>Eliminar</button>
+          }}>{t('debate.eliminar')}</button>
         )}
         <div style={{ flex: 1 }} />
-        <button className="btn btn-ghost" onClick={onCancel}>Cancelar</button>
+        <button className="btn btn-ghost" onClick={onCancel}>{t('debate.cancelar')}</button>
         <button className="btn btn-primary" onClick={() => onSave(form)}>
-          {isNew ? 'Crear participante' : 'Guardar cambios'}
+          {isNew ? t('debate.crear') : t('debate.guardar')}
         </button>
       </div>
     </div>
@@ -899,6 +903,7 @@ function AgentEditForm({ agent, colors, onSave, onCancel, isNew, canDelete, onDe
 
 // ─── Tab: Oracle ──────────────────────────────────────────────
 function OracleTab({ activeScene }) {
+  const { t } = useTranslation('ai')
   const { provider, apiKey, localBaseUrl, currentModel, oracleHistory, addOracleEntry, clearOracleHistory, deleteOracleEntry, toggleOracleCorrected, checkedEntries, oracleStatus, checkOracleResponse, resetOracleStatus } = useAI()
   const { activeNovel, acts } = useNovel()
   const { openModal } = useModal()
@@ -930,11 +935,11 @@ function OracleTab({ activeScene }) {
 
   const handleCheck = async () => {
     if (!activeScene?.content) {
-      setError('No hay texto en la escena actual para analizar.')
+      setError(t('oraculo.error_sin_texto'))
       return
     }
     if (!apiKey && provider !== 'local') {
-      setError('Se requiere una clave API configurada. Ve a Configuración > IA.')
+      setError(t('oraculo.error_api'))
       return
     }
 
@@ -944,7 +949,7 @@ function OracleTab({ activeScene }) {
     try {
       const plainText = activeScene.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
       if (!plainText || plainText.length < 10) {
-        setError('El texto es demasiado corto para un análisis significativo.')
+        setError(t('oraculo.error_corto'))
         setIsChecking(false)
         return
       }
@@ -1000,7 +1005,7 @@ ${plainText}
         compendiumUsed: compendiumInfo,
       })
     } catch (err) {
-      setError(`Error al consultar al Oráculo: ${err.message}`)
+      setError(t('oraculo.error_consulta', { error: err.message }))
     } finally {
       setIsChecking(false)
     }
@@ -1017,10 +1022,10 @@ ${plainText}
   const handleClear = () => {
     if (oracleHistory.length === 0) return
     openModal('confirm', {
-      title: 'Limpiar historial del Oráculo',
-      message: '¿Estás seguro de que quieres borrar todos los veredictos del Oráculo?',
+      title: t('oraculo.limpiar_titulo'),
+      message: t('oraculo.limpiar_mensaje'),
       isDanger: true,
-      confirmLabel: 'Limpiar Todo',
+      confirmLabel: t('oraculo.limpiar_boton'),
       onConfirm: () => clearOracleHistory()
     })
   }
@@ -1054,17 +1059,17 @@ ${plainText}
         <div className={`oracle-traffic-light oracle-traffic-light--${oracleStatus.status}`}>
           <div className="oracle-traffic-light__dot" />
           <span className="oracle-traffic-light__label">
-            {oracleStatus.status === 'idle' && 'Sin coincidencias halladas'}
+            {oracleStatus.status === 'idle' && t('oraculo.sin_coincidencias')}
             {oracleStatus.status === 'suspicious' && (
               <span className="oracle-entities-wrapper">
-                <span className="oracle-entities-label">Coincidencias halladas en el Compendio:</span>
+                <span className="oracle-entities-label">{t('oraculo.coincidencias')}</span>
                 <span className="oracle-entities-list">
                   {oracleStatus.detectedEntities.map((e, i) => (
                     <Tooltip key={e.name} content={
                       <div>
                         <strong>{e.name}</strong> ({e.label})
                         <br />
-                        Palabras detectadas: {e.matchedTerms.join(', ')}
+                        {e.matchedTerms.join(', ')}
                       </div>
                     }>
                       <span className="oracle-entity-tag oracle-entity-tag--hoverable">
@@ -1077,14 +1082,14 @@ ${plainText}
             )}
             {oracleStatus.status === 'error' && (
               <span className="oracle-entities-wrapper">
-                <span className="oracle-entities-label">Coincidencias halladas en el Compendio:</span>
+                <span className="oracle-entities-label">{t('oraculo.coincidencias')}</span>
                 <span className="oracle-entities-list">
                   {oracleStatus.detectedEntities.map((e, i) => (
                     <Tooltip key={e.name} content={
                       <div>
                         <strong>{e.name}</strong> ({e.label})
                         <br />
-                        Palabras detectadas: {e.matchedTerms.join(', ')}
+                        {e.matchedTerms.join(', ')}
                       </div>
                     }>
                       <span className="oracle-entity-tag oracle-entity-tag--error oracle-entity-tag--hoverable">
@@ -1102,7 +1107,7 @@ ${plainText}
       {/* Scene tag */}
       {activeScene && (
         <span className="oracle-tab__scene-tag">
-          <Eye size={11} /> Escena: {activeScene.title}
+          <Eye size={11} /> {t('oraculo.escena', { title: activeScene.title })}
         </span>
       )}
 
@@ -1124,7 +1129,7 @@ ${plainText}
             <div key={entry.id} className={`oracle-tab__entry ${isChecked ? 'oracle-tab__entry--checked' : ''}`}>
               <div className="oracle-tab__entry-header">
                 <div className="oracle-tab__entry-left">
-                  <Tooltip content={isChecked ? 'Marcar como pendiente' : 'Marcar como corregido'}>
+                  <Tooltip content={isChecked ? t('oraculo.marcar_pendiente') : t('oraculo.marcar_corregido')}>
                     <button
                       className="oracle-tab__check-btn"
                       onClick={() => toggleChecked(entry.id)}
@@ -1135,18 +1140,18 @@ ${plainText}
                   <div className="oracle-tab__entry-info">
                     <div className="oracle-tab__entry-label">
                       <Eye size={12} />
-                      Veredicto del Oráculo
+                      {t('oraculo.titulo')}
                     </div>
                     {(entry.chapterNumber || entry.sceneTitle) && (
                       <span className="oracle-tab__entry-location">
-                        {entry.chapterNumber ? `Cap. ${entry.chapterNumber}` : 'Sin cap.'} / {entry.sceneTitle || 'Sin escena'}
+                        {entry.chapterNumber ? `Cap. ${entry.chapterNumber}` : t('oraculo.sin_cap')} / {entry.sceneTitle || t('oraculo.sin_escena')}
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="oracle-tab__entry-meta">
                   <span className="oracle-tab__entry-time">{entry.time}</span>
-                  <Tooltip content="Copiar">
+                  <Tooltip content={t('oraculo.copiar')}>
                     <button
                       className="oracle-tab__action-btn"
                       onClick={() => handleCopy(entry.id)}
@@ -1154,7 +1159,7 @@ ${plainText}
                       {copiedId === entry.id ? <Check size={12} /> : <Copy size={12} />}
                     </button>
                   </Tooltip>
-                  <Tooltip content="Eliminar veredicto">
+                  <Tooltip content={t('oraculo.eliminar')}>
                     <button
                       className="oracle-tab__action-btn oracle-tab__action-btn--delete"
                       onClick={() => handleDeleteEntry(entry.id)}
@@ -1171,7 +1176,7 @@ ${plainText}
                   className="oracle-tab__read-more"
                   onClick={() => toggleExpanded(entry.id)}
                 >
-                  {isExpanded ? 'Mostrar menos' : 'Leer más'}
+                  {isExpanded ? t('oraculo.mostrar_menos') : t('oraculo.leer_mas')}
                 </button>
               )}
             </div>
@@ -1182,7 +1187,7 @@ ${plainText}
         {isChecking && (
           <div className="oracle-tab__entry oracle-tab__entry--loading">
             <Loader2 size={16} className="spinner" />
-            <span>El Oráculo consulta las fichas del Compendio...</span>
+            <span>{t('oraculo.consultando_compendio')}</span>
           </div>
         )}
 
@@ -1192,7 +1197,7 @@ ${plainText}
       {/* Compendium context */}
       {compContextUsed && (
         <details className="oracle-tab__context-details">
-          <summary>Ver contexto del Compendio usado</summary>
+          <summary>{t('oraculo.contexto_compendio')}</summary>
           <pre className="oracle-tab__context-pre">{compContextUsed}</pre>
         </details>
       )}
@@ -1200,7 +1205,7 @@ ${plainText}
       {/* Fixed bottom section */}
       <div className="oracle-tab__bottom">
         <div className="oracle-tab__intro">
-          <p><strong>El Oráculo analizará la coherencia de tu texto según las coincidencias encontradas, en base a la información del Compendio.</strong></p>
+          <p><strong>{t('oraculo.intro')}</strong></p>
         </div>
         <div className="oracle-tab__actions">
           <button
@@ -1209,7 +1214,7 @@ ${plainText}
             disabled={oracleHistory.length === 0}
           >
             <Trash2 size={12} />
-            Limpiar
+            {t('oraculo.limpiar')}
           </button>
           <button
             className={`btn oracle-tab__check-btn-main ${
@@ -1223,22 +1228,22 @@ ${plainText}
             {isChecking ? (
               <>
                 <Loader2 size={13} className="spinner" />
-                Consultando...
+                {t('oraculo.consultando')}
               </>
             ) : oracleStatus.status === 'error' ? (
               <>
                 <AlertTriangle size={13} />
-                Re-consultar al Oráculo
+                {t('oraculo.reconsultar')}
               </>
             ) : oracleStatus.status === 'suspicious' ? (
               <>
                 <AlertTriangle size={13} />
-                Consultar al Oráculo
+                {t('oraculo.consultar')}
               </>
             ) : (
               <>
                 <Eye size={13} />
-                Consultar al Oráculo
+                {t('oraculo.consultar')}
               </>
             )}
           </button>
@@ -1250,6 +1255,7 @@ ${plainText}
 
 // ─── Main AI Panel ────────────────────────────────────────────
 export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewrite', onOpenSettings }) {
+  const { t } = useTranslation('ai')
   const { openModal } = useModal()
   const [activeTab, setActiveTab] = useState(defaultTab)
   const { apiKey, currentModel } = useAI()
@@ -1267,11 +1273,11 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
         <div className="ai-panel__header">
           <div className="ai-panel__header-left">
             <Sparkles size={15} className="ai-panel__header-icon" />
-            <span className="ai-panel__header-title">Asistente IA</span>
+            <span className="ai-panel__header-title">{t('titulo_panel')}</span>
           </div>
           
           <div className="ai-panel__header-right">
-            <Tooltip content="Configurar API">
+            <Tooltip content={t('configurar_api')}>
               <button 
                 className={`ai-panel__api-btn ${!apiKey ? 'needs-key' : ''}`}
                 onClick={() => onOpenSettings('ia')}
@@ -1282,7 +1288,7 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
                 </span>
               </button>
             </Tooltip>
-            <button className="ai-panel__close" id="ai-panel-close-btn" onClick={onClose} aria-label="Cerrar panel IA">
+            <button className="ai-panel__close" id="ai-panel-close-btn" onClick={onClose} aria-label={t('cerrar')}>
               <X size={15} />
             </button>
           </div>
@@ -1298,7 +1304,7 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
             onClick={() => setActiveTab('rewrite')}
           >
             <Wand2 size={13} />
-            Reescribir
+            {t('tabs.reescribir')}
           </button>
           <button
             id="ai-tab-debate"
@@ -1306,7 +1312,7 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
             onClick={() => setActiveTab('debate')}
           >
             <MessageSquare size={13} />
-            Debate
+            {t('tabs.debate')}
           </button>
           <button
             id="ai-tab-oracle"
@@ -1314,7 +1320,7 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
             onClick={() => setActiveTab('oracle')}
           >
             <Eye size={13} />
-            Oráculo
+            {t('tabs.oraculo')}
           </button>
         </div>
 

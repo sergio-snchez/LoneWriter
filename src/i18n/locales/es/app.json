@@ -1,0 +1,47 @@
+{
+  "restaurar_nube": {
+    "titulo": "Versión en la nube disponible",
+    "mensaje": "Se ha detectado una copia de seguridad en Google Drive más reciente ({{date}}). ¿Deseas restaurar tus proyectos ahora? Se sobrescribirá la base de datos local.",
+    "boton": "Restaurar ahora"
+  },
+  "error_restaurar": "Error al restaurar: ",
+  "eliminar_proyecto": {
+    "titulo": "Borrar proyecto",
+    "mensaje": "¿Seguro que quieres borrar \"{{title}}\" permanentemente?",
+    "boton": "Eliminar Proyecto"
+  },
+  "bienvenida": {
+    "titulo": "Bienvenido a LoneWriter",
+    "subtitulo": "Tu espacio personal para dar vida a grandes historias.",
+    "boton_nueva": "Nueva Novela",
+    "continuar": "Continuar escribiendo",
+    "proyectos_total": "{{count}} proyectos totales",
+    "editado_el": "Editado el {{date}}",
+    "palabras": "palabras",
+    "completado": "completado",
+    "ver_todos": "Ver todos los proyectos",
+    "version": "LoneWriter v1.4-multilenguaje",
+    "creditos": "Diseñado y desarrollado con ♥ por <0>Sergio Sánchez</0> con Antigravity.",
+    "apoyar": "Apoyar el proyecto (Invítame a un café)"
+  },
+  "error_exportar": "Error al exportar el proyecto: ",
+  "cargando": "Cargando LoneWriter...",
+  "menu": {
+    "proyecto": "Proyecto",
+    "mis_proyectos": "Mis Proyectos",
+    "eliminar_tooltip": "Eliminar proyecto",
+    "nueva_novela": "Nueva Novela...",
+    "importar": "Importar Proyectos (.lwrt)",
+    "exportar_lwrt": "Exportar Proyectos (.lwrt)",
+    "exportar_docx": "Exportar Manuscrito (.docx)",
+    "sin_titulo": "Sin título"
+  },
+  "topbar": {
+    "estadisticas_tooltip": "Ver estadísticas detalladas",
+    "palabras_escritas": "palabras escritas",
+    "del_objetivo": "del objetivo",
+    "ia": "IA",
+    "configuracion": "Configuración"
+  },
+  "autor_defecto": "Autor"
+}

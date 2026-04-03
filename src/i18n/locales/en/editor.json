@@ -1,0 +1,101 @@
+{
+  "estado": {
+    "finalizado": "Completed",
+    "en_progreso": "In progress",
+    "borrador": "Draft",
+    "sin_comenzar": "Not started",
+    "opciones": ["Not started", "Draft", "In progress", "Completed"]
+  },
+  "editable": {
+    "doble_clic": "Double-click to edit"
+  },
+  "escena": {
+    "sin_pov": "No POV",
+    "añadir_escena": "Add scene"
+  },
+  "capitulo": {
+    "numero": "Ch. {{num}}",
+    "palabras": "{{count}} words",
+    "añadir": "Add chapter",
+    "eliminar_titulo": "Delete Chapter",
+    "eliminar_mensaje": "Are you sure you want to delete this chapter? All its scenes will be deleted.",
+    "eliminar_boton": "Delete Chapter"
+  },
+  "acto": {
+    "capitulos": "{{completed}}/{{total}} ch.",
+    "palabras": "{{count}} words",
+    "añadir": "Add act",
+    "eliminar_titulo": "Delete Act",
+    "eliminar_mensaje": "Are you sure you want to delete this act? All its chapters and scenes will be deleted.",
+    "eliminar_boton": "Delete Act"
+  },
+  "eliminar_escena": {
+    "titulo": "Delete Scene",
+    "mensaje": "Are you sure you want to permanently delete this scene?",
+    "boton": "Delete Scene"
+  },
+  "nuevo": {
+    "acto_titulo": "New Act",
+    "acto_mensaje": "Enter the title for the new act:",
+    "acto_placeholder": "Act II: The conflict",
+    "acto_boton": "Add Act",
+    "capitulo_titulo": "New Chapter",
+    "capitulo_mensaje": "Enter the title for the new chapter:",
+    "capitulo_placeholder": "Chapter...",
+    "capitulo_boton": "Add Chapter",
+    "escena_titulo": "New Scene",
+    "escena_mensaje": "Enter the title for the new scene:",
+    "escena_placeholder": "Scene...",
+    "escena_boton": "Add Scene"
+  },
+  "arbol": {
+    "titulo": "Narrative structure",
+    "subtitulo": "{{acts}} acts · {{chapters}} chapters · {{scenes}} scenes",
+    "expandir_todo": "Expand all",
+    "contraer_todo": "Collapse all",
+    "acto": "Act"
+  },
+  "drag": {
+    "acto": "Act",
+    "capitulo": "Chapter",
+    "escena": "Scene"
+  },
+  "editor": {
+    "exportar_word": "Export scene to Word",
+    "word": "Word",
+    "sin_pov": "No POV",
+    "tooltip_oraculo": "Analyzes the paragraph where the cursor is after 3 seconds of inactivity",
+    "sin_coincidencias": "No matches found",
+    "coincidencias": "Matches found in this paragraph",
+    "contradiccion": "Contradiction in this paragraph",
+    "palabras_escena": "{{count}} words in this scene",
+    "meta_escena": "Goal: {{count}} words per scene",
+    "seleccionar_escena": "Select a scene to start writing"
+  },
+  "estadisticas": {
+    "titulo": "Project statistics",
+    "resumen": "{{words}} words written · {{streak}}",
+    "sin_escribir_hoy": "No writing today",
+    "dias_fuego": "🔥 {{count}} days",
+    "objetivo_total": "Total goal",
+    "racha_dias": "Day streak",
+    "escenas_listas": "Scenes done",
+    "palabras_totales": "Total words",
+    "progreso_palabras": "Word progress",
+    "escenas_completadas": "Completed scenes"
+  },
+  "objetivos": {
+    "establecer": "Set Goal",
+    "meta_personalizada": "Custom goal...",
+    "plantillas": {
+      "micro_relato": "Flash fiction",
+      "cuento_corto": "Short story",
+      "novela_corta": "Novella",
+      "novela_estandar": "Standard novel",
+      "novela_fantasia": "Fantasy novel"
+    },
+    "plantilla_palabras": "{{count}} words",
+    "plantilla_meta": "{{scenes}} scenes · {{wps}} words/scene"
+  },
+  "acto_inicial": "Act I: Beginning"
+}

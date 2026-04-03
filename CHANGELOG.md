@@ -1,5 +1,36 @@
 # Changelog
 
+## [LoneWriter v1.4-multilenguaje (Stable)] - 2026-04-03
+
+### Added
+- **Sistema de internacionalización (i18n)**: Implementación completa con `i18next` y `react-i18next` — toda la interfaz traducida a **Español** e **Inglés**
+- **Selector de idioma**: Dropdown en Configuración > General con `Español` / `English`, persistencia automática en `localStorage`
+- **Diccionarios JSON estructurados**: 7 namespaces (`common`, `app`, `editor`, `compendium`, `resources`, `ai`, `settings`) con ~400+ claves por idioma
+- **Exportación comprimida (.lwrt)**: Los proyectos se exportan en formato gzip comprimido + base64 con header `LWRT_V1`, ilegibles en editor de texto
+- **Compatibilidad hacia atrás en importación**: El importador detecta automáticamente archivos `.lwrt` antiguos (JSON plano) y nuevos (comprimidos)
+- **Persistencia del check de corrección del Oráculo**: El estado de "corregido/pendiente" ahora se guarda en IndexedDB (campo `isCorrected` en `oracleEntries`)
+- **Cambio de texto en semáforo del Oráculo**: "Párrafo coherente" → "Sin coincidencias halladas"
+
+### Changed
+- **Versionado completo**: `v1.3-oráculo` → `v1.4-multilenguaje` en toda la aplicación
+- **Compresión con pako**: Reemplazada `CompressionStream` (API nativa no universal) por `pako` para compresión gzip compatible con todos los navegadores
+- **Sincronización con Google Drive**: Los backups ahora se suben en formato comprimido (`application/octet-stream`)
+- **Manejo de errores en exportación**: `handleExportProject` ahora es async con `try/catch` y alerta de error visible
+- **Sincronización bidireccional de relaciones**: Reescrita la lógica de relaciones entre personajes para que los cambios se reflejen correctamente en ambas fichas
+- **Tabs del panel IA**: Traducidas a `Reescribir` / `Debate` / `Oráculo` (ES) y `Rewrite` / `Debate` / `Oracle` (EN)
+
+### Fixed
+- **Stack overflow en compresión**: `btoa(String.fromCharCode(...array))` causaba error con datos grandes; reemplazado por conversión chunk-based de 8192 bytes
+- **Tabs duplicadas en AIPanel**: Eliminadas pestañas duplicadas de Debate y Oráculo que quedaban de ediciones anteriores
+- **`<Trans>` sin namespace**: Corregido `bienvenida.creditos` añadiendo `ns="app"` al componente Trans
+- **Relaciones de personajes no sincronizadas**: La lógica de diffing anterior no propagaba cambios de `type`/`reverseType` al otro personaje
+
+### CSS
+- **LanguageSelector.css**: Nuevo componente con dropdown de idioma estilizado
+- **AIPanel.css**: Selector de sesiones de debate más compacto (`max-width: 140px`), texto truncado a `90px`, dropdown ampliado a `300px`, fuente de items reducida a `11px`
+
+---
+
 ## [LoneWriter v1.3-oráculo (Stable)] - 2026-04-02
 
 ### Added

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Users, MapPin, Package, BookOpen, Star, ExternalLink,
   Search, Filter, ChevronRight, Plus, Tag, PenLine, Trash2, X, Zap
@@ -36,6 +37,7 @@ function ColorPicker({ value, onChange }) {
 
 /* ---- Panel de Formulario Lateral ---- */
 function CompendiumPanel({ type, item, characters, onClose, onSave }) {
+  const { t } = useTranslation('compendium')
   const [formData, setFormData] = useState(item || {});
 
   useEffect(() => {
@@ -105,7 +107,7 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
     onSave(data);
   };
 
-  let titleText = item ? `Editar entrada` : `Añadir entrada`;
+  let titleText = item ? t('panel.editar') : t('panel.añadir');
 
   return (
     <div className="compendium-view__panel">
@@ -118,34 +120,34 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
         {type === 'characters' && (
           <>
             <div className="compendium-form-group">
-              <label>Nombre</label>
-              <input name="name" value={formData.name || ''} onChange={handleChange} autoFocus placeholder="Lyra Ashveil" />
+              <label>{t('formulario.personajes.nombre')}</label>
+              <input name="name" value={formData.name || ''} onChange={handleChange} autoFocus placeholder={t('formulario.personajes.nombre_placeholder')} />
             </div>
             <div className="compendium-form-group">
-              <label>Rol principal</label>
-              <input name="role" value={formData.role || ''} onChange={handleChange} placeholder="Protagonista, Antagonista..." />
+              <label>{t('formulario.personajes.rol')}</label>
+              <input name="role" value={formData.role || ''} onChange={handleChange} placeholder={t('formulario.personajes.rol_placeholder')} />
             </div>
             <div className="compendium-form-group">
-              <label>Ocupación</label>
-              <input name="occupation" value={formData.occupation || ''} onChange={handleChange} placeholder="Cartógrafa, Guardia..." />
+              <label>{t('formulario.personajes.ocupacion')}</label>
+              <input name="occupation" value={formData.occupation || ''} onChange={handleChange} placeholder={t('formulario.personajes.ocupacion_placeholder')} />
             </div>
             <div className="compendium-form-group">
-              <label>Edad (Opcional)</label>
+              <label>{t('formulario.personajes.edad')}</label>
               <input type="number" name="age" value={formData.age || ''} onChange={handleChange} />
             </div>
             <div className="compendium-form-group">
-              <label>Descripción detallada</label>
+              <label>{t('formulario.personajes.descripcion')}</label>
               <textarea name="description" value={formData.description || ''} onChange={handleChange} />
             </div>
             <div className="compendium-form-group">
-              <label>Rasgos (separados por coma)</label>
-              <input name="_rawTraits" value={formData._rawTraits || ''} onChange={handleChange} placeholder="Valiente, Cínica, Leal..." />
+              <label>{t('formulario.personajes.rasgos')}</label>
+              <input name="_rawTraits" value={formData._rawTraits || ''} onChange={handleChange} placeholder={t('formulario.personajes.rasgos_placeholder')} />
             </div>
             <div className="compendium-form-group">
-              <label>Relaciones</label>
+              <label>{t('formulario.personajes.relaciones')}</label>
               {characters && characters.filter(c => c.name !== formData.name).length === 0 ? (
                 <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
-                  Añade más personajes al compendio para crear vínculos.
+                  {t('formulario.personajes.sin_personajes')}
                 </p>
               ) : (
                 <>
@@ -155,25 +157,25 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
                         value={rel.name}
                         onChange={e => handleRelationChange(i, 'name', e.target.value)}
                       >
-                        <option value="" disabled>Seleccionar personaje...</option>
+                        <option value="" disabled>{t('formulario.personajes.seleccionar')}</option>
                         {(characters || []).map(c => c.name !== formData.name && (
                           <option key={c.id} value={c.name}>{c.name}</option>
                         ))}
                       </select>
                       <div className="relation-row__fields">
                         <input
-                          placeholder="Para mí es... (ej: Sobrino)"
+                          placeholder={t('formulario.personajes.relacion_para_mi')}
                           value={rel.type}
                           onChange={e => handleRelationChange(i, 'type', e.target.value)}
                         />
                         <input
-                          placeholder="Para él/ella soy... (ej: Tía)"
+                          placeholder={t('formulario.personajes.relacion_para_el')}
                           value={rel.reverseType}
                           onChange={e => handleRelationChange(i, 'reverseType', e.target.value)}
                           style={{ fontSize: '12px', opacity: 0.85 }}
                         />
                       </div>
-                      <Tooltip content="Eliminar relación">
+                      <Tooltip content={t('formulario.personajes.eliminar_relacion')}>
                         <button className="btn btn-ghost btn-icon text-danger" onClick={() => removeRelation(i)}>
                           <Trash2 size={14} />
                         </button>
@@ -181,13 +183,13 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
                     </div>
                   ))}
                   <button className="btn btn-ghost" onClick={addRelation} style={{ alignSelf: 'flex-start', fontSize: 12, marginTop: '4px' }}>
-                    <Plus size={13} /> Añadir vínculo
+                    <Plus size={13} /> {t('formulario.personajes.añadir_vinculo')}
                   </button>
                 </>
               )}
             </div>
             <div className="compendium-form-group">
-              <label>Color representativo</label>
+              <label>{t('formulario.personajes.color')}</label>
               <ColorPicker
                 value={formData.color || '#6b9fd4'}
                 onChange={(c) => setFormData(prev => ({ ...prev, color: c }))}
@@ -199,28 +201,28 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
         {type === 'locations' && (
           <>
             <div className="compendium-form-group">
-              <label>Nombre del lugar</label>
+              <label>{t('formulario.localizaciones.nombre')}</label>
               <input name="name" value={formData.name || ''} onChange={handleChange} autoFocus />
             </div>
             <div className="compendium-form-group">
-              <label>Tipo</label>
-              <input name="type" value={formData.type || ''} onChange={handleChange} placeholder="Ciudad, Ruinas, Mar..." />
+              <label>{t('formulario.localizaciones.tipo')}</label>
+              <input name="type" value={formData.type || ''} onChange={handleChange} placeholder={t('formulario.localizaciones.tipo_placeholder')} />
             </div>
             <div className="compendium-form-group">
-              <label>Clima / Ambiente</label>
+              <label>{t('formulario.localizaciones.clima')}</label>
               <input name="climate" value={formData.climate || ''} onChange={handleChange} />
             </div>
             <div className="compendium-form-group">
-              <label>Descripción</label>
+              <label>{t('formulario.localizaciones.descripcion')}</label>
               <textarea name="description" value={formData.description || ''} onChange={handleChange} />
             </div>
             <div className="compendium-form-group">
-              <label>Etiquetas / Tags (separados por coma)</label>
-              <input name="_rawTags" value={formData._rawTags || ''} onChange={handleChange} placeholder="Magia, Peligro, Imperial" />
+              <label>{t('formulario.localizaciones.etiquetas')}</label>
+              <input name="_rawTags" value={formData._rawTags || ''} onChange={handleChange} placeholder={t('formulario.localizaciones.etiquetas_placeholder')} />
             </div>
             {characters && characters.length > 0 && (
               <div className="compendium-form-group">
-                <label>Personajes asociados al lugar</label>
+                <label>{t('formulario.localizaciones.personajes_asociados')}</label>
                 <div className="relation-chars-grid">
                   {characters.map(c => {
                     const assoc = formData.associatedCharacters || [];
@@ -247,7 +249,7 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
               </div>
             )}
             <div className="compendium-form-group">
-              <label>Color en el mapa</label>
+              <label>{t('formulario.localizaciones.color')}</label>
               <ColorPicker
                 value={formData.color || '#5cb98a'}
                 onChange={(c) => setFormData(prev => ({ ...prev, color: c }))}
@@ -259,45 +261,45 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
         {type === 'objects' && (
           <>
             <div className="compendium-form-group">
-              <label>Nombre del artefacto</label>
+              <label>{t('formulario.objetos.nombre')}</label>
               <input name="name" value={formData.name || ''} onChange={handleChange} autoFocus />
             </div>
             <div className="compendium-form-group">
-              <label>Tipo</label>
-              <input name="type" value={formData.type || ''} onChange={handleChange} placeholder="Arma, Documento, Joya..." />
+              <label>{t('formulario.objetos.tipo')}</label>
+              <input name="type" value={formData.type || ''} onChange={handleChange} placeholder={t('formulario.objetos.tipo_placeholder')} />
             </div>
             <div className="compendium-form-group">
-              <label>Importancia narrativa</label>
+              <label>{t('formulario.objetos.importancia')}</label>
               <select name="importance" value={formData.importance || 'Secundario'} onChange={handleChange}>
-                <option value="Secundario">Secundario</option>
-                <option value="Relevante">Relevante</option>
-                <option value="MacGuffin">MacGuffin (elemento clave)</option>
+                <option value="Secundario">{t('formulario.objetos.importancia_secundario')}</option>
+                <option value="Relevante">{t('formulario.objetos.importancia_relevante')}</option>
+                <option value="MacGuffin">{t('formulario.objetos.importancia_macguffin')}</option>
               </select>
             </div>
             <div className="compendium-form-group">
-              <label>Portador actual</label>
+              <label>{t('formulario.objetos.portador')}</label>
               <select 
                 name="currentOwner" 
                 value={formData.currentOwner || 'Desconocido'} 
                 onChange={handleChange}
                 style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--bg-base)', color: 'var(--text-primary)', width: '100%' }}
               >
-                <option value="Desconocido">Desconocido</option>
+                <option value="Desconocido">{t('formulario.objetos.portador_desconocido')}</option>
                 {(characters || []).map(c => (
                   <option key={c.id} value={c.name}>{c.name}</option>
                 ))}
               </select>
             </div>
             <div className="compendium-form-group">
-              <label>Origen histórico</label>
+              <label>{t('formulario.objetos.origen')}</label>
               <input name="origin" value={formData.origin || ''} onChange={handleChange} />
             </div>
             <div className="compendium-form-group">
-              <label>Descripción</label>
+              <label>{t('formulario.objetos.descripcion')}</label>
               <textarea name="description" value={formData.description || ''} onChange={handleChange} />
             </div>
             <div className="compendium-form-group">
-              <label>Etiquetas (separadas por coma)</label>
+              <label>{t('formulario.objetos.etiquetas')}</label>
               <input name="_rawTags" value={formData._rawTags || ''} onChange={handleChange} />
             </div>
           </>
@@ -306,19 +308,19 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
         {type === 'lore' && (
           <>
             <div className="compendium-form-group">
-              <label>Título del lore</label>
+              <label>{t('formulario.lore.titulo')}</label>
               <input name="title" value={formData.title || ''} onChange={handleChange} autoFocus />
             </div>
             <div className="compendium-form-group">
-              <label>Categoría lógica</label>
-              <input name="category" value={formData.category || ''} onChange={handleChange} placeholder="Sociedad, Magia, Religión..." />
+              <label>{t('formulario.lore.categoria')}</label>
+              <input name="category" value={formData.category || ''} onChange={handleChange} placeholder={t('formulario.lore.categoria_placeholder')} />
             </div>
             <div className="compendium-form-group">
-              <label>Resumen / Contenido</label>
+              <label>{t('formulario.lore.resumen')}</label>
               <textarea name="summary" value={formData.summary || ''} onChange={handleChange} style={{minHeight: '120px'}} />
             </div>
             <div className="compendium-form-group">
-              <label>Etiquetas (separadas por coma)</label>
+              <label>{t('formulario.lore.etiquetas')}</label>
               <input name="_rawTags" value={formData._rawTags || ''} onChange={handleChange} />
             </div>
           </>
@@ -326,8 +328,8 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
       </div>
 
       <div className="compendium-panel__footer">
-        <button className="btn btn-ghost" onClick={onClose}>Cancelar</button>
-        <button className="btn btn-primary" onClick={handleSubmit}>Guardar entrada</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('panel.cancelar')}</button>
+        <button className="btn btn-primary" onClick={handleSubmit}>{t('panel.guardar')}</button>
       </div>
     </div>
   )
@@ -335,6 +337,7 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
 
 /* ---- Character card ---- */
 function CharacterCard({ char, onEdit, onDelete, onToggleIgnore }) {
+  const { t } = useTranslation('compendium')
   const [expanded, setExpanded] = useState(false)
   return (
     <div
@@ -352,18 +355,18 @@ function CharacterCard({ char, onEdit, onDelete, onToggleIgnore }) {
           {char.ignoredForOracle !== 1 && (
             <div style={{ marginTop: '4px' }}>
               <span style={{ color: '#d4a853', fontSize: '10px', fontWeight: 600, background: 'rgba(212, 168, 83, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <Zap size={10} style={{ fill: 'currentColor' }} /> Contexto IA
+                <Zap size={10} style={{ fill: 'currentColor' }} /> {t('tarjetas.contexto_ia')}
               </span>
             </div>
           )}
           <span className="char-card__occupation">{char.occupation}</span>
           <div className="char-card__tags">
             <span className="badge badge-muted">{char.role}</span>
-            {char.age && <span className="tag">{char.age} años</span>}
+            {char.age && <span className="tag">{t('tarjetas.años', { age: char.age })}</span>}
           </div>
         </div>
         <div className="compendium-card-actions">
-          <Tooltip content={char.ignoredForOracle === 1 ? "Excluido del análisis de coherencia" : "Incluido en análisis de coherencia"}>
+          <Tooltip content={char.ignoredForOracle === 1 ? t('tarjetas.excluido') : t('tarjetas.incluido')}>
             <button 
               className={`btn btn-ghost btn-icon ${char.ignoredForOracle !== 1 ? 'compendium-zap-active' : ''}`}
               onClick={(e) => { e.stopPropagation(); onToggleIgnore(char); }}
@@ -371,10 +374,10 @@ function CharacterCard({ char, onEdit, onDelete, onToggleIgnore }) {
               <Zap size={14} style={{ fill: char.ignoredForOracle !== 1 ? 'currentColor' : 'none' }} />
             </button>
           </Tooltip>
-          <Tooltip content="Editar">
+          <Tooltip content={t('tarjetas.editar')}>
             <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(char); }}><PenLine size={14} /></button>
           </Tooltip>
-          <Tooltip content="Eliminar">
+          <Tooltip content={t('tarjetas.eliminar')}>
             <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(char.id); }}><Trash2 size={14} /></button>
           </Tooltip>
         </div>
@@ -386,7 +389,7 @@ function CharacterCard({ char, onEdit, onDelete, onToggleIgnore }) {
           <p className="char-card__desc">{char.description}</p>
           {char.traits && char.traits.length > 0 && (
             <>
-              <div className="char-card__section-label">Rasgos</div>
+              <div className="char-card__section-label">{t('tarjetas.rasgos')}</div>
               <div className="char-card__traits">
                 {char.traits.map(t => <span key={t} className="tag">{t}</span>)}
               </div>
@@ -394,7 +397,7 @@ function CharacterCard({ char, onEdit, onDelete, onToggleIgnore }) {
           )}
           {char.relations && char.relations.length > 0 && (
             <>
-              <div className="char-card__section-label">Relaciones</div>
+              <div className="char-card__section-label">{t('tarjetas.relaciones')}</div>
               {char.relations.map(r => (
                 <div key={r.name} className="char-relation">
                   <span className="char-relation__name">{r.name}</span>
@@ -411,6 +414,7 @@ function CharacterCard({ char, onEdit, onDelete, onToggleIgnore }) {
 
 /* ---- Location card ---- */
 function LocationCard({ loc, onEdit, onDelete, onToggleIgnore }) {
+  const { t } = useTranslation('compendium')
   const [expanded, setExpanded] = useState(false)
   return (
     <div
@@ -425,7 +429,7 @@ function LocationCard({ loc, onEdit, onDelete, onToggleIgnore }) {
           {loc.ignoredForOracle !== 1 && (
             <div style={{ marginTop: '4px' }}>
               <span style={{ color: '#d4a853', fontSize: '10px', fontWeight: 600, background: 'rgba(212, 168, 83, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <Zap size={10} style={{ fill: 'currentColor' }} /> Contexto IA
+                <Zap size={10} style={{ fill: 'currentColor' }} /> {t('tarjetas.contexto_ia')}
               </span>
             </div>
           )}
@@ -435,7 +439,7 @@ function LocationCard({ loc, onEdit, onDelete, onToggleIgnore }) {
           </div>
         </div>
         <div className="compendium-card-actions">
-          <Tooltip content={loc.ignoredForOracle === 1 ? "Excluido del análisis de coherencia" : "Incluido en análisis de coherencia"}>
+          <Tooltip content={loc.ignoredForOracle === 1 ? t('tarjetas.excluido') : t('tarjetas.incluido')}>
             <button 
               className={`btn btn-ghost btn-icon ${loc.ignoredForOracle !== 1 ? 'compendium-zap-active' : ''}`}
               onClick={(e) => { e.stopPropagation(); onToggleIgnore(loc); }}
@@ -443,10 +447,10 @@ function LocationCard({ loc, onEdit, onDelete, onToggleIgnore }) {
               <Zap size={14} style={{ fill: loc.ignoredForOracle !== 1 ? 'currentColor' : 'none' }} />
             </button>
           </Tooltip>
-          <Tooltip content="Editar">
+          <Tooltip content={t('tarjetas.editar')}>
             <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(loc); }}><PenLine size={14} /></button>
           </Tooltip>
-          <Tooltip content="Eliminar">
+          <Tooltip content={t('tarjetas.eliminar')}>
             <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(loc.id); }}><Trash2 size={14} /></button>
           </Tooltip>
         </div>
@@ -456,12 +460,12 @@ function LocationCard({ loc, onEdit, onDelete, onToggleIgnore }) {
         <div className="loc-card__body">
           <p className="loc-card__desc">{loc.description}</p>
           <div className="loc-card__climate">
-            <span className="char-card__section-label">Clima</span>
+            <span className="char-card__section-label">{t('tarjetas.clima')}</span>
             <span className="loc-card__climate-val">{loc.climate}</span>
           </div>
           {loc.associatedCharacters && loc.associatedCharacters.length > 0 && (
             <div>
-              <span className="char-card__section-label">Personajes asociados</span>
+              <span className="char-card__section-label">{t('tarjetas.personajes_asociados')}</span>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: 4 }}>
                 {loc.associatedCharacters.map(name => (
                   <span key={name} className="tag">{name}</span>
@@ -480,6 +484,7 @@ function LocationCard({ loc, onEdit, onDelete, onToggleIgnore }) {
 
 /* ---- Object card ---- */
 function ObjectCard({ obj, onEdit, onDelete, onToggleIgnore }) {
+  const { t } = useTranslation('compendium')
   const [expanded, setExpanded] = useState(false)
   return (
     <div
@@ -494,18 +499,18 @@ function ObjectCard({ obj, onEdit, onDelete, onToggleIgnore }) {
           {obj.ignoredForOracle !== 1 && (
             <div style={{ marginTop: '4px' }}>
               <span style={{ color: '#d4a853', fontSize: '10px', fontWeight: 600, background: 'rgba(212, 168, 83, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <Zap size={10} style={{ fill: 'currentColor' }} /> Contexto IA
+                <Zap size={10} style={{ fill: 'currentColor' }} /> {t('tarjetas.contexto_ia')}
               </span>
             </div>
           )}
           <span className="obj-card__type">{obj.type}</span>
           <div className="obj-card__tags">
-            {obj.currentOwner && <span className="badge badge-muted">Portador: {obj.currentOwner}</span>}
+            {obj.currentOwner && <span className="badge badge-muted">{t('tarjetas.portador', { name: obj.currentOwner })}</span>}
             {obj.tags?.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
           </div>
         </div>
         <div className="compendium-card-actions">
-          <Tooltip content={obj.ignoredForOracle === 1 ? "Excluido del análisis de coherencia" : "Incluido en análisis de coherencia"}>
+          <Tooltip content={obj.ignoredForOracle === 1 ? t('tarjetas.excluido') : t('tarjetas.incluido')}>
             <button 
               className={`btn btn-ghost btn-icon ${obj.ignoredForOracle !== 1 ? 'compendium-zap-active' : ''}`}
               onClick={(e) => { e.stopPropagation(); onToggleIgnore(obj); }}
@@ -513,10 +518,10 @@ function ObjectCard({ obj, onEdit, onDelete, onToggleIgnore }) {
               <Zap size={14} style={{ fill: obj.ignoredForOracle !== 1 ? 'currentColor' : 'none' }} />
             </button>
           </Tooltip>
-          <Tooltip content="Editar">
+          <Tooltip content={t('tarjetas.editar')}>
             <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(obj); }}><PenLine size={14} /></button>
           </Tooltip>
-          <Tooltip content="Eliminar">
+          <Tooltip content={t('tarjetas.eliminar')}>
             <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(obj.id); }}><Trash2 size={14} /></button>
           </Tooltip>
         </div>
@@ -528,12 +533,12 @@ function ObjectCard({ obj, onEdit, onDelete, onToggleIgnore }) {
           {obj.importance && obj.importance !== 'Secundario' && (
             <div style={{ marginBottom: 8 }}>
               <span className={`badge ${obj.importance === 'MacGuffin' ? 'badge-gold' : 'badge-blue'}`}>
-                {obj.importance === 'MacGuffin' ? '⚡ MacGuffin' : '★ Relevante'}
+                {obj.importance === 'MacGuffin' ? t('tarjetas.macguffin') : t('tarjetas.relevante')}
               </span>
             </div>
           )}
           <div className="obj-card__meta">
-            <span className="char-card__section-label">Origen</span>
+            <span className="char-card__section-label">{t('tarjetas.origen')}</span>
             <span className="obj-card__origin">{obj.origin}</span>
           </div>
           <div className="obj-card__tags">
@@ -547,6 +552,7 @@ function ObjectCard({ obj, onEdit, onDelete, onToggleIgnore }) {
 
 /* ---- Lore entry card ---- */
 function LoreCard({ entry, onEdit, onDelete, onToggleIgnore }) {
+  const { t } = useTranslation('compendium')
   const [expanded, setExpanded] = useState(false)
   return (
     <div
@@ -561,7 +567,7 @@ function LoreCard({ entry, onEdit, onDelete, onToggleIgnore }) {
           {entry.ignoredForOracle !== 1 && (
             <div style={{ marginTop: '4px' }}>
               <span style={{ color: '#d4a853', fontSize: '10px', fontWeight: 600, background: 'rgba(212, 168, 83, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <Zap size={10} style={{ fill: 'currentColor' }} /> Contexto IA
+                <Zap size={10} style={{ fill: 'currentColor' }} /> {t('tarjetas.contexto_ia')}
               </span>
             </div>
           )}
@@ -571,7 +577,7 @@ function LoreCard({ entry, onEdit, onDelete, onToggleIgnore }) {
           </div>
         </div>
         <div className="compendium-card-actions">
-          <Tooltip content={entry.ignoredForOracle === 1 ? "Excluido del análisis de coherencia" : "Incluido en análisis de coherencia"}>
+          <Tooltip content={entry.ignoredForOracle === 1 ? t('tarjetas.excluido') : t('tarjetas.incluido')}>
             <button 
               className={`btn btn-ghost btn-icon ${entry.ignoredForOracle !== 1 ? 'compendium-zap-active' : ''}`}
               onClick={(e) => { e.stopPropagation(); onToggleIgnore(entry); }}
@@ -579,10 +585,10 @@ function LoreCard({ entry, onEdit, onDelete, onToggleIgnore }) {
               <Zap size={14} style={{ fill: entry.ignoredForOracle !== 1 ? 'currentColor' : 'none' }} />
             </button>
           </Tooltip>
-          <Tooltip content="Editar">
+          <Tooltip content={t('tarjetas.editar')}>
             <button className="btn btn-ghost btn-icon" onClick={(e) => { e.stopPropagation(); onEdit(entry); }}><PenLine size={14} /></button>
           </Tooltip>
-          <Tooltip content="Eliminar">
+          <Tooltip content={t('tarjetas.eliminar')}>
             <button className="btn btn-ghost btn-icon text-danger" onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }}><Trash2 size={14} /></button>
           </Tooltip>
         </div>
@@ -602,6 +608,7 @@ function LoreCard({ entry, onEdit, onDelete, onToggleIgnore }) {
 
 /* ---- Main Compendium view ---- */
 export default function CompendiumView() {
+  const { t } = useTranslation('compendium')
   const { characters, locations, objects, lore, addCompendiumEntry, updateCompendiumEntry, deleteCompendiumEntry } = useNovel()
   const { openModal } = useModal()
   const [activeSection, setActiveSection] = useState('characters')
@@ -670,10 +677,10 @@ export default function CompendiumView() {
   };
 
   const SECTIONS = [
-    { id: 'characters', label: 'Personajes', icon: Users, count: characters.length },
-    { id: 'locations',  label: 'Localizaciones', icon: MapPin, count: locations.length },
-    { id: 'objects',    label: 'Objetos y artefactos', icon: Package, count: objects.length },
-    { id: 'lore',       label: 'Lore e historia', icon: BookOpen, count: lore.length },
+    { id: 'characters', label: t('tabs.personajes'), icon: Users, count: characters.length },
+    { id: 'locations',  label: t('tabs.localizaciones'), icon: MapPin, count: locations.length },
+    { id: 'objects',    label: t('tabs.objetos'), icon: Package, count: objects.length },
+    { id: 'lore',       label: t('tabs.lore'), icon: BookOpen, count: lore.length },
   ]
 
   const handleEdit = (item) => {
@@ -686,10 +693,10 @@ export default function CompendiumView() {
     const itemName = item?.name || item?.title || 'esta entrada';
     
     openModal('confirm', {
-      title: 'Eliminar entrada',
-      message: `¿Seguro que quieres eliminar "${itemName}" permanentemente del compendio?`,
+      title: t('eliminar.titulo'),
+      message: t('eliminar.mensaje', { name: itemName }),
       isDanger: true,
-      confirmLabel: 'Eliminar Permanentemente',
+      confirmLabel: t('eliminar.boton'),
       onConfirm: async () => {
         await deleteCompendiumEntry(activeSection, id);
         if (editingItem && editingItem.id === id) {
@@ -724,54 +731,49 @@ export default function CompendiumView() {
     const isUpdate = !!editingItem;
     
     if (activeSection === 'characters') {
-      const oldRels = isUpdate ? (editingItem.relations || []) : [];
-      let newRels = data.relations || [];
-      // Filtrar inválidos
-      newRels = newRels.filter(r => r.name);
+      let newRels = (data.relations || []).filter(r => r.name);
       data.relations = newRels;
 
-      // Bidirectional sync logic
       const oldName = isUpdate ? editingItem.name : data.name;
       const c1Name = data.name;
-      const c2Updates = {};
-      const getC2Data = (c2Name) => {
-         const found = characters.find(c => c.name === c2Name);
-         if (!found) return null;
-         if (!c2Updates[found.id]) c2Updates[found.id] = { ...found, relations: [...(found.relations || [])] };
-         return c2Updates[found.id];
-      };
 
-      const removedRels = oldRels.filter(or => !newRels.some(nr => nr.name === or.name));
-      
-      for (const removed of removedRels) {
-        const c2Data = getC2Data(removed.name);
-        if (c2Data) {
-          c2Data.relations = c2Data.relations.filter(r => r.name !== oldName);
-        }
+      const allCharNames = new Set();
+      if (isUpdate) {
+        (editingItem.relations || []).forEach(r => { if (r.name) allCharNames.add(r.name); });
       }
-      for (const added of newRels) {
-        const c2Data = getC2Data(added.name);
-        if (c2Data) {
-          const existIdx = c2Data.relations.findIndex(r => r.name === oldName);
-          const reverseRel = { 
-            name: c1Name, 
-            type: added.reverseType || '', 
-            reverseType: added.type || '' 
+      newRels.forEach(r => { if (r.name) allCharNames.add(r.name); });
+
+      const promises = [];
+
+      for (const otherName of allCharNames) {
+        const otherChar = characters.find(c => c.name === otherName);
+        if (!otherChar) continue;
+
+        const existingRels = [...(otherChar.relations || [])];
+        const relToMeIdx = existingRels.findIndex(r => r.name === oldName);
+        const stillRelated = newRels.some(r => r.name === otherName);
+
+        if (stillRelated) {
+          const myRel = newRels.find(r => r.name === otherName);
+          const reverseRel = {
+            name: c1Name,
+            type: myRel.reverseType || '',
+            reverseType: myRel.type || ''
           };
-          
-          if (existIdx >= 0) {
-            c2Data.relations[existIdx] = reverseRel;
+          if (relToMeIdx >= 0) {
+            existingRels[relToMeIdx] = reverseRel;
           } else {
-            c2Data.relations.push(reverseRel);
+            existingRels.push(reverseRel);
+          }
+        } else {
+          if (relToMeIdx >= 0) {
+            existingRels.splice(relToMeIdx, 1);
           }
         }
+
+        promises.push(updateCompendiumEntry('characters', otherChar.id, { relations: existingRels }));
       }
 
-      // Execute all logically calculated state updates
-      const promises = [];
-      for (const id in c2Updates) {
-        promises.push(updateCompendiumEntry('characters', id, c2Updates[id]));
-      }
       if (isUpdate) promises.push(updateCompendiumEntry(activeSection, editingItem.id, data));
       else promises.push(addCompendiumEntry(activeSection, data));
 
@@ -832,8 +834,8 @@ export default function CompendiumView() {
       {/* Left column – section tabs */}
       <div className="compendium-view__tabs">
         <div className="compendium-view__tabs-header">
-          <h1 className="section-title">Compendio</h1>
-          <p className="section-subtitle">Referencia de la novela</p>
+          <h1 className="section-title">{t('titulo')}</h1>
+          <p className="section-subtitle">{t('subtitulo')}</p>
         </div>
         <div className="compendium-tabs">
           {SECTIONS.map(({ id, label, icon: Icon, count }) => (
@@ -857,19 +859,19 @@ export default function CompendiumView() {
         <div className="compendium-summary">
           <div className="compendium-summary__item">
             <span className="compendium-summary__num">{characters.length}</span>
-            <span className="compendium-summary__label">Personajes</span>
+            <span className="compendium-summary__label">{t('resumen.personajes')}</span>
           </div>
           <div className="compendium-summary__item">
             <span className="compendium-summary__num">{locations.length}</span>
-            <span className="compendium-summary__label">Lugares</span>
+            <span className="compendium-summary__label">{t('resumen.lugares')}</span>
           </div>
           <div className="compendium-summary__item">
             <span className="compendium-summary__num">{objects.length}</span>
-            <span className="compendium-summary__label">Objetos</span>
+            <span className="compendium-summary__label">{t('resumen.objetos')}</span>
           </div>
           <div className="compendium-summary__item">
             <span className="compendium-summary__num">{lore.length}</span>
-            <span className="compendium-summary__label">Entradas lore</span>
+            <span className="compendium-summary__label">{t('resumen.entradas_lore')}</span>
           </div>
         </div>
       </div>
@@ -881,7 +883,7 @@ export default function CompendiumView() {
           <div className="search-bar" style={{ flex: 1, maxWidth: 320 }}>
             <Search size={14} color="var(--text-muted)" />
             <input
-              placeholder={`Buscar en ${SECTIONS.find(s=>s.id===activeSection)?.label.toLowerCase()} (nombre, descripción, tags)...`}
+              placeholder={t('toolbar.buscar', { section: SECTIONS.find(s=>s.id===activeSection)?.label.toLowerCase() })}
               value={query}
               onChange={e => setQuery(e.target.value)}
               id="compendium-search-input"
@@ -894,19 +896,19 @@ export default function CompendiumView() {
               onClick={() => setIsFilterOpen(!isFilterOpen)}
             >
               <Filter size={13} />
-              Filtrar {activeFilters.length > 0 && `(${activeFilters.length})`}
+              {activeFilters.length > 0 ? t('toolbar.filtrar_con_cuenta', { count: activeFilters.length }) : t('toolbar.filtrar')}
             </button>
             {isFilterOpen && (
               <div className="compendium-filter-popup">
                 <div className="compendium-filter-popup__header">
-                  <span className="compendium-filter-popup__title">Filtrar por etiquetas</span>
+                  <span className="compendium-filter-popup__title">{t('toolbar.filtrar_titulo')}</span>
                   {activeFilters.length > 0 && (
-                    <button className="btn btn-ghost" onClick={() => setActiveFilters([])} style={{padding: '2px 6px', fontSize: 11}}>Limpiar</button>
+                    <button className="btn btn-ghost" onClick={() => setActiveFilters([])} style={{padding: '2px 6px', fontSize: 11}}>{t('toolbar.limpiar')}</button>
                   )}
                 </div>
                 <div className="compendium-filter-popup__body">
                   {getAvailableFilters().length === 0 ? (
-                    <div style={{color: 'var(--text-muted)', fontSize: 12}}>No hay etiquetas disponibles</div>
+                    <div style={{color: 'var(--text-muted)', fontSize: 12}}>{t('toolbar.sin_etiquetas')}</div>
                   ) : (
                     getAvailableFilters().map(f => (
                       <label key={f} className="compendium-filter-option">
@@ -925,7 +927,7 @@ export default function CompendiumView() {
           </div>
           <button className="btn btn-primary" id="compendium-add-btn" onClick={handleAdd}>
             <Plus size={13} />
-            Añadir entrada
+            {t('toolbar.añadir')}
           </button>
         </div>
 
@@ -964,15 +966,15 @@ export default function CompendiumView() {
                   {activeSection === 'lore' && <BookOpen size={36} />}
                 </div>
                 <p className="compendium-empty-state__title">
-                  {activeSection === 'characters' && 'Sin personajes todavía'}
-                  {activeSection === 'locations' && 'Sin localizaciones todavía'}
-                  {activeSection === 'objects' && 'Sin objetos todavía'}
-                  {activeSection === 'lore' && 'Sin entradas de lore todavía'}
+                  {activeSection === 'characters' && t('vacio.personajes')}
+                  {activeSection === 'locations' && t('vacio.localizaciones')}
+                  {activeSection === 'objects' && t('vacio.objetos')}
+                  {activeSection === 'lore' && t('vacio.lore')}
                 </p>
-                <p className="compendium-empty-state__sub">Da vida a tu mundo añadiendo la primera entrada.</p>
+                <p className="compendium-empty-state__sub">{t('vacio.subtitulo')}</p>
                 <button className="btn btn-primary" onClick={handleAdd}>
                   <Plus size={14} />
-                  Añadir primera entrada
+                  {t('vacio.boton')}
                 </button>
               </div>
           )}

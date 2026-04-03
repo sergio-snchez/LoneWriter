@@ -1,0 +1,78 @@
+{
+  "sidebar": {
+    "titulo": "Configuración",
+    "navegacion": {
+      "nube": "Nube y Backup",
+      "ia": "Inteligencia Artificial",
+      "general": "General"
+    }
+  },
+  "encabezados": {
+    "nube": "Sincronización en la Nube",
+    "ia": "Parámetros de IA",
+    "general": "Información"
+  },
+  "nube": {
+    "seccion_titulo": "Google Drive Sync",
+    "seccion_hint": "Protege tus proyectos sincronizándolos automáticamente con tu propia cuenta de Google Drive.",
+    "cuenta_vinculada": "Cuenta vinculada",
+    "no_vinculado": "No vinculado",
+    "google_drive_activo": "Google Drive Activo",
+    "conectar_hint": "Conecta con Google Drive para empezar",
+    "vincular_cuenta": "Vincular Cuenta",
+    "desconectar": "Desconectar",
+    "sincronizando": "Sincronizando...",
+    "error_guardar": "Error al guardar",
+    "ultima_copia": "Última copia: {{date}}",
+    "nunca": "Nunca",
+    "sincronizar_ahora": "Sincronizar ahora",
+    "sincronizacion_automatica": "Sincronización automática",
+    "proteccion_cache": "Protección activa en tiempo real contra limpieza de caché",
+    "seguridad_hint": "<0>Seguridad:</0> LoneWriter solo tiene acceso a sus propios archivos de backup. Tus documentos privados no son visibles para la aplicación."
+  },
+  "ia": {
+    "seccion_titulo": "Configuración de Inteligencia Artificial",
+    "proveedor_label": "Proveedor de IA",
+    "proveedores": {
+      "google": "Google Gemini",
+      "openai": "OpenAI (GPT)",
+      "anthropic": "Anthropic (Claude)",
+      "openrouter": "OpenRouter (Múltiples)",
+      "local": "Servidor Local (Ollama/LM Studio)"
+    },
+    "modelo_label": "Modelo deseado",
+    "modelo_placeholder_local": "ej: llama3.2",
+    "modelo_placeholder_remoto": "ej: gpt-4o, gemini-1.5-pro...",
+    "servidor_url_label": "URL Base del Servidor",
+    "servidor_url_placeholder": "http://localhost:1234/v1",
+    "api_key_label": "Clave API (API Key)",
+    "api_key_placeholder": "Pega aquí tu clave secreta...",
+    "links": {
+      "google_api_key": "Obtener API Key en Google AI Studio",
+      "google_modelos": "Ver modelos Gemini disponibles",
+      "openai_api_key": "Obtener API Key en OpenAI",
+      "openai_modelos": "Ver modelos OpenAI disponibles",
+      "anthropic_api_key": "Obtener API Key en Anthropic",
+      "anthropic_modelos": "Ver modelos Claude disponibles",
+      "openrouter_api_key": "Obtener API Key en OpenRouter",
+      "openrouter_modelos": "Ver todos los modelos en OpenRouter",
+      "ollama_modelos": "Explorar modelos en Ollama",
+      "lmstudio_modelos": "Modelos para LM Studio"
+    }
+  },
+  "general": {
+    "seccion_titulo": "Información de la Aplicación",
+    "version": "Versión",
+    "version_valor": "1.4-multilenguaje",
+    "base_datos": "Base de Datos",
+    "base_datos_valor": "IndexedDB (Dexie.js)",
+    "plataforma": "Plataforma",
+    "plataforma_valor": "Vite + Electron",
+    "idioma": "Idioma",
+    "idioma_hint": "Selecciona el idioma de la interfaz de la aplicación."
+  },
+  "errores": {
+    "client_id_no_configurado": "No se ha configurado el Client ID de Google. Crea un archivo .env o variable de entorno.",
+    "error_conexion_google": "Error al conectar con Google. Verifica que la URL actual (Vercel) esté autorizada en la consola de Google Cloud."
+  }
+}

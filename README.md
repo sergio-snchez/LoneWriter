@@ -1,8 +1,8 @@
-# LoneWriter v1.3-oráculo (Stable) 🖋️
+# LoneWriter v1.4-multilenguaje (Stable) 🖋️
 
 ![LoneWriter Banner](banner-lonewriter.png)
 
-> **Tu compañero inteligente para escribir grandes historias, ahora con capacidades de IA avanzadas y optimizado como PWA.**
+> **Tu compañero inteligente para escribir grandes historias, ahora con capacidades de IA avanzadas, optimizado como PWA y disponible en múltiples idiomas.**
 >
 > 🌐 **Acceso Web:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
 >
@@ -10,9 +10,12 @@
 
 LoneWriter es una aplicación minimalista y potente diseñada para escritores que buscan un entorno zen pero con capacidades de inteligencia artificial de última generación. Gestiona tu estructura narrativa, crea un compendio detallado de tu mundo y recibe ayuda de asistentes literarios expertos, todo desde tu navegador o instalado como una aplicación nativa gracias a su tecnología PWA.
 
-Esta versión introduce capacidades avanzadas de IA para mejorar tu proceso creativo:
-
 ## ✨ Características Principales
+
+### 🌍 Multilenguaje (i18n)
+- **Español e Inglés:** Interfaz completamente traducida con selector de idioma en Configuración > General.
+- **Persistencia:** La preferencia de idioma se guarda automáticamente en `localStorage`.
+- **Arquitectura extensible:** Sistema basado en i18next con diccionarios JSON, listo para añadir más idiomas.
 
 ### 📖 Estructura Narrativa Dinámica
 - **Jerarquía Clave:** Organiza tu novela en Actos, Capítulos y Escenas de forma fluida.
@@ -30,17 +33,20 @@ Esta versión introduce capacidades avanzadas de IA para mejorar tu proceso crea
 ### 📚 Compendio y Lore
 - **Biblioteca de Personajes:** Fichas detalladas con rasgos, motivaciones y arcos.
 - **Construcción de Mundo:** Gestiona lugares, objetos clave y reglas de tu universo.
-- **Base de Conocimiento:** Sube archivos de referencia (PDF, TXT, MD) para que la IA los use como contexto.
+- **Base de Conocimiento:** Sube archivos de referencia (TXT, MD, CSV, JSON) para que la IA los use como contexto.
 
 ### 💾 Portabilidad y Sincronización
 - **Cloud Sync:** Conexión nativa con **Google Drive** para respaldos automáticos y persistencia total.
 - **Privacidad Primero:** Tus datos se guardan localmente (IndexedDB) y opcionalmente en tu propio espacio personal de Google.
-- **Exportación Versátil:** Descarga tu proyecto completo en formato `.lwrt` o genera un documento de Word (`.docx`).
+- **Exportación Comprimida:** Descarga tu proyecto completo en formato `.lwrt` comprimido con gzip (ilegible en texto plano) o genera un documento de Word (`.docx`).
+- **Compatibilidad hacia atrás:** El importador detecta automáticamente archivos `.lwrt` antiguos (JSON plano) y nuevos (comprimidos).
 
 ## 🛠️ Tecnologías
 
 - **Core:** React + Vite
 - **Base de Datos:** Dexie.js (IndexedDB)
+- **i18n:** i18next + react-i18next
+- **Compresión:** pako (gzip)
 - **PWA:** Vite PWA Plugin (Service Workers, Offline support)
 - **Sincronización:** Google Drive API (GSI)
 - **Despliegue:** Vercel
@@ -67,4 +73,4 @@ Si deseas probar LoneWriter en tu propio entorno:
 Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
 
 ---
-*LoneWriter v1.3-oráculo - Tu espacio personal para dar vida a grandes historias.*
+*LoneWriter v1.4-multilenguaje - Tu espacio personal para dar vida a grandes historias.*
