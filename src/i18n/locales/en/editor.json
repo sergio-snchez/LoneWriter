@@ -94,8 +94,9 @@
       "novela_estandar": "Standard novel",
       "novela_fantasia": "Fantasy novel"
     },
-    "plantilla_palabras": "{{count}} words",
-    "plantilla_meta": "{{scenes}} scenes · {{wps}} words/scene"
+    "plantilla_palabras": "{{count}} wds.",
+    "plantilla_meta": "{{scenes}} scenes · {{wps}} wds/scene",
+    "plantilla_capitulos": "{{count}} ch."
   },
   "acto_inicial": "Act I: Beginning"
 }

@@ -3,7 +3,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import { 
   Sparkles, Loader2, Download, Upload, FileDown, 
   ChevronDown, BookOpen, CheckCircle2, Plus, Trash2, PenLine,
-  Settings, Heart
+  Settings, Heart, Menu, X
 } from 'lucide-react'
 import './i18n/i18n'
 import Sidebar from './components/Sidebar'
@@ -26,6 +26,7 @@ export default function App() {
   const { t: tc } = useTranslation('common')
   const [activeView, setActiveView] = useState('editor')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
   const [aiPanelTab, setAiPanelTab] = useState('rewrite')
 
@@ -396,12 +397,45 @@ export default function App() {
 
       {/* Main layout */}
       <div className="app-body">
-        <Sidebar
-          active={activeView}
-          onNavigate={setActiveView}
-          collapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed(c => !c)}
-        />
+        {/* Desktop sidebar */}
+        <div className="app-body__sidebar-desktop">
+          <Sidebar
+            active={activeView}
+            onNavigate={(view) => { setActiveView(view); setMobileDrawerOpen(false); }}
+            collapsed={sidebarCollapsed}
+            onToggle={() => setSidebarCollapsed(c => !c)}
+          />
+        </div>
+
+        {/* Mobile hamburger button */}
+        <button 
+          className="mobile-menu-btn"
+          onClick={() => setMobileDrawerOpen(true)}
+          aria-label={t('menu.abrir_navegacion')}
+        >
+          <Menu size={22} />
+        </button>
+
+        {/* Mobile drawer overlay */}
+        {mobileDrawerOpen && (
+          <div className="mobile-drawer-overlay" onClick={() => setMobileDrawerOpen(false)}>
+            <div className="mobile-drawer" onClick={(e) => e.stopPropagation()}>
+              <div className="mobile-drawer__header">
+                <span className="mobile-drawer__title">LoneWriter</span>
+                <button className="mobile-drawer__close" onClick={() => setMobileDrawerOpen(false)}>
+                  <X size={20} />
+                </button>
+              </div>
+              <Sidebar
+                active={activeView}
+                onNavigate={(view) => { setActiveView(view); setMobileDrawerOpen(false); }}
+                collapsed={false}
+                onToggle={() => setMobileDrawerOpen(false)}
+              />
+            </div>
+          </div>
+        )}
+
         <main className="app-main">
           {renderView()}
         </main>

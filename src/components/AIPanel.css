@@ -1141,8 +1141,10 @@
   margin: 4px;
   padding: 6px;
   border-radius: var(--radius-sm);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   cursor: pointer;
   text-align: center;
 }
@@ -1751,4 +1753,240 @@
 }
 .rewrite-result__text :where(li) {
   margin: 0.15em 0;
+}
+
+/* ============================================
+   RESPONSIVE – MOBILE (< 768px)
+   ============================================ */
+@media (max-width: 767px) {
+  .ai-panel--open {
+    width: 100vw;
+    min-width: 100vw;
+    position: fixed;
+    inset: 0;
+    z-index: 400;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+  }
+
+  .ai-panel__header {
+    padding: 12px 16px;
+    min-height: 52px;
+  }
+
+  .ai-panel__api-btn {
+    max-width: 100px;
+    font-size: 10px;
+    padding: 6px 8px;
+    min-height: 36px;
+  }
+
+  .ai-panel__close {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .ai-panel__tabs {
+    padding: 8px 12px;
+    gap: 4px;
+  }
+
+  .ai-panel__tab {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+
+  .rewrite-section {
+    padding: 12px 16px;
+  }
+
+  .rewrite-goals {
+    gap: 8px;
+  }
+
+  .rewrite-goal {
+    padding: 8px 12px;
+    min-height: 36px;
+    font-size: 12px;
+  }
+
+  .rewrite-instruction__textarea {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .rewrite-actions {
+    padding: 12px 16px;
+  }
+
+  .rewrite-actions__main {
+    font-size: 15px;
+  }
+
+  .rewrite-result {
+    padding: 12px 16px;
+  }
+
+  .rewrite-result__apply {
+    gap: 8px;
+  }
+
+  .rewrite-result__apply .btn {
+  }
+
+  .debate-toolbar {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .debate-agent-btn {
+    padding: 6px 10px 6px 6px;
+    min-height: 36px;
+    font-size: 12px;
+  }
+
+  .debate-messages {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .debate-msg__bubble {
+    font-size: 14px;
+    padding: 10px 14px;
+    max-width: 95%;
+  }
+
+  .debate-input-area {
+    padding: 10px 12px 8px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .debate-input {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .debate-send-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .debate-sessions-trigger {
+    padding: 6px 8px;
+    min-height: 36px;
+  }
+
+  .debate-context-btn,
+  .debate-manage-btn,
+  .debate-clear-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .oracle-tab {
+    padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    gap: 10px;
+  }
+
+  .oracle-tab__entry {
+    padding: 0;
+  }
+
+  .oracle-tab__entry-header {
+    padding: 10px 12px;
+  }
+
+  .oracle-tab__entry-text {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .oracle-tab__check-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .oracle-tab__action-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .oracle-tab__footer {
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .oracle-tab__footer .btn {
+  }
+
+  .agent-edit-form {
+    padding: 16px;
+  }
+
+  .agent-edit-form__input {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .agent-edit-form__prompt {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .agent-edit-form__footer .btn {
+  }
+
+  .debate-agent-card__btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .debate-back-btn {
+    padding: 6px 10px;
+  }
+
+  .debate-add-agent-btn {
+  }
+
+  .res-action-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .rewrite-feedback-btn {
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+  }
+
+  .debate-rounds select {
+    font-size: 14px;
+    padding: 4px 6px;
+  }
+
+  .debate-session-new-btn {
+    padding: 8px;
+    min-height: 36px;
+  }
+
+  .debate-session-item {
+    padding: 8px;
+    min-height: 40px;
+  }
+
+  .debate-session-action-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

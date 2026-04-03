@@ -107,7 +107,7 @@
   overflow-y: auto;
 }
 
-.sidebar__nav-item {
+  .sidebar__nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -196,4 +196,78 @@
   color: var(--text-muted);
   display: block;
   text-align: center;
+}
+
+/* ============================================
+   RESPONSIVE – MOBILE (< 768px)
+   ============================================ */
+@media (max-width: 767px) {
+  .sidebar__header {
+    padding: 16px;
+  }
+
+  .sidebar__logo-text {
+    font-size: 18px;
+  }
+
+  .sidebar__toggle {
+    width: 40px;
+    height: 40px;
+  }
+
+  .sidebar__novel-chip {
+    margin: 12px 16px;
+    padding: 12px;
+  }
+
+  .sidebar__novel-label {
+    font-size: 11px;
+  }
+
+  .sidebar__novel-title {
+    font-size: 13px;
+  }
+
+  .sidebar__nav {
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .sidebar__nav-item {
+    padding: 14px 12px;
+    gap: 14px;
+    font-size: 15px;
+    border-radius: var(--radius-md);
+    flex-direction: row;
+  }
+
+  .sidebar__nav-icon {
+    width: 24px;
+  }
+
+  .sidebar__nav-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .sidebar__nav-label {
+    font-size: 14px;
+  }
+
+  .sidebar__nav-sublabel {
+    font-size: 12px;
+  }
+
+  .sidebar__nav-indicator {
+    width: 4px;
+    height: 50%;
+  }
+
+  .sidebar__footer {
+    padding: 16px;
+  }
+
+  .sidebar__version {
+    font-size: 11px;
+  }
 }
