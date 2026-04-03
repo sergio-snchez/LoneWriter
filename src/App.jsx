@@ -224,8 +224,13 @@ export default function App() {
     }
   }
 
-  const handleExportProject = () => {
-    ExportService.exportProject();
+  const handleExportProject = async () => {
+    try {
+      await ExportService.exportProject();
+    } catch (error) {
+      console.error('Error al exportar proyecto:', error);
+      alert('Error al exportar el proyecto: ' + error.message);
+    }
     setMenuOpen(false);
   }
 

@@ -906,7 +906,7 @@ export default function EditorView() {
                     >
                       <div className="oracle-traffic-light__dot" />
                       <span className="oracle-traffic-light__label">
-                        {oracleStatus.status === 'idle' && 'Párrafo coherente'}
+                        {oracleStatus.status === 'idle' && 'Sin coincidencias halladas'}
                         {oracleStatus.status === 'suspicious' && 'Coincidencias halladas en este párrafo'}
                         {oracleStatus.status === 'error' && 'Contradicción en este párrafo'}
                       </span>

@@ -260,6 +260,17 @@ export const AIProvider = ({ children }) => {
     setOracleHistory(prev => prev.filter(e => e.id !== entryId));
   };
 
+  const toggleOracleCorrected = async (entryId) => {
+    if (!activeNovel) return;
+    const entry = oracleHistory.find(e => e.id === entryId);
+    if (!entry) return;
+    const newCorrectedState = !entry.isCorrected;
+    await db.oracleEntries.update(entryId, { isCorrected: newCorrectedState });
+    setOracleHistory(prev => prev.map(e => e.id === entryId ? { ...e, isCorrected: newCorrectedState } : e));
+  };
+
+  const checkedEntries = new Set(oracleHistory.filter(e => e.isCorrected).map(e => e.id));
+
   // Entity detection + traffic light status (only current paragraph/selection)
   useEffect(() => {
     if (!activeNovel || !oracleText) {
@@ -479,7 +490,7 @@ export const AIProvider = ({ children }) => {
     selection, setSelection,
     oracleText, setOracleText,
     lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite,
-    oracleHistory, addOracleEntry, clearOracleHistory, deleteOracleEntry,
+    oracleHistory, addOracleEntry, clearOracleHistory, deleteOracleEntry, toggleOracleCorrected, checkedEntries,
     oracleStatus, checkOracleResponse, resetOracleStatus, markOracleContradiction,
     debateAgents, debateHistory,
     addDebateMessage, clearDebateHistory,

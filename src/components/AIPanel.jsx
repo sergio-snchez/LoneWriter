@@ -899,7 +899,7 @@ function AgentEditForm({ agent, colors, onSave, onCancel, isNew, canDelete, onDe
 
 // ─── Tab: Oracle ──────────────────────────────────────────────
 function OracleTab({ activeScene }) {
-  const { provider, apiKey, localBaseUrl, currentModel, oracleHistory, addOracleEntry, clearOracleHistory, deleteOracleEntry, oracleStatus, checkOracleResponse, resetOracleStatus } = useAI()
+  const { provider, apiKey, localBaseUrl, currentModel, oracleHistory, addOracleEntry, clearOracleHistory, deleteOracleEntry, toggleOracleCorrected, checkedEntries, oracleStatus, checkOracleResponse, resetOracleStatus } = useAI()
   const { activeNovel, acts } = useNovel()
   const { openModal } = useModal()
 
@@ -907,7 +907,6 @@ function OracleTab({ activeScene }) {
   const [error, setError] = useState('')
   const [copiedId, setCopiedId] = useState(null)
   const [compContextUsed, setCompContextUsed] = useState('')
-  const [checkedEntries, setCheckedEntries] = useState(new Set())
   const [expandedEntries, setExpandedEntries] = useState(new Set())
   const historyEndRef = useRef(null)
 
@@ -1028,11 +1027,6 @@ ${plainText}
 
   const handleDeleteEntry = (id) => {
     deleteOracleEntry(id)
-    setCheckedEntries(prev => {
-      const next = new Set(prev)
-      next.delete(id)
-      return next
-    })
     setExpandedEntries(prev => {
       const next = new Set(prev)
       next.delete(id)
@@ -1041,12 +1035,7 @@ ${plainText}
   }
 
   const toggleChecked = (id) => {
-    setCheckedEntries(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+    toggleOracleCorrected(id)
   }
 
   const toggleExpanded = (id) => {
@@ -1065,7 +1054,7 @@ ${plainText}
         <div className={`oracle-traffic-light oracle-traffic-light--${oracleStatus.status}`}>
           <div className="oracle-traffic-light__dot" />
           <span className="oracle-traffic-light__label">
-            {oracleStatus.status === 'idle' && 'Párrafo coherente'}
+            {oracleStatus.status === 'idle' && 'Sin coincidencias halladas'}
             {oracleStatus.status === 'suspicious' && (
               <span className="oracle-entities-wrapper">
                 <span className="oracle-entities-label">Coincidencias halladas en el Compendio:</span>
