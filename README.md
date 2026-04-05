@@ -1,6 +1,6 @@
 ![LoneWriter Banner](banner-lonewriter.png)
 
-> **Also available in English**
+> **[Also available in English](./README_ES.md)**
 
 # LoneWriter v1.4-multilenguaje (Stable) 🖋️
 
@@ -81,4 +81,4 @@ Designed and developed with ♥ by **Sergio Sánchez** with Antigravity.
 
 ---
 
-🇪🇸 *Also available in [Spanish](README_ES.md)*
+🇪🇸 **[Also available in Spanish](./README_ES.md)**
