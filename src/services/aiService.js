@@ -29,7 +29,7 @@ export const AIService = {
     } else if (goal === 'length') {
       finalPrompt = finalPrompt.replace('[LONGITUD]', customInstructions || 'conciso');
     } else if (goal === 'character') {
-      finalPrompt = finalPrompt.replace('[PERSONAJE]', pov || 'el protagonista');
+      finalPrompt = finalPrompt.replace('[PERSONAJE]', pov || 'el protagonista').replace('[CHARACTER]', pov || 'the protagonist');
     }
 
     let fullPrompt = `${finalPrompt}\n\nTEXTO ORIGINAL:\n"${text}"\n\nINSTRUCCIONES ADICIONALES DEL USUARIO:\n${customInstructions || 'Ninguna.'}`;

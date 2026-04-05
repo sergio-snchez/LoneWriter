@@ -22,58 +22,43 @@ const DEFAULT_MODELS = {
   local:       'local-model',
 };
 
-const DEFAULT_PROMPTS = {
-  style: 'Reescribe el siguiente texto para mejorar su estilo literario, haciéndolo más sugerente y evocador, pero manteniendo el significado original.',
-  tone: 'Ajusta el tono emocional del siguiente texto para que sea más [TONO], manteniendo la coherencia con el resto de la narrativa.',
-  length: 'Modifica la longitud del siguiente texto para que sea más [LONGITUD], sin perder la esencia de lo que se cuenta.',
-  clarity: 'Mejora la claridad y legibilidad del siguiente texto, eliminando redundancias y simplificando frases complejas.',
-  rhythm: 'Optimiza el ritmo narrativo del siguiente texto, alternando frases cortas y largas para crear una cadencia más dinámica y envolvente.',
-  cohesion: 'Mejora la cohesión y la fluidez entre las frases del siguiente texto, asegurando que las transiciones sean naturales y lógicas.',
-  character: 'Reescribe el siguiente texto desde el punto de vista (POV) de [PERSONAJE], reflejando su voz única, sus pensamientos y su forma de ver el mundo.'
-};
+const DEFAULT_PROMPTS = () => ({
+  style: i18n.t('ai:rewrite_prompts.style'),
+  tone: i18n.t('ai:rewrite_prompts.tone'),
+  length: i18n.t('ai:rewrite_prompts.length'),
+  clarity: i18n.t('ai:rewrite_prompts.clarity'),
+  rhythm: i18n.t('ai:rewrite_prompts.rhythm'),
+  cohesion: i18n.t('ai:rewrite_prompts.cohesion'),
+  character: i18n.t('ai:rewrite_prompts.character'),
+});
 
-export const DEFAULT_DEBATE_AGENTS = [
+const getDefaultDebateAgents = () => [
   {
     id: 'editor',
-    name: i18n.t('ai:agente_editor_nombre'),
+    name: i18n.t('ai:agentes.editor_nombre'),
     color: '#6b9fd4',
     initials: 'ED',
-    desc: i18n.t('ai:agente_editor_desc'),
+    desc: i18n.t('ai:agentes.editor_desc'),
     active: true,
-    systemPrompt: `Eres un editor literario experto especializado en narrativa de ficción. Tu rol en este foro es analizar la estructura narrativa, el arco de personajes, el ritmo de la trama y la coherencia del mundo ficticio. Quando respondas:
-- Sé constructivo y específico. Señala exactamente qué funciona y qué no.
-- Propón alternativas concretas cuando identifiques un problema.
-- Mantén un tono profesional pero accesible.
-- Recuerda el contexto de toda la conversación anterior.
-- Responde siempre en español y de forma concisa (máximo 3-4 párrafos).`,
+    systemPrompt: i18n.t('ai:agentes.editor_prompt'),
   },
   {
     id: 'critic',
-    name: i18n.t('ai:agente_critico_nombre'),
+    name: i18n.t('ai:agentes.critico_nombre'),
     color: '#e07070',
     initials: 'CR',
-    desc: i18n.t('ai:agente_critico_desc'),
+    desc: i18n.t('ai:agentes.critico_desc'),
     active: true,
-    systemPrompt: `Eres un crítico literario con amplia experiencia en narrativa española e internacional. Tu rol es ofrecer una valoración analítica y honesta del texto, sin suavizar los problemas pero tampoco siendo innecesariamente duro. Cuando respondas:
-- Aporta perspectiva comparativa (referencias a otros autores o técnicas cuando sea relevante).
-- Distingue entre problemas de fondo (concepto, personaje, trama) y de forma (estilo, prosa).
-- No repitas lo que ya han dicho los demás participantes; añade una perspectiva nueva.
-- Recuerda el contexto de toda la conversación anterior.
-- Responde siempre en español y de forma concisa (máximo 3-4 párrafos).`,
+    systemPrompt: i18n.t('ai:agentes.critico_prompt'),
   },
   {
     id: 'corrector',
-    name: i18n.t('ai:agente_corrector_nombre'),
+    name: i18n.t('ai:agentes.corrector_nombre'),
     color: '#5cb98a',
     initials: 'CO',
-    desc: i18n.t('ai:agente_corrector_desc'),
-    active: true,
-    systemPrompt: `Eres un corrector de estilo especializado en narrativa literaria en español. Tu rol es identificar problemas de gramática, ortografía, puntuación, registro, y estilo a nivel de frase y párrafo. Cuando respondas:
-- Cita literalmente las frases problemáticas y propón la corrección exacta.
-- Explica brevemente el motivo de cada corrección.
-- Comenta sobre tics de escritura o patrones repetitivos que notes en el texto.
-- Recuerda el contexto de toda la conversación anterior.
-- Responde siempre en español y de forma concisa (máximo 3-4 párrafos).`,
+    desc: i18n.t('ai:agentes.corrector_desc'),
+    active: false,
+    systemPrompt: i18n.t('ai:agentes.corrector_prompt'),
   },
 ];
 
@@ -87,9 +72,12 @@ export const AIProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : { ...DEFAULT_MODELS };
   });
   const [prompts, setPrompts] = useState(() => {
-    const saved = localStorage.getItem('ai_custom_prompts');
-    return saved ? JSON.parse(saved) : DEFAULT_PROMPTS;
+    return DEFAULT_PROMPTS();
   });
+
+  useEffect(() => {
+    setPrompts(DEFAULT_PROMPTS());
+  }, [i18n.language]);
   
   const [selection, setSelection] = useState('');
   const [lastRewrite, setLastRewrite] = useState('');
@@ -105,7 +93,7 @@ export const AIProvider = ({ children }) => {
   const entityDetectorRef = useRef(createDebouncedEntityDetector(() => {}, 2000));
 
   // ── Debate Agents & Sessions (Async Dexie) ────────────────────────
-  const [debateAgents, setDebateAgents] = useState(DEFAULT_DEBATE_AGENTS);
+  const [debateAgents, setDebateAgents] = useState(getDefaultDebateAgents());
   const [debateSessions, setDebateSessions] = useState([]);
   const [activeSessionId, setActiveSessionId] = useState(null);
 
@@ -115,7 +103,7 @@ export const AIProvider = ({ children }) => {
   useEffect(() => {
     const loadDebateData = async () => {
       if (!activeNovel) {
-        setDebateAgents(DEFAULT_DEBATE_AGENTS);
+        setDebateAgents(getDefaultDebateAgents());
         setDebateSessions([]);
         setActiveSessionId(null);
         setOracleHistory([]);
@@ -128,7 +116,7 @@ export const AIProvider = ({ children }) => {
       let agents = await db.debateAgents.where('novelId').equals(activeNovel.id).toArray();
       if (agents.length === 0) {
         // First time loading for this novel: import defaults
-        const defaultAgentsToInsert = DEFAULT_DEBATE_AGENTS.map(({ id, ...rest }) => ({ ...rest, novelId: activeNovel.id }));
+        const defaultAgentsToInsert = getDefaultDebateAgents().map(({ id, ...rest }) => ({ ...rest, novelId: activeNovel.id }));
         await db.debateAgents.bulkAdd(defaultAgentsToInsert);
         agents = await db.debateAgents.where('novelId').equals(activeNovel.id).toArray();
       }
@@ -478,7 +466,7 @@ export const AIProvider = ({ children }) => {
   };
 
   const resetPrompt = (id) => {
-    setPrompts(prev => ({ ...prev, [id]: DEFAULT_PROMPTS[id] }));
+    setPrompts(prev => ({ ...prev, [id]: DEFAULT_PROMPTS()[id] }));
   };
 
   const value = {

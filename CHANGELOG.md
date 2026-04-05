@@ -1,8 +1,17 @@
 # Changelog
 
-## [LoneWriter v1.4-multilingual (Stable)] - 2026-04-03
+<div align="center">
+
+[Also available in Spanish](./CHANGELOG_ES.md)
+
+</div>
+
+## [LoneWriter v1.4-multilingual (Stable)] - 2026-04-04
 
 ### Added
+- **Viewport meta responsive**: Support `safe-area-inset` for notch/bars on mobile devices
+- **Drawer navigation on mobile**: Hamburger menu for sidebar on screens <768px
+- **Collapsible tree panel**: Narrative tree view as drawer on mobile
 - **Internationalization system (i18n)**: Complete implementation with `i18next` and `react-i18next` — entire interface translated to **Spanish** and **English**
 - **Language selector**: Dropdown in Settings > General with `Español` / `English`, automatic persistence in `localStorage`
 - **Structured JSON dictionaries**: 7 namespaces (`common`, `app`, `editor`, `compendium`, `resources`, `ai`, `settings`) with ~400+ keys per language
@@ -12,6 +21,10 @@
 - **Traffic light text change in Oracle**: "Párrafo coherente" → "Sin coincidencias halladas"
 
 ### Changed
+- **Editor full-width on mobile**: Occupies full width, tree view hidden by default on <768px
+- **Optimized touch targets**: Touch targets and responsive typography across all views
+- **Badges → colored dots**: Status badges on scene rows displayed as colored dots on mobile
+- **Styled debate button**: Uppercase + letter-spacing for new session button
 - **Complete versioning**: `v1.3-oráculo` → `v1.4-multilingual` throughout the application
 - **Compression with pako**: Replaced `CompressionStream` (non-universal native API) with `pako` for gzip compression compatible with all browsers
 - **Google Drive sync**: Backups now upload in compressed format (`application/octet-stream`)
@@ -20,12 +33,21 @@
 - **AI panel tabs**: Translated to `Reescribir` / `Debate` / `Oráculo` (ES) and `Rewrite` / `Debate` / `Oracle` (EN)
 
 ### Fixed
+- **Duplicate word counting**: Fixed in chapter accordion
+- **Security hint**: Syntax `<0>` replaced by `<strong>` in EN/ES (Settings)
 - **Stack overflow in compression**: `btoa(String.fromCharCode(...array))` caused error with large data; replaced with chunk-based conversion of 8192 bytes
 - **Duplicate tabs in AIPanel**: Removed duplicate Debate and Oracle tabs from previous edits
 - **`<Trans>` without namespace**: Fixed `bienvenida.creditos` adding `ns="app"` to Trans component
 - **Character relationships not synchronized**: Previous diffing logic didn't propagate `type`/`reverseType` changes to the other character
 
+### UI Enhancements
+- **Goals editor**: Golden border + glow + active dot indicator
+- **Goals templates**: Chapter range (cap./ch.), 3-line layout (wds./pal.)
+- **Continuous numbering**: Chapters numbered globally across all acts
+
 ### CSS
+- **New files**: `Editor.css` (+337), `Compendium.css` (+189), `Resources.css` (+81)
+- **Updated**: App.css, AIPanel.css, RichEditor.css, Sidebar.css, SettingsModal.css
 - **LanguageSelector.css**: New component with styled language dropdown
 - **AIPanel.css**: More compact debate session selector (`max-width: 140px`), text truncated to `90px`, dropdown expanded to `300px`, items font reduced to `11px`
 

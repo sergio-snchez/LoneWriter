@@ -1,8 +1,17 @@
 # Changelog
 
-## [LoneWriter v1.4-multilenguaje (Stable)] - 2026-04-03
+<div align="center">
+
+[También disponible en Inglés](./CHANGELOG.md)
+
+</div>
+
+## [LoneWriter v1.4-multilenguaje (Stable)] - 2026-04-04
 
 ### Added
+- **Viewport meta responsive**: Soporte `safe-area-inset` para notch/bars de dispositivos móviles
+- **Drawer navigation en móvil**: Menú hamburguesa para sidebar en pantallas <768px
+- **Panel de árbol colapsable**: Tree view del árbol narrativo como drawer en móvil
 - **Sistema de internacionalización (i18n)**: Implementación completa con `i18next` y `react-i18next` — toda la interfaz traducida a **Español** e **Inglés**
 - **Selector de idioma**: Dropdown en Configuración > General con `Español` / `English`, persistencia automática en `localStorage`
 - **Diccionarios JSON estructurados**: 7 namespaces (`common`, `app`, `editor`, `compendium`, `resources`, `ai`, `settings`) con ~400+ claves por idioma
@@ -12,6 +21,10 @@
 - **Cambio de texto en semáforo del Oráculo**: "Párrafo coherente" → "Sin coincidencias halladas"
 
 ### Changed
+- **Editor full-width en móvil**: Ocupa todo el ancho, tree view oculto por defecto en <768px
+- **Touch targets optimizados**: Targets táctiles y tipografía responsive en todas las vistas
+- **Badges → puntos de color**: Status badges en filas de escenas se muestran como puntos coloreados en móvil
+- **Botón de debate estilizado**: Uppercase + letter-spacing para el botón de nueva sesión
 - **Versionado completo**: `v1.3-oráculo` → `v1.4-multilenguaje` en toda la aplicación
 - **Compresión con pako**: Reemplazada `CompressionStream` (API nativa no universal) por `pako` para compresión gzip compatible con todos los navegadores
 - **Sincronización con Google Drive**: Los backups ahora se suben en formato comprimido (`application/octet-stream`)
@@ -20,12 +33,21 @@
 - **Tabs del panel IA**: Traducidas a `Reescribir` / `Debate` / `Oráculo` (ES) y `Rewrite` / `Debate` / `Oracle` (EN)
 
 ### Fixed
+- **Conteo duplicado de palabras**: Corregido en acordeón de capítulo
+- **Hint de seguridad**: Sintaxis `<0>` reemplazada por `<strong>` en EN/ES (Settings)
 - **Stack overflow en compresión**: `btoa(String.fromCharCode(...array))` causaba error con datos grandes; reemplazado por conversión chunk-based de 8192 bytes
 - **Tabs duplicadas en AIPanel**: Eliminadas pestañas duplicadas de Debate y Oráculo que quedaban de ediciones anteriores
 - **`<Trans>` sin namespace**: Corregido `bienvenida.creditos` añadiendo `ns="app"` al componente Trans
 - **Relaciones de personajes no sincronizadas**: La lógica de diffing anterior no propagaba cambios de `type`/`reverseType` al otro personaje
 
+### UI Enhancements
+- **Editor de Goals**: Borde dorado + glow + indicador de dot activo
+- **Templates de Goals**: Rango de capítulos (cap./ch.), layout de 3 líneas (wds./pal.)
+- **Numeración continua**: Capítulos numerados de forma global a través de todos los actos
+
 ### CSS
+- **Nuevos archivos**: `Editor.css` (+337), `Compendium.css` (+189), `Resources.css` (+81)
+- **Actualizados**: App.css, AIPanel.css, RichEditor.css, Sidebar.css, SettingsModal.css
 - **LanguageSelector.css**: Nuevo componente con dropdown de idioma estilizado
 - **AIPanel.css**: Selector de sesiones de debate más compacto (`max-width: 140px`), texto truncado a `90px`, dropdown ampliado a `300px`, fuente de items reducida a `11px`
 
