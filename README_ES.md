@@ -1,10 +1,10 @@
+![LoneWriter Banner](banner-lonewriter.png)
+
 <div align="center">
 
 *🇺🇸 [También disponible en Inglés](./README.md)*
 
 </div>
-
-![LoneWriter Banner](banner-lonewriter.png)
 
 # LoneWriter v1.4-multilenguaje (Stable) 🖋️
 
