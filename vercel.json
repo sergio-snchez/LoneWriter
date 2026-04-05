@@ -4,5 +4,8 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "github": {
+    "autoJobCancelation": false
+  }
 }
