@@ -444,6 +444,8 @@
   border: 1px solid var(--border-accent);
   border-radius: var(--radius-sm);
   padding: 12px 13px;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .rewrite-result__footer {
@@ -1659,7 +1661,7 @@
 
 /* Debate messages */
 .debate-msg__text :where(p) {
-  margin: 0.4em 0;
+  margin: 0.6em 0;
 }
 .debate-msg__text :where(p:first-child) {
   margin-top: 0;
@@ -1696,7 +1698,7 @@
 
 /* Oracle entries */
 .oracle-tab__entry-text :where(p) {
-  margin: 0.4em 0;
+  margin: 0.6em 0;
 }
 .oracle-tab__entry-text :where(p:first-child) {
   margin-top: 0;

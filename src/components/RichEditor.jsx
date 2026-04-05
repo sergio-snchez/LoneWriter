@@ -32,6 +32,7 @@ export default function RichEditor({ content, onChange, placeholder }) {
   const { setSelection, setOracleText } = useAI();
   const editorRef = useRef(null);
   const oracleScanRef = useRef(null);
+  const lastSelectionRef = useRef('');
 
   if (!oracleScanRef.current) {
     oracleScanRef.current = createDebouncedOracleScan((text) => {
@@ -66,9 +67,27 @@ export default function RichEditor({ content, onChange, placeholder }) {
       const { from, to } = editor.state.selection;
       if (from === to) {
         setSelection('');
+        lastSelectionRef.current = '';
+        const $from = editor.state.selection.$from;
+        oracleScanRef.current.schedule(() => {
+          const ed = editorRef.current;
+          if (!ed) return '';
+          return ed.state.doc.textBetween($from.start(), $from.end(), ' ').trim();
+        });
       } else {
         const selectedText = editor.state.doc.textBetween(from, to, ' ');
         setSelection(selectedText);
+        lastSelectionRef.current = selectedText;
+        oracleScanRef.current.schedule(() => {
+          const ed = editorRef.current;
+          if (!ed) return '';
+          const { selection } = ed.state;
+          if (selection.from !== selection.to) {
+            return ed.state.doc.textBetween(selection.from, selection.to, ' ').trim();
+          }
+          const { $from } = selection;
+          return ed.state.doc.textBetween($from.start(), $from.end(), ' ').trim();
+        });
       }
     },
     editorProps: {

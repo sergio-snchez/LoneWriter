@@ -354,7 +354,7 @@ function ProgressBar({ value, max, label, sublabel, color }) {
   )
 }
 
-export default function EditorView() {
+export default function EditorView({ menuOpen = false }) {
   const { t } = useTranslation('editor')
   const { 
     acts, activeNovel, characters, updateScene, 
@@ -1007,12 +1007,14 @@ export default function EditorView() {
                 </div>
               </div>
               
-              <div className="editor-body">
-                <RichEditor 
-                  key={activeScene.id} 
-                  content={activeScene.content || ''} 
-                  onChange={handleEditorChange}
-                />
+              <div className="editor-body" style={menuOpen ? { pointerEvents: 'none', userSelect: 'none' } : {}}>
+                <div style={menuOpen ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
+                  <RichEditor 
+                    key={activeScene.id} 
+                    content={activeScene.content || ''} 
+                    onChange={handleEditorChange}
+                  />
+                </div>
               </div>
 
               <div className="editor-footer">

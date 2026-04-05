@@ -1188,21 +1188,21 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: var(--bg-surface);
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-md);
+    background: var(--accent);
+    color: #1a1710;
+    border: none;
+    box-shadow: 0 4px 16px rgba(212, 168, 83, 0.4);
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
   }
   .mobile-tree-toggle:active {
     transform: scale(0.92);
   }
   .mobile-tree-toggle:hover {
-    background: var(--bg-elevated);
-    box-shadow: var(--shadow-lg);
+    background: var(--accent-light);
+    box-shadow: 0 6px 20px rgba(212, 168, 83, 0.5);
   }
 
   /* Mobile tree overlay */

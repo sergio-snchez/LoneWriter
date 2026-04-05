@@ -3,7 +3,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import { 
   Sparkles, Loader2, Download, Upload, FileDown, 
   ChevronDown, BookOpen, CheckCircle2, Plus, Trash2, PenLine,
-  Settings, Heart, Menu, X
+  Settings, Heart, Menu, X, RotateCcw
 } from 'lucide-react'
 import './i18n/i18n'
 import Sidebar from './components/Sidebar'
@@ -222,7 +222,7 @@ export default function App() {
       );
     }
     switch (activeView) {
-      case 'editor':     return <EditorView />
+      case 'editor':     return <EditorView menuOpen={menuOpen} />
       case 'compendium': return <CompendiumView />
       case 'resources':  return <ResourcesView />
       default:           return <EditorView />
@@ -281,10 +281,16 @@ export default function App() {
       <input 
         type="file" 
         ref={fileInputRef} 
-        style={{ display: 'none' }} 
+        style={{ display: 'none' }}
         accept=".lwrt" 
         onChange={handleFileChange} 
       />
+
+      {/* Landscape warning overlay */}
+      <div className="landscape-warning">
+        <RotateCcw size={48} />
+        <p>{t('landscape.mensaje') || 'Por favor, rota tu dispositivo a vertical'}</p>
+      </div>
 
       {/* Top bar */}
       <header className="app-topbar">
