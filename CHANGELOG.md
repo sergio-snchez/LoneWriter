@@ -1,65 +1,75 @@
 # Changelog
 
-## [LoneWriter v1.4-multilenguaje (Stable)] - 2026-04-03
+<div align="center">
+
+[Also available in Spanish](./CHANGELOG_ES.md)
+
+</div>
+
+## [LoneWriter v1.4-multilingual (Stable)] - 2026-04-03
 
 ### Added
-- **Sistema de internacionalización (i18n)**: Implementación completa con `i18next` y `react-i18next` — toda la interfaz traducida a **Español** e **Inglés**
-- **Selector de idioma**: Dropdown en Configuración > General con `Español` / `English`, persistencia automática en `localStorage`
-- **Diccionarios JSON estructurados**: 7 namespaces (`common`, `app`, `editor`, `compendium`, `resources`, `ai`, `settings`) con ~400+ claves por idioma
-- **Exportación comprimida (.lwrt)**: Los proyectos se exportan en formato gzip comprimido + base64 con header `LWRT_V1`, ilegibles en editor de texto
-- **Compatibilidad hacia atrás en importación**: El importador detecta automáticamente archivos `.lwrt` antiguos (JSON plano) y nuevos (comprimidos)
-- **Persistencia del check de corrección del Oráculo**: El estado de "corregido/pendiente" ahora se guarda en IndexedDB (campo `isCorrected` en `oracleEntries`)
-- **Cambio de texto en semáforo del Oráculo**: "Párrafo coherente" → "Sin coincidencias halladas"
+- **Internationalization system (i18n)**: Complete implementation with `i18next` and `react-i18next` — entire interface translated to **Spanish** and **English**
+- **Language selector**: Dropdown in Settings > General with `Español` / `English`, automatic persistence in `localStorage`
+- **Structured JSON dictionaries**: 7 namespaces (`common`, `app`, `editor`, `compendium`, `resources`, `ai`, `settings`) with ~400+ keys per language
+- **Compressed export (.lwrt)**: Projects exported in gzip compressed + base64 format with `LWRT_V1` header, unreadable in text editor
+- **Backward compatibility in import**: Importer automatically detects old (plain JSON) and new (compressed) `.lwrt` files
+- **Oracle correction check persistence**: The "corrected/pending" state is now saved in IndexedDB (`isCorrected` field in `oracleEntries`)
+- **Traffic light text change in Oracle**: "Párrafo coherente" → "Sin coincidencias halladas"
 
 ### Changed
-- **Versionado completo**: `v1.3-oráculo` → `v1.4-multilenguaje` en toda la aplicación
-- **Compresión con pako**: Reemplazada `CompressionStream` (API nativa no universal) por `pako` para compresión gzip compatible con todos los navegadores
-- **Sincronización con Google Drive**: Los backups ahora se suben en formato comprimido (`application/octet-stream`)
-- **Manejo de errores en exportación**: `handleExportProject` ahora es async con `try/catch` y alerta de error visible
-- **Sincronización bidireccional de relaciones**: Reescrita la lógica de relaciones entre personajes para que los cambios se reflejen correctamente en ambas fichas
-- **Tabs del panel IA**: Traducidas a `Reescribir` / `Debate` / `Oráculo` (ES) y `Rewrite` / `Debate` / `Oracle` (EN)
+- **Complete versioning**: `v1.3-oráculo` → `v1.4-multilingual` throughout the application
+- **Compression with pako**: Replaced `CompressionStream` (non-universal native API) with `pako` for gzip compression compatible with all browsers
+- **Google Drive sync**: Backups now upload in compressed format (`application/octet-stream`)
+- **Export error handling**: `handleExportProject` is now async with `try/catch` and visible error alert
+- **Bidirectional relationship sync**: Rewritten character relationship logic so changes are correctly reflected in both sheets
+- **AI panel tabs**: Translated to `Reescribir` / `Debate` / `Oráculo` (ES) and `Rewrite` / `Debate` / `Oracle` (EN)
 
 ### Fixed
-- **Stack overflow en compresión**: `btoa(String.fromCharCode(...array))` causaba error con datos grandes; reemplazado por conversión chunk-based de 8192 bytes
-- **Tabs duplicadas en AIPanel**: Eliminadas pestañas duplicadas de Debate y Oráculo que quedaban de ediciones anteriores
-- **`<Trans>` sin namespace**: Corregido `bienvenida.creditos` añadiendo `ns="app"` al componente Trans
-- **Relaciones de personajes no sincronizadas**: La lógica de diffing anterior no propagaba cambios de `type`/`reverseType` al otro personaje
+- **Stack overflow in compression**: `btoa(String.fromCharCode(...array))` caused error with large data; replaced with chunk-based conversion of 8192 bytes
+- **Duplicate tabs in AIPanel**: Removed duplicate Debate and Oracle tabs from previous edits
+- **`<Trans>` without namespace**: Fixed `bienvenida.creditos` adding `ns="app"` to Trans component
+- **Character relationships not synchronized**: Previous diffing logic didn't propagate `type`/`reverseType` changes to the other character
 
 ### CSS
-- **LanguageSelector.css**: Nuevo componente con dropdown de idioma estilizado
-- **AIPanel.css**: Selector de sesiones de debate más compacto (`max-width: 140px`), texto truncado a `90px`, dropdown ampliado a `300px`, fuente de items reducida a `11px`
+- **LanguageSelector.css**: New component with styled language dropdown
+- **AIPanel.css**: More compact debate session selector (`max-width: 140px`), text truncated to `90px`, dropdown expanded to `300px`, items font reduced to `11px`
+- **AIPanel.css**: New styles for rewrite spinner, tooltips, and improved layout
+- **Resources.css**: New file with styles for Resources view
+- **Editor.css**: Styles for Oracle traffic light, tooltips, and tree header layout
+- **Compendium.css**: Styles for ignored cards (`card--ignored`), AI Context badges, and active zap button
 
 ---
 
 ## [LoneWriter v1.3-oráculo (Stable)] - 2026-04-02
 
 ### Added
-- **Sistema de Tooltips**: Nuevo componente `Tooltip.jsx` reemplaza los atributos `title` nativos en toda la UI (Sidebar, AIPanel, Editor, Compendium, App topbar) para tooltips consistentes y enriquecidos
-- **Renderizado Markdown**: Integración de `renderMarkdown` en el panel IA — reescrituras, mensajes de debate y veredictos del Oracle ahora muestran formato Markdown (negritas, listas, encabezados)
-- **Exclusión de entidades del Oracle**: Nuevo campo `ignoredForOracle` en personajes, lugares, objetos y entradas de lore para excluirlos del análisis de coherencia
-- **Badges "Contexto IA"**: Indicador visual en las tarjetas del Compendio mostrando qué entidades están activas para el análisis de coherencia
-- **Auto-renombrado de sesiones de debate**: Al crear un debate nuevo desde una escena, la sesión se renombra automáticamente con el número de capítulo y título de escena
-- **Persistencia de estado de nodos**: El estado de expansión/colapso de actos, capítulos y escenas se guarda por novela en IndexedDB (`uiExpanded`)
-- **Tooltips enriquecidos en Oracle**: Las etiquetas de entidades detectadas muestran información detallada (nombre, tipo, palabras detectadas) al pasar el cursor
-- **Nueva utilidad `utils/renderMarkdown.js`**: Parser de Markdown ligero para la app
-- **Función `fetchDetectedEntityData`**: Reemplaza la búsqueda semántica anterior por datos directos de entidades detectadas en el compendio
+- **Tooltip system**: New `Tooltip.jsx` component replaces native `title` attributes throughout the UI (Sidebar, AIPanel, Editor, Compendium, App topbar) for consistent and enriched tooltips
+- **Markdown rendering**: Integration of `renderMarkdown` in AI panel — rewrites, debate messages and Oracle verdicts now display Markdown formatting (bold, lists, headings)
+- **Oracle entity exclusion**: New `ignoredForOracle` field in characters, places, objects and lore entries to exclude them from coherence analysis
+- **"AI Context" badges**: Visual indicator on Compendium cards showing which entities are active for coherence analysis
+- **Auto-renaming of debate sessions**: When creating a new debate from a scene, the session is automatically renamed with chapter number and scene title
+- **Node state persistence**: Expansion/collapse state of acts, chapters and scenes is saved per novel in IndexedDB (`uiExpanded`)
+- **Enriched tooltips in Oracle**: Detected entity labels show detailed information (name, type, detected words) on hover
+- **New `utils/renderMarkdown.js` utility**: Lightweight Markdown parser for the app
+- **`fetchDetectedEntityData` function**: Replaces previous semantic search with direct data from detected entities in the compendium
 
 ### Changed
-- **Versionado completo**: `v1.2-cloud` → `v1.3-oráculo` en Sidebar, App.jsx footer, SettingsModal (sincronización y sección "Información de la aplicación"), y README.md
-- **Cloud Sync mejorado**: Protección contra race conditions con `cloudCheckInProgress`, lectura directa de `localStorage` para evitar problemas de timing, tolerancia de 5s en detección de versiones en la nube
-- **`refreshAfterRestore()`**: Nueva función para recargar la UI tras restaurar desde la nube sin necesidad de `window.location.reload()`
-- **Confirmación al descartar reescritura**: Modal de confirmación antes de eliminar permanentemente una reescritura
-- **Estadísticas colapsadas por defecto**: El panel de estadísticas del editor ahora aparece colapsado al iniciar
-- **Mejoras en `entityDetector.js`**: Lógica de detección de entidades refactorizada y optimizada
-- **Mejoras en `compendiumSearch.js`**: Integración con `fetchDetectedEntityData` para contexto del compendio
+- **Complete versioning**: `v1.2-cloud` → `v1.3-oráculo` in Sidebar, App.jsx footer, SettingsModal (sync and "Application Information" section), and README.md
+- **Improved Cloud Sync**: Race condition protection with `cloudCheckInProgress`, direct `localStorage` reading to avoid timing issues, 5s tolerance in cloud version detection
+- **`refreshAfterRestore()`**: New function to reload UI after restoring from cloud without needing `window.location.reload()`
+- **Confirmation when discarding rewrite**: Confirmation modal before permanently deleting a rewrite
+- **Statistics collapsed by default**: The editor statistics panel now appears collapsed on startup
+- **Improvements in `entityDetector.js`**: Refactored and optimized entity detection logic
+- **Improvements in `compendiumSearch.js`**: Integration with `fetchDetectedEntityData` for compendium context
 
 ### Fixed
-- **Race condition en cloud restore**: Doble protección con `isRestoring` flag y `cloudCheckInProgress` para evitar restauraciones duplicadas
-- **Prevención de sobrescritura en cloud sync**: Tolerancia de 5 segundos para evitar falsos positivos al detectar versiones más recientes en la nube
-- **Reordenación de carga en `switchNovel`**: `reloadData` ahora se ejecuta antes de `setActiveNovel` para evitar inconsistencias
+- **Race condition in cloud restore**: Double protection with `isRestoring` flag and `cloudCheckInProgress` to prevent duplicate restorations
+- **Cloud sync overwriting prevention**: 5-second tolerance to avoid false positives when detecting newer versions in the cloud
+- **Load reordering in `switchNovel`**: `reloadData` now executes before `setActiveNovel` to avoid inconsistencies
 
 ### CSS
-- **AIPanel.css**: Nuevos estilos para spinner de reescritura, tooltips, y layout mejorado
-- **Resources.css**: Archivo nuevo con estilos para la vista de Recursos
-- **Editor.css**: Estilos para traffic light del Oracle, tooltips, y layout del tree header
-- **Compendium.css**: Estilos para tarjetas ignoradas (`card--ignored`), badges de Contexto IA, y botón zap activo
+- **AIPanel.css**: New styles for rewrite spinner, tooltips, and improved layout
+- **Resources.css**: New file with styles for Resources view
+- **Editor.css**: Styles for Oracle traffic light, tooltips, and tree header layout
+- **Compendium.css**: Styles for ignored cards (`card--ignored`), AI Context badges, and active zap button
