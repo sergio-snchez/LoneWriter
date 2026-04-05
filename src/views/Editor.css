@@ -739,7 +739,39 @@
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   position: relative;
+  cursor: default;
+  transition: all 0.2s ease;
 }
+
+.editor-traffic-light--clickable {
+  cursor: pointer;
+}
+
+.editor-traffic-light--clickable:hover {
+  border-color: rgba(92, 185, 138, 0.5);
+  box-shadow: 0 0 4px rgba(92, 185, 138, 0.2);
+}
+
+.editor-traffic-light--clickable.oracle-traffic-light--suspicious:hover {
+  border-color: rgba(224, 184, 112, 0.5);
+  box-shadow: 0 0 4px rgba(224, 184, 112, 0.2);
+}
+
+.editor-traffic-light--clickable.oracle-traffic-light--error:hover {
+  border-color: rgba(224, 112, 112, 0.5);
+  box-shadow: 0 0 4px rgba(224, 112, 112, 0.2);
+}
+
+
+
+
+
+
+
+
+
+
+
 
 .editor-traffic-light .oracle-traffic-light__dot {
   width: 10px;
@@ -1453,4 +1485,69 @@
 @keyframes slideInRight {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
+}
+/* MPC Float Badge */
+.mpc-float-badge {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #9b72cf 0%, #7a52aa 100%);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(155, 114, 207, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.mpc-float-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(155, 114, 207, 0.4);
+  filter: brightness(1.1);
+}
+
+.mpc-float-badge:active {
+  transform: translateY(0);
+}
+
+.mpc-float-badge--inactive {
+  opacity: 0.4;
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  filter: grayscale(0.5);
+}
+
+.mpc-float-badge--inactive:hover {
+  opacity: 0.8;
+  filter: grayscale(0);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+}
+
+.mpc-float-badge__count {
+  background: white;
+  color: #7a52aa;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.mpc-analyzing-badge {
+  background: var(--bg-surface);
+  color: var(--accent);
+  border: 1px solid var(--accent-dim);
+  box-shadow: 0 0 10px rgba(212, 168, 83, 0.2);
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
 }

@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import i18n from '../i18n/i18n';
 import { db } from '../db/database';
 import { useNovel } from './NovelContext';
 import { createDebouncedEntityDetector, parseOracleResponse } from '../services/entityDetector';
+import { addToIgnoredNames } from '../services/mpcService';
 
 const AIContext = createContext();
 
@@ -92,6 +93,101 @@ export const AIProvider = ({ children }) => {
   });
   const entityDetectorRef = useRef(createDebouncedEntityDetector(() => {}, 2000));
 
+  // ── MPC — Monitor de Propuestas del Compendio ─────────────────────────────
+  // 'idle' | 'analyzing' | 'error'
+  const [mpcStatus, setMpcStatus] = useState('idle');
+  const [mpcProposals, setMpcProposals] = useState([]);
+  const [isMpcDrawerOpen, setIsMpcDrawerOpen] = useState(false);
+  const [isMpcEnabled, setIsMpcEnabled] = useState(() => {
+    const saved = localStorage.getItem('ai_mpc_enabled');
+    return saved === null ? true : saved === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('ai_mpc_enabled', isMpcEnabled ? 'true' : 'false');
+  }, [isMpcEnabled]);
+
+  const mpcCooldownRef = useRef(null); // timestamp de último análisis
+  const MPC_COOLDOWN_MS = 45_000; // 45 segundos entre análisis a la IA para ahorrar tokens
+
+  const currentModel = selectedModels[provider] || DEFAULT_MODELS[provider] || '';
+
+  // ── AI Usage Monitoring ──────────────────────────────────────────────────
+  const [usageStats, setUsageStats] = useState({ tokens: 0, requests: 0 });
+
+  const refreshUsage = useCallback(async () => {
+    if (!provider || !currentModel) return;
+    const today = new Date().toISOString().split('T')[0];
+    try {
+      const entry = await db.aiUsage.where('[date+provider+model]')
+        .equals([today, provider, currentModel])
+        .first();
+      setUsageStats(entry || { tokens: 0, requests: 0 });
+    } catch (err) {
+      console.error('[AIContext] Error loading usage stats:', err);
+    }
+  }, [provider, currentModel]);
+
+  useEffect(() => {
+    refreshUsage();
+  }, [refreshUsage]);
+
+  const logAIUsage = useCallback(async (usage) => {
+    if (!usage) return;
+    const today = new Date().toISOString().split('T')[0];
+    
+    try {
+      await db.transaction('rw', db.aiUsage, async () => {
+        let entry = await db.aiUsage.where('[date+provider+model]')
+          .equals([today, provider, currentModel])
+          .first();
+          
+        if (entry) {
+          await db.aiUsage.update(entry.id, {
+            tokens: (entry.tokens || 0) + (usage.total_tokens || 0),
+            requests: (entry.requests || 0) + 1
+          });
+        } else {
+          await db.aiUsage.add({
+            date: today,
+            provider,
+            model: currentModel,
+            tokens: usage.total_tokens || 0,
+            requests: 1
+          });
+        }
+      });
+      refreshUsage();
+    } catch (err) {
+      console.error('[AIContext] Error logging usage:', err);
+    }
+  }, [provider, currentModel, refreshUsage]);
+
+  // Restore and sync MPC proposals to keep them persistent during refreshes
+  const activeNovelId = activeNovel?.id;
+  useEffect(() => {
+    if (!activeNovelId) {
+      setMpcProposals([]);
+      return;
+    }
+    const savedStr = localStorage.getItem(`mpc_prop_${activeNovelId}`);
+    if (savedStr) {
+      try {
+        setMpcProposals(JSON.parse(savedStr));
+      } catch (e) {
+        setMpcProposals([]);
+      }
+    } else {
+      setMpcProposals([]);
+    }
+  }, [activeNovelId]);
+
+  useEffect(() => {
+    if (activeNovelId) {
+      localStorage.setItem(`mpc_prop_${activeNovelId}`, JSON.stringify(mpcProposals));
+    }
+  }, [mpcProposals, activeNovelId]);
+
   // ── Debate Agents & Sessions (Async Dexie) ────────────────────────
   const [debateAgents, setDebateAgents] = useState(getDefaultDebateAgents());
   const [debateSessions, setDebateSessions] = useState([]);
@@ -153,7 +249,7 @@ export const AIProvider = ({ children }) => {
       } else {
         const newSession = {
           novelId: activeNovel.id,
-          title: i18n.t('ai:nuevo_debate'),
+          title: i18n.t('ai:tabs.debate'),
           updatedAt: new Date().toISOString(),
           messages: []
         };
@@ -337,10 +433,10 @@ export const AIProvider = ({ children }) => {
     if (!activeNovel) return;
     let sessionTitle = title;
     if (!sessionTitle && scene) {
-      sessionTitle = scene.chapterNumber ? `Cap. ${scene.chapterNumber} / ${scene.sceneTitle}` : scene.sceneTitle || i18n.t('ai:nuevo_debate');
+      sessionTitle = scene.chapterNumber ? `Cap. ${scene.chapterNumber} / ${scene.sceneTitle}` : scene.sceneTitle || i18n.t('ai:tabs.debate');
     }
     if (!sessionTitle) {
-      sessionTitle = i18n.t('ai:nuevo_debate');
+      sessionTitle = i18n.t('ai:tabs.debate');
     }
     const session = {
       novelId: activeNovel.id,
@@ -377,7 +473,7 @@ export const AIProvider = ({ children }) => {
         } else {
           setActiveSessionId(null); 
           // Async call outside of set state, but we can just use setTimeout to break the synchronous flow
-          setTimeout(() => addDebateSession(i18n.t('ai:nuevo_debate')), 0);
+          setTimeout(() => addDebateSession(i18n.t('ai:tabs.debate')), 0);
         }
       }
       return filtered;
@@ -455,7 +551,6 @@ export const AIProvider = ({ children }) => {
     localStorage.setItem('ai_local_base_url', val);
   };
 
-  const currentModel = selectedModels[provider] || DEFAULT_MODELS[provider] || '';
 
   useEffect(() => {
     localStorage.setItem('ai_custom_prompts', JSON.stringify(prompts));
@@ -468,6 +563,45 @@ export const AIProvider = ({ children }) => {
   const resetPrompt = (id) => {
     setPrompts(prev => ({ ...prev, [id]: DEFAULT_PROMPTS()[id] }));
   };
+
+  // ── MPC actions ────────────────────────────────────────────────────────────
+
+  /** Descarta una propuesta solo en esta sesión */
+  const dismissMpcProposal = useCallback((proposalId) => {
+    setMpcProposals(prev => prev.filter(p => p.id !== proposalId));
+  }, []);
+
+  /** Descarta una propuesta y la añade a la lista de ignorados permanentes */
+  const dismissMpcProposalPermanently = useCallback(async (proposal) => {
+    if (!activeNovel) return;
+    const name = proposal.name || proposal.title || '';
+    if (name) {
+      await addToIgnoredNames(activeNovel.id, name, proposal.type);
+    }
+    setMpcProposals(prev => prev.filter(p => p.id !== proposal.id));
+  }, [activeNovel]);
+
+  /** Acepta una propuesta: la elimina de la bandeja (la escritura en DB la gestiona el componente via addCompendiumEntry) */
+  const acceptMpcProposal = useCallback((proposalId) => {
+    setMpcProposals(prev => prev.filter(p => p.id !== proposalId));
+  }, []);
+
+  /** Limpia todas las propuestas pendientes */
+  const clearMpcProposals = useCallback(() => {
+    setMpcProposals([]);
+  }, []);
+
+  /** Añade propuestas nuevas evitando duplicados por nombre */
+  const addMpcProposals = useCallback((newProposals) => {
+    setMpcProposals(prev => {
+      const existingNames = new Set(prev.map(p => (p.name || p.title || '').toLowerCase()));
+      const filtered = newProposals.filter(p => {
+        const n = (p.name || p.title || '').toLowerCase();
+        return n && !existingNames.has(n);
+      });
+      return [...prev, ...filtered];
+    });
+  }, []);
 
   const value = {
     provider, setProvider,
@@ -490,6 +624,22 @@ export const AIProvider = ({ children }) => {
     switchDebateSession,
     renameDebateSession,
     deleteDebateSession,
+    // MPC
+    mpcProposals, mpcStatus, setMpcStatus,
+    addMpcProposals,
+    dismissMpcProposal,
+    dismissMpcProposalPermanently,
+    acceptMpcProposal,
+    clearMpcProposals,
+    mpcCooldownRef,
+    MPC_COOLDOWN_MS,
+    isMpcEnabled,
+    setIsMpcEnabled,
+    usageStats,
+    logAIUsage,
+    refreshUsage,
+    isMpcDrawerOpen, 
+    setIsMpcDrawerOpen
   };
 
   return <AIContext.Provider value={value}>{children}</AIContext.Provider>;

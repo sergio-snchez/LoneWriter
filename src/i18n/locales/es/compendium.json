@@ -1,6 +1,6 @@
 {
   "titulo": "Compendio",
-  "subtitulo": "Referencia de la novela",
+  "subtitulo": "Referencias de la novela",
   "tabs": {
     "personajes": "Personajes",
     "localizaciones": "Localizaciones",
@@ -42,6 +42,10 @@
     "guardar": "Guardar entrada"
   },
   "formulario": {
+    "completar_ia_tooltip": "Mágicamente extraer detalles desde la información de tu novela",
+    "completar_ia_error": "Por favor, introduce al menos un nombre o título antes de intentar extraer datos.",
+    "completar_ia_fallo": "Error en auto-completado: {{error}}",
+    "completar_ia_cargando": "RECOPILANDO LORE...",
     "personajes": {
       "nombre": "Nombre",
       "nombre_placeholder": "Lyra Ashveil",
@@ -110,5 +114,35 @@
     "incluido": "Incluido en análisis de coherencia",
     "editar": "Editar",
     "eliminar": "Eliminar"
+  },
+  "mpc": {
+    "titulo": "Compendio MPC",
+    "tooltip": "Propuestas del Compendio detectadas por el MPC",
+    "sin_pendientes": "No hay propuestas pendientes.",
+    "subtitulo": "{{count}} posible entidad detectada en tu texto",
+    "subtitulo_plural": "{{count}} posibles entidades detectadas en tu texto",
+    "empty_desc_1": "El MPC analizará tu texto mientras escribes y sugerirá nuevas entidades para el Compendio.",
+    "empty_desc_2": "Para un escaneo manual completo de la escena, debe estar abierta en el Editor.",
+    "escanear_ahora": "Escanear escena actual",
+    "scan_from_editor": "Abre una escena en el Editor para escanear",
+    "ignorar_todas": "Ignorar todas",
+    "aceptar_todas": "Aceptar todas",
+    "aceptar_tooltip": "Aceptar y guardar en el Compendio",
+    "aceptar": "Aceptar",
+    "editar_tooltip": "Editar antes de guardar",
+    "editar": "Editar",
+    "ignorar_vez": "Ignorar esta vez",
+    "ignorar_siempre": "Ignorar siempre (no volver a sugerir)",
+    "confianza_alta": "Alta confianza",
+    "confianza_media": "Media confianza",
+    "confianza_baja": "Baja confianza",
+    "motivo_label": "📌 Motivo:",
+    "tipo_personaje": "Personaje",
+    "tipo_lugar": "Localización",
+    "tipo_objeto": "Objeto",
+    "tipo_lore": "Lore",
+    "interruptor_label": "Escaneo (Auto)",
+    "ver_propuestas": "Ver {{count}} propuesta",
+    "ver_propuestas_plural": "Ver {{count}} propuestas"
   }
 }

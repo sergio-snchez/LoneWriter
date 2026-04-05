@@ -4,7 +4,7 @@ import {
   BookOpen, ChevronDown, ChevronRight, Plus, Eye, Edit3,
   FileText, Clock, CheckCircle2, Circle,
   AlertCircle, BarChart2, Target, Flame, Save, Loader2, Trash2, FileDown,
-  GripVertical, ChevronsDownUp, ChevronsUpDown
+  GripVertical, ChevronsDownUp, ChevronsUpDown, Sparkles
 } from 'lucide-react'
 import {
   DndContext,
@@ -29,8 +29,16 @@ import { useModal } from '../context/ModalContext'
 import { ExportService } from '../services/exportService'
 import { Tooltip } from '../components/Tooltip'
 import RichEditor from '../components/RichEditor'
+import MpcProposalDrawer from '../components/MpcProposalDrawer'
+import {
+  extractCandidates,
+  analyzeWithAI,
+  loadRegisteredEntityNames,
+  loadIgnoredNames,
+} from '../services/mpcService'
 import debounce from 'lodash/debounce'
 import './Editor.css'
+import './MpcBadge.css'
 
 const STATUS_MAP = {
   'Finalizado':    { icon: CheckCircle2, cls: 'status-done',    badge: 'badge-green' },
@@ -364,7 +372,19 @@ export default function EditorView({ menuOpen = false }) {
     getNovelUIExpanded, updateNovelUIExpanded
   } = useNovel()
   const { openModal } = useModal()
-  const { oracleStatus } = useAI()
+  const {
+    oracleStatus,
+    provider, apiKey, currentModel, localBaseUrl,
+    mpcProposals, mpcStatus, setMpcStatus, addMpcProposals,
+    mpcCooldownRef, MPC_COOLDOWN_MS,
+    logAIUsage,
+    isMpcEnabled,
+    isMpcDrawerOpen, 
+    setIsMpcDrawerOpen
+  } = useAI()
+
+  // MPC state
+  const mpcDebounceRef = useRef(null)
   
   const [isSaving, setIsSaving] = useState(null)
   const [expandedIds, setExpandedIds] = useState(new Set())
@@ -489,7 +509,15 @@ export default function EditorView({ menuOpen = false }) {
     }
   }, [acts, activeScene])
 
-  // ... auto save logic ...
+  // MCP manual scan listener
+  useEffect(() => {
+    const handler = () => {
+      if (!activeScene || !activeNovel || mpcStatus === 'analyzing') return
+      handleManualMpcScan()
+    }
+    window.addEventListener('mpc-manual-scan', handler)
+    return () => window.removeEventListener('mpc-manual-scan', handler)
+  }, [activeScene, activeNovel, mpcStatus])
   const debouncedSave = useCallback(
     debounce(async (sceneId, html) => {
       setIsSaving(true)
@@ -510,8 +538,133 @@ export default function EditorView({ menuOpen = false }) {
   const handleEditorChange = (html) => {
     if (activeScene) {
       debouncedSave(activeScene.id, html)
+      // ── MPC trigger ──────────────────────────────────────────────
+      triggerMpcAnalysis(html)
     }
   }
+
+  // ── MPC: debounced analysis trigger ────────────────────────────
+  const triggerMpcAnalysis = useCallback((html) => {
+    // Necesita API key, novela activa y estar habilitado
+    if (!isMpcEnabled) return
+    if (!apiKey && provider !== 'local') return
+    if (!activeNovel) return
+
+    // Cancelar trigger anterior
+    if (mpcDebounceRef.current) clearTimeout(mpcDebounceRef.current)
+
+    mpcDebounceRef.current = setTimeout(async () => {
+      // Respetar cooldown entre análisis
+      const now = Date.now()
+      if (mpcCooldownRef.current && (now - mpcCooldownRef.current) < MPC_COOLDOWN_MS) {
+        console.log('[MPC] En cooldown, faltan', Math.round((MPC_COOLDOWN_MS - (now - mpcCooldownRef.current))/1000), 's');
+        return
+      }
+
+      const plainText = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+      if (plainText.length < 20) {
+        console.log('[MPC] Texto muy corto:', plainText.length, 'chars');
+        return // texto muy corto, no analizar
+      }
+
+      // Paso 1: detección local
+      const [registeredNames, ignoredNames] = await Promise.all([
+        loadRegisteredEntityNames(activeNovel.id),
+        loadIgnoredNames(activeNovel.id),
+      ])
+
+      const candidates = extractCandidates(plainText, registeredNames, ignoredNames)
+      console.log('[MPC] Candidatos extraídos localmente:', candidates);
+      
+      if (candidates.length === 0) return
+
+      // Paso 2: análisis IA (solo si hay candidatos)
+      console.log('[MPC] Enviando a IA para clasificar candidatos...');
+      setMpcStatus('analyzing')
+      mpcCooldownRef.current = now
+
+      try {
+        const aiConfig = {
+          provider,
+          apiKey,
+          model: currentModel,
+          localBaseUrl,
+        }
+        const { proposals, usage } = await analyzeWithAI(
+          candidates,
+          plainText,
+          registeredNames,
+          aiConfig,
+          5
+        )
+        
+        logAIUsage(usage)
+        
+        console.log('[MPC] IA devolvió propuestas:', proposals);
+
+        if (proposals.length > 0) {
+          addMpcProposals(proposals)
+        }
+      } catch (err) {
+        console.error('[MPC] Error en análisis:', err)
+      } finally {
+        setMpcStatus('idle')
+      }
+    }, 6000) // 6 segundos de inactividad antes de analizar, para cubrir pausas de reflexión
+  }, [activeNovel, apiKey, provider, currentModel, localBaseUrl, mpcCooldownRef, MPC_COOLDOWN_MS, setMpcStatus, addMpcProposals, isMpcEnabled, logAIUsage])
+
+  const handleManualMpcScan = useCallback(async () => {
+    if (mpcStatus === 'analyzing') return
+    if (!activeScene?.content) return
+    if (!activeNovel?.id) return
+    
+    // Paso 0: Limpieza
+    const html = activeScene.content
+    const plainText = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    if (plainText.length < 10) return
+
+    setMpcStatus('analyzing')
+    try {
+      const [registeredNames, ignoredNames] = await Promise.all([
+        loadRegisteredEntityNames(activeNovel.id),
+        loadIgnoredNames(activeNovel.id),
+      ])
+
+      const candidates = extractCandidates(plainText, registeredNames, ignoredNames)
+      console.log('[MPC] Candidatos extraídos localmente:', candidates);
+      
+      if (candidates.length === 0) {
+        setMpcStatus('idle')
+        return
+      }
+
+      const { proposals, usage } = await analyzeWithAI(
+        candidates,
+        plainText,
+        registeredNames,
+        { provider, apiKey, model: currentModel, localBaseUrl },
+        8 // Más candidatos en manual
+      )
+      
+      logAIUsage(usage)
+      console.log('[MPC] IA devolvió propuestas:', proposals);
+
+      if (proposals.length > 0) {
+        addMpcProposals(proposals)
+      }
+    } catch (err) {
+      console.error('[MPC] Manual scan error:', err)
+    } finally {
+      setMpcStatus('idle')
+    }
+  }, [activeScene, activeNovel, apiKey, provider, currentModel, localBaseUrl, mpcStatus, setMpcStatus, addMpcProposals, logAIUsage])
+
+  // Limpiar timeout MPC al desmontar
+  useEffect(() => {
+    return () => {
+      if (mpcDebounceRef.current) clearTimeout(mpcDebounceRef.current)
+    }
+  }, [])
 
   const handleMetaChange = async (field, value) => {
     if (!activeScene) return
@@ -988,13 +1141,12 @@ export default function EditorView({ menuOpen = false }) {
                   </Tooltip>
                   <Tooltip content={t('editor.tooltip_oraculo')}>
                     <div
-                      className={`oracle-traffic-light oracle-traffic-light--${oracleStatus.status} editor-traffic-light`}
+                      className={`oracle-traffic-light oracle-traffic-light--${oracleStatus.status} editor-traffic-light ${oracleStatus.status !== 'idle' ? 'editor-traffic-light--clickable' : ''}`}
                       onClick={() => {
                         if (oracleStatus.status !== 'idle') {
                           window.dispatchEvent(new CustomEvent('open-oracle-panel'));
                         }
                       }}
-                      style={oracleStatus.status !== 'idle' ? { cursor: 'pointer' } : {}}
                     >
                       <div className="oracle-traffic-light__dot" />
                       <span className="oracle-traffic-light__label">
@@ -1004,6 +1156,28 @@ export default function EditorView({ menuOpen = false }) {
                       </span>
                     </div>
                   </Tooltip>
+                  {/* ── MPC Badge ─────────────────────────────── */}
+                  {activeScene && (
+                    <Tooltip content={t('compendium:mpc.tooltip')}>
+                      <div
+                        className={`mpc-traffic-light ${
+                          mpcStatus === 'analyzing' ? 'mpc-traffic-light--analyzing' : ''
+                        } ${
+                          mpcProposals.length > 0 ? 'mpc-traffic-light--active' : ''
+                        }`}
+                        onClick={() => setIsMpcDrawerOpen(true)}
+                      >
+                        {mpcProposals.length > 0 || mpcStatus === 'analyzing' ? (
+                          <span className="mpc-traffic-light__count">{mpcProposals.length > 0 ? mpcProposals.length : <Loader2 size={12} className="spin" />}</span>
+                        ) : (
+                          <Sparkles size={14} className="mpc-traffic-light__icon" />
+                        )}
+                        <span>
+                          {mpcStatus === 'analyzing' ? t('ai:oraculo.consultando') : t('compendium:mpc.titulo')}
+                        </span>
+                      </div>
+                    </Tooltip>
+                  )}
                 </div>
               </div>
               
@@ -1144,6 +1318,8 @@ export default function EditorView({ menuOpen = false }) {
           </div>
         </div>
       </div>
+
+      {/* ── MPC Proposal Drawer movido a App.jsx ─────────────────── */}
     </div>
   )
 }
