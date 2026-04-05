@@ -1,0 +1,20 @@
+.language-selector__select {
+  width: 220px;
+  background: var(--bg-secondary, #1a1a1a);
+  color: var(--text-primary, #e0e0e0);
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: var(--radius-sm, 6px);
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.language-selector__select:hover {
+  border-color: var(--border-hover, #444);
+}
+
+.language-selector__select:focus {
+  border-color: var(--accent, #c9a84c);
+}

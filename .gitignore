@@ -45,3 +45,6 @@ Thumbs.db
 .antigravity/
 .gemini/
 build.log
+generate-icons.js
+
+.vercel

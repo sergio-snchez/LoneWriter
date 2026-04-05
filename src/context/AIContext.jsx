@@ -1,6 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import i18n from '../i18n/i18n';
 import { db } from '../db/database';
 import { useNovel } from './NovelContext';
+import { createDebouncedEntityDetector, parseOracleResponse } from '../services/entityDetector';
+import { addToIgnoredNames } from '../services/mpcService';
 
 const AIContext = createContext();
 
@@ -20,63 +23,48 @@ const DEFAULT_MODELS = {
   local:       'local-model',
 };
 
-const DEFAULT_PROMPTS = {
-  style: 'Reescribe el siguiente texto para mejorar su estilo literario, haciéndolo más sugerente y evocador, pero manteniendo el significado original.',
-  tone: 'Ajusta el tono emocional del siguiente texto para que sea más [TONO], manteniendo la coherencia con el resto de la narrativa.',
-  length: 'Modifica la longitud del siguiente texto para que sea más [LONGITUD], sin perder la esencia de lo que se cuenta.',
-  clarity: 'Mejora la claridad y legibilidad del siguiente texto, eliminando redundancias y simplificando frases complejas.',
-  rhythm: 'Optimiza el ritmo narrativo del siguiente texto, alternando frases cortas y largas para crear una cadencia más dinámica y envolvente.',
-  cohesion: 'Mejora la cohesión y la fluidez entre las frases del siguiente texto, asegurando que las transiciones sean naturales y lógicas.',
-  character: 'Reescribe el siguiente texto desde el punto de vista (POV) de [PERSONAJE], reflejando su voz única, sus pensamientos y su forma de ver el mundo.'
-};
+const DEFAULT_PROMPTS = () => ({
+  style: i18n.t('ai:rewrite_prompts.style'),
+  tone: i18n.t('ai:rewrite_prompts.tone'),
+  length: i18n.t('ai:rewrite_prompts.length'),
+  clarity: i18n.t('ai:rewrite_prompts.clarity'),
+  rhythm: i18n.t('ai:rewrite_prompts.rhythm'),
+  cohesion: i18n.t('ai:rewrite_prompts.cohesion'),
+  character: i18n.t('ai:rewrite_prompts.character'),
+});
 
-export const DEFAULT_DEBATE_AGENTS = [
+const getDefaultDebateAgents = () => [
   {
     id: 'editor',
-    name: 'Editor',
+    name: i18n.t('ai:agentes.editor_nombre'),
     color: '#6b9fd4',
     initials: 'ED',
-    desc: 'Estructura y narrativa',
+    desc: i18n.t('ai:agentes.editor_desc'),
     active: true,
-    systemPrompt: `Eres un editor literario experto especializado en narrativa de ficción. Tu rol en este foro es analizar la estructura narrativa, el arco de personajes, el ritmo de la trama y la coherencia del mundo ficticio. Quando respondas:
-- Sé constructivo y específico. Señala exactamente qué funciona y qué no.
-- Propón alternativas concretas cuando identifiques un problema.
-- Mantén un tono profesional pero accesible.
-- Recuerda el contexto de toda la conversación anterior.
-- Responde siempre en español y de forma concisa (máximo 3-4 párrafos).`,
+    systemPrompt: i18n.t('ai:agentes.editor_prompt'),
   },
   {
     id: 'critic',
-    name: 'Crítico',
+    name: i18n.t('ai:agentes.critico_nombre'),
     color: '#e07070',
     initials: 'CR',
-    desc: 'Análisis y valoración',
+    desc: i18n.t('ai:agentes.critico_desc'),
     active: true,
-    systemPrompt: `Eres un crítico literario con amplia experiencia en narrativa española e internacional. Tu rol es ofrecer una valoración analítica y honesta del texto, sin suavizar los problemas pero tampoco siendo innecesariamente duro. Cuando respondas:
-- Aporta perspectiva comparativa (referencias a otros autores o técnicas cuando sea relevante).
-- Distingue entre problemas de fondo (concepto, personaje, trama) y de forma (estilo, prosa).
-- No repitas lo que ya han dicho los demás participantes; añade una perspectiva nueva.
-- Recuerda el contexto de toda la conversación anterior.
-- Responde siempre en español y de forma concisa (máximo 3-4 párrafos).`,
+    systemPrompt: i18n.t('ai:agentes.critico_prompt'),
   },
   {
     id: 'corrector',
-    name: 'Corrector',
+    name: i18n.t('ai:agentes.corrector_nombre'),
     color: '#5cb98a',
     initials: 'CO',
-    desc: 'Gramática y estilo',
-    active: true,
-    systemPrompt: `Eres un corrector de estilo especializado en narrativa literaria en español. Tu rol es identificar problemas de gramática, ortografía, puntuación, registro, y estilo a nivel de frase y párrafo. Cuando respondas:
-- Cita literalmente las frases problemáticas y propón la corrección exacta.
-- Explica brevemente el motivo de cada corrección.
-- Comenta sobre tics de escritura o patrones repetitivos que notes en el texto.
-- Recuerda el contexto de toda la conversación anterior.
-- Responde siempre en español y de forma concisa (máximo 3-4 párrafos).`,
+    desc: i18n.t('ai:agentes.corrector_desc'),
+    active: false,
+    systemPrompt: i18n.t('ai:agentes.corrector_prompt'),
   },
 ];
 
 export const AIProvider = ({ children }) => {
-  const { activeNovel } = useNovel();
+  const { activeNovel, activeScene } = useNovel();
   const [provider, setProvider] = useState(() => localStorage.getItem('ai_provider') || 'google');
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('ai_api_key') || '');
   const [localBaseUrl, setLocalBaseUrlState] = useState(() => localStorage.getItem('ai_local_base_url') || 'http://localhost:1234/v1');
@@ -85,15 +73,123 @@ export const AIProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : { ...DEFAULT_MODELS };
   });
   const [prompts, setPrompts] = useState(() => {
-    const saved = localStorage.getItem('ai_custom_prompts');
-    return saved ? JSON.parse(saved) : DEFAULT_PROMPTS;
+    return DEFAULT_PROMPTS();
   });
+
+  useEffect(() => {
+    setPrompts(DEFAULT_PROMPTS());
+  }, [i18n.language]);
   
   const [selection, setSelection] = useState('');
   const [lastRewrite, setLastRewrite] = useState('');
+  const [oracleText, setOracleText] = useState('');
+
+  // ── Oracle History & Status (Async Dexie) ────────────────────────────────
+  const [oracleHistory, setOracleHistory] = useState([]);
+  const [oracleStatus, setOracleStatus] = useState({
+    status: 'idle',
+    detectedEntities: [],
+    lastContradiction: null,
+  });
+  const entityDetectorRef = useRef(createDebouncedEntityDetector(() => {}, 2000));
+
+  // ── MPC — Monitor de Propuestas del Compendio ─────────────────────────────
+  // 'idle' | 'analyzing' | 'error'
+  const [mpcStatus, setMpcStatus] = useState('idle');
+  const [mpcProposals, setMpcProposals] = useState([]);
+  const [isMpcDrawerOpen, setIsMpcDrawerOpen] = useState(false);
+  const [isMpcEnabled, setIsMpcEnabled] = useState(() => {
+    const saved = localStorage.getItem('ai_mpc_enabled');
+    return saved === null ? true : saved === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('ai_mpc_enabled', isMpcEnabled ? 'true' : 'false');
+  }, [isMpcEnabled]);
+
+  const mpcCooldownRef = useRef(null); // timestamp de último análisis
+  const MPC_COOLDOWN_MS = 45_000; // 45 segundos entre análisis a la IA para ahorrar tokens
+
+  const currentModel = selectedModels[provider] || DEFAULT_MODELS[provider] || '';
+
+  // ── AI Usage Monitoring ──────────────────────────────────────────────────
+  const [usageStats, setUsageStats] = useState({ tokens: 0, requests: 0 });
+
+  const refreshUsage = useCallback(async () => {
+    if (!provider || !currentModel) return;
+    const today = new Date().toISOString().split('T')[0];
+    try {
+      const entry = await db.aiUsage.where('[date+provider+model]')
+        .equals([today, provider, currentModel])
+        .first();
+      setUsageStats(entry || { tokens: 0, requests: 0 });
+    } catch (err) {
+      console.error('[AIContext] Error loading usage stats:', err);
+    }
+  }, [provider, currentModel]);
+
+  useEffect(() => {
+    refreshUsage();
+  }, [refreshUsage]);
+
+  const logAIUsage = useCallback(async (usage) => {
+    if (!usage) return;
+    const today = new Date().toISOString().split('T')[0];
+    
+    try {
+      await db.transaction('rw', db.aiUsage, async () => {
+        let entry = await db.aiUsage.where('[date+provider+model]')
+          .equals([today, provider, currentModel])
+          .first();
+          
+        if (entry) {
+          await db.aiUsage.update(entry.id, {
+            tokens: (entry.tokens || 0) + (usage.total_tokens || 0),
+            requests: (entry.requests || 0) + 1
+          });
+        } else {
+          await db.aiUsage.add({
+            date: today,
+            provider,
+            model: currentModel,
+            tokens: usage.total_tokens || 0,
+            requests: 1
+          });
+        }
+      });
+      refreshUsage();
+    } catch (err) {
+      console.error('[AIContext] Error logging usage:', err);
+    }
+  }, [provider, currentModel, refreshUsage]);
+
+  // Restore and sync MPC proposals to keep them persistent during refreshes
+  const activeNovelId = activeNovel?.id;
+  useEffect(() => {
+    if (!activeNovelId) {
+      setMpcProposals([]);
+      return;
+    }
+    const savedStr = localStorage.getItem(`mpc_prop_${activeNovelId}`);
+    if (savedStr) {
+      try {
+        setMpcProposals(JSON.parse(savedStr));
+      } catch (e) {
+        setMpcProposals([]);
+      }
+    } else {
+      setMpcProposals([]);
+    }
+  }, [activeNovelId]);
+
+  useEffect(() => {
+    if (activeNovelId) {
+      localStorage.setItem(`mpc_prop_${activeNovelId}`, JSON.stringify(mpcProposals));
+    }
+  }, [mpcProposals, activeNovelId]);
 
   // ── Debate Agents & Sessions (Async Dexie) ────────────────────────
-  const [debateAgents, setDebateAgents] = useState(DEFAULT_DEBATE_AGENTS);
+  const [debateAgents, setDebateAgents] = useState(getDefaultDebateAgents());
   const [debateSessions, setDebateSessions] = useState([]);
   const [activeSessionId, setActiveSessionId] = useState(null);
 
@@ -103,9 +199,12 @@ export const AIProvider = ({ children }) => {
   useEffect(() => {
     const loadDebateData = async () => {
       if (!activeNovel) {
-        setDebateAgents(DEFAULT_DEBATE_AGENTS);
+        setDebateAgents(getDefaultDebateAgents());
         setDebateSessions([]);
         setActiveSessionId(null);
+        setOracleHistory([]);
+        setLastRewrite('');
+        localStorage.removeItem('activeDebateSessionId');
         return;
       }
 
@@ -113,7 +212,7 @@ export const AIProvider = ({ children }) => {
       let agents = await db.debateAgents.where('novelId').equals(activeNovel.id).toArray();
       if (agents.length === 0) {
         // First time loading for this novel: import defaults
-        const defaultAgentsToInsert = DEFAULT_DEBATE_AGENTS.map(({ id, ...rest }) => ({ ...rest, novelId: activeNovel.id }));
+        const defaultAgentsToInsert = getDefaultDebateAgents().map(({ id, ...rest }) => ({ ...rest, novelId: activeNovel.id }));
         await db.debateAgents.bulkAdd(defaultAgentsToInsert);
         agents = await db.debateAgents.where('novelId').equals(activeNovel.id).toArray();
       }
@@ -129,7 +228,7 @@ export const AIProvider = ({ children }) => {
         if (oldHistory.length > 0) {
           const legacySession = {
             novelId: activeNovel.id,
-            title: 'Debate Anterior',
+            title: i18n.t('ai:debate_anterior'),
             updatedAt: new Date().toISOString(),
             messages: oldHistory
           };
@@ -144,12 +243,13 @@ export const AIProvider = ({ children }) => {
       setDebateSessions(sessions);
       
       if (sessions.length > 0) {
-        setActiveSessionId(sessions[0].id);
+        const savedSessionId = localStorage.getItem('activeDebateSessionId');
+        const sessionExists = savedSessionId && sessions.some(s => String(s.id) === String(savedSessionId));
+        setActiveSessionId(sessionExists ? Number(savedSessionId) : sessions[0].id);
       } else {
-        // Create an initial empty session if none exists
         const newSession = {
           novelId: activeNovel.id,
-          title: 'Nuevo debate',
+          title: i18n.t('ai:tabs.debate'),
           updatedAt: new Date().toISOString(),
           messages: []
         };
@@ -157,18 +257,190 @@ export const AIProvider = ({ children }) => {
         newSession.id = newId;
         setDebateSessions([newSession]);
         setActiveSessionId(newId);
+        localStorage.setItem('activeDebateSessionId', newId);
       }
+
+      // Load oracle history for this novel
+      const oracleEntries = await db.oracleEntries.where('novelId').equals(activeNovel.id).sortBy('createdAt');
+      setOracleHistory(oracleEntries);
     };
 
     loadDebateData();
   }, [activeNovel]);
 
-  // Session mutators
-  const addDebateSession = async (title = 'Nuevo debate') => {
+  // Restore last rewrite when activeScene changes
+  useEffect(() => {
+    const restoreLastRewrite = async () => {
+      if (!activeNovel || !activeScene) {
+        setLastRewrite('');
+        return;
+      }
+      const entry = await db.lastRewrite
+        .where({ novelId: activeNovel.id, sceneId: activeScene.id })
+        .first();
+      if (entry) {
+        setLastRewrite(entry.text);
+      } else {
+        setLastRewrite('');
+      }
+    };
+    restoreLastRewrite();
+  }, [activeNovel, activeScene]);
+
+  // Persisted lastRewrite
+  const saveLastRewrite = async (text, goal, instruction, originalText) => {
+    if (!activeNovel || !activeScene) return;
+    setLastRewrite(text);
+    // Delete any previous entry for this scene
+    const existing = await db.lastRewrite
+      .where({ novelId: activeNovel.id, sceneId: activeScene.id })
+      .toArray();
+    for (const e of existing) {
+      await db.lastRewrite.delete(e.id);
+    }
+    // Insert new entry
+    await db.lastRewrite.add({
+      novelId: activeNovel.id,
+      sceneId: activeScene.id,
+      text,
+      goal,
+      instruction,
+      originalText,
+      savedAt: new Date().toISOString(),
+    });
+  };
+
+  const discardLastRewrite = async () => {
+    if (!activeNovel || !activeScene) return;
+    setLastRewrite('');
+    await db.lastRewrite
+      .where({ novelId: activeNovel.id, sceneId: activeScene.id })
+      .delete();
+  };
+
+  // Oracle mutators
+  const addOracleEntry = async (entry) => {
     if (!activeNovel) return;
+    const newEntry = {
+      ...entry,
+      id: undefined,
+      novelId: activeNovel.id,
+      sceneId: entry.sceneId || null,
+      createdAt: new Date().toISOString(),
+    };
+    const id = await db.oracleEntries.add(newEntry);
+    newEntry.id = id;
+    setOracleHistory(prev => [...prev, newEntry]);
+  };
+
+  const clearOracleHistory = async () => {
+    if (!activeNovel) return;
+    await db.oracleEntries.where('novelId').equals(activeNovel.id).delete();
+    setOracleHistory([]);
+  };
+
+  const deleteOracleEntry = async (entryId) => {
+    if (!activeNovel) return;
+    await db.oracleEntries.delete(entryId);
+    setOracleHistory(prev => prev.filter(e => e.id !== entryId));
+  };
+
+  const toggleOracleCorrected = async (entryId) => {
+    if (!activeNovel) return;
+    const entry = oracleHistory.find(e => e.id === entryId);
+    if (!entry) return;
+    const newCorrectedState = !entry.isCorrected;
+    await db.oracleEntries.update(entryId, { isCorrected: newCorrectedState });
+    setOracleHistory(prev => prev.map(e => e.id === entryId ? { ...e, isCorrected: newCorrectedState } : e));
+  };
+
+  const checkedEntries = new Set(oracleHistory.filter(e => e.isCorrected).map(e => e.id));
+
+  // Entity detection + traffic light status (only current paragraph/selection)
+  useEffect(() => {
+    if (!activeNovel || !oracleText) {
+      setOracleStatus({ status: 'idle', detectedEntities: [], lastContradiction: null });
+      entityDetectorRef.current.cancel();
+      return;
+    }
+
+    const plainText = oracleText.trim();
+    if (plainText.length < 3) {
+      setOracleStatus({ status: 'idle', detectedEntities: [], lastContradiction: null });
+      return;
+    }
+
+    entityDetectorRef.current.immediate(plainText, activeNovel.id)
+      .then(({ detections }) => {
+        const criticalDetections = detections.filter(d => d.severity === 'critical');
+        const doubtfulDetections = detections.filter(d => d.severity === 'doubtful');
+        
+        if (criticalDetections.length > 0) {
+          setOracleStatus(prev => ({
+            ...prev,
+            status: 'suspicious',
+            detectedEntities: criticalDetections,
+          }));
+        } else if (doubtfulDetections.length >= 2) {
+          setOracleStatus(prev => ({
+            ...prev,
+            status: 'suspicious',
+            detectedEntities: doubtfulDetections,
+          }));
+        } else {
+          setOracleStatus(prev => ({
+            ...prev,
+            status: 'idle',
+            detectedEntities: [],
+          }));
+        }
+      })
+      .catch(err => {
+        if (err.name !== 'AbortError') {
+          console.error('[LoneWriter] Entity detection error:', err);
+        }
+      });
+  }, [activeNovel, oracleText]);
+
+  const markOracleContradiction = (message) => {
+    setOracleStatus(prev => ({
+      ...prev,
+      status: 'error',
+      lastContradiction: message,
+    }));
+  };
+
+  const resetOracleStatus = () => {
+    setOracleStatus({ status: 'idle', detectedEntities: [], lastContradiction: null });
+  };
+
+  const checkOracleResponse = (aiResponse) => {
+    const result = parseOracleResponse(aiResponse);
+    if (result.hasContradiction) {
+      markOracleContradiction(result.message);
+    } else {
+      setOracleStatus(prev => ({
+        ...prev,
+        status: 'idle',
+        lastContradiction: null,
+      }));
+    }
+    return result;
+  };
+
+  // Session mutators
+  const addDebateSession = async (title = null, scene = null) => {
+    if (!activeNovel) return;
+    let sessionTitle = title;
+    if (!sessionTitle && scene) {
+      sessionTitle = scene.chapterNumber ? `Cap. ${scene.chapterNumber} / ${scene.sceneTitle}` : scene.sceneTitle || i18n.t('ai:tabs.debate');
+    }
+    if (!sessionTitle) {
+      sessionTitle = i18n.t('ai:tabs.debate');
+    }
     const session = {
       novelId: activeNovel.id,
-      title,
+      title: sessionTitle,
       updatedAt: new Date().toISOString(),
       messages: []
     };
@@ -176,10 +448,12 @@ export const AIProvider = ({ children }) => {
     session.id = id;
     setDebateSessions(prev => [session, ...prev]);
     setActiveSessionId(id);
+    localStorage.setItem('activeDebateSessionId', id);
   };
 
   const switchDebateSession = (id) => {
     setActiveSessionId(id);
+    localStorage.setItem('activeDebateSessionId', id);
   };
 
   const renameDebateSession = async (id, title) => {
@@ -195,10 +469,11 @@ export const AIProvider = ({ children }) => {
       if (activeSessionId === id) {
         if (filtered.length > 0) {
           setActiveSessionId(filtered[0].id);
+          localStorage.setItem('activeDebateSessionId', filtered[0].id);
         } else {
           setActiveSessionId(null); 
           // Async call outside of set state, but we can just use setTimeout to break the synchronous flow
-          setTimeout(() => addDebateSession('Nuevo debate'), 0);
+          setTimeout(() => addDebateSession(i18n.t('ai:tabs.debate')), 0);
         }
       }
       return filtered;
@@ -276,7 +551,6 @@ export const AIProvider = ({ children }) => {
     localStorage.setItem('ai_local_base_url', val);
   };
 
-  const currentModel = selectedModels[provider] || DEFAULT_MODELS[provider] || '';
 
   useEffect(() => {
     localStorage.setItem('ai_custom_prompts', JSON.stringify(prompts));
@@ -287,8 +561,47 @@ export const AIProvider = ({ children }) => {
   };
 
   const resetPrompt = (id) => {
-    setPrompts(prev => ({ ...prev, [id]: DEFAULT_PROMPTS[id] }));
+    setPrompts(prev => ({ ...prev, [id]: DEFAULT_PROMPTS()[id] }));
   };
+
+  // ── MPC actions ────────────────────────────────────────────────────────────
+
+  /** Descarta una propuesta solo en esta sesión */
+  const dismissMpcProposal = useCallback((proposalId) => {
+    setMpcProposals(prev => prev.filter(p => p.id !== proposalId));
+  }, []);
+
+  /** Descarta una propuesta y la añade a la lista de ignorados permanentes */
+  const dismissMpcProposalPermanently = useCallback(async (proposal) => {
+    if (!activeNovel) return;
+    const name = proposal.name || proposal.title || '';
+    if (name) {
+      await addToIgnoredNames(activeNovel.id, name, proposal.type);
+    }
+    setMpcProposals(prev => prev.filter(p => p.id !== proposal.id));
+  }, [activeNovel]);
+
+  /** Acepta una propuesta: la elimina de la bandeja (la escritura en DB la gestiona el componente via addCompendiumEntry) */
+  const acceptMpcProposal = useCallback((proposalId) => {
+    setMpcProposals(prev => prev.filter(p => p.id !== proposalId));
+  }, []);
+
+  /** Limpia todas las propuestas pendientes */
+  const clearMpcProposals = useCallback(() => {
+    setMpcProposals([]);
+  }, []);
+
+  /** Añade propuestas nuevas evitando duplicados por nombre */
+  const addMpcProposals = useCallback((newProposals) => {
+    setMpcProposals(prev => {
+      const existingNames = new Set(prev.map(p => (p.name || p.title || '').toLowerCase()));
+      const filtered = newProposals.filter(p => {
+        const n = (p.name || p.title || '').toLowerCase();
+        return n && !existingNames.has(n);
+      });
+      return [...prev, ...filtered];
+    });
+  }, []);
 
   const value = {
     provider, setProvider,
@@ -298,7 +611,10 @@ export const AIProvider = ({ children }) => {
     currentModel,
     prompts, updatePrompt, resetPrompt,
     selection, setSelection,
-    lastRewrite, setLastRewrite,
+    oracleText, setOracleText,
+    lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite,
+    oracleHistory, addOracleEntry, clearOracleHistory, deleteOracleEntry, toggleOracleCorrected, checkedEntries,
+    oracleStatus, checkOracleResponse, resetOracleStatus, markOracleContradiction,
     debateAgents, debateHistory,
     addDebateMessage, clearDebateHistory,
     updateDebateAgent, addDebateAgent, removeDebateAgent, toggleDebateAgent,
@@ -308,6 +624,22 @@ export const AIProvider = ({ children }) => {
     switchDebateSession,
     renameDebateSession,
     deleteDebateSession,
+    // MPC
+    mpcProposals, mpcStatus, setMpcStatus,
+    addMpcProposals,
+    dismissMpcProposal,
+    dismissMpcProposalPermanently,
+    acceptMpcProposal,
+    clearMpcProposals,
+    mpcCooldownRef,
+    MPC_COOLDOWN_MS,
+    isMpcEnabled,
+    setIsMpcEnabled,
+    usageStats,
+    logAIUsage,
+    refreshUsage,
+    isMpcDrawerOpen, 
+    setIsMpcDrawerOpen
   };
 
   return <AIContext.Provider value={value}>{children}</AIContext.Provider>;

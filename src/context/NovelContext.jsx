@@ -1,5 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import i18n from '../i18n/i18n';
 import { db } from '../db/database';
+import { ExportService } from '../services/exportService';
+import { GoogleDriveService } from '../services/googleDriveService';
 
 const NovelContext = createContext();
 
@@ -15,13 +18,19 @@ export const NovelProvider = ({ children }) => {
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Cloud Sync State
+  const [isCloudSyncEnabled, setIsCloudSyncEnabled] = useState(localStorage.getItem('lw_cloud_sync') === 'true');
+  const [cloudSyncStatus, setCloudSyncStatus] = useState('idle'); // 'idle', 'syncing', 'success', 'error'
+  const [lastCloudSync, setLastCloudSync] = useState(localStorage.getItem('lw_last_cloud_sync'));
+  const [pendingSync, setPendingSync] = useState(false);
+  const cloudCheckInProgress = useRef(false);
+
   // Initial seeding and loading
   useEffect(() => {
     const initializeDB = async () => {
       // One-time wipe of example content for existing users
-      const hasWiped = localStorage.getItem('lw_v2_wiped'); // Changed key to ensure a fresh wipe
+      const hasWiped = localStorage.getItem('lw_v2_wiped');
       if (!hasWiped) {
-        console.log('Cleaning up example content...');
         await db.transaction('rw', [db.novels, db.acts, db.chapters, db.scenes, db.characters, db.locations, db.objects, db.lore, db.resources, db.dailyProgress], async () => {
           await db.novels.clear();
           await db.acts.clear();
@@ -41,11 +50,125 @@ export const NovelProvider = ({ children }) => {
       }
 
       await refreshAllNovels();
+      
+      // Check for updates in cloud if enabled
+      if (localStorage.getItem('lw_cloud_sync') === 'true') {
+        checkCloudBackupStatus();
+      }
+
       setLoading(false);
     };
 
     initializeDB();
   }, []);
+
+  const checkCloudBackupStatus = async () => {
+    if (cloudCheckInProgress.current) return;
+    cloudCheckInProgress.current = true;
+
+    try {
+      if (!GoogleDriveService.isAuthenticated()) return;
+      
+      const cloudFile = await GoogleDriveService.findBackupFile();
+      if (cloudFile && cloudFile.modifiedTime) {
+        const cloudDate = new Date(cloudFile.modifiedTime);
+        // Leer directamente de localStorage para evitar problemas de timing con el estado
+        const localSync = localStorage.getItem('lw_last_cloud_sync');
+        const localDate = localSync ? new Date(localSync) : new Date(0);
+        
+        if (cloudDate > localDate) {
+          console.log('[LoneWriter] Versión en la nube encontrada más reciente.');
+          // Pequeño delay para evitar race conditions con otros eventos
+          await new Promise(resolve => setTimeout(resolve, 100));
+          window.dispatchEvent(new CustomEvent('cloud-version-available', { 
+            detail: { date: cloudFile.modifiedTime, id: cloudFile.id } 
+          }));
+        }
+      }
+    } catch (e) {
+      console.warn('[LoneWriter] Error verificando backup en la nube al inicio');
+    } finally {
+      cloudCheckInProgress.current = false;
+    }
+  };
+
+  // Debounced Auto-Sync Effect
+  useEffect(() => {
+    if (!isCloudSyncEnabled || !pendingSync || cloudSyncStatus === 'syncing') return;
+
+    const timer = setTimeout(async () => {
+      await performCloudSync();
+    }, 30000); // 30 segundos de inactividad tras cambios
+
+    return () => clearTimeout(timer);
+  }, [pendingSync, isCloudSyncEnabled]);
+
+  const performCloudSync = async () => {
+    if (!isCloudSyncEnabled) return;
+    if (cloudCheckInProgress.current) return;
+    
+    setCloudSyncStatus('syncing');
+    cloudCheckInProgress.current = true;
+
+    try {
+      // ── SAFETY CHECK: Verify cloud isn't newer before uploading ──────────
+      // This prevents overwriting a backup made from another device/session.
+      if (GoogleDriveService.isAuthenticated()) {
+        const cloudFile = await GoogleDriveService.findBackupFile();
+        if (cloudFile && cloudFile.modifiedTime) {
+          const cloudDate = new Date(cloudFile.modifiedTime);
+          // Leer directamente de localStorage para evitar problemas de timing
+          const localSync = localStorage.getItem('lw_last_cloud_sync');
+          const localSyncDate = localSync ? new Date(localSync) : new Date(0);
+          const tolerance = 5000; // 5 segundos de tolerancia
+
+          if (cloudDate.getTime() > localSyncDate.getTime() + tolerance) {
+            console.warn('[LoneWriter] La nube tiene datos más recientes. Abortando subida para evitar sobreescribir.');
+            setCloudSyncStatus('idle');
+            setPendingSync(false);
+            // Surface the "restore from cloud?" dialog
+            await new Promise(resolve => setTimeout(resolve, 100));
+            window.dispatchEvent(new CustomEvent('cloud-version-available', {
+              detail: { date: cloudFile.modifiedTime, id: cloudFile.id }
+            }));
+            return;
+          }
+        }
+      }
+      // ─────────────────────────────────────────────────────────────────────
+
+      // Build the full database export
+      const data = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        tables: {}
+      };
+      for (const table of db.tables) {
+        data.tables[table.name] = await table.toArray();
+      }
+      
+      await GoogleDriveService.saveBackup(data);
+      
+      const now = new Date().toISOString();
+      setLastCloudSync(now);
+      localStorage.setItem('lw_last_cloud_sync', now);
+      setCloudSyncStatus('success');
+      setPendingSync(false);
+      
+      setTimeout(() => setCloudSyncStatus('idle'), 5000);
+    } catch (error) {
+      console.error('[LoneWriter] Error en auto-sincronización:', error);
+      setCloudSyncStatus('error');
+    } finally {
+      cloudCheckInProgress.current = false;
+    }
+  };
+
+  const toggleCloudSync = (enabled) => {
+    setIsCloudSyncEnabled(enabled);
+    localStorage.setItem('lw_cloud_sync', enabled ? 'true' : 'false');
+    if (enabled) setPendingSync(true); // Trigger initial sync
+  };
 
   const refreshAllNovels = async () => {
     const novels = await db.novels.toArray();
@@ -54,6 +177,18 @@ export const NovelProvider = ({ children }) => {
     setAllNovels(sorted);
     
     // Auto-load removed per user request: "siempre mostrar pantalla de bienvenida"
+  };
+
+  const refreshAfterRestore = async () => {
+    await refreshAllNovels();
+    setActiveNovel(null);
+    setActiveScene(null);
+    setActs([]);
+    setCharacters([]);
+    setLocations([]);
+    setObjects([]);
+    setLore([]);
+    setResources([]);
   };
 
   const syncNovelWordCount = async (novelId) => {
@@ -78,11 +213,10 @@ export const NovelProvider = ({ children }) => {
   const switchNovel = async (id) => {
     const novel = await db.novels.get(id);
     if (novel) {
-      // Sync word count on switch to fix any discrepancies
       const realWords = await syncNovelWordCount(id);
+      await reloadData(id);
       setActiveNovel({ ...novel, wordCount: realWords });
       localStorage.setItem('activeNovelId', id);
-      await reloadData(id);
     }
   };
 
@@ -118,6 +252,26 @@ export const NovelProvider = ({ children }) => {
       setActiveNovel(prev => ({ ...prev, ...data }));
     }
   };
+
+  const getNovelUIExpanded = useCallback(async (novelId) => {
+    const novel = await db.novels.get(novelId);
+    if (novel?.uiExpanded) {
+      try {
+        return new Set(JSON.parse(novel.uiExpanded));
+      } catch {
+        return new Set();
+      }
+    }
+    return new Set();
+  }, []);
+
+  const updateNovelUIExpanded = useCallback(async (novelId, expandedIds) => {
+    const data = { uiExpanded: JSON.stringify([...expandedIds]) };
+    await db.novels.update(novelId, data);
+    if (activeNovel?.id === novelId) {
+      setActiveNovel(prev => ({ ...prev, ...data }));
+    }
+  }, [activeNovel?.id]);
 
   const trackDailyProgress = async (novelId, wordsDiff) => {
     if (wordsDiff === 0) return;
@@ -166,7 +320,7 @@ export const NovelProvider = ({ children }) => {
     try {
       const novelId = await db.novels.add({
         title,
-        author: 'Autor',
+        author: i18n.t('app:autor_defecto'),
         status: 'Borrador',
         wordCount: 0,
         targetWords: 100000,
@@ -175,18 +329,22 @@ export const NovelProvider = ({ children }) => {
         createdAt: new Date().toISOString()
       });
       // Add an initial Act
-      await addAct(novelId, 'Acto I: Inicio');
+      await addAct(novelId, i18n.t('editor:acto_inicial'));
       await refreshAllNovels();
       await switchNovel(novelId);
+      setPendingSync(true);
     } catch (error) {
-      console.error('Error creating novel:', error);
-      alert('Error crítico al crear la novela en la base de datos.');
+      console.error('[LoneWriter] Error creating novel:', error);
     }
   };
 
   const deleteNovel = async (id) => {
-    await db.transaction('rw', db.novels, db.acts, db.chapters, db.scenes, async () => {
-      await db.novels.delete(id);
+    await db.transaction('rw', [
+      db.novels, db.acts, db.chapters, db.scenes,
+      db.characters, db.locations, db.objects, db.lore,
+      db.resources, db.dailyProgress, db.debateAgents, db.debateSessions
+    ], async () => {
+      // Delete narrative structure
       const actsToDelete = await db.acts.where('novelId').equals(id).toArray();
       for (const act of actsToDelete) {
         const chapters = await db.chapters.where('actId').equals(act.id).toArray();
@@ -196,9 +354,22 @@ export const NovelProvider = ({ children }) => {
         await db.chapters.where('actId').equals(act.id).delete();
       }
       await db.acts.where('novelId').equals(id).delete();
+      // Delete compendium data
+      await db.characters.where('novelId').equals(id).delete();
+      await db.locations.where('novelId').equals(id).delete();
+      await db.objects.where('novelId').equals(id).delete();
+      await db.lore.where('novelId').equals(id).delete();
+      await db.resources.where('novelId').equals(id).delete();
+      await db.dailyProgress.where('novelId').equals(id).delete();
+      // Delete AI debate data
+      await db.debateAgents.where('novelId').equals(id).delete();
+      await db.debateSessions.where('novelId').equals(id).delete();
+      // Delete the novel itself
+      await db.novels.delete(id);
     });
     setAllNovels(prev => prev.filter(n => n.id !== id));
     if (activeNovel?.id === id) setActiveNovel(null);
+    setPendingSync(true);
   };
 
   // ---- Acts, Chapters, Scenes CRUD ----
@@ -206,6 +377,7 @@ export const NovelProvider = ({ children }) => {
     const count = await db.acts.where('novelId').equals(novelId).count();
     const id = await db.acts.add({ novelId, title, order: count, wordCount: 0 });
     await reloadData(novelId);
+    setPendingSync(true);
     return id;
   };
 
@@ -218,6 +390,7 @@ export const NovelProvider = ({ children }) => {
     await db.chapters.where('actId').equals(id).delete();
     await db.acts.delete(id);
     await reloadData(act.novelId);
+    setPendingSync(true);
   };
 
   const addChapter = async (actId, title) => {
@@ -225,6 +398,7 @@ export const NovelProvider = ({ children }) => {
     const count = await db.chapters.where('actId').equals(actId).count();
     const id = await db.chapters.add({ actId, title, order: count, number: count + 1, wordCount: 0 });
     await reloadData(act.novelId);
+    setPendingSync(true);
     return id;
   };
 
@@ -234,6 +408,7 @@ export const NovelProvider = ({ children }) => {
     await db.scenes.where('chapterId').equals(id).delete();
     await db.chapters.delete(id);
     await reloadData(act.novelId);
+    setPendingSync(true);
   };
 
   const addScene = async (chapterId, title) => {
@@ -242,6 +417,7 @@ export const NovelProvider = ({ children }) => {
     const count = await db.scenes.where('chapterId').equals(chapterId).count();
     const id = await db.scenes.add({ chapterId, title, order: count, number: count + 1, status: 'Borrador', pov: '', wordCount: 0, content: '' });
     await reloadData(act.novelId);
+    setPendingSync(true);
     return id;
   };
 
@@ -251,16 +427,19 @@ export const NovelProvider = ({ children }) => {
     const act = await db.acts.get(ch.actId);
     await db.scenes.delete(id);
     await reloadData(act.novelId);
+    setPendingSync(true);
   };
 
   const updateAct = async (id, data) => {
     await db.acts.update(id, data);
     if (activeNovel) reloadData(activeNovel.id);
+    setPendingSync(true);
   };
 
   const updateChapter = async (id, data) => {
     await db.chapters.update(id, data);
     if (activeNovel) reloadData(activeNovel.id);
+    setPendingSync(true);
   };
 
   const updateScene = async (id, data) => {
@@ -285,6 +464,7 @@ export const NovelProvider = ({ children }) => {
     }
 
     if (activeNovel) reloadData(activeNovel.id);
+    setPendingSync(true);
   };
 
   const updateActOrder = async (novelId, actIds) => {
@@ -294,6 +474,7 @@ export const NovelProvider = ({ children }) => {
       }
     });
     await reloadData(novelId);
+    setPendingSync(true);
   };
 
   const updateChapterOrder = async (novelId, chapterIds) => {
@@ -303,6 +484,7 @@ export const NovelProvider = ({ children }) => {
       }
     });
     await reloadData(novelId);
+    setPendingSync(true);
   };
 
   const updateSceneOrder = async (novelId, sceneIds) => {
@@ -312,6 +494,7 @@ export const NovelProvider = ({ children }) => {
       }
     });
     await reloadData(novelId);
+    setPendingSync(true);
   };
 
   const moveScene = async (sceneId, targetChapterId, newOrderIds) => {
@@ -324,6 +507,7 @@ export const NovelProvider = ({ children }) => {
       }
     });
     if (activeNovel) await reloadData(activeNovel.id);
+    setPendingSync(true);
   };
 
   const moveChapter = async (chapterId, targetActId, newOrderIds) => {
@@ -336,6 +520,7 @@ export const NovelProvider = ({ children }) => {
       }
     });
     if (activeNovel) await reloadData(activeNovel.id);
+    setPendingSync(true);
   };
 
   // ---- Compendium CRUD ----
@@ -343,6 +528,7 @@ export const NovelProvider = ({ children }) => {
     if (!activeNovel) return;
     const id = await db[table].add({ ...data, novelId: activeNovel.id });
     await reloadData(activeNovel.id);
+    setPendingSync(true);
     return id;
   };
 
@@ -350,12 +536,14 @@ export const NovelProvider = ({ children }) => {
     if (!activeNovel) return;
     await db[table].update(id, data);
     await reloadData(activeNovel.id);
+    setPendingSync(true);
   };
 
   const deleteCompendiumEntry = async (table, id) => {
     if (!activeNovel) return;
     await db[table].delete(id);
     await reloadData(activeNovel.id);
+    setPendingSync(true);
   };
 
   const value = {
@@ -388,10 +576,18 @@ export const NovelProvider = ({ children }) => {
     moveScene,
     moveChapter,
     updateNovelTarget,
+    getNovelUIExpanded,
+    updateNovelUIExpanded,
     getStreak,
     addCompendiumEntry,
     updateCompendiumEntry,
     deleteCompendiumEntry,
+    isCloudSyncEnabled,
+    cloudSyncStatus,
+    lastCloudSync,
+    toggleCloudSync,
+    performCloudSync,
+    refreshAfterRestore
   };
 
   return <NovelContext.Provider value={value}>{children}</NovelContext.Provider>;
