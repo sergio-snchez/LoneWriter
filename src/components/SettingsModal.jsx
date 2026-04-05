@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   X, Cloud, RefreshCw, LogIn, LogOut, 
-  Sparkles, Shield, Info, AlertTriangle, Key, ExternalLink 
+  Sparkles, Shield, Info, AlertTriangle, Key, ExternalLink,
+  Heart
 } from 'lucide-react';
 import { useAI } from '../context/AIContext';
 import { useNovel } from '../context/NovelContext';
@@ -273,10 +274,33 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
             </div>
             <div className="settings-section">
               <span className="settings-section__title">{t('general.idioma')}</span>
-              <p className="settings-section__hint" style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px' }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
                 {t('general.idioma_hint')}
               </p>
               <LanguageSelector />
+            </div>
+            <div className="settings-section">
+              <span className="settings-section__title">{t('general.enlaces_titulo')}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <a 
+                  href="https://github.com/sergio-snchez/LoneWriter" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '12px' }}
+                >
+                  <ExternalLink size={14} />
+                  {t('general.github_link')}
+                </a>
+                <a 
+                  href="https://buymeacoffee.com/sergio.snchez" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '12px' }}
+                >
+                  <Heart size={14} />
+                  {t('general.buymeacoffee_link')}
+                </a>
+              </div>
             </div>
           </div>
         );

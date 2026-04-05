@@ -15,6 +15,22 @@ import { Tooltip } from './Tooltip'
 import { renderMarkdown } from '../utils/renderMarkdown'
 import './AIPanel.css'
 
+const normalizeHtmlForEditor = (html) => {
+  return html
+    .replace(/<p>\s*<\/p>/gi, '')
+    .replace(/<p>\s*<br\s*\/?>\s*<\/p>/gi, '')
+    .replace(/<br\s*\/?>\s*<br\s*\/?>/gi, '<br/>')
+    .replace(/\n\n+/g, '\n')
+    .trim();
+}
+
+const normalizeTextForDisplay = (text) => {
+  if (!text) return '';
+  let cleaned = text.replace(/\n{3,}/g, '\n\n');
+  cleaned = cleaned.replace(/(<br\s*\/?>){2,}/gi, '<br/>');
+  return cleaned;
+}
+
 // ─── Mock data ────────────────────────────────────────────────
 const ORIGINAL_TEXT = `El pergamino olía a sal y algo más, algo acre que Dorian no supo identificar hasta que acercó la llama de la vela. Entonces lo vio: las letras invisibles aflorando entre líneas, escritas con tinta de medusa, el viejo truco de los contrabandistas del norte.
 
@@ -159,10 +175,10 @@ function RewriteTab({ activeScene }) {
 
   const handleApply = () => {
     if (!lastRewrite) return;
-    const event = new CustomEvent('ai-apply-rewrite', { detail: lastRewrite });
+    const normalizedContent = normalizeHtmlForEditor(lastRewrite);
+    const event = new CustomEvent('ai-apply-rewrite', { detail: normalizedContent });
     window.dispatchEvent(event);
     setLastRewrite('');
-    setInstruction('');
   };
 
   const handleCopy = () => {
@@ -498,7 +514,7 @@ function DebateTab({ activeScene }) {
       initials: newAgent.name.trim().slice(0, 2).toUpperCase(),
       color: newAgent.color || AGENT_COLORS[debateAgents.length % AGENT_COLORS.length],
       desc: newAgent.desc || '',
-      systemPrompt: newAgent.systemPrompt || `Eres un asistente especializado en escritura creativa llamado ${newAgent.name}. Responde siempre en español y de forma concisa.`,
+      systemPrompt: newAgent.systemPrompt || t('debate.agente_asistente_prompt', { name: newAgent.name }),
     })
     setNewAgent(null)
   }
@@ -750,7 +766,7 @@ function DebateTab({ activeScene }) {
           if (msg.role === 'user') {
             return (
               <div key={msg.id} className="debate-msg debate-msg--user">
-                <div className="debate-msg__bubble debate-msg__bubble--user" dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.text) }}></div>
+                <div className="debate-msg__bubble debate-msg__bubble--user" dangerouslySetInnerHTML={{ __html: renderMarkdown(normalizeTextForDisplay(msg.text)) }}></div>
                 <div className="debate-msg__meta debate-msg__meta--user">
                   <span className="debate-msg__time">{msg.time}</span>
                   <div className="debate-msg__avatar debate-msg__avatar--user"><User size={11} /></div>
@@ -767,7 +783,7 @@ function DebateTab({ activeScene }) {
             )
           }
           const color = msg.agentColor || '#888'
-          const text = msg.text || ''
+          const text = normalizeTextForDisplay(msg.text || '')
           const msgKey = String(msg.id)
           const isExpanded = expandedMessages.has(msgKey)
 
@@ -930,7 +946,12 @@ function OracleTab({ activeScene }) {
   }, [oracleHistory])
 
   const stripJsonBlock = (text) => {
-    return text.replace(/\{[\s\S]*"hasContradiction"[\s\S]*\}/g, '').trim()
+    let cleaned = text.replace(/\{[\s\S]*"hasContradiction"[\s\S]*\}/g, '').trim();
+    cleaned = cleaned.replace(/\n{2,}/g, '\n');
+    cleaned = cleaned.replace(/(<br\s*\/?>)\1{2,}/gi, '$1');
+    cleaned = cleaned.replace(/\s*<br\s*\/?>\s*\n\s*/gi, '<br/>');
+    cleaned = cleaned.replace(/<br\/>\s*<br\/\s*>/gi, '<br/>');
+    return cleaned;
   }
 
   const handleCheck = async () => {
@@ -960,19 +981,7 @@ function OracleTab({ activeScene }) {
       }
       setCompContextUsed(compendiumInfo)
 
-      const oraclePrompt = `Actúa como el Oráculo de LoneWriter, un asistente muy crítico cuya función es validar la coherencia del texto.
-Tu único objetivo es detectar contradicciones entre el texto del usuario y las fichas del Compendio que te proporciono.
-Compara CADA afirmación del texto contra CADA ficha del Compendio. Presta especial atención a:
-- Roles, ocupaciones y descripciones de personajes
-- Relaciones entre personajes
-- Propiedades de objetos (origen, dueño, tipo, importancia)
-- Características de localizaciones (tipo, clima, descripción)
-- Datos del Lore (categorías, resúmenes, hechos establecidos)
-Si el usuario dice algo que contradice el Compendio (ej: dice que una moto es de gasolina cuando el Lore dice que es eléctrica), debes corregirle de forma profesional y educada.
-Si no hay contradicciones, simplemente di que todo está en orden, pero con tu habitual tono profesional.
-Responde siempre en español y de forma concisa (máximo 3-4 párrafos).
-Cita específicamente qué parte del texto contradice qué ficha del Compendio cuando encuentres un error.
-No seas complaciente: tu trabajo es encontrar errores, no halagar al autor.`
+      const oraclePrompt = t('oracle_prompt')
 
       const fullPrompt = `${oraclePrompt}
 

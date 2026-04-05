@@ -43,5 +43,8 @@
     "ia": "AI",
     "configuracion": "Settings"
   },
-  "autor_defecto": "Author"
+  "autor_defecto": "Author",
+  "landscape": {
+    "mensaje": "Please rotate your device to portrait to continue writing"
+  }
 }

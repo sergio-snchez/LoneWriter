@@ -11,6 +11,52 @@
   background: var(--bg-base);
 }
 
+/* ---- Landscape warning overlay ---- */
+.landscape-warning {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: var(--bg-base);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 40px;
+  text-align: center;
+}
+
+.landscape-warning svg {
+  color: var(--accent);
+  animation: rotate-hint 2s ease-in-out infinite;
+}
+
+.landscape-warning p {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  color: var(--text-primary);
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+@keyframes rotate-hint {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-15deg); }
+  75% { transform: rotate(15deg); }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .landscape-warning {
+    display: flex;
+  }
+  .app-topbar,
+  .app-body,
+  .mobile-menu-btn,
+  .mobile-tree-toggle {
+    display: none !important;
+  }
+}
+
 /* ---- Top bar ---- */
 .app-topbar {
   height: 48px;
@@ -774,6 +820,10 @@
     right: 8px;
     width: auto;
     max-width: calc(100vw - 16px);
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    z-index: 9999;
+    transform: translateZ(0);
   }
 
   .welcome-screen {
