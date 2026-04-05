@@ -2,11 +2,11 @@
 
 <div align="center">
 
-[🇪🇸 Also available in Spanish](./README_ES.md)
+[Also available in Spanish](./README_ES.md)
 
 </div>
 
-# LoneWriter v1.4-multilenguaje (Stable) 🖋️
+# LoneWriter v1.4-multilingual (Stable) 🖋️
 
 > **Your intelligent companion for writing great stories, now with advanced AI capabilities, PWA-optimized and available in multiple languages.**
 >
@@ -87,6 +87,6 @@ Designed and developed with ♥ by **Sergio Sánchez** with Antigravity.
 
 <div align="center">
 
-[🇪🇸 Also available in Spanish](./README_ES.md)
+[Also available in Spanish](./README_ES.md)
 
 </div>
