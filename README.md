@@ -1,6 +1,6 @@
 <div align="center">
 
-🇪🇸 **[Also available in Spanish](./README_ES.md)**
+*🇪🇸 [Also available in Spanish](./README_ES.md)*
 
 </div>
 
@@ -87,6 +87,6 @@ Designed and developed with ♥ by **Sergio Sánchez** with Antigravity.
 
 <div align="center">
 
-🇪🇸 **[Also available in Spanish](./README_ES.md)**
+*🇪🇸 [Also available in Spanish](./README_ES.md)*
 
 </div>

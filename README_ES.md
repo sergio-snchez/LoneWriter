@@ -1,6 +1,6 @@
 <div align="center">
 
-🇺🇸 **[También disponible en Inglés](./README.md)**
+*🇺🇸 [También disponible en Inglés](./README.md)*
 
 </div>
 
@@ -87,6 +87,6 @@ Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
 
 <div align="center">
 
-🇺🇸 **[También disponible en Inglés](./README.md)**
+*🇺🇸 [También disponible en Inglés](./README.md)*
 
 </div>
