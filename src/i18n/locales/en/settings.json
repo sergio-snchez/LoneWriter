@@ -63,13 +63,16 @@
   "general": {
     "seccion_titulo": "Application Information",
     "version": "Version",
-    "version_valor": "1.3-oracle",
+    "version_valor": "1.4-multilanguage",
     "base_datos": "Database",
     "base_datos_valor": "IndexedDB (Dexie.js)",
     "plataforma": "Platform",
     "plataforma_valor": "Vite + Electron",
     "idioma": "Language",
-    "idioma_hint": "Select the application interface language."
+    "idioma_hint": "Select the application interface language.",
+    "enlaces_titulo": "Links",
+    "github_link": "GitHub Repository",
+    "buymeacoffee_link": "Support the project (Buy Me a Coffee)"
   },
   "errores": {
     "client_id_no_configurado": "Google Client ID has not been configured. Create a .env file or environment variable.",

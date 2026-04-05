@@ -69,7 +69,10 @@
     "plataforma": "Plataforma",
     "plataforma_valor": "Vite + Electron",
     "idioma": "Idioma",
-    "idioma_hint": "Selecciona el idioma de la interfaz de la aplicación."
+    "idioma_hint": "Selecciona el idioma de la interfaz de la aplicación.",
+    "enlaces_titulo": "Enlaces",
+    "github_link": "Repositorio en GitHub",
+    "buymeacoffee_link": "Apoya el proyecto (Buy Me a Coffee)"
   },
   "errores": {
     "client_id_no_configurado": "No se ha configurado el Client ID de Google. Crea un archivo .env o variable de entorno.",

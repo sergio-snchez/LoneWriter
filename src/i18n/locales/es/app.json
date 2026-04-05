@@ -43,5 +43,8 @@
     "ia": "IA",
     "configuracion": "Configuración"
   },
-  "autor_defecto": "Autor"
+  "autor_defecto": "Autor",
+  "landscape": {
+    "mensaje": "Por favor, rota tu dispositivo a vertical para continuar escribiendo"
+  }
 }
