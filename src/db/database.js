@@ -18,4 +18,37 @@ db.version(2).stores({
   debateSessions: '++id, novelId, title, updatedAt'
 });
 
+db.version(3).stores({
+  oracleEntries: '++id, novelId, sceneId, createdAt',
+  lastRewrite: '++id, novelId, sceneId'
+});
+
+db.version(4).stores({
+  novels: '++id, title, author, status, targetScenes, lastEdited, uiExpanded'
+});
+
+db.version(6).stores({
+  oracleEntries: '++id, novelId, sceneId, createdAt, isCorrected'
+});
+
+db.version(5).stores({
+  characters: '++id, novelId, name, role, ignoredForOracle',
+  locations: '++id, novelId, name, type, ignoredForOracle',
+  objects: '++id, novelId, name, type, ignoredForOracle',
+  lore: '++id, novelId, title, category, ignoredForOracle',
+  resources: '++id, novelId, name, type, ignoredForOracle'
+});
+
+// v7: MPC — Monitor de Propuestas del Compendio
+// Almacena los nombres que el usuario ha descartado permanentemente
+db.version(7).stores({
+  mpcIgnored: '++id, novelId, name, type, ignoredAt'
+});
+
+// v8: Hub de IA — Registro de Consumo de Tokens/Cuotas
+// Permite monitorizar el uso diario por proveedor y modelo
+db.version(8).stores({
+  aiUsage: '++id, [date+provider+model], date, provider, model'
+});
+
 export default db;

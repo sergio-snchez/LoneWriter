@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const ModalContext = createContext();
 
@@ -11,6 +12,7 @@ export const useModal = () => {
 };
 
 export const ModalProvider = ({ children }) => {
+  const { t } = useTranslation('common');
   const [modal, setModal] = useState({ type: null, data: null });
   const [modalInput, setModalInput] = useState('');
 
@@ -39,13 +41,13 @@ export const ModalProvider = ({ children }) => {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <h2 className="modal-title">
-              {modal.type === 'project' && 'Nueva Novela'}
-              {modal.type === 'prompt' && (modal.data.title || 'Entrada requerida')}
-              {modal.type === 'confirm' && (modal.data.title || 'Confirmar')}
+              {modal.type === 'project' && t('modales.titulo_nueva_novela')}
+              {modal.type === 'prompt' && (modal.data.title || t('modales.titulo_entrada_requerida'))}
+              {modal.type === 'confirm' && (modal.data.title || t('modales.titulo_confirmar'))}
             </h2>
             
             <p className="modal-text">
-              {modal.type === 'project' && 'Introduce el título de tu próxima gran historia:'}
+              {modal.type === 'project' && t('modales.texto_nueva_novela')}
               {modal.type === 'prompt' && modal.data.message}
               {modal.type === 'confirm' && modal.data.message}
             </p>
@@ -54,7 +56,7 @@ export const ModalProvider = ({ children }) => {
               <input 
                 autoFocus
                 className="modal-input"
-                placeholder={modal.data?.placeholder || "Escribe aquí..."}
+                placeholder={modal.data?.placeholder || t('modales.placeholder')}
                 value={modalInput}
                 onChange={e => setModalInput(e.target.value)}
                 onKeyDown={e => {
@@ -70,7 +72,7 @@ export const ModalProvider = ({ children }) => {
             )}
 
             <div className="modal-actions">
-              <button className="btn btn-ghost" onClick={closeModal}>Cancelar</button>
+              <button className="btn btn-ghost" onClick={closeModal}>{t('botones.cancelar')}</button>
               
               {modal.type === 'confirm' ? (
                 <button 
@@ -80,7 +82,7 @@ export const ModalProvider = ({ children }) => {
                     closeModal();
                   }}
                 >
-                  {modal.data.confirmLabel || 'Confirmar'}
+                  {modal.data.confirmLabel || t('botones.confirmar')}
                 </button>
               ) : (
                 <button 
@@ -93,7 +95,7 @@ export const ModalProvider = ({ children }) => {
                   }}
                   disabled={!modalInput.trim()}
                 >
-                  {modal.data?.confirmLabel || 'Aceptar'}
+                  {modal.data?.confirmLabel || t('botones.aceptar')}
                 </button>
               )}
             </div>

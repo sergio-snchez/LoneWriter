@@ -389,6 +389,10 @@
   color: var(--text-muted);
 }
 
+.rewrite-spinner {
+  color: #1a1710 !important;
+}
+
 /* Actions */
 .rewrite-actions {
   display: flex;
@@ -435,11 +439,13 @@
   font-family: 'Merriweather', serif;
   font-size: 11.5px;
   line-height: 1.8;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   background: rgba(212,168,83,0.05);
   border: 1px solid var(--border-accent);
   border-radius: var(--radius-sm);
   padding: 12px 13px;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .rewrite-result__footer {
@@ -594,6 +600,37 @@
   border-left-width: 2px;
   color: var(--text-secondary);
   border-radius: 2px var(--radius-md) var(--radius-md) var(--radius-md);
+  position: relative;
+}
+
+.debate-msg__text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.debate-msg__text--clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.debate-msg__read-more {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.debate-msg__read-more:hover {
+  text-decoration: underline;
 }
 
 .debate-msg__meta {
@@ -1061,15 +1098,16 @@
   background: transparent;
   color: var(--text-primary);
   border: 1px solid transparent;
-  padding: 4px 8px;
+  padding: 4px 6px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   transition: all var(--trans-fast);
+  max-width: 140px;
 }
 .debate-sessions-trigger:hover {
   background: var(--bg-hover);
@@ -1077,7 +1115,7 @@
 }
 
 .debate-sessions-truncate {
-  max-width: 130px;
+  max-width: 90px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1087,7 +1125,7 @@
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
-  width: 200px;
+  width: 300px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -1105,8 +1143,10 @@
   margin: 4px;
   padding: 6px;
   border-radius: var(--radius-sm);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   cursor: pointer;
   text-align: center;
 }
@@ -1128,7 +1168,7 @@
   justify-content: space-between;
   padding: 6px 8px;
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
   cursor: pointer;
   transition: background var(--trans-fast);
@@ -1183,4 +1223,811 @@
 .debate-session-action-btn:hover {
   color: var(--text-primary);
   background: var(--border);
+}
+
+/* ============================================
+   ORACLE TAB
+   ============================================ */
+
+.oracle-tab {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 12px 16px;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.oracle-tab__intro {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.oracle-tab__intro p {
+  margin: 0 0 6px 0;
+}
+
+.oracle-tab__scene-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--accent);
+  background: var(--accent-dim);
+  padding: 3px 8px;
+  border-radius: 10px;
+  margin-top: 4px;
+}
+
+.oracle-tab__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(224, 112, 112, 0.08);
+  border: 1px solid rgba(224, 112, 112, 0.2);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--red);
+  line-height: 1.4;
+}
+
+.oracle-tab__error svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.oracle-tab__history {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.oracle-tab__bottom {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.oracle-tab__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.oracle-tab__entry {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: visible;
+  transition: all var(--trans-fast);
+}
+
+.oracle-tab__entry--checked {
+  border-color: rgba(92, 185, 138, 0.3);
+  opacity: 0.7;
+}
+
+.oracle-tab__entry--checked .oracle-tab__entry-label {
+  color: var(--green);
+}
+
+.oracle-tab__entry--loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 16px;
+  color: var(--text-muted);
+  font-size: 12px;
+  background: var(--bg-base);
+  border-style: dashed;
+}
+
+.oracle-tab__entry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.oracle-tab__entry-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.oracle-tab__check-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  transition: all var(--trans-fast);
+  flex-shrink: 0;
+}
+
+.oracle-tab__check-btn:hover {
+  background: var(--bg-hover);
+  color: var(--green);
+  border-color: rgba(92, 185, 138, 0.4);
+}
+
+.oracle-tab__entry--checked .oracle-tab__check-btn {
+  color: var(--green);
+  border-color: rgba(92, 185, 138, 0.4);
+  background: rgba(92, 185, 138, 0.1);
+}
+
+.oracle-tab__entry-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.oracle-tab__entry-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.oracle-tab__entry-location {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+  padding-left: 2px;
+}
+
+.oracle-tab__entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.oracle-tab__entry-time {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.oracle-tab__action-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all var(--trans-fast);
+}
+
+.oracle-tab__action-btn:hover {
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+
+.oracle-tab__action-btn--delete:hover {
+  background: rgba(224, 112, 112, 0.1);
+  color: #e07070;
+}
+
+.oracle-tab__entry-text {
+  padding: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.oracle-tab__entry-text--clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.oracle-tab__entry-text--expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+  max-height: none;
+}
+
+.oracle-tab__read-more {
+  display: inline-block;
+  margin: 0 12px 10px;
+  font-size: 11px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.oracle-tab__read-more:hover {
+  text-decoration: underline;
+}
+
+.oracle-tab__footer {
+  display: flex;
+  gap: 8px;
+  padding-top: 8px;
+  padding-bottom: 4px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-surface);
+  z-index: 10;
+}
+
+.oracle-tab__clear-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.oracle-tab__check-btn-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.oracle-tab__check-btn--alert {
+  background: rgba(224, 183, 83, 0.15);
+  border-color: rgba(224, 183, 83, 0.4);
+  color: var(--gold);
+  animation: oracleBtnPulse 2s ease-in-out infinite;
+}
+
+@keyframes oracleBtnPulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(224, 183, 83, 0); }
+  50% { box-shadow: 0 0 8px rgba(224, 183, 83, 0.3); }
+}
+
+.oracle-tab__context-details {
+  margin-top: 8px;
+}
+
+.oracle-tab__context-details summary {
+  font-size: 11px;
+  color: var(--accent);
+  cursor: pointer;
+  user-select: none;
+}
+
+.oracle-tab__context-details summary:hover {
+  text-decoration: underline;
+}
+
+.oracle-tab__context-pre {
+  margin-top: 6px;
+  padding: 8px;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+  line-height: 1.4;
+}
+
+.oracle-tab__entry-context-details {
+  margin: 10px 12px 12px;
+  border-top: 1px dotted var(--border);
+  padding-top: 10px;
+}
+
+.oracle-tab__entry-context-details summary {
+  font-size: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.oracle-tab__entry-context-details summary:hover {
+  text-decoration: underline;
+  color: var(--text-primary);
+}
+
+/* ─── Traffic Light ──────────────────────────── */
+.oracle-tab__traffic-light {
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.oracle-traffic-light {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: default;
+  transition: all 0.2s ease;
+}
+
+.oracle-traffic-light--clickable:hover {
+  border-color: rgba(92, 185, 138, 0.5);
+  box-shadow: 0 0 4px rgba(92, 185, 138, 0.2);
+}
+
+.oracle-traffic-light--clickable.oracle-traffic-light--suspicious:hover {
+  border-color: rgba(224, 184, 112, 0.5);
+  box-shadow: 0 0 4px rgba(224, 184, 112, 0.2);
+}
+
+.oracle-traffic-light--clickable.oracle-traffic-light--error:hover {
+  border-color: rgba(224, 112, 112, 0.5);
+  box-shadow: 0 0 4px rgba(224, 112, 112, 0.2);
+}
+
+.oracle-traffic-light__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.oracle-traffic-light__label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Idle - green */
+.oracle-traffic-light--idle .oracle-traffic-light__dot {
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+}
+
+/* Suspicious - yellow, pulsing */
+.oracle-traffic-light--suspicious .oracle-traffic-light__dot {
+  background: var(--gold);
+  box-shadow: 0 0 6px var(--gold);
+  animation: trafficPulse 1.5s ease-in-out infinite;
+}
+
+/* Error - red, pulsing */
+.oracle-traffic-light--error .oracle-traffic-light__dot {
+  background: var(--red);
+  box-shadow: 0 0 6px var(--red);
+  animation: trafficPulse 1s ease-in-out infinite;
+}
+
+@keyframes trafficPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+.oracle-entities-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.oracle-entities-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.oracle-entities-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.oracle-entity-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: rgba(224, 183, 83, 0.12);
+  border: 1px solid rgba(224, 183, 83, 0.25);
+  color: var(--gold);
+}
+
+.oracle-entity-tag--error {
+  background: rgba(224, 112, 112, 0.12);
+  border-color: rgba(224, 112, 112, 0.25);
+  color: var(--red);
+}
+
+.oracle-entity-tag--hoverable {
+  cursor: pointer;
+  position: relative;
+}
+.oracle-entity-tag--hoverable::after {
+  content: '?';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  margin-left: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  color: inherit;
+  opacity: 0.6;
+}
+
+/* ============================================
+   RENDERED MARKDOWN STYLES
+   ============================================ */
+
+/* Debate messages */
+.debate-msg__text :where(p) {
+  margin: 0.6em 0;
+}
+.debate-msg__text :where(p:first-child) {
+  margin-top: 0;
+}
+.debate-msg__text :where(p:last-child) {
+  margin-bottom: 0;
+}
+.debate-msg__text :where(strong, b) {
+  font-weight: 700;
+}
+.debate-msg__text :where(em, i) {
+  font-style: italic;
+}
+.debate-msg__text :where(ul, ol) {
+  padding-left: 1.2em;
+  margin: 0.3em 0;
+}
+.debate-msg__text :where(li) {
+  margin: 0.15em 0;
+}
+.debate-msg__text :where(code) {
+  background: rgba(255,255,255,0.08);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: 'Fira Code', 'Consolas', monospace;
+}
+.debate-msg__text :where(blockquote) {
+  border-left: 3px solid rgba(255,255,255,0.2);
+  padding-left: 0.75em;
+  margin: 0.4em 0;
+  color: rgba(255,255,255,0.7);
+}
+
+/* Oracle entries */
+.oracle-tab__entry-text :where(p) {
+  margin: 0.6em 0;
+}
+.oracle-tab__entry-text :where(p:first-child) {
+  margin-top: 0;
+}
+.oracle-tab__entry-text :where(p:last-child) {
+  margin-bottom: 0;
+}
+.oracle-tab__entry-text :where(strong, b) {
+  font-weight: 700;
+}
+.oracle-tab__entry-text :where(em, i) {
+  font-style: italic;
+}
+.oracle-tab__entry-text :where(ul, ol) {
+  padding-left: 1.2em;
+  margin: 0.3em 0;
+}
+.oracle-tab__entry-text :where(li) {
+  margin: 0.15em 0;
+}
+.oracle-tab__entry-text :where(code) {
+  background: rgba(0,0,0,0.06);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: 'Fira Code', 'Consolas', monospace;
+}
+.oracle-tab__entry-text :where(blockquote) {
+  border-left: 3px solid rgba(0,0,0,0.15);
+  padding-left: 0.75em;
+  margin: 0.4em 0;
+  color: rgba(0,0,0,0.7);
+}
+
+/* Rewrite results */
+.rewrite-result__text :where(p) {
+  margin: 0.6em 0;
+}
+.rewrite-result__text :where(p:first-child) {
+  margin-top: 0;
+}
+.rewrite-result__text :where(p:last-child) {
+  margin-bottom: 0;
+}
+.rewrite-result__text :where(strong, b) {
+  font-weight: 700;
+}
+.rewrite-result__text :where(em, i) {
+  font-style: italic;
+}
+.rewrite-result__text :where(ul, ol) {
+  padding-left: 1.2em;
+  margin: 0.3em 0;
+}
+.rewrite-result__text :where(li) {
+  margin: 0.15em 0;
+}
+
+/* ============================================
+   RESPONSIVE – MOBILE (< 768px)
+   ============================================ */
+@media (max-width: 767px) {
+  .ai-panel--open {
+    width: 100vw;
+    min-width: 100vw;
+    position: fixed;
+    inset: 0;
+    z-index: 400;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+  }
+
+  .ai-panel__header {
+    padding: 12px 16px;
+    min-height: 52px;
+  }
+
+  .ai-panel__api-btn {
+    max-width: 100px;
+    font-size: 10px;
+    padding: 6px 8px;
+    min-height: 36px;
+  }
+
+  .ai-panel__close {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .ai-panel__tabs {
+    padding: 8px 12px;
+    gap: 4px;
+  }
+
+  .ai-panel__tab {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+
+  .rewrite-section {
+    padding: 12px 16px;
+  }
+
+  .rewrite-goals {
+    gap: 8px;
+  }
+
+  .rewrite-goal {
+    padding: 8px 12px;
+    min-height: 36px;
+    font-size: 12px;
+  }
+
+  .rewrite-instruction__textarea {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .rewrite-actions {
+    padding: 12px 16px;
+  }
+
+  .rewrite-actions__main {
+    font-size: 15px;
+  }
+
+  .rewrite-result {
+    padding: 12px 16px;
+  }
+
+  .rewrite-result__apply {
+    gap: 8px;
+  }
+
+  .rewrite-result__apply .btn {
+  }
+
+  .debate-toolbar {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .debate-agent-btn {
+    padding: 6px 10px 6px 6px;
+    min-height: 36px;
+    font-size: 12px;
+  }
+
+  .debate-messages {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .debate-msg__bubble {
+    font-size: 14px;
+    padding: 10px 14px;
+    max-width: 95%;
+  }
+
+  .debate-input-area {
+    padding: 10px 12px 8px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .debate-input {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .debate-send-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .debate-sessions-trigger {
+    padding: 6px 8px;
+    min-height: 36px;
+  }
+
+  .debate-context-btn,
+  .debate-manage-btn,
+  .debate-clear-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .oracle-tab {
+    padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    gap: 10px;
+  }
+
+  .oracle-tab__entry {
+    padding: 0;
+  }
+
+  .oracle-tab__entry-header {
+    padding: 10px 12px;
+  }
+
+  .oracle-tab__entry-text {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .oracle-tab__check-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .oracle-tab__action-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .oracle-tab__footer {
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .oracle-tab__footer .btn {
+  }
+
+  .agent-edit-form {
+    padding: 16px;
+  }
+
+  .agent-edit-form__input {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .agent-edit-form__prompt {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .agent-edit-form__footer .btn {
+  }
+
+  .debate-agent-card__btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .debate-back-btn {
+    padding: 6px 10px;
+  }
+
+  .debate-add-agent-btn {
+  }
+
+  .res-action-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .rewrite-feedback-btn {
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+  }
+
+  .debate-rounds select {
+    font-size: 14px;
+    padding: 4px 6px;
+  }
+
+  .debate-session-new-btn {
+    padding: 8px;
+    min-height: 36px;
+  }
+
+  .debate-session-item {
+    padding: 8px;
+    min-height: 40px;
+  }
+
+  .debate-session-action-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

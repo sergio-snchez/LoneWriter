@@ -10,6 +10,12 @@
 }
 
 :root {
+  /* Safe areas */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
   /* Core palette */
   --bg-base:       #23252e;
   --bg-surface:    #2b2e3a;
@@ -33,6 +39,7 @@
   /* Status colors */
   --green:  #5cb98a;
   --red:    #e07070;
+  --gold:   #e0b870;
   --blue:   #6b9fd4;
 
   /* Shadows */
@@ -66,6 +73,7 @@ body {
   font-size: 14px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Scrollbar */
@@ -162,6 +170,7 @@ body {
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 7px 14px;
   border-radius: var(--radius-sm);
@@ -188,6 +197,20 @@ body {
   border-color: rgba(255,255,255,0.15);
 }
 
+.btn-icon {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.btn-icon svg {
+  flex-shrink: 0;
+}
+
 /* Search bar */
 .search-bar {
   display: flex;
@@ -205,8 +228,57 @@ body {
   border: none;
   outline: none;
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 14px;
   font-family: 'Inter', sans-serif;
   width: 100%;
 }
 .search-bar input::placeholder { color: var(--text-muted); }
+
+/* ---- Tooltip ---- */
+.tooltip-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip-content {
+  padding: 5px 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: normal;
+  max-width: 280px;
+  text-align: center;
+  z-index: 9999;
+  pointer-events: none;
+  box-shadow: var(--shadow-sm);
+  line-height: 1.4;
+}
+
+/* ============================================
+   RESPONSIVE – MOBILE (< 768px)
+   ============================================ */
+@media (max-width: 767px) {
+  .section-title {
+    font-size: 20px;
+  }
+
+  .section-subtitle {
+    font-size: 14px;
+  }
+
+  .badge {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+
+  .tag {
+    font-size: 12px;
+    padding: 4px 12px;
+  }
+
+  .card {
+    border-radius: var(--radius-md);
+  }
+}
