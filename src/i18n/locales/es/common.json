@@ -1,0 +1,60 @@
+{
+  "botones": {
+    "cancelar": "Cancelar",
+    "guardar": "Guardar",
+    "eliminar": "Eliminar",
+    "confirmar": "Confirmar",
+    "aceptar": "Aceptar",
+    "cerrar": "Cerrar",
+    "entendido": "Entendido",
+    "copiar": "Copiar",
+    "editar": "Editar",
+    "limpiar": "Limpiar",
+    "añadir": "Añadir",
+    "buscar": "Buscar",
+    "exportar": "Exportar",
+    "importar": "Importar",
+    "restaurar": "Restaurar",
+    "continuar": "Continuar"
+  },
+  "modales": {
+    "titulo_confirmar": "Confirmar",
+    "titulo_entrada_requerida": "Entrada requerida",
+    "titulo_nueva_novela": "Nueva Novela",
+    "texto_nueva_novela": "Introduce el título de tu próxima gran historia:",
+    "placeholder": "Escribe aquí..."
+  },
+  "placeholders": {
+    "escribe_aqui": "Escribe aquí...",
+    "seleccionar": "Seleccionar..."
+  },
+  "estados": {
+    "cargando": "Cargando..."
+  },
+  "sidebar": {
+    "expandir": "Expandir menú",
+    "colapsar": "Colapsar menú",
+    "novela_activa": "Novela activa",
+    "version": "LoneWriter v1.4-multilenguaje",
+    "nav": {
+      "editor_label": "Estructura narrativa",
+      "editor_sublabel": "Actos, capítulos y escenas",
+      "compendium_label": "Compendio",
+      "compendium_sublabel": "Personajes, lore y mundo",
+      "resources_label": "Archivos de referencia",
+      "resources_sublabel": "Base de conocimiento"
+    }
+  },
+  "editor_toolbar": {
+    "negrita": "Negrita",
+    "cursiva": "Cursiva",
+    "titulo_1": "Título 1",
+    "titulo_2": "Título 2",
+    "lista": "Lista",
+    "lista_numerada": "Lista numerada",
+    "cita": "Cita",
+    "deshacer": "Deshacer",
+    "rehacer": "Rehacer",
+    "limpiar_formato": "Limpiar formato"
+  }
+}

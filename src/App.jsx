@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation, Trans } from 'react-i18next'
 import { 
   Sparkles, Loader2, Download, Upload, FileDown, 
   ChevronDown, BookOpen, CheckCircle2, Plus, Trash2, PenLine,
-  Settings, Heart
+  Settings, Heart, Menu, X
 } from 'lucide-react'
+import './i18n/i18n'
 import Sidebar from './components/Sidebar'
 import AIPanel from './components/AIPanel'
 import SettingsModal from './components/SettingsModal'
@@ -20,8 +22,11 @@ import { db } from './db/database'
 import './App.css'
 
 export default function App() {
+  const { t } = useTranslation('app')
+  const { t: tc } = useTranslation('common')
   const [activeView, setActiveView] = useState('editor')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
   const [aiPanelTab, setAiPanelTab] = useState('rewrite')
 
@@ -54,9 +59,9 @@ export default function App() {
     const handleCloudVersion = (e) => {
       const { date } = e.detail;
       openModal('confirm', {
-        title: 'Versión en la nube disponible',
-        message: `Se ha detectado una copia de seguridad en Google Drive más reciente (${new Date(date).toLocaleString()}). ¿Deseas restaurar tus proyectos ahora? Se sobrescribirá la base de datos local.`,
-        confirmLabel: 'Restaurar ahora',
+        title: t('restaurar_nube.titulo'),
+        message: t('restaurar_nube.mensaje', { date: new Date(date).toLocaleString() }),
+        confirmLabel: t('restaurar_nube.boton'),
         onConfirm: async () => {
           if (isRestoring) return;
           isRestoring = true;
@@ -75,8 +80,8 @@ export default function App() {
                localStorage.setItem('lw_last_cloud_sync', date);
                await refreshAfterRestore();
              }
-          } catch (err) {
-            alert('Error al restaurar: ' + err.message);
+           } catch (err) {
+             alert(t('error_restaurar') + err.message);
           } finally {
             isRestoring = false;
           }
@@ -106,10 +111,10 @@ export default function App() {
     e.stopPropagation();
     const project = allNovels.find(n => n.id === id);
     openModal('confirm', {
-      title: 'Borrar proyecto',
-      message: `¿Seguro que quieres borrar "${project?.title}" permanentemente?`,
+      title: t('eliminar_proyecto.titulo'),
+      message: t('eliminar_proyecto.mensaje', { title: project?.title }),
       isDanger: true,
-      confirmLabel: 'Eliminar Proyecto',
+      confirmLabel: t('eliminar_proyecto.boton'),
       onConfirm: () => deleteNovel(id)
     });
     setMenuOpen(false);
@@ -126,29 +131,29 @@ export default function App() {
               <div className="welcome-screen__icon">
                 <PenLine size={48} />
               </div>
-              <h1 className="welcome-screen__title">Bienvenido a LoneWriter</h1>
+              <h1 className="welcome-screen__title">{t('bienvenida.titulo')}</h1>
               <p className="welcome-screen__subtitle">
-                Tu espacio personal para dar vida a grandes historias.
+                {t('bienvenida.subtitulo')}
               </p>
               <button
                 className="btn btn-primary welcome-screen__btn"
                 onClick={handleCreateProject}
               >
                 <Plus size={16} />
-                Nueva Novela
+                {t('bienvenida.boton_nueva')}
               </button>
             </header>
 
             {allNovels.length > 0 && (
               <section className="welcome-screen__recent">
                 <div className="recent-header">
-                  <h2 className="recent-title">Continuar escribiendo</h2>
-                  <span className="recent-count">{allNovels.length} proyectos totales</span>
+                  <h2 className="recent-title">{t('bienvenida.continuar')}</h2>
+                  <span className="recent-count">{t('bienvenida.proyectos_total', { count: allNovels.length })}</span>
                 </div>
                 <div className="recent-grid">
                   {recentNovels.map(n => {
                     const pct = Math.round(((n.wordCount || 0) / (n.targetWords || 100000)) * 100);
-                    const lastDate = new Date(n.lastEdited || 0).toLocaleDateString('es-ES', {
+                    const lastDate = new Date(n.lastEdited || 0).toLocaleDateString(undefined, {
                       day: 'numeric', month: 'short', year: 'numeric'
                     });
                     
@@ -158,17 +163,17 @@ export default function App() {
                           <BookOpen size={20} className="project-card__icon" />
                           <div className="project-card__meta">
                             <h3 className="project-card__title">{n.title}</h3>
-                            <span className="project-card__date">Editado el {lastDate}</span>
+                            <span className="project-card__date">{t('bienvenida.editado_el', { date: lastDate })}</span>
                           </div>
                         </div>
                         <div className="project-card__stats">
                           <div className="project-card__stat">
-                            <span className="stat-value">{n.wordCount?.toLocaleString('es-ES') || 0}</span>
-                            <span className="stat-label">palabras</span>
+                            <span className="stat-value">{n.wordCount?.toLocaleString() || 0}</span>
+                            <span className="stat-label">{t('bienvenida.palabras')}</span>
                           </div>
                           <div className="project-card__stat">
                             <span className="stat-value">{pct}%</span>
-                            <span className="stat-label">completado</span>
+                            <span className="stat-label">{t('bienvenida.completado')}</span>
                           </div>
                         </div>
                         <div className="project-card__progress">
@@ -183,7 +188,7 @@ export default function App() {
                   {allNovels.length > 5 && (
                     <div className="project-card project-card--more" onClick={() => setMenuOpen(true)}>
                       <div className="more-content">
-                        <span>Ver todos los proyectos</span>
+                        <span>{t('bienvenida.ver_todos')}</span>
                         <ChevronDown size={14} />
                       </div>
                     </div>
@@ -194,10 +199,10 @@ export default function App() {
 
             <footer style={{ marginTop: 'auto', paddingTop: '60px', paddingBottom: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
               <p style={{ margin: 0, fontSize: '13px' }}>
-                LoneWriter v1.3-oráculo
+                {t('bienvenida.version')}
               </p>
               <p style={{ margin: '4px 0 0 0', fontSize: '12px', opacity: 0.7 }}>
-                Diseñado y desarrollado con ♥ por <strong>Sergio Sánchez</strong> con Antigravity.
+                <Trans i18nKey="bienvenida.creditos" ns="app" components={[<strong />]} />
               </p>
               <div style={{ marginTop: '20px' }}>
                 <a 
@@ -208,7 +213,7 @@ export default function App() {
                   style={{ fontSize: '12px', gap: '8px', opacity: 0.8 }}
                 >
                   <Heart size={14} />
-                  Apoyar el proyecto (Invítame a un café)
+                  {t('bienvenida.apoyar')}
                 </a>
               </div>
             </footer>
@@ -224,8 +229,13 @@ export default function App() {
     }
   }
 
-  const handleExportProject = () => {
-    ExportService.exportProject();
+  const handleExportProject = async () => {
+    try {
+      await ExportService.exportProject();
+    } catch (error) {
+      console.error('Error exporting project:', error);
+      alert(t('error_exportar') + error.message);
+    }
     setMenuOpen(false);
   }
 
@@ -259,7 +269,7 @@ export default function App() {
     return (
       <div className="app-loading">
         <Loader2 className="spinner" />
-        <span>Cargando LoneWriter...</span>
+        <span>{t('cargando')}</span>
       </div>
     );
   }
@@ -284,13 +294,13 @@ export default function App() {
               className={`btn btn-ghost project-menu-btn ${menuOpen ? 'active' : ''}`}
               onClick={() => setMenuOpen(!menuOpen)}
             >
-              Proyecto
+              {t('menu.proyecto')}
               <ChevronDown size={14} />
             </button>
             
             {menuOpen && (
               <div className="project-dropdown">
-                <div className="dropdown-label">Mis Proyectos</div>
+                <div className="dropdown-label">{t('menu.mis_proyectos')}</div>
                 {allNovels.map(n => (
                   <div key={n.id} className="project-item-row">
                     <button 
@@ -301,7 +311,7 @@ export default function App() {
                       <span style={{flex: 1}}>{n.title}</span>
                       {activeNovel?.id === n.id && <CheckCircle2 size={12} className="text-success" />}
                     </button>
-                    <Tooltip content="Eliminar proyecto">
+                    <Tooltip content={t('menu.eliminar_tooltip')}>
                       <button 
                         className="project-delete-btn" 
                         onClick={(e) => handleDeleteProject(e, n.id)}
@@ -315,56 +325,56 @@ export default function App() {
                 <div className="dropdown-divider" />
                 <button onClick={() => { handleCreateProject(); setMenuOpen(false); }}>
                   <Plus size={14} />
-                  Nueva Novela...
+                  {t('menu.nueva_novela')}
                 </button>
                 <button onClick={() => { handleImportClick(); setMenuOpen(false); }}>
                   <Upload size={14} />
-                  Importar Proyectos (.lwrt)
+                  {t('menu.importar')}
                 </button>
                 <button onClick={() => { handleExportProject(); setMenuOpen(false); }}>
                   <Download size={14} />
-                  Exportar Proyectos (.lwrt)
+                  {t('menu.exportar_lwrt')}
                 </button>
                 <div className="dropdown-divider" />
                 <button onClick={() => { handleExportFullWord(); setMenuOpen(false); }}>
                   <FileDown size={14} />
-                  Exportar Manuscrito (.docx)
+                  {t('menu.exportar_docx')}
                 </button>
               </div>
             )}
           </div>
           <span className="app-topbar__divider">|</span>
-          <span className="app-topbar__novel">{activeNovel?.title || 'Sin título'}</span>
+          <span className="app-topbar__novel">{activeNovel?.title || t('menu.sin_titulo')}</span>
         </div>
-        <Tooltip content="Ver estadísticas detalladas">
+        <Tooltip content={t('topbar.estadisticas_tooltip')}>
           <div 
             className="app-topbar__center" 
             onClick={() => window.dispatchEvent(new CustomEvent('toggle-stats'))}
             style={{ cursor: 'pointer' }}
           >
             <div className="app-topbar__word-count">
-              <span className="app-topbar__word-num">{activeNovel?.wordCount?.toLocaleString('es-ES') || 0}</span>
-              <span className="app-topbar__word-label">palabras escritas</span>
+              <span className="app-topbar__word-num">{activeNovel?.wordCount?.toLocaleString() || 0}</span>
+              <span className="app-topbar__word-label">{t('topbar.palabras_escritas')}</span>
             </div>
             <div className="app-topbar__divider-v" />
             <div className="app-topbar__word-count">
               <span className="app-topbar__word-num">{wordPct}%</span>
-              <span className="app-topbar__word-label">del objetivo</span>
+              <span className="app-topbar__word-label">{t('topbar.del_objetivo')}</span>
             </div>
           </div>
         </Tooltip>
         <div className="app-topbar__right">
-          <Tooltip content="Asistente IA">
+          <Tooltip content={t('topbar.ia')}>
             <button
               className={`btn app-topbar__ai-btn ${aiPanelOpen ? 'app-topbar__ai-btn--active' : ''}`}
               id="topbar-ai-btn"
               onClick={() => setAiPanelOpen(o => !o)}
             >
               <Sparkles size={14} />
-              IA
+              {t('topbar.ia')}
             </button>
           </Tooltip>
-          <Tooltip content="Configuración">
+          <Tooltip content={t('topbar.configuracion')}>
             <button 
               className="btn btn-ghost btn-icon topbar-settings-btn" 
               onClick={() => {
@@ -387,12 +397,45 @@ export default function App() {
 
       {/* Main layout */}
       <div className="app-body">
-        <Sidebar
-          active={activeView}
-          onNavigate={setActiveView}
-          collapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed(c => !c)}
-        />
+        {/* Desktop sidebar */}
+        <div className="app-body__sidebar-desktop">
+          <Sidebar
+            active={activeView}
+            onNavigate={(view) => { setActiveView(view); setMobileDrawerOpen(false); }}
+            collapsed={sidebarCollapsed}
+            onToggle={() => setSidebarCollapsed(c => !c)}
+          />
+        </div>
+
+        {/* Mobile hamburger button */}
+        <button 
+          className="mobile-menu-btn"
+          onClick={() => setMobileDrawerOpen(true)}
+          aria-label={t('menu.abrir_navegacion')}
+        >
+          <Menu size={22} />
+        </button>
+
+        {/* Mobile drawer overlay */}
+        {mobileDrawerOpen && (
+          <div className="mobile-drawer-overlay" onClick={() => setMobileDrawerOpen(false)}>
+            <div className="mobile-drawer" onClick={(e) => e.stopPropagation()}>
+              <div className="mobile-drawer__header">
+                <span className="mobile-drawer__title">LoneWriter</span>
+                <button className="mobile-drawer__close" onClick={() => setMobileDrawerOpen(false)}>
+                  <X size={20} />
+                </button>
+              </div>
+              <Sidebar
+                active={activeView}
+                onNavigate={(view) => { setActiveView(view); setMobileDrawerOpen(false); }}
+                collapsed={false}
+                onToggle={() => setMobileDrawerOpen(false)}
+              />
+            </div>
+          </div>
+        )}
+
         <main className="app-main">
           {renderView()}
         </main>

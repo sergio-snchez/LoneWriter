@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import i18n from '../i18n/i18n';
 import { db } from '../db/database';
 import { ExportService } from '../services/exportService';
 import { GoogleDriveService } from '../services/googleDriveService';
@@ -145,9 +146,8 @@ export const NovelProvider = ({ children }) => {
       for (const table of db.tables) {
         data.tables[table.name] = await table.toArray();
       }
-      const json = JSON.stringify(data);
       
-      await GoogleDriveService.saveBackup(json);
+      await GoogleDriveService.saveBackup(data);
       
       const now = new Date().toISOString();
       setLastCloudSync(now);
@@ -320,7 +320,7 @@ export const NovelProvider = ({ children }) => {
     try {
       const novelId = await db.novels.add({
         title,
-        author: 'Autor',
+        author: i18n.t('app:autor_defecto'),
         status: 'Borrador',
         wordCount: 0,
         targetWords: 100000,
@@ -329,7 +329,7 @@ export const NovelProvider = ({ children }) => {
         createdAt: new Date().toISOString()
       });
       // Add an initial Act
-      await addAct(novelId, 'Acto I: Inicio');
+      await addAct(novelId, i18n.t('editor:acto_inicial'));
       await refreshAllNovels();
       await switchNovel(novelId);
       setPendingSync(true);

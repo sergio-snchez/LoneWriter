@@ -1,0 +1,102 @@
+{
+  "estado": {
+    "finalizado": "Finalizado",
+    "en_progreso": "En progreso",
+    "borrador": "Borrador",
+    "sin_comenzar": "Sin comenzar",
+    "opciones": ["Sin comenzar", "Borrador", "En progreso", "Finalizado"]
+  },
+  "editable": {
+    "doble_clic": "Doble clic para editar"
+  },
+  "escena": {
+    "sin_pov": "Sin POV",
+    "añadir_escena": "Añadir escena"
+  },
+  "capitulo": {
+    "numero": "Cap. {{num}}",
+    "palabras": "{{count}} pal.",
+    "añadir": "Añadir capítulo",
+    "eliminar_titulo": "Eliminar Capítulo",
+    "eliminar_mensaje": "¿Seguro que quieres eliminar este capítulo? Se borrarán todas sus escenas.",
+    "eliminar_boton": "Eliminar Capítulo"
+  },
+  "acto": {
+    "capitulos": "{{completed}}/{{total}} cap.",
+    "palabras": "{{count}} pal.",
+    "añadir": "Añadir acto",
+    "eliminar_titulo": "Eliminar Acto",
+    "eliminar_mensaje": "¿Seguro que quieres eliminar este acto? Se borrarán todos sus capítulos y escenas.",
+    "eliminar_boton": "Eliminar Acto"
+  },
+  "eliminar_escena": {
+    "titulo": "Eliminar Escena",
+    "mensaje": "¿Seguro que quieres eliminar esta escena permanentemente?",
+    "boton": "Eliminar Escena"
+  },
+  "nuevo": {
+    "acto_titulo": "Nuevo Acto",
+    "acto_mensaje": "Introduce el título para el nuevo acto:",
+    "acto_placeholder": "Acto II: El conflicto",
+    "acto_boton": "Añadir Acto",
+    "capitulo_titulo": "Nuevo Capítulo",
+    "capitulo_mensaje": "Introduce el título para el nuevo capítulo:",
+    "capitulo_placeholder": "Capítulo...",
+    "capitulo_boton": "Añadir Capítulo",
+    "escena_titulo": "Nueva Escena",
+    "escena_mensaje": "Introduce el título para la nueva escena:",
+    "escena_placeholder": "Escena...",
+    "escena_boton": "Añadir Escena"
+  },
+  "arbol": {
+    "titulo": "Estructura narrativa",
+    "subtitulo": "{{acts}} actos · {{chapters}} capítulos · {{scenes}} escenas",
+    "expandir_todo": "Expandir todo",
+    "contraer_todo": "Contraer todo",
+    "acto": "Acto"
+  },
+  "drag": {
+    "acto": "Acto",
+    "capitulo": "Capítulo",
+    "escena": "Escena"
+  },
+  "editor": {
+    "exportar_word": "Exportar escena a Word",
+    "word": "Word",
+    "sin_pov": "Sin POV",
+    "tooltip_oraculo": "Analiza el párrafo donde está el cursor tras 3 segundos de inactividad",
+    "sin_coincidencias": "Sin coincidencias halladas",
+    "coincidencias": "Coincidencias halladas en este párrafo",
+    "contradiccion": "Contradicción en este párrafo",
+    "palabras_escena": "{{count}} palabras en esta escena",
+    "meta_escena": "Meta: {{count}} palabras por escena",
+    "seleccionar_escena": "Selecciona una escena para comenzar a escribir"
+  },
+  "estadisticas": {
+    "titulo": "Estadísticas del proyecto",
+    "resumen": "{{words}} palabras escritas · {{streak}}",
+    "sin_escribir_hoy": "No has escrito hoy",
+    "dias_fuego": "🔥 {{count}} días",
+    "objetivo_total": "Objetivo total",
+    "racha_dias": "Racha días",
+    "escenas_listas": "Escenas listas",
+    "palabras_totales": "Palabras totales",
+    "progreso_palabras": "Progreso de palabras",
+    "escenas_completadas": "Escenas completadas"
+  },
+  "objetivos": {
+    "establecer": "Establecer Objetivo",
+    "meta_personalizada": "Meta personalizada...",
+    "plantillas": {
+      "micro_relato": "Micro-relato",
+      "cuento_corto": "Cuento corto",
+      "novela_corta": "Novela Corta",
+      "novela_estandar": "Novela Estándar",
+      "novela_fantasia": "Novela Fantasía"
+    },
+    "plantilla_palabras": "{{count}} pal.",
+    "plantilla_meta": "{{scenes}} escenas · {{wps}} pal/escena",
+    "plantilla_capitulos": "{{count}} cap."
+  },
+  "acto_inicial": "Acto I: Inicio"
+}
