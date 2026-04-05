@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import i18n from '../i18n/i18n';
 import { db } from '../db/database';
 import { useNovel } from './NovelContext';
 import { createDebouncedEntityDetector, parseOracleResponse } from '../services/entityDetector';
@@ -34,10 +35,10 @@ const DEFAULT_PROMPTS = {
 export const DEFAULT_DEBATE_AGENTS = [
   {
     id: 'editor',
-    name: 'Editor',
+    name: i18n.t('ai:agente_editor_nombre'),
     color: '#6b9fd4',
     initials: 'ED',
-    desc: 'Estructura y narrativa',
+    desc: i18n.t('ai:agente_editor_desc'),
     active: true,
     systemPrompt: `Eres un editor literario experto especializado en narrativa de ficción. Tu rol en este foro es analizar la estructura narrativa, el arco de personajes, el ritmo de la trama y la coherencia del mundo ficticio. Quando respondas:
 - Sé constructivo y específico. Señala exactamente qué funciona y qué no.
@@ -48,10 +49,10 @@ export const DEFAULT_DEBATE_AGENTS = [
   },
   {
     id: 'critic',
-    name: 'Crítico',
+    name: i18n.t('ai:agente_critico_nombre'),
     color: '#e07070',
     initials: 'CR',
-    desc: 'Análisis y valoración',
+    desc: i18n.t('ai:agente_critico_desc'),
     active: true,
     systemPrompt: `Eres un crítico literario con amplia experiencia en narrativa española e internacional. Tu rol es ofrecer una valoración analítica y honesta del texto, sin suavizar los problemas pero tampoco siendo innecesariamente duro. Cuando respondas:
 - Aporta perspectiva comparativa (referencias a otros autores o técnicas cuando sea relevante).
@@ -62,10 +63,10 @@ export const DEFAULT_DEBATE_AGENTS = [
   },
   {
     id: 'corrector',
-    name: 'Corrector',
+    name: i18n.t('ai:agente_corrector_nombre'),
     color: '#5cb98a',
     initials: 'CO',
-    desc: 'Gramática y estilo',
+    desc: i18n.t('ai:agente_corrector_desc'),
     active: true,
     systemPrompt: `Eres un corrector de estilo especializado en narrativa literaria en español. Tu rol es identificar problemas de gramática, ortografía, puntuación, registro, y estilo a nivel de frase y párrafo. Cuando respondas:
 - Cita literalmente las frases problemáticas y propón la corrección exacta.
@@ -143,7 +144,7 @@ export const AIProvider = ({ children }) => {
         if (oldHistory.length > 0) {
           const legacySession = {
             novelId: activeNovel.id,
-            title: 'Debate Anterior',
+            title: i18n.t('ai:debate_anterior'),
             updatedAt: new Date().toISOString(),
             messages: oldHistory
           };
@@ -164,7 +165,7 @@ export const AIProvider = ({ children }) => {
       } else {
         const newSession = {
           novelId: activeNovel.id,
-          title: 'Nuevo debate',
+          title: i18n.t('ai:nuevo_debate'),
           updatedAt: new Date().toISOString(),
           messages: []
         };
@@ -260,6 +261,17 @@ export const AIProvider = ({ children }) => {
     setOracleHistory(prev => prev.filter(e => e.id !== entryId));
   };
 
+  const toggleOracleCorrected = async (entryId) => {
+    if (!activeNovel) return;
+    const entry = oracleHistory.find(e => e.id === entryId);
+    if (!entry) return;
+    const newCorrectedState = !entry.isCorrected;
+    await db.oracleEntries.update(entryId, { isCorrected: newCorrectedState });
+    setOracleHistory(prev => prev.map(e => e.id === entryId ? { ...e, isCorrected: newCorrectedState } : e));
+  };
+
+  const checkedEntries = new Set(oracleHistory.filter(e => e.isCorrected).map(e => e.id));
+
   // Entity detection + traffic light status (only current paragraph/selection)
   useEffect(() => {
     if (!activeNovel || !oracleText) {
@@ -337,10 +349,10 @@ export const AIProvider = ({ children }) => {
     if (!activeNovel) return;
     let sessionTitle = title;
     if (!sessionTitle && scene) {
-      sessionTitle = scene.chapterNumber ? `Cap. ${scene.chapterNumber} / ${scene.sceneTitle}` : scene.sceneTitle || 'Nuevo debate';
+      sessionTitle = scene.chapterNumber ? `Cap. ${scene.chapterNumber} / ${scene.sceneTitle}` : scene.sceneTitle || i18n.t('ai:nuevo_debate');
     }
     if (!sessionTitle) {
-      sessionTitle = 'Nuevo debate';
+      sessionTitle = i18n.t('ai:nuevo_debate');
     }
     const session = {
       novelId: activeNovel.id,
@@ -377,7 +389,7 @@ export const AIProvider = ({ children }) => {
         } else {
           setActiveSessionId(null); 
           // Async call outside of set state, but we can just use setTimeout to break the synchronous flow
-          setTimeout(() => addDebateSession('Nuevo debate'), 0);
+          setTimeout(() => addDebateSession(i18n.t('ai:nuevo_debate')), 0);
         }
       }
       return filtered;
@@ -479,7 +491,7 @@ export const AIProvider = ({ children }) => {
     selection, setSelection,
     oracleText, setOracleText,
     lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite,
-    oracleHistory, addOracleEntry, clearOracleHistory, deleteOracleEntry,
+    oracleHistory, addOracleEntry, clearOracleHistory, deleteOracleEntry, toggleOracleCorrected, checkedEntries,
     oracleStatus, checkOracleResponse, resetOracleStatus, markOracleContradiction,
     debateAgents, debateHistory,
     addDebateMessage, clearDebateHistory,

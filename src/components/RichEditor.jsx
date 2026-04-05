@@ -5,6 +5,7 @@ import {
   Heading1, Heading2, Undo, Redo, Eraser
 } from 'lucide-react';
 import { useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAI } from '../context/AIContext';
 import { Tooltip } from './Tooltip';
 import './RichEditor.css';
@@ -27,6 +28,7 @@ function createDebouncedOracleScan(callback, delay = 3000) {
 }
 
 export default function RichEditor({ content, onChange, placeholder }) {
+  const { t } = useTranslation('common')
   const { setSelection, setOracleText } = useAI();
   const editorRef = useRef(null);
   const oracleScanRef = useRef(null);
@@ -100,7 +102,7 @@ export default function RichEditor({ content, onChange, placeholder }) {
     <div className="rich-editor">
       <div className="rich-editor__toolbar">
         <div className="toolbar-group">
-          <Tooltip content="Negrita">
+          <Tooltip content={t('editor_toolbar.negrita')}>
             <button
               onClick={() => editor.chain().focus().toggleBold().run()}
               disabled={!editor.can().chain().focus().toggleBold().run()}
@@ -109,7 +111,7 @@ export default function RichEditor({ content, onChange, placeholder }) {
               <Bold size={16} />
             </button>
           </Tooltip>
-          <Tooltip content="Cursiva">
+          <Tooltip content={t('editor_toolbar.cursiva')}>
             <button
               onClick={() => editor.chain().focus().toggleItalic().run()}
               disabled={!editor.can().chain().focus().toggleItalic().run()}
@@ -123,7 +125,7 @@ export default function RichEditor({ content, onChange, placeholder }) {
         <div className="toolbar-divider" />
 
         <div className="toolbar-group">
-          <Tooltip content="Título 1">
+          <Tooltip content={t('editor_toolbar.titulo_1')}>
             <button
               onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
               className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}
@@ -131,7 +133,7 @@ export default function RichEditor({ content, onChange, placeholder }) {
               <Heading1 size={16} />
             </button>
           </Tooltip>
-          <Tooltip content="Título 2">
+          <Tooltip content={t('editor_toolbar.titulo_2')}>
             <button
               onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
               className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
@@ -144,7 +146,7 @@ export default function RichEditor({ content, onChange, placeholder }) {
         <div className="toolbar-divider" />
 
         <div className="toolbar-group">
-          <Tooltip content="Lista">
+          <Tooltip content={t('editor_toolbar.lista')}>
             <button
               onClick={() => editor.chain().focus().toggleBulletList().run()}
               className={editor.isActive('bulletList') ? 'is-active' : ''}
@@ -152,7 +154,7 @@ export default function RichEditor({ content, onChange, placeholder }) {
               <List size={16} />
             </button>
           </Tooltip>
-          <Tooltip content="Lista numerada">
+          <Tooltip content={t('editor_toolbar.lista_numerada')}>
             <button
               onClick={() => editor.chain().focus().toggleOrderedList().run()}
               className={editor.isActive('orderedList') ? 'is-active' : ''}
@@ -160,7 +162,7 @@ export default function RichEditor({ content, onChange, placeholder }) {
               <ListOrdered size={16} />
             </button>
           </Tooltip>
-          <Tooltip content="Cita">
+          <Tooltip content={t('editor_toolbar.cita')}>
             <button
               onClick={() => editor.chain().focus().toggleBlockquote().run()}
               className={editor.isActive('blockquote') ? 'is-active' : ''}
@@ -173,17 +175,17 @@ export default function RichEditor({ content, onChange, placeholder }) {
         <div className="toolbar-divider" />
 
         <div className="toolbar-group">
-          <Tooltip content="Deshacer">
+          <Tooltip content={t('editor_toolbar.deshacer')}>
             <button onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}>
               <Undo size={16} />
             </button>
           </Tooltip>
-          <Tooltip content="Rehacer">
+          <Tooltip content={t('editor_toolbar.rehacer')}>
             <button onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}>
               <Redo size={16} />
             </button>
           </Tooltip>
-          <Tooltip content="Limpiar formato">
+          <Tooltip content={t('editor_toolbar.limpiar_formato')}>
             <button onClick={() => editor.chain().focus().unsetAllMarks().run()}>
               <Eraser size={16} />
             </button>

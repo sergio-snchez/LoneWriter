@@ -1,0 +1,47 @@
+{
+  "restaurar_nube": {
+    "titulo": "Cloud version available",
+    "mensaje": "A more recent backup has been detected on Google Drive ({{date}}). Would you like to restore your projects now? This will overwrite the local database.",
+    "boton": "Restore now"
+  },
+  "error_restaurar": "Error restoring: ",
+  "eliminar_proyecto": {
+    "titulo": "Delete project",
+    "mensaje": "Are you sure you want to permanently delete \"{{title}}\"?",
+    "boton": "Delete Project"
+  },
+  "bienvenida": {
+    "titulo": "Welcome to LoneWriter",
+    "subtitulo": "Your personal space to bring great stories to life.",
+    "boton_nueva": "New Novel",
+    "continuar": "Continue writing",
+    "proyectos_total": "{{count}} total projects",
+    "editado_el": "Edited on {{date}}",
+    "palabras": "words",
+    "completado": "completed",
+    "ver_todos": "View all projects",
+    "version": "LoneWriter v1.4-multilanguage",
+    "creditos": "Designed and developed with ♥ by <0>Sergio Sánchez</0> with Antigravity.",
+    "apoyar": "Support the project (Buy me a coffee)"
+  },
+  "error_exportar": "Error exporting project: ",
+  "cargando": "Loading LoneWriter...",
+  "menu": {
+    "proyecto": "Project",
+    "mis_proyectos": "My Projects",
+    "eliminar_tooltip": "Delete project",
+    "nueva_novela": "New Novel...",
+    "importar": "Import Projects (.lwrt)",
+    "exportar_lwrt": "Export Projects (.lwrt)",
+    "exportar_docx": "Export Manuscript (.docx)",
+    "sin_titulo": "Untitled"
+  },
+  "topbar": {
+    "estadisticas_tooltip": "View detailed statistics",
+    "palabras_escritas": "words written",
+    "del_objetivo": "of goal",
+    "ia": "AI",
+    "configuracion": "Settings"
+  },
+  "autor_defecto": "Author"
+}

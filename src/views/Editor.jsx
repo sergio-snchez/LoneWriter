@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   BookOpen, ChevronDown, ChevronRight, Plus, Eye, Edit3,
   FileText, Clock, CheckCircle2, Circle,
@@ -41,12 +42,15 @@ const STATUS_MAP = {
 const STATUS_OPTIONS = ['Sin comenzar', 'Borrador', 'En progreso', 'Finalizado'];
 
 function StatusBadge({ status }) {
+  const { t } = useTranslation('editor')
   const map = STATUS_MAP[status] || STATUS_MAP['Sin comenzar']
-  return <span className={`badge ${map.badge}`}>{status}</span>
+  const statusKey = status.toLowerCase().replace(/ /g, '_')
+  return <span className={`badge ${map.badge}`}>{t(`estado.${statusKey}`)}</span>
 }
 
 // ---- Editable Title ----
 function EditableTitle({ title, onSave, className, isPlayfair, isBold }) {
+  const { t } = useTranslation('common')
   const [isEditing, setIsEditing] = useState(false);
   const [val, setVal] = useState(title);
 
@@ -82,7 +86,7 @@ function EditableTitle({ title, onSave, className, isPlayfair, isBold }) {
   }
 
   return (
-    <Tooltip content="Doble clic para editar">
+    <Tooltip content={t('editable.doble_clic')}>
       <span 
         className={className} 
         onDoubleClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
@@ -96,6 +100,7 @@ function EditableTitle({ title, onSave, className, isPlayfair, isBold }) {
 // ---- Sortable Components ----
 
 function SortableSceneRow({ scene, chapterIndex, sceneIndex, isActive, onSelect, onDelete, onUpdate }) {
+  const { t } = useTranslation('editor')
   const {
     attributes,
     listeners,
@@ -131,7 +136,7 @@ function SortableSceneRow({ scene, chapterIndex, sceneIndex, isActive, onSelect,
           className="scene-row__title" 
           onSave={(newTitle) => onUpdate(scene.id, { title: newTitle })} 
         />
-        <span className="scene-row__pov">{scene.pov ? `POV: ${scene.pov}` : 'Sin POV'}</span>
+        <span className="scene-row__pov">{scene.pov ? `POV: ${scene.pov}` : t('escena.sin_pov')}</span>
       </div>
       <div className="scene-row__meta">
         <StatusBadge status={scene.status} />
@@ -149,6 +154,7 @@ function SortableSceneRow({ scene, chapterIndex, sceneIndex, isActive, onSelect,
 }
 
 function SortableChapterAccordion({ chapter, chapterIndex, actIndex, isOpen, onToggle, activeSceneId, onSelectScene, onAddScene, onDeleteScene, onDeleteChapter, onUpdateChapter, onUpdateScene }) {
+  const { t } = useTranslation('editor')
     const {
     attributes,
     listeners,
@@ -184,12 +190,12 @@ function SortableChapterAccordion({ chapter, chapterIndex, actIndex, isOpen, onT
           <div className="chapter-accordion__title-group">
             <div className="chapter-accordion__num-row">
               <span className="chapter-accordion__num">
-                Cap. {chapterIndex + 1}
+                {t('capitulo.numero', { num: chapterIndex + 1 })}
                 {isChapterCompleted && (
                   <CheckCircle2 size={12} className="chapter-accordion__status-icon" />
                 )}
               </span>
-              <span className="chapter-accordion__words">{chapterWords.toLocaleString('es-ES')} pal.</span>
+              <span className="chapter-accordion__words">{t('capitulo.palabras', { count: chapterWords })}</span>
             </div>
             <EditableTitle 
               title={chapter.title} 
@@ -224,7 +230,7 @@ function SortableChapterAccordion({ chapter, chapterIndex, actIndex, isOpen, onT
           </SortableContext>
           <button className="chapter-accordion__add-scene btn btn-ghost" onClick={() => onAddScene(chapter.id)}>
             <Plus size={13} />
-            Añadir escena
+            {t('escena.añadir_escena')}
           </button>
         </div>
       )}
@@ -233,10 +239,11 @@ function SortableChapterAccordion({ chapter, chapterIndex, actIndex, isOpen, onT
 }
 
 function SortableActSection({ 
-  act, actIndex, isOpen, onToggle, activeSceneId, onSelectScene, 
+  act, actIndex, chapterOffset, isOpen, onToggle, activeSceneId, onSelectScene, 
   onAddChapter, onAddScene, onDeleteScene, onDeleteChapter, 
   onDeleteAct, onUpdateAct, onUpdateChapter, onUpdateScene, expandedIds, onSubToggle
 }) {
+  const { t } = useTranslation('editor')
   const completedChapters = act.chapters?.filter(c => 
     c.scenes?.length > 0 && c.scenes.every(s => s.status === 'Finalizado')
   ).length || 0;
@@ -284,8 +291,8 @@ function SortableActSection({
             </div>
           </div>
           <div className="act-section__meta">
-            <span className="act-section__chapters">{completedChapters}/{act.chapters?.length || 0} cap.</span>
-            <span className="act-section__words-total">{actWords.toLocaleString('es-ES')} pal.</span>
+            <span className="act-section__chapters">{t('acto.capitulos', { completed: completedChapters, total: act.chapters?.length || 0 })}</span>
+            <span className="act-section__words-total">{t('acto.palabras', { count: actWords })}</span>
           </div>
         </button>
         <button className="btn btn-ghost btn-icon act-delete-btn" onClick={() => onDeleteAct(act.id)}>
@@ -296,27 +303,30 @@ function SortableActSection({
       {isOpen && (
         <div className="act-section__body">
           <SortableContext items={act.chapters?.map(c => `ch-${c.id}`) || []} strategy={verticalListSortingStrategy}>
-            {act.chapters?.map((ch, chIdx) => (
-              <SortableChapterAccordion 
-                key={ch.id} 
-                chapter={ch} 
-                chapterIndex={chIdx}
-                actIndex={actIndex}
-                isOpen={expandedIds.has(`ch-${ch.id}`)} 
-                onToggle={() => onSubToggle(`ch-${ch.id}`)}
-                activeSceneId={activeSceneId}
-                onSelectScene={onSelectScene}
-                onAddScene={onAddScene}
-                onDeleteScene={onDeleteScene}
-                onDeleteChapter={onDeleteChapter}
-                onUpdateChapter={onUpdateChapter}
-                onUpdateScene={onUpdateScene}
-              />
-            ))}
+            {act.chapters?.map((ch, chIdx) => {
+                const globalChapterIndex = chapterOffset + chIdx;
+                return (
+                  <SortableChapterAccordion 
+                    key={ch.id} 
+                    chapter={ch} 
+                    chapterIndex={globalChapterIndex}
+                    actIndex={actIndex}
+                    isOpen={expandedIds.has(`ch-${ch.id}`)} 
+                    onToggle={() => onSubToggle(`ch-${ch.id}`)}
+                    activeSceneId={activeSceneId}
+                    onSelectScene={onSelectScene}
+                    onAddScene={onAddScene}
+                    onDeleteScene={onDeleteScene}
+                    onDeleteChapter={onDeleteChapter}
+                    onUpdateChapter={onUpdateChapter}
+                    onUpdateScene={onUpdateScene}
+                  />
+                );
+              })}
           </SortableContext>
           <button className="act-section__add-ch btn btn-ghost" onClick={() => onAddChapter(act.id)}>
             <Plus size={13} />
-            Añadir capítulo
+            {t('capitulo.añadir')}
           </button>
         </div>
       )}
@@ -325,12 +335,13 @@ function SortableActSection({
 }
 
 function ProgressBar({ value, max, label, sublabel, color }) {
+  const { t } = useTranslation('editor')
   const pct = max > 0 ? Math.round((value / max) * 100) : 0
   return (
     <div className="progress-item">
       <div className="progress-item__labels">
         <span className="progress-item__label">{label}</span>
-        <span className="progress-item__nums">{value?.toLocaleString('es-ES') || 0} / {max?.toLocaleString('es-ES') || 0}</span>
+        <span className="progress-item__nums">{value?.toLocaleString() || 0} / {max?.toLocaleString() || 0}</span>
       </div>
       <div className="progress-item__bar-bg">
         <div
@@ -338,12 +349,13 @@ function ProgressBar({ value, max, label, sublabel, color }) {
           style={{ width: `${pct}%`, background: color || 'var(--accent)' }}
         />
       </div>
-      {sublabel && <span className="progress-item__sublabel">{sublabel} completado</span>}
+      {sublabel && <span className="progress-item__sublabel">{pct}%</span>}
     </div>
   )
 }
 
 export default function EditorView() {
+  const { t } = useTranslation('editor')
   const { 
     acts, activeNovel, characters, updateScene, 
     addAct, deleteAct, updateAct, addChapter, deleteChapter, updateChapter, addScene, deleteScene,
@@ -360,6 +372,7 @@ export default function EditorView() {
   const [streak, setStreak] = useState(0)
   const [showGoalEditor, setShowGoalEditor] = useState(false)
   const [isStatsExpanded, setIsStatsExpanded] = useState(false)
+  const [mobileTreeOpen, setMobileTreeOpen] = useState(false)
   const goalEditorRef = useRef(null)
   const hoverTimerRef = useRef(null)
 
@@ -410,11 +423,11 @@ export default function EditorView() {
   }, [activeNovel?.id, getNovelUIExpanded]);
 
   const GOAL_TEMPLATES = [
-    { label: 'Micro-relato', words: 1000, targetScenes: 2, scenesRange: '1-2', wps: '500-1000' },
-    { label: 'Cuento corto', words: 5000, targetScenes: 5, scenesRange: '3-6', wps: '1000-1500' },
-    { label: 'Novela Corta', words: 30000, targetScenes: 25, scenesRange: '20-30', wps: '1000-1500' },
-    { label: 'Novela Estándar', words: 80000, targetScenes: 70, scenesRange: '60-80', wps: '1200-1500' },
-    { label: 'Novela Fantasía', words: 110000, targetScenes: 100, scenesRange: '80-100', wps: '1200-1500' },
+    { label: t('objetivos.plantillas.micro_relato'), words: 1000, targetScenes: 2, scenesRange: '1-2', wps: '500-1000', chaptersRange: '—' },
+    { label: t('objetivos.plantillas.cuento_corto'), words: 5000, targetScenes: 5, scenesRange: '3-6', wps: '1000-1500', chaptersRange: '1-3' },
+    { label: t('objetivos.plantillas.novela_corta'), words: 30000, targetScenes: 25, scenesRange: '20-30', wps: '1000-1500', chaptersRange: '5-10' },
+    { label: t('objetivos.plantillas.novela_estandar'), words: 80000, targetScenes: 70, scenesRange: '60-80', wps: '1200-1500', chaptersRange: '15-25' },
+    { label: t('objetivos.plantillas.novela_fantasia'), words: 110000, targetScenes: 100, scenesRange: '80-100', wps: '1200-1500', chaptersRange: '20-35' },
   ];
 
   const toggleExpand = (id) => {
@@ -507,60 +520,60 @@ export default function EditorView() {
 
   const handleAddAct = async () => {
     openModal('prompt', {
-      title: 'Nuevo Acto',
-      message: 'Introduce el título para el nuevo acto:',
-      placeholder: 'Acto II: El conflicto',
-      confirmLabel: 'Añadir Acto',
+      title: t('nuevo.acto_titulo'),
+      message: t('nuevo.acto_mensaje'),
+      placeholder: t('nuevo.acto_placeholder'),
+      confirmLabel: t('nuevo.acto_boton'),
       onConfirm: (title) => addAct(activeNovel.id, title)
     });
   }
 
   const handleAddChapter = async (actId) => {
     openModal('prompt', {
-      title: 'Nuevo Capítulo',
-      message: 'Introduce el título para el nuevo capítulo:',
-      placeholder: 'Capítulo...',
-      confirmLabel: 'Añadir Capítulo',
+      title: t('nuevo.capitulo_titulo'),
+      message: t('nuevo.capitulo_mensaje'),
+      placeholder: t('nuevo.capitulo_placeholder'),
+      confirmLabel: t('nuevo.capitulo_boton'),
       onConfirm: (title) => addChapter(actId, title)
     });
   }
 
   const handleAddScene = async (chapterId) => {
     openModal('prompt', {
-      title: 'Nueva Escena',
-      message: 'Introduce el título para la nueva escena:',
-      placeholder: 'Escena...',
-      confirmLabel: 'Añadir Escena',
+      title: t('nuevo.escena_titulo'),
+      message: t('nuevo.escena_mensaje'),
+      placeholder: t('nuevo.escena_placeholder'),
+      confirmLabel: t('nuevo.escena_boton'),
       onConfirm: (title) => addScene(chapterId, title)
     });
   }
 
   const confirmDeleteAct = (id) => {
     openModal('confirm', {
-      title: 'Eliminar Acto',
-      message: '¿Seguro que quieres eliminar este acto? Se borrarán todos sus capítulos y escenas.',
+      title: t('acto.eliminar_titulo'),
+      message: t('acto.eliminar_mensaje'),
       isDanger: true,
-      confirmLabel: 'Eliminar Acto',
+      confirmLabel: t('acto.eliminar_boton'),
       onConfirm: () => deleteAct(id)
     });
   }
 
   const confirmDeleteChapter = (id) => {
     openModal('confirm', {
-      title: 'Eliminar Capítulo',
-      message: '¿Seguro que quieres eliminar este capítulo? Se borrarán todas sus escenas.',
+      title: t('capitulo.eliminar_titulo'),
+      message: t('capitulo.eliminar_mensaje'),
       isDanger: true,
-      confirmLabel: 'Eliminar Capítulo',
+      confirmLabel: t('capitulo.eliminar_boton'),
       onConfirm: () => deleteChapter(id)
     });
   }
 
   const confirmDeleteScene = (id) => {
     openModal('confirm', {
-      title: 'Eliminar Escena',
-      message: '¿Seguro que quieres eliminar esta escena permanentemente?',
+      title: t('eliminar_escena.titulo'),
+      message: t('eliminar_escena.mensaje'),
       isDanger: true,
-      confirmLabel: 'Eliminar Escena',
+      confirmLabel: t('eliminar_escena.boton'),
       onConfirm: () => deleteScene(id)
     });
   }
@@ -750,14 +763,14 @@ export default function EditorView() {
     const idStr = id.toString();
     if (idStr.startsWith('act-')) {
       const act = acts.find(a => `act-${a.id}` === idStr);
-      return act ? act.title : 'Acto';
+      return act ? act.title : t('drag.acto');
     }
     if (idStr.startsWith('ch-')) {
       for (const act of acts) {
         const ch = (act.chapters || []).find(c => `ch-${c.id}` === idStr);
         if (ch) return ch.title;
       }
-      return 'Capítulo';
+      return t('drag.capitulo');
     }
     if (idStr.startsWith('scene-')) {
       for (const act of acts) {
@@ -766,7 +779,7 @@ export default function EditorView() {
           if (sc) return sc.title;
         }
       }
-      return 'Escena';
+      return t('drag.escena');
     }
     return '';
   };
@@ -778,20 +791,92 @@ export default function EditorView() {
 
   return (
     <div className="editor-view">
+      {/* Mobile tree toggle button */}
+      <button
+        className="mobile-tree-toggle"
+        onClick={() => setMobileTreeOpen(o => !o)}
+        aria-label={t('arbol.titulo')}
+      >
+        <BookOpen size={18} />
+      </button>
+
+      {/* Mobile overlay */}
+      {mobileTreeOpen && (
+        <div className="mobile-tree-overlay" onClick={() => setMobileTreeOpen(false)}>
+          <div className="mobile-tree-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="mobile-tree-drawer__header">
+              <span className="mobile-tree-drawer__title">{t('arbol.titulo')}</span>
+              <button className="mobile-tree-drawer__close" onClick={() => setMobileTreeOpen(false)}>
+                <ChevronRight size={20} />
+              </button>
+            </div>
+            <div className="mobile-tree-drawer__body">
+              <div className="editor-view__acts">
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragStart={handleDragStart}
+                  onDragOver={handleDragOver}
+                  onDragEnd={handleDragEnd}
+                  onDragCancel={handleDragCancel}
+                >
+                  <SortableContext items={acts.map(a => `act-${a.id}`)} strategy={verticalListSortingStrategy}>
+                    {acts.map((act, idx) => {
+                      const chapterOffset = acts.slice(0, idx).reduce((sum, a) => sum + (a.chapters?.length || 0), 0);
+                      return (
+                        <SortableActSection
+                          key={act.id}
+                          act={act}
+                          actIndex={idx}
+                          chapterOffset={chapterOffset}
+                          isOpen={expandedIds.has(`act-${act.id}`)}
+                          onToggle={() => toggleExpand(`act-${act.id}`)}
+                          activeSceneId={activeScene?.id}
+                          onSelectScene={setActiveScene}
+                          onAddChapter={handleAddChapter}
+                          onAddScene={handleAddScene}
+                          onDeleteScene={confirmDeleteScene}
+                          onDeleteChapter={confirmDeleteChapter}
+                          onDeleteAct={confirmDeleteAct}
+                          onUpdateAct={updateAct}
+                          onUpdateChapter={updateChapter}
+                          onUpdateScene={updateScene}
+                          expandedIds={expandedIds}
+                          onSubToggle={toggleExpand}
+                        />
+                      );
+                    })}
+                  </SortableContext>
+                  <DragOverlay dropAnimation={{ duration: 150, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
+                    {activeDragId ? (
+                      <div className="drag-overlay-ghost">
+                        <GripVertical size={14} />
+                        <span>{getDragLabel(activeDragId)}</span>
+                      </div>
+                    ) : null}
+                  </DragOverlay>
+                </DndContext>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop tree panel */}
       <div className="editor-view__tree">
         <div className="editor-view__tree-header">
           <div className="tree-header__left">
-            <h1 className="section-title">Estructura narrativa</h1>
-            <p className="section-subtitle">{acts.length} actos · {totalChapters} capítulos · {totalScenes} escenas</p>
+            <h1 className="section-title">{t('arbol.titulo')}</h1>
+            <p className="section-subtitle">{t('arbol.subtitulo', { acts: acts.length, chapters: totalChapters, scenes: totalScenes })}</p>
           </div>
           <div className="tree-header__actions">
             <div className="tree-header__bulk-btns">
-              <Tooltip content="Expandir todo">
+              <Tooltip content={t('arbol.expandir_todo')}>
                 <button className="btn btn-ghost btn-icon" onClick={handleExpandAll}>
                   <ChevronsUpDown size={14} />
                 </button>
               </Tooltip>
-              <Tooltip content="Contraer todo">
+              <Tooltip content={t('arbol.contraer_todo')}>
                 <button className="btn btn-ghost btn-icon" onClick={handleCollapseAll}>
                   <ChevronsDownUp size={14} />
                 </button>
@@ -799,42 +884,46 @@ export default function EditorView() {
             </div>
             <button className="btn btn-primary" onClick={handleAddAct}>
               <Plus size={14} />
-              Acto
+              {t('arbol.acto')}
             </button>
           </div>
         </div>
 
         <div className="editor-view__acts">
-          <DndContext 
+          <DndContext
             sensors={sensors}
-            collisionDetection={closestCenter} 
+            collisionDetection={closestCenter}
             onDragStart={handleDragStart}
             onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
             onDragCancel={handleDragCancel}
           >
             <SortableContext items={acts.map(a => `act-${a.id}`)} strategy={verticalListSortingStrategy}>
-              {acts.map((act, idx) => (
-                <SortableActSection 
-                  key={act.id} 
-                  act={act} 
-                  actIndex={idx}
-                  isOpen={expandedIds.has(`act-${act.id}`)}
-                  onToggle={() => toggleExpand(`act-${act.id}`)}
-                  activeSceneId={activeScene?.id}
-                  onSelectScene={setActiveScene}
-                  onAddChapter={handleAddChapter}
-                  onAddScene={handleAddScene}
-                  onDeleteScene={confirmDeleteScene}
-                  onDeleteChapter={confirmDeleteChapter}
-                  onDeleteAct={confirmDeleteAct}
-                  onUpdateAct={updateAct}
-                  onUpdateChapter={updateChapter}
-                  onUpdateScene={updateScene}
-                  expandedIds={expandedIds}
-                  onSubToggle={toggleExpand}
-                />
-              ))}
+              {acts.map((act, idx) => {
+                const chapterOffset = acts.slice(0, idx).reduce((sum, a) => sum + (a.chapters?.length || 0), 0);
+                return (
+                  <SortableActSection
+                    key={act.id}
+                    act={act}
+                    actIndex={idx}
+                    chapterOffset={chapterOffset}
+                    isOpen={expandedIds.has(`act-${act.id}`)}
+                    onToggle={() => toggleExpand(`act-${act.id}`)}
+                    activeSceneId={activeScene?.id}
+                    onSelectScene={setActiveScene}
+                    onAddChapter={handleAddChapter}
+                    onAddScene={handleAddScene}
+                    onDeleteScene={confirmDeleteScene}
+                    onDeleteChapter={confirmDeleteChapter}
+                    onDeleteAct={confirmDeleteAct}
+                    onUpdateAct={updateAct}
+                    onUpdateChapter={updateChapter}
+                    onUpdateScene={updateScene}
+                    expandedIds={expandedIds}
+                    onSubToggle={toggleExpand}
+                  />
+                );
+              })}
             </SortableContext>
             <DragOverlay dropAnimation={{ duration: 150, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
               {activeDragId ? (
@@ -870,7 +959,10 @@ export default function EditorView() {
                           onChange={(e) => handleMetaChange('status', e.target.value)}
                           className="meta-select"
                         >
-                          {STATUS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                          {STATUS_OPTIONS.map(opt => {
+                            const key = opt.toLowerCase().replace(/ /g, '_')
+                            return <option key={opt} value={opt}>{t(`estado.${key}`)}</option>
+                          })}
                         </select>
                       </div>
                       <div className="meta-field">
@@ -880,7 +972,7 @@ export default function EditorView() {
                           onChange={(e) => handleMetaChange('pov', e.target.value)}
                           className="meta-select"
                         >
-                          <option value="">Sin POV</option>
+                          <option value="">{t('editor.sin_pov')}</option>
                           {characters.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                         </select>
                       </div>
@@ -888,13 +980,13 @@ export default function EditorView() {
                   </div>
                 </div>
                 <div className="editor-header__status-row">
-                  <Tooltip content="Exportar escena a Word">
+                  <Tooltip content={t('editor.exportar_word')}>
                     <button className="btn btn-ghost btn-sm" onClick={handleExportScene}>
                       <FileDown size={14} />
-                      Word
+                      {t('editor.word')}
                     </button>
                   </Tooltip>
-                  <Tooltip content="Analiza el párrafo donde está el cursor tras 3 segundos de inactividad">
+                  <Tooltip content={t('editor.tooltip_oraculo')}>
                     <div
                       className={`oracle-traffic-light oracle-traffic-light--${oracleStatus.status} editor-traffic-light`}
                       onClick={() => {
@@ -906,9 +998,9 @@ export default function EditorView() {
                     >
                       <div className="oracle-traffic-light__dot" />
                       <span className="oracle-traffic-light__label">
-                        {oracleStatus.status === 'idle' && 'Párrafo coherente'}
-                        {oracleStatus.status === 'suspicious' && 'Coincidencias halladas en este párrafo'}
-                        {oracleStatus.status === 'error' && 'Contradicción en este párrafo'}
+                        {oracleStatus.status === 'idle' && t('editor.sin_coincidencias')}
+                        {oracleStatus.status === 'suspicious' && t('editor.coincidencias')}
+                        {oracleStatus.status === 'error' && t('editor.contradiccion')}
                       </span>
                     </div>
                   </Tooltip>
@@ -926,12 +1018,12 @@ export default function EditorView() {
               <div className="editor-footer">
                 <div className="editor-footer__item">
                   <FileText size={12} />
-                  <span>{activeScene.wordCount?.toLocaleString('es-ES') || 0} palabras en esta escena</span>
+                  <span>{t('editor.palabras_escena', { count: activeScene.wordCount || 0 })}</span>
                 </div>
                 {activeScene.wordCount > 0 && (
                   <div className="editor-footer__item">
                     <Target size={12} />
-                    <span>Meta: {Math.round((activeNovel?.targetWords || 100000) / (activeNovel?.targetScenes || 60)).toLocaleString('es-ES')} palabras por escena</span>
+                    <span>{t('editor.meta_escena', { count: Math.round((activeNovel?.targetWords || 100000) / (activeNovel?.targetScenes || 60)) })}</span>
                   </div>
                 )}
               </div>
@@ -939,7 +1031,7 @@ export default function EditorView() {
           ) : (
             <div className="editor-empty-state">
               <Edit3 size={40} />
-              <p>Selecciona una escena para comenzar a escribir</p>
+              <p>{t('editor.seleccionar_escena')}</p>
             </div>
           )}
         </div>
@@ -949,10 +1041,13 @@ export default function EditorView() {
             <div className="stats-header__left">
               <BarChart2 size={16} className="editor-stats__icon" />
               <div className="stats-header__text">
-                <span className="editor-stats__title">Estadísticas del proyecto</span>
+                <span className="editor-stats__title">{t('estadisticas.titulo')}</span>
                 {!isStatsExpanded && (
                   <span className="stats-header__summary">
-                    {activeNovel?.wordCount?.toLocaleString('es-ES') || 0} palabras escritas · {streak > 0 ? `🔥 ${streak} días` : 'No has escrito hoy'}
+                    {t('estadisticas.resumen', { 
+                      words: activeNovel?.wordCount?.toLocaleString() || 0, 
+                      streak: streak > 0 ? t('estadisticas.dias_fuego', { count: streak }) : t('estadisticas.sin_escribir_hoy')
+                    })}
                   </span>
                 )}
               </div>
@@ -968,56 +1063,57 @@ export default function EditorView() {
                 <Target size={16} className="kpi__icon" />
                 <div>
                   <div className="kpi__value">{wordPct}%</div>
-                  <div className="kpi__label">Objetivo total</div>
+                  <div className="kpi__label">{t('estadisticas.objetivo_total')}</div>
                 </div>
               </div>
               <div className="kpi">
                 <Flame size={16} className={`kpi__icon ${streak > 0 ? 'kpi__icon--gold' : 'kpi__icon--muted'}`} />
                 <div>
                   <div className="kpi__value">{streak}</div>
-                  <div className="kpi__label">Racha días</div>
+                  <div className="kpi__label">{t('estadisticas.racha_dias')}</div>
                 </div>
               </div>
               <div className="kpi">
                 <CheckCircle2 size={16} className="kpi__icon kpi__icon--green" />
                 <div>
                   <div className="kpi__value">{completedScenes}</div>
-                  <div className="kpi__label">Escenas listas</div>
+                  <div className="kpi__label">{t('estadisticas.escenas_listas')}</div>
                 </div>
               </div>
               <div className="kpi kpi--interactive" ref={goalEditorRef} onClick={() => setShowGoalEditor(!showGoalEditor)}>
                 <FileText size={16} className="kpi__icon kpi__icon--gold" />
                 <div>
-                  <div className="kpi__value">{activeNovel?.wordCount?.toLocaleString('es-ES') || 0}</div>
-                  <div className="kpi__label">Palabras totales</div>
+                  <div className="kpi__value">{activeNovel?.wordCount?.toLocaleString() || 0}</div>
+                  <div className="kpi__label">{t('estadisticas.palabras_totales')}</div>
                 </div>
                 {showGoalEditor && (
                   <div className="goal-editor-popover" onClick={e => e.stopPropagation()}>
-                    <div className="goal-editor__header">Establecer Objetivo</div>
+                    <div className="goal-editor__header">{t('objetivos.establecer')}</div>
                     <div className="goal-editor__custom">
                       <input 
                         type="number" 
                         defaultValue={activeNovel?.targetWords} 
                         onBlur={(e) => updateNovelTarget(activeNovel.id, parseInt(e.target.value), activeNovel?.targetScenes)}
-                        placeholder="Meta personalizada..."
+                        placeholder={t('objetivos.meta_personalizada')}
                       />
                     </div>
                     <div className="goal-editor__templates">
-                      {GOAL_TEMPLATES.map(t => (
+                      {GOAL_TEMPLATES.map(g => (
                         <button 
-                          key={t.label} 
+                          key={g.label} 
                           className="goal-template-btn"
                           onClick={() => {
-                            updateNovelTarget(activeNovel.id, t.words, t.targetScenes);
+                            updateNovelTarget(activeNovel.id, g.words, g.targetScenes);
                             setShowGoalEditor(false);
                           }}
                         >
                           <div className="goal-template-btn__main">
-                            <span className="goal-template-btn__label">{t.label}</span>
-                            <span className="goal-template-btn__words">{t.words.toLocaleString('es-ES')} pal.</span>
+                            <span className="goal-template-btn__label">{g.label}</span>
+                            <span className="goal-template-btn__words">{t('objetivos.plantilla_palabras', { count: g.words })}</span>
                           </div>
                           <div className="goal-template-btn__meta">
-                            {t.scenesRange} escenas · {t.wps} pal/escena
+                            <span className="goal-template-btn__meta-row">{t('objetivos.plantilla_meta', { scenes: g.scenesRange, wps: g.wps })}</span>
+                            <span className="goal-template-btn__meta-row goal-template-btn__chapters">{t('objetivos.plantilla_capitulos', { count: g.chaptersRange })}</span>
                           </div>
                         </button>
                       ))}
@@ -1029,14 +1125,14 @@ export default function EditorView() {
 
             <div className="editor-stats__bars">
               <ProgressBar
-                label="Progreso de palabras"
+                label={t('estadisticas.progreso_palabras')}
                 value={activeNovel?.wordCount || 0}
                 max={activeNovel?.targetWords || 100000}
                 sublabel={`${wordPct}%`}
                 color="var(--accent)"
               />
               <ProgressBar
-                label="Escenas completadas"
+                label={t('estadisticas.escenas_completadas')}
                 value={completedScenes}
                 max={activeNovel?.targetScenes || 60}
                 sublabel={`${scenePct}%`}

@@ -1,70 +1,92 @@
-# LoneWriter v1.3-oráculo (Stable) 🖋️
-
 ![LoneWriter Banner](banner-lonewriter.png)
 
-> **Tu compañero inteligente para escribir grandes historias, ahora con capacidades de IA avanzadas y optimizado como PWA.**
+<div align="center">
+
+[Also available in Spanish](./README_ES.md)
+
+</div>
+
+# LoneWriter v1.4-multilingual (Stable) 🖋️
+
+> **Your intelligent companion for writing great stories, now with advanced AI capabilities, PWA-optimized and available in multiple languages.**
 >
-> 🌐 **Acceso Web:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
+> 🌐 **Web Access:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
 >
-> ☕ **Apoya el proyecto:** [Invítame a un café](https://buymeacoffee.com/sergio.snchez)
+> ☕ **Support the project:** [Buy me a coffee](https://buymeacoffee.com/sergio.snchez)
 
-LoneWriter es una aplicación minimalista y potente diseñada para escritores que buscan un entorno zen pero con capacidades de inteligencia artificial de última generación. Gestiona tu estructura narrativa, crea un compendio detallado de tu mundo y recibe ayuda de asistentes literarios expertos, todo desde tu navegador o instalado como una aplicación nativa gracias a su tecnología PWA.
+LoneWriter is a minimalist and powerful application designed for writers seeking a zen environment with cutting-edge artificial intelligence capabilities. Manage your narrative structure, create a detailed compendium of your world, and receive help from expert literary assistants, all from your browser or installed as a native application thanks to its PWA technology.
 
-Esta versión introduce capacidades avanzadas de IA para mejorar tu proceso creativo:
+## ✨ Main Features
 
-## ✨ Características Principales
+### 🌍 Multilingual (i18n)
+- **Spanish and English:** Fully translated interface with language selector in Settings > General.
+- **Persistence:** Language preference is automatically saved in `localStorage`.
+- **Extensible Architecture:** i18next-based system with JSON dictionaries, ready to add more languages.
 
-### 📖 Estructura Narrativa Dinámica
-- **Jerarquía Clave:** Organiza tu novela en Actos, Capítulos y Escenas de forma fluida.
-- **Enfoque Zen:** Interfaz limpia diseñada para minimizar las distracciones y maximizar la creatividad.
-- **Estadísticas en Tiempo Real:** Controla tu progreso de palabras y objetivos diarios.
+### 📖 Dynamic Narrative Structure
+- **Key Hierarchy:** Organize your novel into Acts, Chapters and Scenes fluidly.
+- **Zen Focus:** Clean interface designed to minimize distractions and maximize creativity.
+- **Real-time Statistics:** Track your progress with word count and daily goals.
+- **Responsive Design:** Interface optimized for mobile and tablets with drawer navigation, touch targets and collapsible panels.
 
-### 🧠 Asistente de IA Integrado (Oracle)
-- **Múltiples Modelos:** Soporte para Gemini, GPT-4o, Claude 3.5 y modelos locales (LM Studio/Ollama).
-- **Herramientas Literarias:** Reescribe escenas, ajusta el tono, mejora el ritmo o cambia el punto de vista (POV) con un clic.
-- **Contexto Inteligente del Compendio:** Detecta automáticamente entidades de tu lore (personajes, lugares, objetos) y las integra en las consultas de IA para coherencia narrativa perfecta.
-- **Sistema de Debate:** Múltiples agentes IA debaten entre sí sobre tu escena con rondas configurables y sesiones persistentes.
-- **Veredictos del Oracle:** Análisis de coherencia párrafo a párrafo con detección de contradicciones en tiempo real.
-- **Exclusión Selectiva:** Controla qué entidades del Compendio participan en el análisis de coherencia con un clic.
+### 🧠 Integrated AI Assistant (Oracle)
+- **Multiple Models:** Support for Gemini, GPT-4o, Claude 3.5 and local models (LM Studio/Ollama).
+- **Literary Tools:** Rewrite scenes, adjust tone, improve pacing or change POV with one click.
+- **Compendium Smart Context:** Automatically detects entities from your lore (characters, places, objects) and integrates them into AI queries for perfect narrative coherence.
+- **Debate System:** Multiple AI agents debate your scene with configurable rounds and persistent sessions.
+- **Oracle Verdicts:** Paragraph-by-paragraph coherence analysis with real-time contradiction detection.
+- **Selective Exclusion:** Control which Compendium entities participate in coherence analysis with one click.
 
-### 📚 Compendio y Lore
-- **Biblioteca de Personajes:** Fichas detalladas con rasgos, motivaciones y arcos.
-- **Construcción de Mundo:** Gestiona lugares, objetos clave y reglas de tu universo.
-- **Base de Conocimiento:** Sube archivos de referencia (PDF, TXT, MD) para que la IA los use como contexto.
+### 📚 Compendium and Lore
+- **Character Library:** Detailed character sheets with traits, motivations and arcs.
+- **World Building:** Manage places, key objects and rules of your universe.
+- **Knowledge Base:** Upload reference files (TXT, MD, CSV, JSON) for AI to use as context.
 
-### 💾 Portabilidad y Sincronización
-- **Cloud Sync:** Conexión nativa con **Google Drive** para respaldos automáticos y persistencia total.
-- **Privacidad Primero:** Tus datos se guardan localmente (IndexedDB) y opcionalmente en tu propio espacio personal de Google.
-- **Exportación Versátil:** Descarga tu proyecto completo en formato `.lwrt` o genera un documento de Word (`.docx`).
+### 💾 Portability and Synchronization
+- **Cloud Sync:** Native connection with **Google Drive** for automatic backups and total persistence.
+- **Privacy First:** Your data is saved locally (IndexedDB) and optionally in your own Google personal space.
+- **Compressed Export:** Download your complete project in compressed `.lwrt` format (unreadable as plain text) or generate a Word document (`.docx`).
+- **Backward Compatibility:** The importer automatically detects old (plain JSON) and new (compressed) `.lwrt` files.
 
-## 🛠️ Tecnologías
+## 🛠️ Technologies
 
 - **Core:** React + Vite
-- **Base de Datos:** Dexie.js (IndexedDB)
+- **Database:** Dexie.js (IndexedDB)
+- **i18n:** i18next + react-i18next
+- **Compression:** pako (gzip)
 - **PWA:** Vite PWA Plugin (Service Workers, Offline support)
-- **Sincronización:** Google Drive API (GSI)
-- **Despliegue:** Vercel
+- **Synchronization:** Google Drive API (GSI)
+- **Deployment:** Vercel
 
-## 🚀 Instalación y Desarrollo Local
+## 🚀 Installation and Local Development
 
-Si deseas probar LoneWriter en tu propio entorno:
+If you want to try LoneWriter in your own environment:
 
-1. Clona el repositorio:
+1. Clone the repository:
    ```bash
    git clone https://github.com/sergio-snchez/LoneWriter.git
    ```
-2. Instala las dependencias:
+2. Install dependencies:
    ```bash
    npm install
    ```
-3. Ejecuta el servidor de desarrollo:
+3. Run the development server:
    ```bash
    npm run dev
    ```
 
-## 📜 Créditos
+## 📜 Credits
 
-Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
+Designed and developed with ♥ by **Sergio Sánchez** with Antigravity.
 
 ---
-*LoneWriter v1.3-oráculo - Tu espacio personal para dar vida a grandes historias.*
+
+*LoneWriter v1.4-multilingual - Your personal space to bring great stories to life.*
+
+---
+
+<div align="center">
+
+[Also available in Spanish](./README_ES.md)
+
+</div>

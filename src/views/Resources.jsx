@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   FileText, Upload, Search, FolderOpen, Tag, Calendar, HardDrive,
   ExternalLink, Trash2, Eye, Filter, Plus, Zap, AlertCircle, X
@@ -20,6 +21,7 @@ function formatBytes(bytes, decimals = 2) {
 }
 
 function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
+  const { t } = useTranslation('resources')
   const dateStr = res.dateAdded ? new Date(res.dateAdded).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '--'
 
   return (
@@ -35,7 +37,7 @@ function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
         {res.ignoredForOracle !== 1 && (
           <div style={{ marginTop: '4px' }}>
             <span style={{ color: '#d4a853', fontSize: '10px', fontWeight: 600, background: 'rgba(212, 168, 83, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <Zap size={10} style={{ fill: 'currentColor' }} /> Contexto IA
+              <Zap size={10} style={{ fill: 'currentColor' }} /> {t('incluido')}
             </span>
           </div>
         )}
@@ -58,7 +60,7 @@ function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
       </div>
 
       <div className="res-row__actions">
-        <Tooltip content={res.ignoredForOracle === 1 ? "Excluido del análisis de coherencia" : "Incluido en análisis de coherencia"}>
+        <Tooltip content={res.ignoredForOracle === 1 ? t('excluido') : t('incluido')}>
           <button 
             className={`res-action-btn ${res.ignoredForOracle !== 1 ? 'res-action-btn--ai-active' : ''}`}
             aria-label="Ignorar en coherencia del Oráculo" 
@@ -67,13 +69,13 @@ function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
             <Zap size={14} style={{ fill: res.ignoredForOracle !== 1 ? 'currentColor' : 'none' }} />
           </button>
         </Tooltip>
-        <Tooltip content="Ver">
-          <button className="res-action-btn" aria-label="Ver archivo" onClick={() => onView(res)}>
+        <Tooltip content={t('ver')}>
+          <button className="res-action-btn" aria-label={t('ver')} onClick={() => onView(res)}>
             <Eye size={14} />
           </button>
         </Tooltip>
-        <Tooltip content="Eliminar">
-          <button className="res-action-btn res-action-btn--danger" aria-label="Eliminar" onClick={() => onDelete(res.id)}>
+        <Tooltip content={t('eliminar')}>
+          <button className="res-action-btn res-action-btn--danger" aria-label={t('eliminar')} onClick={() => onDelete(res.id)}>
             <Trash2 size={14} />
           </button>
         </Tooltip>
@@ -83,6 +85,7 @@ function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
 }
 
 export default function ResourcesView() {
+  const { t } = useTranslation('resources')
   const { resources, addCompendiumEntry, deleteCompendiumEntry, updateCompendiumEntry } = useNovel()
   const [query, setQuery] = useState('')
   const [activeTag, setActiveTag] = useState(null)
@@ -115,7 +118,7 @@ export default function ResourcesView() {
 
     const ext = file.name.split('.').pop().toLowerCase()
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
-      alert(`Formato .${ext} no soportado. Formatos aceptados: .txt, .md, .csv, .json`)
+      alert(t('formato_no_soportado', { ext }))
       if (fileInputRef.current) fileInputRef.current.value = ''
       return
     }
@@ -159,8 +162,8 @@ export default function ResourcesView() {
       {/* Header */}
       <div className="resources-view__header">
         <div>
-          <h1 className="section-title">Archivos de referencia</h1>
-          <p className="section-subtitle">{resources.length} archivos · {totalSize} total</p>
+          <h1 className="section-title">{t('titulo')}</h1>
+          <p className="section-subtitle">{t('subtitulo', { count: resources.length, size: totalSize })}</p>
         </div>
         <div className="resources-view__header-actions">
           <button
@@ -170,7 +173,7 @@ export default function ResourcesView() {
             style={hasActiveFilters ? { borderColor: 'var(--accent)', color: 'var(--accent-light)' } : {}}
           >
             <Filter size={13} />
-            Filtros
+            {t('filtros')}
             {hasActiveFilters && (
               <span style={{ background: 'var(--accent)', color: '#1a1710', borderRadius: '99px', fontSize: '10px', fontWeight: 700, padding: '0 5px', lineHeight: '16px' }}>
                 {(activeTag ? 1 : 0) + (query ? 1 : 0)}
@@ -179,7 +182,7 @@ export default function ResourcesView() {
           </button>
           <button className="btn btn-primary" id="resources-upload-btn" onClick={() => fileInputRef.current?.click()}>
             <Upload size={13} />
-            Cargar archivo
+            {t('cargar')}
           </button>
         </div>
       </div>
@@ -190,17 +193,13 @@ export default function ResourcesView() {
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexShrink: 0, marginTop: '1px' }}>
             <span style={{ background: 'var(--red)', color: '#fff', borderRadius: '99px', fontSize: '10px', fontWeight: 700, padding: '2px 8px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Beta</span>
           </span>
-          <div style={{ lineHeight: '1.5' }}>
-            <strong style={{ color: 'var(--red)', display: 'block', marginBottom: '4px' }}>Funcionalidad en desarrollo</strong>
-            Solo se procesan archivos de texto plano (<code>.txt</code>, <code>.md</code>, <code>.csv</code>, <code>.json</code>). Activa el icono del Rayo en cada archivo para incluirlo como Base de Conocimiento para la IA. El soporte para PDF, eBooks y otros formatos se irá añadiendo en futuras actualizaciones.
+          <div style={{ lineHeight: '1.5' }} dangerouslySetInnerHTML={{ __html: `<strong style="color: var(--red); display: block; margin-bottom: 4px">${t('beta_titulo')}</strong>${t('beta_texto')}` }}>
           </div>
         </div>
         
         <div style={{ padding: '12px 16px', background: 'rgba(212,168,83,0.1)', border: '1px solid rgba(212,168,83,0.25)', borderRadius: '8px', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
           <Zap size={16} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: '2px' }} />
-          <div style={{ lineHeight: '1.5' }}>
-            <strong style={{ color: 'var(--accent-light)', display: 'block', marginBottom: '4px' }}>Impacto en Tokens de IA</strong> 
-            Si subes y activas archivos de texto muy largos (ej: un documento de 10.000 palabras de lore), todo ese contenido se enviará en <strong>cada</strong> petición a la IA, consumiendo bastantes tokens. Úsalo con moderación.
+          <div style={{ lineHeight: '1.5' }} dangerouslySetInnerHTML={{ __html: `<strong style="color: var(--accent-light); display: block; margin-bottom: 4px">${t('tokens_titulo')}</strong>${t('tokens_texto')}` }}>
           </div>
         </div>
       </div>
@@ -208,10 +207,10 @@ export default function ResourcesView() {
       {/* Filter panel */}
       {showFilters && (
         <div style={{ margin: '0 26px 0', padding: '14px 16px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Filtros activos</span>
+          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('filtros_activos')}</span>
           {hasActiveFilters && (
             <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '2px 8px', height: 'auto' }} onClick={clearFilters}>
-              <X size={11} /> Limpiar filtros
+              <X size={11} /> {t('limpiar_filtros')}
             </button>
           )}
         </div>
@@ -222,7 +221,7 @@ export default function ResourcesView() {
         <div className="search-bar" style={{ flex: 1, maxWidth: 380 }}>
           <Search size={14} color="var(--text-muted)" />
           <input
-            placeholder="Buscar archivos..."
+            placeholder={t('buscar')}
             value={query}
             onChange={e => setQuery(e.target.value)}
             id="resources-search-input"
@@ -236,7 +235,7 @@ export default function ResourcesView() {
             onClick={() => setActiveTag(null)}
             id="resources-tag-all"
           >
-            Todos
+            {t('todos')}
           </button>
           {ALL_TAGS.map(tag => (
             <button
@@ -255,8 +254,8 @@ export default function ResourcesView() {
       {filtered.length === 0 ? (
         <div className="resources-empty">
           <FolderOpen size={40} />
-          <p>No se encontraron archivos</p>
-          <span>Prueba con otros términos de búsqueda</span>
+          <p>{t('sin_resultados')}</p>
+          <span>{t('sin_resultados_sub')}</span>
         </div>
       ) : (
         <div className="resources-list">
@@ -280,10 +279,10 @@ export default function ResourcesView() {
         style={{ cursor: 'pointer' }}
       >
         <Upload size={20} />
-        <span>Arrastra archivos o haz clic aquí para cargarlos como referencia</span>
+        <span>{t('dropzone')}</span>
         <button className="btn btn-ghost">
           <Plus size={13} />
-          Seleccionar archivos
+          {t('seleccionar')}
         </button>
       </div>
 
@@ -301,8 +300,8 @@ export default function ResourcesView() {
               ) : (
                 <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                   <Eye size={32} style={{ opacity: 0.5, marginBottom: 12 }} />
-                  <p style={{ margin: 0 }}>Vista previa no disponible para este tipo de archivo.</p>
-                  <p style={{ fontSize: 13, marginTop: 8 }}>Formato: {viewingRes.type}</p>
+                  <p style={{ margin: 0 }}>{t('vista_previa_no_disponible')}</p>
+                  <p style={{ fontSize: 13, marginTop: 8 }}>{t('formato', { type: viewingRes.type })}</p>
                 </div>
               )}
             </div>
