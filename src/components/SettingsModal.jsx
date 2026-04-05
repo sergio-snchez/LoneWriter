@@ -3,13 +3,39 @@ import { useTranslation } from 'react-i18next';
 import { 
   X, Cloud, RefreshCw, LogIn, LogOut, 
   Sparkles, Shield, Info, AlertTriangle, Key, ExternalLink,
-  Heart
+  Heart, Languages, Globe
 } from 'lucide-react';
 import { useAI } from '../context/AIContext';
 import { useNovel } from '../context/NovelContext';
 import { GoogleDriveService } from '../services/googleDriveService';
 import LanguageSelector from './LanguageSelector';
 import './SettingsModal.css';
+
+import './SettingsModal.css';
+
+const PROVIDER_LIMITS = {
+  google: { tokens: 1000000, requests: 1500 },
+  openai: { tokens: 500000, requests: 1000 },
+  anthropic: { tokens: 500000, requests: 1000 },
+  openrouter: { tokens: 500000, requests: 1200 },
+  local: { tokens: Infinity, requests: Infinity }
+};
+
+const UsageMeter = ({ label, value, max, unit }) => {
+  if (max === Infinity) return null;
+  const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
+  return (
+    <div className="usage-meter">
+      <div className="usage-meter__labels">
+        <span className="usage-meter__label">{label}</span>
+        <span className="usage-meter__value">{value.toLocaleString()} / {max.toLocaleString()} {unit}</span>
+      </div>
+      <div className="usage-meter__bar">
+        <div className="usage-meter__fill" style={{ width: `${pct}%`, backgroundColor: pct > 90 ? '#e07070' : '#6b9fd4' }} />
+      </div>
+    </div>
+  );
+};
 
 const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
   const { t } = useTranslation('settings');
@@ -24,7 +50,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
   const { 
     provider, setProvider, apiKey, setApiKey, 
     localBaseUrl, setLocalBaseUrl, selectedModels, 
-    setModelForProvider
+    setModelForProvider, usageStats
   } = useAI();
 
   const { 
@@ -105,7 +131,10 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
         return (
           <div className="settings-tab">
             <div className="settings-section">
-              <span className="settings-section__title">{t('nube.seccion_titulo')}</span>
+              <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Cloud size={14} />
+                {t('nube.seccion_titulo')}
+              </span>
               <p className="settings-section__hint" style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px' }}>
                 {t('nube.seccion_hint')}
               </p>
@@ -183,7 +212,10 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
         return (
           <div className="settings-tab">
             <div className="settings-section">
-              <span className="settings-section__title">{t('ia.seccion_titulo')}</span>
+              <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sparkles size={14} />
+                {t('ia.seccion_titulo')}
+              </span>
               
               <div className="ai-settings-group">
                 <label>{t('ia.proveedor_label')}</label>
@@ -255,6 +287,35 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
                   </div>
                 </div>
               )}
+
+              {/* Usage Monitor */}
+              <div className="settings-section settings-section--usage" style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
+                <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <RefreshCw size={14} />
+                  {t('ia.consumo_titulo')}
+                </span>
+                
+                {provider === 'local' ? (
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '10px' }}>
+                    ✨ {t('ia.consumo_ilimitado')}
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '12px' }}>
+                    <UsageMeter 
+                      label={t('ia.consumo_tokens')} 
+                      value={usageStats?.tokens || 0} 
+                      max={PROVIDER_LIMITS[provider]?.tokens || 500000} 
+                      unit="tokens" 
+                    />
+                    <UsageMeter 
+                      label={t('ia.consumo_peticiones')} 
+                      value={usageStats?.requests || 0} 
+                      max={PROVIDER_LIMITS[provider]?.requests || 1000} 
+                      unit="reqs" 
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         );
@@ -262,7 +323,10 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
         return (
           <div className="settings-tab">
             <div className="settings-section">
-              <span className="settings-section__title">{t('general.seccion_titulo')}</span>
+              <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Info size={14} />
+                {t('general.seccion_titulo')}
+              </span>
               <div className="settings-info-grid">
                 <span className="settings-info-label">{t('general.version')}</span>
                 <span className="settings-info-value">{t('general.version_valor')}</span>
@@ -273,14 +337,20 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
               </div>
             </div>
             <div className="settings-section">
-              <span className="settings-section__title">{t('general.idioma')}</span>
+              <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Languages size={14} />
+                {t('general.idioma')}
+              </span>
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
                 {t('general.idioma_hint')}
               </p>
               <LanguageSelector />
             </div>
             <div className="settings-section">
-              <span className="settings-section__title">{t('general.enlaces_titulo')}</span>
+              <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ExternalLink size={14} />
+                {t('general.enlaces_titulo')}
+              </span>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <a 
                   href="https://github.com/sergio-snchez/LoneWriter" 

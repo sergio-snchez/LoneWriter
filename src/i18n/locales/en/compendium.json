@@ -1,6 +1,6 @@
 {
   "titulo": "Compendium",
-  "subtitulo": "Novel reference",
+  "subtitulo": "Novel references",
   "tabs": {
     "personajes": "Characters",
     "localizaciones": "Locations",
@@ -42,6 +42,10 @@
     "guardar": "Save entry"
   },
   "formulario": {
+    "completar_ia_tooltip": "Magically extract details from your novel's text",
+    "completar_ia_error": "Please enter at least a name or title before attempting to extract data.",
+    "completar_ia_fallo": "Auto-complete error: {{error}}",
+    "completar_ia_cargando": "COLLECTING LORE...",
     "personajes": {
       "nombre": "Name",
       "nombre_placeholder": "Lyra Ashveil",
@@ -110,5 +114,35 @@
     "incluido": "Included in coherence analysis",
     "editar": "Edit",
     "eliminar": "Delete"
+  },
+  "mpc": {
+    "titulo": "MPC Compendium",
+    "tooltip": "Compendium proposals detected by the MPC",
+    "sin_pendientes": "No pending proposals.",
+    "subtitulo": "{{count}} possible entity detected in your text",
+    "subtitulo_plural": "{{count}} possible entities detected in your text",
+    "empty_desc_1": "The MPC will analyze your text as you write and suggest new entries for the Compendium.",
+    "empty_desc_2": "For a complete manual scan of the scene, it must be open in the Editor.",
+    "escanear_ahora": "Scan current scene",
+    "scan_from_editor": "Open a scene in the Editor to scan",
+    "ignorar_todas": "Dismiss all",
+    "aceptar_todas": "Accept all",
+    "aceptar_tooltip": "Accept and save to Compendium",
+    "aceptar": "Accept",
+    "editar_tooltip": "Edit before saving",
+    "editar": "Edit",
+    "ignorar_vez": "Dismiss for now",
+    "ignorar_siempre": "Dismiss permanently (never suggest again)",
+    "confianza_alta": "High confidence",
+    "confianza_media": "Medium confidence",
+    "confianza_baja": "Low confidence",
+    "motivo_label": "📌 Reason:",
+    "tipo_personaje": "Character",
+    "tipo_lugar": "Location",
+    "tipo_objeto": "Object",
+    "tipo_lore": "Lore",
+    "interruptor_label": "Scanning (Auto)",
+    "ver_propuestas": "View {{count}} proposal",
+    "ver_propuestas_plural": "View {{count}} proposals"
   }
 }

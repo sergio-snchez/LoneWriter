@@ -14,8 +14,10 @@
 }
 
 .settings-modal {
-  width: 700px;
-  height: 500px;
+  width: 750px;
+  max-width: 90vw;
+  height: 600px;
+  max-height: 85vh;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -205,92 +207,132 @@
 }
 
 .sync-toggle-group {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
 }
 
 .sync-toggle-group label {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
 }
 
 .settings-info-grid {
-    display: grid;
-    grid-template-columns: 100px 1fr;
-    gap: 12px 20px;
-    font-size: 13px;
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 12px 20px;
+  font-size: 13px;
 }
 
 .settings-info-label {
-    color: var(--text-muted);
+  color: var(--text-muted);
 }
 
 .settings-info-value {
-    color: var(--text-secondary);
+  color: var(--text-secondary);
 }
 
 .ai-settings-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .ai-settings-group label {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .ai-settings-input,
 .ai-settings-select {
-    background: var(--bg-base);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 8px 12px;
-    color: var(--text-primary);
-    font-size: 13px;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  color: var(--text-primary);
+  font-size: 13px;
 }
 
 .ai-settings-input:focus,
 .ai-settings-select:focus {
-    border-color: var(--accent);
-    outline: none;
+  border-color: var(--accent);
+  outline: none;
 }
 
 .ai-settings-links {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px;
-    margin-top: 2px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
 }
 
 .ai-settings-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    color: var(--accent);
-    text-decoration: none;
-    transition: color var(--trans-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--trans-fast);
 }
 
 .ai-settings-link:hover {
-    color: var(--accent-light);
-    text-decoration: underline;
+  color: var(--accent-light);
+  text-decoration: underline;
 }
 
 .ai-settings-link-sep {
-    font-size: 11px;
-    color: var(--text-muted);
-    user-select: none;
+  font-size: 11px;
+  color: var(--text-muted);
+  user-select: none;
 }
+
+/* AI Usage Monitor */
+.usage-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.usage-meter__labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.usage-meter__label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.usage-meter__value {
+  font-size: 10px;
+  font-family: 'Inter', monospace;
+  color: var(--text-muted);
+}
+
+.usage-meter__bar {
+  height: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.usage-meter__fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 
 /* ============================================
    RESPONSIVE – MOBILE (< 768px)

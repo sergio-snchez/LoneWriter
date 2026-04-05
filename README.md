@@ -6,15 +6,15 @@
 
 </div>
 
-# LoneWriter v1.4-multilingual (Stable) 🖋️
+# LoneWriter v1.5-MPC (Stable) 🖋️
 
-> **Your intelligent companion for writing great stories, now with advanced AI capabilities, PWA-optimized and available in multiple languages.**
+> **Your "Narrative Operating System": The AI that listens to you, organizes your chaos, and monitors your world's coherence while you only worry about writing.**
 >
 > 🌐 **Web Access:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
 >
 > ☕ **Support the project:** [Buy me a coffee](https://buymeacoffee.com/sergio.snchez)
 
-LoneWriter is a minimalist and powerful application designed for writers seeking a zen environment with cutting-edge artificial intelligence capabilities. Manage your narrative structure, create a detailed compendium of your world, and receive help from expert literary assistants, all from your browser or installed as a native application thanks to its PWA technology.
+LoneWriter is a minimalist and powerful application designed for writers seeking a zen environment with cutting-edge **Invisible AI** capabilities. Manage your narrative structure, create a detailed compendium of your world, and receive help from expert literary assistants, all from your browser or installed as a native application thanks to its PWA technology.
 
 ## ✨ Main Features
 
@@ -29,13 +29,16 @@ LoneWriter is a minimalist and powerful application designed for writers seeking
 - **Real-time Statistics:** Track your progress with word count and daily goals.
 - **Responsive Design:** Interface optimized for mobile and tablets with drawer navigation, touch targets and collapsible panels.
 
-### 🧠 Integrated AI Assistant (Oracle)
+### 🤖 Invisible AI & Lore Monitor (MPC)
+- **MPC (Compendium Proposal Monitor):** Goodbye to "world bureaucracy." LoneWriter listens as you write and automatically detects new entities (characters, places, objects). It suggests them in a non-intrusive purple panel so you can add them to your compendium with one click, without stopping your narrative flow.
+- **Magic Auto-complete:** Mentioned a new sword or a mysterious village? Use the sparkle button in the Compendium to let the AI scan your novel and automatically fill in descriptions, traits, and relationships for you.
+- **Oracle Verdicts (Continuity Linter):** Real-time paragraph-by-paragraph coherence analysis. It acts as a "logic corrector" that detects contradictions with your established lore (e.g., a dead character reappearing or an object mistakenly changing owners).
+- **Selective Exclusion:** Control which Compendium entities participate in coherence analysis with one click to avoid false positives during dreams or flashbacks.
+
+### 🧠 Advanced AI Assistant
 - **Multiple Models:** Support for Gemini, GPT-4o, Claude 3.5 and local models (LM Studio/Ollama).
-- **Literary Tools:** Rewrite scenes, adjust tone, improve pacing or change POV with one click.
-- **Compendium Smart Context:** Automatically detects entities from your lore (characters, places, objects) and integrates them into AI queries for perfect narrative coherence.
-- **Debate System:** Multiple AI agents debate your scene with configurable rounds and persistent sessions.
-- **Oracle Verdicts:** Paragraph-by-paragraph coherence analysis with real-time contradiction detection.
-- **Selective Exclusion:** Control which Compendium entities participate in coherence analysis with one click.
+- **Literary Tools:** Rewrite scenes, adjust tone, improve pacing, or change POV with contextual intelligence.
+- **Debate System:** Multiple AI agents debate your scene with configurable rounds and persistent sessions for deep critical feedback.
 
 ### 📚 Compendium and Lore
 - **Character Library:** Detailed character sheets with traits, motivations and arcs.
