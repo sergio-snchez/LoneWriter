@@ -154,12 +154,16 @@ export async function deleteVectorsForNovel(novelId) {
  * @param {number} topK      - How many fragments to return (default 4)
  * @returns {string[]} Array of plain-text fragments, sorted by relevance
  */
-export async function retrieveRelevantFragments(query, novelId, topK = 4) {
+export async function retrieveRelevantFragments(query, novelId, topK = 4, excludeSceneId = null) {
   if (!query || query.trim().length < 3) return [];
 
   try {
     const queryEmbedding = await getEmbedding(query.trim());
-    const allVectors = await db.vectors.where('novelId').equals(novelId).toArray();
+    let allVectors = await db.vectors.where('novelId').equals(novelId).toArray();
+
+    if (excludeSceneId != null) {
+      allVectors = allVectors.filter(v => v.sceneId !== excludeSceneId);
+    }
 
     if (allVectors.length === 0) return [];
 
