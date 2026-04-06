@@ -997,9 +997,9 @@ function OracleTab({ activeScene }) {
         (activeNovel && oracleStatus.detectedEntities?.length > 0)
           ? fetchDetectedEntityData(oracleStatus.detectedEntities, activeNovel.id)
           : Promise.resolve(''),
-        // RAG context (capped at 8s so it never blocks)
+        // RAG context (capped at 15s so it never blocks)
         activeNovel?.id
-          ? Promise.race([retrieveRelevantFragments(plainText, activeNovel.id, 4), ragTimeout])
+          ? Promise.race([retrieveRelevantFragments(plainText, activeNovel.id, 4, activeScene?.id), ragTimeout])
           : Promise.resolve([])
       ])
 
@@ -1018,11 +1018,11 @@ function OracleTab({ activeScene }) {
 
       const fullPrompt = `${oraclePrompt}
 
---- FRAGMENTOS RELEVANTES DEL MANUSCRITO (contexto semántico via RAG) ---
-${ragContext || 'No hay fragmentos indexados aún (los embeddings se generan en segundo plano).'}
-
---- TEXTO DEL COMPENDIO (fichas relevantes encontradas) ---
+--- TEXTO DEL COMPENDIO (FUENTE DE VERDAD ABSOLUTA) ---
 ${compendiumInfo || 'No se encontraron fichas relevantes del Compendio para este texto.'}
+
+--- CONTEXTO ANTERIOR DEL MANUSCRITO (SOLO COMO REFERENCIA, NUNCA DESMIENTE AL COMPENDIO) ---
+${ragContext || 'No hay contexto anterior indexado aún (o se está usando sin RAG).'}
 
 --- TEXTO A ANALIZAR ---
 ${plainText}
