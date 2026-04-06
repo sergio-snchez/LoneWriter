@@ -255,7 +255,7 @@ function buildDescription(item, table) {
     }
   }
 
-  return parts.join('. ') || 'Sin descripción adicional';
+  return parts.join('. ') || '(Ficha registrada. Sin detalles adicionales)';
 }
 
 export async function searchCompendium(keywords, novelId) {

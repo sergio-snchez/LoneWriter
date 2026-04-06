@@ -122,7 +122,8 @@ function RewriteTab({ activeScene }) {
   const { t } = useTranslation('ai')
   const { 
     selection, provider, apiKey, localBaseUrl, prompts, currentModel,
-    lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite, updatePrompt 
+    lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite, updatePrompt,
+    logAIUsage
   } = useAI();
   const { resources } = useNovel();
   const { openModal } = useModal();
@@ -151,7 +152,7 @@ function RewriteTab({ activeScene }) {
         ? activeRes.map(r => `Archivo: [${r.name}]\nContenido:\n${r.content}`).join('\n\n')
         : null;
 
-      const result = await AIService.rewrite(selection, activeGoal, prompts[activeGoal], {
+      const response = await AIService.rewrite(selection, activeGoal, prompts[activeGoal], {
         provider,
         apiKey,
         model: currentModel,
@@ -160,7 +161,8 @@ function RewriteTab({ activeScene }) {
         pov: activeScene?.pov,
         knowledgeBase
       });
-      saveLastRewrite(result, activeGoal, instruction, selection);
+      logAIUsage(response.usage);
+      saveLastRewrite(response.text, activeGoal, instruction, selection);
     } catch (error) {
       openModal('confirm', {
         title: t('rewrite.error_ia_titulo'),
@@ -346,7 +348,8 @@ function DebateTab({ activeScene }) {
     debateAgents, debateHistory,
     addDebateMessage, clearDebateHistory,
     toggleDebateAgent, updateDebateAgent, addDebateAgent, removeDebateAgent,
-    debateSessions, activeSessionId, switchDebateSession, renameDebateSession, deleteDebateSession, addDebateSession
+    debateSessions, activeSessionId, switchDebateSession, renameDebateSession, deleteDebateSession, addDebateSession,
+    logAIUsage
   } = useAI()
   const { resources, activeNovel, acts } = useNovel()
   const { openModal } = useModal()
@@ -470,13 +473,15 @@ function DebateTab({ activeScene }) {
             compendiumContext: compendiumInfo || null
           })
 
+          logAIUsage(response.usage);
+
           const agentMsg = {
             role: 'agent',
             agent: agent.id,
             agentName: agent.name,
             agentColor: agent.color,
             agentInitials: agent.initials,
-            text: response,
+            text: response.text,
             time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
           }
           addDebateMessage(agentMsg)
@@ -920,7 +925,13 @@ function AgentEditForm({ agent, colors, onSave, onCancel, isNew, canDelete, onDe
 // ─── Tab: Oracle ──────────────────────────────────────────────
 function OracleTab({ activeScene }) {
   const { t } = useTranslation('ai')
-  const { provider, apiKey, localBaseUrl, currentModel, oracleHistory, addOracleEntry, clearOracleHistory, deleteOracleEntry, toggleOracleCorrected, checkedEntries, oracleStatus, checkOracleResponse, resetOracleStatus } = useAI()
+  const { 
+    provider, apiKey, localBaseUrl, currentModel, 
+    oracleHistory, addOracleEntry, clearOracleHistory, 
+    deleteOracleEntry, toggleOracleCorrected, checkedEntries, 
+    oracleStatus, checkOracleResponse, resetOracleStatus,
+    logAIUsage 
+  } = useAI()
   const { activeNovel, acts } = useNovel()
   const { openModal } = useModal()
 
@@ -1000,12 +1011,14 @@ ${plainText}
         localBaseUrl,
       })
 
-      const parsed = checkOracleResponse(response)
+      logAIUsage(response.usage)
+
+      const parsed = checkOracleResponse(response.text)
 
       const chapterInfo = getChapterInfo(activeScene.chapterId)
 
       addOracleEntry({
-        text: response,
+        text: response.text,
         time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
         sceneId: activeScene.id,
         sceneTitle: activeScene.title,
@@ -1188,6 +1201,12 @@ ${plainText}
                   {isExpanded ? t('oraculo.mostrar_menos') : t('oraculo.leer_mas')}
                 </button>
               )}
+              {entry.compendiumUsed && isExpanded && (
+                <details className="oracle-tab__entry-context-details">
+                  <summary>{t('oraculo.contexto_compendio')}</summary>
+                  <pre className="oracle-tab__context-pre">{entry.compendiumUsed}</pre>
+                </details>
+              )}
             </div>
           )
         })}
@@ -1214,7 +1233,7 @@ ${plainText}
       {/* Fixed bottom section */}
       <div className="oracle-tab__bottom">
         <div className="oracle-tab__intro">
-          <p><strong>{t('oraculo.intro')}</strong></p>
+          <p>{t('oraculo.intro')}</p>
         </div>
         <div className="oracle-tab__actions">
           <button

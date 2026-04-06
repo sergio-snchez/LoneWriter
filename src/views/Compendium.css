@@ -24,6 +24,77 @@
   border-bottom: 1px solid var(--border);
 }
 
+/* MPC Control Switch */
+.mpc-control {
+  margin: 12px 18px 8px;
+  padding: 8px 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mpc-control__label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mpc-switch {
+  position: relative;
+  display: inline-block;
+  width: 28px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.mpc-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.mpc-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border);
+  transition: .3s;
+  border-radius: 20px;
+}
+
+.mpc-slider:before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #8899aa;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+.mpc-switch input:checked + .mpc-slider {
+  background-color: var(--accent);
+}
+
+.mpc-switch input:checked + .mpc-slider:before {
+  transform: translateX(12px);
+  background-color: white;
+}
+
 .compendium-tabs {
   padding: 10px 10px;
   display: flex;
@@ -717,6 +788,22 @@
   color: #d4a853 !important;
   background: rgba(212, 168, 83, 0.15);
   border-radius: 4px;
+}
+
+/* Animations for AI */
+.ai-spin {
+  animation: mpc-spin 1s linear infinite;
+}
+
+@keyframes mpc-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.6; transform: scale(0.98); }
 }
 
 /* ============================================

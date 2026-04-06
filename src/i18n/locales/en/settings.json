@@ -58,12 +58,16 @@
       "openrouter_modelos": "View all models on OpenRouter",
       "ollama_modelos": "Explore models on Ollama",
       "lmstudio_modelos": "Models for LM Studio"
-    }
+    },
+    "consumo_titulo": "Quota & Usage Control (Today)",
+    "consumo_tokens": "Tokens consumed",
+    "consumo_peticiones": "Requests (API Calls)",
+    "consumo_ilimitado": "Unlimited (Local)"
   },
   "general": {
     "seccion_titulo": "Application Information",
     "version": "Version",
-    "version_valor": "1.4-multilanguage",
+    "version_valor": "1.5-MPC",
     "base_datos": "Database",
     "base_datos_valor": "IndexedDB (Dexie.js)",
     "plataforma": "Platform",
