@@ -69,10 +69,10 @@ export async function loadRegisteredEntityNames(novelId) {
   ]);
 
   const names = new Set();
-  for (const c of chars) if (c.name) names.add(c.name.toLowerCase());
-  for (const l of locs)  if (l.name) names.add(l.name.toLowerCase());
-  for (const o of objs)  if (o.name) names.add(o.name.toLowerCase());
-  for (const e of loreEntries) if (e.title) names.add(e.title.toLowerCase());
+  for (const c of chars) if (c.name) names.add(c.name.trim());
+  for (const l of locs)  if (l.name) names.add(l.name.trim());
+  for (const o of objs)  if (o.name) names.add(o.name.trim());
+  for (const e of loreEntries) if (e.title) names.add(e.title.trim());
 
   return names;
 }
@@ -115,7 +115,10 @@ export function extractCandidates(text, registeredNames = new Set(), ignoredName
     if (GENERIC_WORDS.has(lower)) continue;
 
     // Filtrar si ya está registrado o descartado
-    if (registeredNames.has(lower)) continue;
+    const isRegistered = [...registeredNames].some(n => n.toLowerCase() === lower);
+    if (isRegistered) continue;
+    
+    // Y descartados (ignorados siguen siendo guardados en lower por addToIgnoredNames)
     if (ignoredNames.has(lower)) continue;
 
     candidates.add(raw);
@@ -170,6 +173,7 @@ ${truncatedText}
 
 INSTRUCCIONES:
 - Analiza SOLO los candidatos listados. No inventes entidades nuevas.
+- NO propongas candidatos que sean variaciones, apodos o partes de los nombres del COMPENDIO ACTUAL (ej. si está 'El Loro de Oro', no propongas 'El Loro').
 - Para cada candidato que SÍ merezca una ficha (personaje, lugar, objeto clave, o concepto de lore), genera una entrada JSON.
 - Asigna confidence: "high" si aparece claramente como nombre propio de entidad narrativa, "medium" si es probable pero hay algo de ambigüedad, "low" si es dudoso.
 - Infiere los campos a partir del contexto del texto. Si no puedes inferirlo, deja el campo vacío "".
