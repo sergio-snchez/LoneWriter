@@ -987,27 +987,32 @@ function OracleTab({ activeScene }) {
         return
       }
 
-      // ── Compendium context (entity sheets) ──────────────────────────
-      let compendiumInfo = ''
-      if (activeNovel && oracleStatus.detectedEntities?.length > 0) {
-        compendiumInfo = await fetchDetectedEntityData(oracleStatus.detectedEntities, activeNovel.id)
-      }
+      // ── Run compendium + RAG in parallel, with a max 8s timeout on RAG ──
+      const ragTimeout = new Promise(resolve =>
+        setTimeout(() => resolve([]), 8000)
+      )
+
+      const [compResult, ragResult] = await Promise.allSettled([
+        // Compendium entity sheets
+        (activeNovel && oracleStatus.detectedEntities?.length > 0)
+          ? fetchDetectedEntityData(oracleStatus.detectedEntities, activeNovel.id)
+          : Promise.resolve(''),
+        // RAG context (capped at 8s so it never blocks)
+        activeNovel?.id
+          ? Promise.race([retrieveRelevantFragments(plainText, activeNovel.id, 4), ragTimeout])
+          : Promise.resolve([])
+      ])
+
+      const compendiumInfo = compResult.status === 'fulfilled' ? (compResult.value || '') : ''
       setCompContextUsed(compendiumInfo)
 
-      // ── RAG: retrieve most relevant manuscript fragments ───────────
-      let ragContext = ''
-      if (activeNovel?.id) {
-        try {
-          const fragments = await retrieveRelevantFragments(plainText, activeNovel.id, 4)
-          if (fragments.length > 0) {
-            ragContext = fragments
-              .map((f, i) => `[Fragmento ${i + 1}]: ${f}`)
-              .join('\n\n')
-          }
-        } catch (ragErr) {
-          console.warn('[RAG] Could not retrieve fragments:', ragErr)
-        }
+      const fragments = ragResult.status === 'fulfilled' ? (ragResult.value || []) : []
+      if (ragResult.status === 'rejected') {
+        console.warn('[RAG] Retrieval failed (proceeding without it):', ragResult.reason)
       }
+      const ragContext = fragments.length > 0
+        ? fragments.map((f, i) => `[Fragmento ${i + 1}]: ${f}`).join('\n\n')
+        : ''
 
       const oraclePrompt = t('oracle_prompt')
 
@@ -1052,6 +1057,7 @@ ${plainText}
       setIsChecking(false)
     }
   }
+
 
   const handleCopy = (id) => {
     const entry = oracleHistory.find(e => e.id === id)

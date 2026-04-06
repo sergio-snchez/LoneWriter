@@ -8,6 +8,43 @@ const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
+/** Retryable HTTP status codes (rate-limit / server overload) */
+const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
+
+/**
+ * fetch() wrapper with exponential backoff retry.
+ * @param {string} url
+ * @param {RequestInit} options
+ * @param {number} maxRetries - default 3
+ * @returns {Promise<Response>}
+ */
+async function fetchWithRetry(url, options, maxRetries = 3) {
+  let lastError;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (RETRYABLE_STATUSES.has(response.status)) {
+        // Clone before reading — we may need to read again on retry display
+        const waitMs = Math.min(1000 * 2 ** attempt, 8000); // 1s, 2s, 4s
+        console.warn(`[AIService] HTTP ${response.status} — retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        if (attempt < maxRetries - 1) {
+          await new Promise(r => setTimeout(r, waitMs));
+          continue;
+        }
+        // Last attempt: return response to let caller handle the error body
+        return response;
+      }
+      return response;
+    } catch (err) {
+      lastError = err;
+      if (attempt < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, 1000 * 2 ** attempt));
+      }
+    }
+  }
+  throw lastError;
+}
+
 export const AIService = {
   /**
    * Generic rewrite function
@@ -183,7 +220,7 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
   _callGemini: async (prompt, apiKey, model) => {
     try {
       const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
-      const response = await fetch(url, {
+      const response = await fetchWithRetry(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -220,7 +257,7 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
    */
   _callOpenAI: async (prompt, apiKey, model) => {
     try {
-      const response = await fetch(OPENAI_API_URL, {
+      const response = await fetchWithRetry(OPENAI_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -258,7 +295,7 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
    */
   _callClaude: async (prompt, apiKey, model) => {
     try {
-      const response = await fetch(CLAUDE_API_URL, {
+      const response = await fetchWithRetry(CLAUDE_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -298,7 +335,7 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
    */
   _callOpenRouter: async (prompt, apiKey, model) => {
     try {
-      const response = await fetch(OPENROUTER_API_URL, {
+      const response = await fetchWithRetry(OPENROUTER_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
