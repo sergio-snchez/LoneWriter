@@ -6,15 +6,15 @@
 
 </div>
 
-# LoneWriter v1.4-multilenguaje (Stable) 🖋️
+# LoneWriter v1.5-MPC (Stable) 🖋️
 
-> **Tu compañero inteligente para escribir grandes historias, ahora con capacidades de IA avanzadas, optimizado como PWA y disponible en múltiples idiomas.**
+> **Tu "Sistema Operativo Narrativo": La IA que te escucha, organiza tu caos y vigila la coherencia de tu mundo mientras tú solo te preocupas de escribir.**
 >
 > 🌐 **Acceso Web:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
 >
 > ☕ **Apoya el proyecto:** [Invítame a un café](https://buymeacoffee.com/sergio.snchez)
 
-LoneWriter es una aplicación minimalista y potente diseñada para escritores que buscan un entorno zen pero con capacidades de inteligencia artificial de última generación. Gestiona tu estructura narrativa, crea un compendio detallado de tu mundo y recibe ayuda de asistentes literarios expertos, todo desde tu navegador o instalado como una aplicación nativa gracias a su tecnología PWA.
+LoneWriter es una aplicación minimalista y potente diseñada para escritores que buscan un entorno zen pero con capacidades de **IA Invisible** de última generación. Gestiona tu estructura narrativa, crea un compendio detallado de tu mundo y recibe ayuda de asistentes literarios expertos, todo desde tu navegador o instalado como una aplicación nativa gracias a su tecnología PWA.
 
 ## ✨ Características Principales
 
@@ -29,13 +29,16 @@ LoneWriter es una aplicación minimalista y potente diseñada para escritores qu
 - **Estadísticas en Tiempo Real:** Controla tu progreso de palabras y objetivos diarios.
 - **Responsive Design:** Interfaz optimizada para móviles y tablets con navegación drawer, targets táctiles y paneles colapsables.
 
-### 🧠 Asistente de IA Integrado (Oracle)
+### 🤖 IA Invisible y Monitor de Lore (MPC)
+- **MPC (Monitor de Propuestas del Compendio):** Adiós a la "burocracia del mundo". LoneWriter te escucha mientras escribes y detecta automáticamente nuevas entidades (personajes, lugares, objetos). Las sugiere en un panel lila no intrusivo para que las añadas al compendio con un clic, sin dejar de narrar.
+- **Autocompletado Mágico:** ¿Has mencionado una espada o un pueblo nuevo? Usa el botón de destellos en el Compendio para que la IA escanee tu novela y rellene automáticamente la descripción, rasgos y relaciones de la ficha por ti.
+- **Veredictos del Oráculo (Continuity Linter):** Análisis de coherencia párrafo a párrafo. Actúa como un "corrector de lógica" en tiempo real que detecta contradicciones con tu lore establecido (ej: un personaje muerto que reaparece o un objeto que cambia de dueño por error).
+- **Exclusión Selectiva:** Controla qué entidades del Compendio participan en el análisis de coherencia con un clic para evitar falsos positivos en sueños o flashbacks.
+
+### 🧠 Asistente de IA Avanzado
 - **Múltiples Modelos:** Soporte para Gemini, GPT-4o, Claude 3.5 y modelos locales (LM Studio/Ollama).
-- **Herramientas Literarias:** Reescribe escenas, ajusta el tono, mejora el ritmo o cambia el punto de vista (POV) con un clic.
-- **Contexto Inteligente del Compendio:** Detecta automáticamente entidades de tu lore (personajes, lugares, objetos) y las integra en las consultas de IA para coherencia narrativa perfecta.
-- **Sistema de Debate:** Múltiples agentes IA debaten entre sí sobre tu escena con rondas configurables y sesiones persistentes.
-- **Veredictos del Oracle:** Análisis de coherencia párrafo a párrafo con detección de contradicciones en tiempo real.
-- **Exclusión Selectiva:** Controla qué entidades del Compendio participan en el análisis de coherencia con un clic.
+- **Herramientas Literarias:** Reescribe escenas, ajusta el tono, mejora el ritmo o cambia el punto de vista (POV) con inteligencia contextual.
+- **Sistema de Debate:** Múltiples agentes IA debaten entre sí sobre tu escena con rondas configurables y sesiones persistentes para Feedback crítico profundo.
 
 ### 📚 Compendio y Lore
 - **Biblioteca de Personajes:** Fichas detalladas con rasgos, motivaciones y arcos.

@@ -2,12 +2,15 @@ import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Users, MapPin, Package, BookOpen, Star, ExternalLink,
-  Search, Filter, ChevronRight, Plus, Tag, PenLine, Trash2, X, Zap
+  Search, Filter, ChevronRight, Plus, Tag, PenLine, Trash2, X, Zap, Sparkles, Loader2
 } from 'lucide-react'
 import { useNovel } from '../context/NovelContext'
+import { useAI } from '../context/AIContext'
 import { useModal } from '../context/ModalContext'
 import { extractKeywords, TABLE_CONFIG } from '../services/compendiumSearch'
 import { Tooltip } from '../components/Tooltip'
+
+import { AIService } from '../services/aiService'
 import './Compendium.css'
 
 /* ---- Curated Color Palette ---- */
@@ -38,7 +41,10 @@ function ColorPicker({ value, onChange }) {
 /* ---- Panel de Formulario Lateral ---- */
 function CompendiumPanel({ type, item, characters, onClose, onSave }) {
   const { t } = useTranslation('compendium')
+  const { acts } = useNovel()
+  const { provider, apiKey, currentModel, localBaseUrl, logAIUsage } = useAI()
   const [formData, setFormData] = useState(item || {});
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
   useEffect(() => {
     const initial = { ...item };
@@ -109,11 +115,97 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
 
   let titleText = item ? t('panel.editar') : t('panel.añadir');
 
+  const handleAIAutoFill = async () => {
+    if (!formData.name && type !== 'lore' && !formData.title) {
+      alert(t('formulario.completar_ia_error'));
+      return;
+    }
+    
+    setIsAiLoading(true);
+    try {
+      const MAX_CHARS = 50000;
+      
+      // Optimizacion: Priorizar escenas que mencionan el nombre
+      const nameToMatch = (formData.name || formData.title || "").toLowerCase();
+      let allScenes = [];
+      for (const act of (acts || [])) {
+        for (const ch of (act.chapters || [])) {
+          for (const sc of (ch.scenes || [])) {
+            if (sc.content) allScenes.push(sc);
+          }
+        }
+      }
+
+      // 1. Filtrar escenas relevantes
+      const relevantScenes = allScenes.filter(sc => 
+        sc.content && sc.content.toLowerCase().includes(nameToMatch)
+      );
+
+      // 2. Si no hay suficientes escenas relevantes, usar las últimas escenas escritas como respaldo
+      const contextScenes = relevantScenes.length > 5 ? relevantScenes : allScenes.slice(-15);
+
+      let fullText = "";
+      for (const sc of contextScenes) {
+        fullText += sc.content.replace(/<[^>]*>/g, ' ') + "\n";
+        if (fullText.length > MAX_CHARS) break;
+      }
+      
+      const config = { provider, apiKey, model: currentModel, localBaseUrl };
+      const res = await AIService.autoCompleteCompendiumEntry(
+        fullText,
+        type,
+        formData.name || formData.title,
+        formData,
+        config
+      );
+      
+      logAIUsage(res.usage);
+      const aiData = res.data;
+
+      // Update form data conservatively with new AI JSON
+      setFormData(prev => {
+        const next = { ...prev };
+        // Shallow merge simple fields
+        Object.keys(aiData).forEach(k => {
+          if (aiData[k] !== undefined && aiData[k] !== null && aiData[k] !== "") {
+            next[k] = aiData[k];
+          }
+        });
+        // Special raw fields parsing for inputs
+        if (next.traits && Array.isArray(next.traits)) next._rawTraits = next.traits.join(', ');
+        if (next.tags && Array.isArray(next.tags)) next._rawTags = next.tags.join(', ');
+        return next;
+      });
+      
+    } catch (err) {
+      console.error(err);
+      alert(t('formulario.completar_ia_fallo', { error: err.message }));
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
   return (
     <div className="compendium-view__panel">
       <div className="compendium-panel__header">
         <span className="compendium-panel__title">{titleText}</span>
-        <button className="btn btn-ghost btn-icon" onClick={onClose}><X size={16} /></button>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {isAiLoading && (
+            <span style={{ fontSize: '10px', color: 'var(--accent)', fontWeight: 600, animation: 'pulse 1.5s infinite' }}>
+              {t('formulario.completar_ia_cargando')}
+            </span>
+          )}
+          <Tooltip content={t('formulario.completar_ia_tooltip')}>
+            <button 
+              className="btn btn-primary btn-icon" 
+              onClick={handleAIAutoFill} 
+              disabled={isAiLoading || (!formData.name && !formData.title)}
+            >
+              <Sparkles size={14} className={isAiLoading ? "ai-spin" : ""} />
+            </button>
+          </Tooltip>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}><X size={16} /></button>
+        </div>
       </div>
       
       <div className="compendium-panel__body">
@@ -610,6 +702,10 @@ function LoreCard({ entry, onEdit, onDelete, onToggleIgnore }) {
 export default function CompendiumView() {
   const { t } = useTranslation('compendium')
   const { characters, locations, objects, lore, addCompendiumEntry, updateCompendiumEntry, deleteCompendiumEntry } = useNovel()
+  const { 
+    mpcProposals, dismissMpcProposal, isMpcEnabled, setIsMpcEnabled,
+    isMpcDrawerOpen, setIsMpcDrawerOpen, mpcStatus
+  } = useAI()
   const { openModal } = useModal()
   const [activeSection, setActiveSection] = useState('characters')
   const [query, setQuery] = useState('')
@@ -627,6 +723,30 @@ export default function CompendiumView() {
     setActiveFilters([]);
     setIsFilterOpen(false);
   }, [activeSection]);
+
+  // Listener for mpc-edit-proposal event (dispatched from App.jsx drawer)
+  useEffect(() => {
+    const handler = (e) => {
+      const { proposal } = e.detail || {};
+      if (!proposal) return;
+      setActiveSection(proposal.type);
+      const data = { ...proposal };
+      delete data.id; delete data.confidence; delete data.reason; delete data.type;
+      if (proposal.type === 'characters') {
+        data.initials = data.initials || (data.name || '').substring(0, 2).toUpperCase();
+        data.color = data.color || '#6b9fd4';
+      }
+      if (proposal.type === 'lore' && data.name && !data.title) {
+        data.title = data.name;
+        delete data.name;
+      }
+      setEditingItem(data);
+      setIsPanelOpen(true);
+      dismissMpcProposal(proposal.id);
+    };
+    window.addEventListener('mpc-edit-proposal', handler);
+    return () => window.removeEventListener('mpc-edit-proposal', handler);
+  }, [dismissMpcProposal]);
 
   const getAvailableFilters = () => {
     const list = new Set();
@@ -689,7 +809,13 @@ export default function CompendiumView() {
   };
 
   const handleDelete = async (id) => {
-    const item = [...characters, ...locations, ...objects, ...lore].find(i => i.id === id);
+    let sourceArray = [];
+    if (activeSection === 'characters') sourceArray = characters;
+    else if (activeSection === 'locations') sourceArray = locations;
+    else if (activeSection === 'objects') sourceArray = objects;
+    else if (activeSection === 'lore') sourceArray = lore;
+    
+    const item = sourceArray.find(i => i.id === id);
     const itemName = item?.name || item?.title || 'esta entrada';
     
     openModal('confirm', {
@@ -837,6 +963,23 @@ export default function CompendiumView() {
           <h1 className="section-title">{t('titulo')}</h1>
           <p className="section-subtitle">{t('subtitulo')}</p>
         </div>
+
+        {/* MPC Master Switch */}
+        <div className="mpc-control">
+          <span className="mpc-control__label">
+            <Zap size={10} style={{ fill: isMpcEnabled ? 'currentColor' : 'none' }} />
+            {t('mpc.interruptor_label')}
+          </span>
+          <label className="mpc-switch">
+            <input 
+              type="checkbox" 
+              checked={isMpcEnabled} 
+              onChange={(e) => setIsMpcEnabled(e.target.checked)} 
+            />
+            <span className="mpc-slider"></span>
+          </label>
+        </div>
+
         <div className="compendium-tabs">
           {SECTIONS.map(({ id, label, icon: Icon, count }) => (
             <button
@@ -853,6 +996,27 @@ export default function CompendiumView() {
               <span className="compendium-tab__count">{count}</span>
             </button>
           ))}
+        </div>
+
+        {/* MPC Badge in Compendium */}
+        <div style={{ padding: '0 0 16px 0', display: 'flex', justifyContent: 'center' }}>
+          <div
+            className={`mpc-pill ${
+              mpcStatus === 'analyzing' ? 'mpc-pill--analyzing' : ''
+            } ${
+              mpcProposals.length > 0 ? 'mpc-pill--active' : ''
+            }`}
+            onClick={() => setIsMpcDrawerOpen(true)}
+          >
+            {mpcProposals.length > 0 || mpcStatus === 'analyzing' ? (
+              <span className="mpc-pill__count">{mpcProposals.length > 0 ? mpcProposals.length : <Loader2 size={12} className="spin" />}</span>
+            ) : (
+              <Sparkles size={14} className="mpc-pill__icon" />
+            )}
+            <span>
+              {mpcStatus === 'analyzing' ? t('ai:oraculo.consultando') : t('compendium:mpc.titulo')}
+            </span>
+          </div>
         </div>
 
         {/* Summary mini-stats */}
@@ -925,6 +1089,7 @@ export default function CompendiumView() {
               </div>
             )}
           </div>
+          
           <button className="btn btn-primary" id="compendium-add-btn" onClick={handleAdd}>
             <Plus size={13} />
             {t('toolbar.añadir')}
@@ -991,6 +1156,8 @@ export default function CompendiumView() {
           onSave={handleSavePanel} 
         />
       )}
+
+
     </div>
   )
 }

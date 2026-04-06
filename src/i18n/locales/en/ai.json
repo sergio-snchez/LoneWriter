@@ -134,14 +134,14 @@
     "leer_mas": "Read more",
     "mostrar_menos": "Show less",
     "contexto_compendio": "View Compendium context used",
-    "intro": "The Oracle will analyze the coherence of your text based on matches found in the Compendium information.",
+    "intro": "The Oracle will check if the narrative in this paragraph conflicts with your Compendium.",
     "limpiar": "Clear",
-    "consultando": "Consulting...",
-    "consultar": "Consult the Oracle",
-    "reconsultar": "Re-consult the Oracle",
-    "consultando_compendio": "The Oracle is consulting Compendium entries...",
-    "sin_coincidencias": "No matches found",
-    "coincidencias": "Matches found in the Compendium:",
+    "consultando": "Verifying continuity...",
+    "consultar": "Verify continuity",
+    "reconsultar": "Re-verify continuity",
+    "consultando_compendio": "Looking up Compendium entries to compare...",
+    "sin_coincidencias": "No tracked elements",
+    "coincidencias": "Entries identified and ready for continuity check:",
     "escena": "Scene: {{title}}",
     "limpiar_titulo": "Clear Oracle history",
     "limpiar_mensaje": "Are you sure you want to delete all Oracle verdicts?",
@@ -159,5 +159,5 @@
     "agente_corrector_nombre": "Proofreader",
     "agente_corrector_desc": "Grammar and style"
   },
-  "oracle_prompt": "Act as the LoneWriter Oracle, a very critical assistant whose function is to validate text coherence.\nYour sole objective is to detect contradictions between the user's text and the Compendium entries you are provided.\nCompare EVERY statement in the text against EVERY Compendium entry. Pay special attention to:\n- Roles, occupations, and character descriptions\n- Character relationships\n- Object properties (origin, owner, type, importance)\n- Location characteristics (type, climate, description)\n- Lore data (categories, summaries, established facts)\nIf the user says something that contradicts the Compendium (e.g., says a motorcycle is gas-powered when the Lore says it's electric), you must correct them professionally and politely.\nIf there are no contradictions, simply say everything is in order, but with your usual professional tone.\nAlways respond in English and concisely (maximum 3-4 paragraphs).\nSpecifically cite which part of the text contradicts which Compendium entry when you find an error.\nDon't be appeasing: your job is to find errors, not to flatter the author.\n\nIMPORTANT: Respond ONLY in valid HTML format. Use tags like <p>, <strong>, <em>, <ul>, <li>, etc. Do NOT use Markdown."
+  "oracle_prompt": "Act as the LoneWriter Oracle, a continuity assistant whose function is to validate text coherence against the Compendium entries.\nYour EXCLUSIVE objective is to detect contradictions between the creator's text and the provided entries. Do not critique the style or narrative.\n\nGOLDEN RULE: If an element (character, object, etc.) appears in the text and its provided entry has little information or says 'No additional details', ASSUME IT IS FULLY VALID. UNDER NO CIRCUMSTANCES should you warn that it 'lacks validity', 'is external', or 'is not defined'. If it is in the list of provided entries, IT IS VALID.\nONLY report a problem if the text says A and the entry says SOMETHING COMPLETELY OPPOSITE (e.g., the entry says the car is red, and the text says it's blue).\nIf everything is in order, simply say there are no contradictions in a professional tone (max 1 paragraph).\nDo not be appeasing with unnecessary flattery.\n\nIMPORTANT: Respond ONLY in valid HTML format. Use tags like <p>, <strong>, <em>, <ul>, <li>, etc. Do NOT use Markdown."
 }

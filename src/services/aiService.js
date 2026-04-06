@@ -56,6 +56,61 @@ export const AIService = {
   },
 
   /**
+   * Auto-completes a compendium entry based on the novel text.
+   * @param {string} sceneText - Background text from the novel
+   * @param {string} type - Compendium category (characters, locations, etc)
+   * @param {string} name - Entity name
+   * @param {Object} currentData - Current entity object
+   * @param {Object} config - { provider, apiKey, model, localBaseUrl }
+   */
+  autoCompleteCompendiumEntry: async (sceneText, type, name, currentData, config) => {
+    const { provider, apiKey, model, localBaseUrl } = config;
+    if (!apiKey && provider !== 'local') throw new Error('Se requiere una clave API para usar la IA.');
+
+    const promptTemplate = `Actúa como un asistente literario experto. Vas a rellenar automáticamente la ficha de "${name}" (${type}) para el Compendio de la novela, infiriendo los datos ESTRICTAMENTE a partir del siguiente fragmento de la historia. No inventes absolutamente nada que no se deduzca de este texto.
+
+[CONTEXTO DE LA NOVELA]
+${sceneText}
+
+[DATOS EXISTENTES (Mantén estos o mejóralos si el texto lo justifica)]
+${JSON.stringify(currentData, null, 2)}
+
+INSTRUCCIONES DE FORMATO:
+Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json ni texto previo o posterior). Usa esta estructura según el tipo, omitiendo campos si no hay información en el texto:
+- characters: { "role": "", "occupation": "", "age": 0, "description": "", "traits": ["rasgo1", "rasgo2"], "relations": [{ "name": "NombreOtro", "type": "como lo veo", "reverseType": "como me ve" }] }
+- locations: { "type": "", "climate": "", "description": "", "tags": ["tag1"] }
+- objects: { "type": "", "description": "", "origin": "", "currentOwner": "", "tags": ["tag1"] }
+- lore: { "category": "", "summary": "", "tags": ["tag1"] }`;
+
+    let response = null;
+    if (provider === 'google') {
+      response = await AIService._callGemini(promptTemplate, apiKey, model);
+    } else if (provider === 'openai') {
+      response = await AIService._callOpenAI(promptTemplate, apiKey, model);
+    } else if (provider === 'anthropic') {
+      response = await AIService._callClaude(promptTemplate, apiKey, model);
+    } else if (provider === 'openrouter') {
+      response = await AIService._callOpenRouter(promptTemplate, apiKey, model);
+    } else if (provider === 'local') {
+      response = await AIService._callLocal(promptTemplate, model, localBaseUrl);
+    } else {
+      throw new Error(`Proveedor de IA desconocido: ${provider}`);
+    }
+
+    try {
+      const text = response.text;
+      const match = text.match(/\{[\s\S]*\}/);
+      if (match) {
+        return { data: JSON.parse(match[0]), usage: response.usage };
+      }
+      return { data: JSON.parse(text), usage: response.usage };
+    } catch (e) {
+      console.error("[AIService] JSON parse error in auto-complete", e, response.text);
+      throw new Error("El modelo no devolvió un JSON válido.");
+    }
+  },
+
+  /**
    * Agent chat for the Debate Forum
    * @param {Object} agent - { systemPrompt, name }
    * @param {Array}  history - Debate message history [{ role, agent, text }]
@@ -146,7 +201,14 @@ export const AIService = {
       }
 
       const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Error al generar la respuesta.';
+      return {
+        text: data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Error al generar la respuesta.',
+        usage: {
+          prompt_tokens: data.usageMetadata?.promptTokenCount || 0,
+          completion_tokens: data.usageMetadata?.candidatesTokenCount || 0,
+          total_tokens: data.usageMetadata?.totalTokenCount || 0
+        }
+      };
     } catch (error) {
       console.error('Error in AIService._callGemini:', error);
       throw error;
@@ -177,7 +239,14 @@ export const AIService = {
       }
 
       const data = await response.json();
-      return data.choices?.[0]?.message?.content?.trim() || 'Error al generar la respuesta.';
+      return {
+        text: data.choices?.[0]?.message?.content?.trim() || 'Error al generar la respuesta.',
+        usage: {
+          prompt_tokens: data.usage?.prompt_tokens || 0,
+          completion_tokens: data.usage?.completion_tokens || 0,
+          total_tokens: data.usage?.total_tokens || 0
+        }
+      };
     } catch (error) {
       console.error('Error in AIService._callOpenAI:', error);
       throw error;
@@ -210,7 +279,14 @@ export const AIService = {
       }
 
       const data = await response.json();
-      return data.content?.[0]?.text?.trim() || 'Error al generar la respuesta.';
+      return {
+        text: data.content?.[0]?.text?.trim() || 'Error al generar la respuesta.',
+        usage: {
+          prompt_tokens: data.usage?.input_tokens || 0,
+          completion_tokens: data.usage?.output_tokens || 0,
+          total_tokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0)
+        }
+      };
     } catch (error) {
       console.error('Error in AIService._callClaude:', error);
       throw error;
@@ -242,7 +318,14 @@ export const AIService = {
       }
 
       const data = await response.json();
-      return data.choices?.[0]?.message?.content?.trim() || 'Error al generar la respuesta.';
+      return {
+        text: data.choices?.[0]?.message?.content?.trim() || 'Error al generar la respuesta.',
+        usage: {
+          prompt_tokens: data.usage?.prompt_tokens || 0,
+          completion_tokens: data.usage?.completion_tokens || 0,
+          total_tokens: data.usage?.total_tokens || 0
+        }
+      };
     } catch (error) {
       console.error('Error in AIService._callOpenRouter:', error);
       throw error;
@@ -309,7 +392,14 @@ export const AIService = {
         throw new Error(err.error?.message || 'Error en la API de Gemini');
       }
       const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Sin respuesta.';
+      return {
+        text: data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Sin respuesta.',
+        usage: {
+          prompt_tokens: data.usageMetadata?.promptTokenCount || 0,
+          completion_tokens: data.usageMetadata?.candidatesTokenCount || 0,
+          total_tokens: data.usageMetadata?.totalTokenCount || 0
+        }
+      };
     } catch (error) {
       console.error('Error in AIService._callGeminiChat:', error);
       throw error;
@@ -333,7 +423,14 @@ export const AIService = {
         throw new Error(err.error?.message || 'Error en la API de OpenAI');
       }
       const data = await response.json();
-      return data.choices?.[0]?.message?.content?.trim() || 'Sin respuesta.';
+      return {
+        text: data.choices?.[0]?.message?.content?.trim() || 'Sin respuesta.',
+        usage: {
+          prompt_tokens: data.usage?.prompt_tokens || 0,
+          completion_tokens: data.usage?.completion_tokens || 0,
+          total_tokens: data.usage?.total_tokens || 0
+        }
+      };
     } catch (error) {
       console.error('Error in AIService._callOpenAIChat:', error);
       throw error;
@@ -375,7 +472,14 @@ export const AIService = {
         throw new Error(err.error?.message || 'Error en la API de Claude');
       }
       const data = await response.json();
-      return data.content?.[0]?.text?.trim() || 'Sin respuesta.';
+      return {
+        text: data.content?.[0]?.text?.trim() || 'Sin respuesta.',
+        usage: {
+          prompt_tokens: data.usage?.input_tokens || 0,
+          completion_tokens: data.usage?.output_tokens || 0,
+          total_tokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0)
+        }
+      };
     } catch (error) {
       console.error('Error in AIService._callClaudeChat:', error);
       throw error;
@@ -403,7 +507,14 @@ export const AIService = {
         throw new Error(err.error?.message || 'Error en la API de OpenRouter');
       }
       const data = await response.json();
-      return data.choices?.[0]?.message?.content?.trim() || 'Sin respuesta.';
+      return {
+        text: data.choices?.[0]?.message?.content?.trim() || 'Sin respuesta.',
+        usage: {
+          prompt_tokens: data.usage?.prompt_tokens || 0,
+          completion_tokens: data.usage?.completion_tokens || 0,
+          total_tokens: data.usage?.total_tokens || 0
+        }
+      };
     } catch (error) {
       console.error('Error in AIService._callOpenRouterChat:', error);
       throw error;
@@ -428,7 +539,14 @@ export const AIService = {
         throw new Error(err.error?.message || `Error ${response.status}`);
       }
       const data = await response.json();
-      return data.choices?.[0]?.message?.content?.trim() || 'Sin respuesta.';
+      return {
+        text: data.choices?.[0]?.message?.content?.trim() || 'Sin respuesta.',
+        usage: {
+          prompt_tokens: data.usage?.prompt_tokens || 0,
+          completion_tokens: data.usage?.completion_tokens || 0,
+          total_tokens: data.usage?.total_tokens || 0
+        }
+      };
     } catch (error) {
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         throw new Error(`No se pudo conectar con el servidor local en ${url}.`);

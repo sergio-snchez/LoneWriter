@@ -1543,6 +1543,24 @@
   line-height: 1.4;
 }
 
+.oracle-tab__entry-context-details {
+  margin: 10px 12px 12px;
+  border-top: 1px dotted var(--border);
+  padding-top: 10px;
+}
+
+.oracle-tab__entry-context-details summary {
+  font-size: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.oracle-tab__entry-context-details summary:hover {
+  text-decoration: underline;
+  color: var(--text-primary);
+}
+
 /* ─── Traffic Light ──────────────────────────── */
 .oracle-tab__traffic-light {
   padding: 8px 12px;
@@ -1555,6 +1573,27 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: default;
+  transition: all 0.2s ease;
+}
+
+.oracle-traffic-light--clickable:hover {
+  border-color: rgba(92, 185, 138, 0.5);
+  box-shadow: 0 0 4px rgba(92, 185, 138, 0.2);
+}
+
+.oracle-traffic-light--clickable.oracle-traffic-light--suspicious:hover {
+  border-color: rgba(224, 184, 112, 0.5);
+  box-shadow: 0 0 4px rgba(224, 184, 112, 0.2);
+}
+
+.oracle-traffic-light--clickable.oracle-traffic-light--error:hover {
+  border-color: rgba(224, 112, 112, 0.5);
+  box-shadow: 0 0 4px rgba(224, 112, 112, 0.2);
 }
 
 .oracle-traffic-light__dot {

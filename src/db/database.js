@@ -39,4 +39,16 @@ db.version(5).stores({
   resources: '++id, novelId, name, type, ignoredForOracle'
 });
 
+// v7: MPC — Monitor de Propuestas del Compendio
+// Almacena los nombres que el usuario ha descartado permanentemente
+db.version(7).stores({
+  mpcIgnored: '++id, novelId, name, type, ignoredAt'
+});
+
+// v8: Hub de IA — Registro de Consumo de Tokens/Cuotas
+// Permite monitorizar el uso diario por proveedor y modelo
+db.version(8).stores({
+  aiUsage: '++id, [date+provider+model], date, provider, model'
+});
+
 export default db;
