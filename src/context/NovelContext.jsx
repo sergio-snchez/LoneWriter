@@ -3,7 +3,7 @@ import i18n from '../i18n/i18n';
 import { db } from '../db/database';
 import { ExportService } from '../services/exportService';
 import { GoogleDriveService } from '../services/googleDriveService';
-import { deleteVectorsForScene, deleteVectorsForNovel } from '../services/ragService';
+import { deleteVectorsForScene, deleteVectorsForNovel, indexPendingScenes } from '../services/ragService';
 
 const NovelContext = createContext();
 
@@ -218,6 +218,9 @@ export const NovelProvider = ({ children }) => {
       await reloadData(id);
       setActiveNovel({ ...novel, wordCount: realWords });
       localStorage.setItem('activeNovelId', id);
+      
+      // Auto-index scenes that don't have RAG vectors yet (e.g. from older sessions)
+      indexPendingScenes(id);
     }
   };
 
