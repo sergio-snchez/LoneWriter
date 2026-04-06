@@ -21,6 +21,7 @@ import { GoogleDriveService } from './services/googleDriveService'
 import { db } from './db/database'
 import './App.css'
 import MpcProposalDrawer from './components/MpcProposalDrawer'
+import RagToast from './components/RagToast'
 
 export default function App() {
   const { t } = useTranslation('app')
@@ -474,6 +475,9 @@ export default function App() {
           }}
         />
       </div>
+
+      {/* RAG model download toast — appears once on first use */}
+      <RagToast />
     </div>
   )
 }
