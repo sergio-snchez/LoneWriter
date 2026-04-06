@@ -51,4 +51,10 @@ db.version(8).stores({
   aiUsage: '++id, [date+provider+model], date, provider, model'
 });
 
+// v9: RAG Local Vectors
+// Almacena embeddings para el Oráculo
+db.version(9).stores({
+  vectors: '++id, sceneId, novelId, textHash, text' // text is the paragraph content
+});
+
 export default db;

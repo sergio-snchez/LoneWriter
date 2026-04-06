@@ -3,6 +3,7 @@ import i18n from '../i18n/i18n';
 import { db } from '../db/database';
 import { ExportService } from '../services/exportService';
 import { GoogleDriveService } from '../services/googleDriveService';
+import { deleteVectorsForScene, deleteVectorsForNovel } from '../services/ragService';
 
 const NovelContext = createContext();
 
@@ -367,6 +368,8 @@ export const NovelProvider = ({ children }) => {
       // Delete the novel itself
       await db.novels.delete(id);
     });
+    // ── RAG: remove all embeddings for this novel ──
+    await deleteVectorsForNovel(id);
     setAllNovels(prev => prev.filter(n => n.id !== id));
     if (activeNovel?.id === id) setActiveNovel(null);
     setPendingSync(true);
@@ -385,6 +388,10 @@ export const NovelProvider = ({ children }) => {
     const act = await db.acts.get(id);
     const chapters = await db.chapters.where('actId').equals(id).toArray();
     for (const ch of chapters) {
+      const scenes = await db.scenes.where('chapterId').equals(ch.id).toArray();
+      for (const sc of scenes) {
+        await deleteVectorsForScene(sc.id); // ── RAG cascade
+      }
       await db.scenes.where('chapterId').equals(ch.id).delete();
     }
     await db.chapters.where('actId').equals(id).delete();
@@ -405,6 +412,10 @@ export const NovelProvider = ({ children }) => {
   const deleteChapter = async (id) => {
     const ch = await db.chapters.get(id);
     const act = await db.acts.get(ch.actId);
+    const scenes = await db.scenes.where('chapterId').equals(id).toArray();
+    for (const sc of scenes) {
+      await deleteVectorsForScene(sc.id); // ── RAG cascade
+    }
     await db.scenes.where('chapterId').equals(id).delete();
     await db.chapters.delete(id);
     await reloadData(act.novelId);
@@ -426,6 +437,7 @@ export const NovelProvider = ({ children }) => {
     const ch = await db.chapters.get(sc.chapterId);
     const act = await db.acts.get(ch.actId);
     await db.scenes.delete(id);
+    await deleteVectorsForScene(id); // ── RAG cascade
     await reloadData(act.novelId);
     setPendingSync(true);
   };
