@@ -10,7 +10,8 @@ let _worker = null;
 let _workerReady = false;
 let _pendingResolvers = {}; // id => { resolve, reject }
 let _msgId = 0;
-let _initPromise = null;
+let _modelLoading = false;
+let _modelReady = false;
 
 function getWorker() {
   if (_worker) return _worker;
@@ -18,14 +19,24 @@ function getWorker() {
   _worker.onmessage = (e) => {
     const { id, status, output, error, data } = e.data;
     if (status === 'progress') {
-      // Model download progress — you can broadcast this if needed
-      console.log('[RAG] Model loading:', data);
+      // Model download progress
+      if (!_modelLoading) {
+        _modelLoading = true;
+        window.dispatchEvent(new CustomEvent('rag-model-loading', { detail: data }));
+      } else {
+        window.dispatchEvent(new CustomEvent('rag-model-progress', { detail: data }));
+      }
       return;
     }
     const resolver = _pendingResolvers[id];
     if (!resolver) return;
     delete _pendingResolvers[id];
     if (status === 'complete') {
+      if (!_modelReady) {
+        _modelReady = true;
+        _modelLoading = false;
+        window.dispatchEvent(new CustomEvent('rag-model-ready'));
+      }
       resolver.resolve(output);
     } else {
       resolver.reject(new Error(error || 'Unknown worker error'));
@@ -33,7 +44,8 @@ function getWorker() {
   };
   _worker.onerror = (e) => {
     console.error('[RAG] Worker error:', e);
-    // Reject all pending
+    _modelLoading = false;
+    window.dispatchEvent(new CustomEvent('rag-model-error', { detail: e.message }));
     Object.values(_pendingResolvers).forEach(r => r.reject(e));
     _pendingResolvers = {};
   };
