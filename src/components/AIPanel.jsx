@@ -987,9 +987,9 @@ function OracleTab({ activeScene }) {
         return
       }
 
-      // ── Run compendium + RAG in parallel, with a max 8s timeout on RAG ──
+      // ── Run compendium + RAG in parallel, with a max 15s timeout on RAG ──
       const ragTimeout = new Promise(resolve =>
-        setTimeout(() => resolve([]), 8000)
+        setTimeout(() => resolve([]), 15000)
       )
 
       const [compResult, ragResult] = await Promise.allSettled([
