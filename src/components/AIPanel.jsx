@@ -11,6 +11,7 @@ import { AIService } from '../services/aiService'
 import { useNovel } from '../context/NovelContext'
 import { useModal } from '../context/ModalContext'
 import { createDebouncedSearch, fetchDetectedEntityData } from '../services/compendiumSearch'
+import { retrieveRelevantFragments } from '../services/ragService'
 import { Tooltip } from './Tooltip'
 import { renderMarkdown } from '../utils/renderMarkdown'
 import './AIPanel.css'
@@ -986,15 +987,34 @@ function OracleTab({ activeScene }) {
         return
       }
 
+      // ── Compendium context (entity sheets) ──────────────────────────
       let compendiumInfo = ''
       if (activeNovel && oracleStatus.detectedEntities?.length > 0) {
         compendiumInfo = await fetchDetectedEntityData(oracleStatus.detectedEntities, activeNovel.id)
       }
       setCompContextUsed(compendiumInfo)
 
+      // ── RAG: retrieve most relevant manuscript fragments ───────────
+      let ragContext = ''
+      if (activeNovel?.id) {
+        try {
+          const fragments = await retrieveRelevantFragments(plainText, activeNovel.id, 4)
+          if (fragments.length > 0) {
+            ragContext = fragments
+              .map((f, i) => `[Fragmento ${i + 1}]: ${f}`)
+              .join('\n\n')
+          }
+        } catch (ragErr) {
+          console.warn('[RAG] Could not retrieve fragments:', ragErr)
+        }
+      }
+
       const oraclePrompt = t('oracle_prompt')
 
       const fullPrompt = `${oraclePrompt}
+
+--- FRAGMENTOS RELEVANTES DEL MANUSCRITO (contexto semántico via RAG) ---
+${ragContext || 'No hay fragmentos indexados aún (los embeddings se generan en segundo plano).'}
 
 --- TEXTO DEL COMPENDIO (fichas relevantes encontradas) ---
 ${compendiumInfo || 'No se encontraron fichas relevantes del Compendio para este texto.'}

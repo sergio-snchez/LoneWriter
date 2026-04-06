@@ -37,6 +37,7 @@ import {
   loadIgnoredNames,
 } from '../services/mpcService'
 import debounce from 'lodash/debounce'
+import { upsertVector, deleteVectorsForScene } from '../services/ragService'
 import './Editor.css'
 import './MpcBadge.css'
 
@@ -518,8 +519,15 @@ export default function EditorView({ menuOpen = false }) {
     window.addEventListener('mpc-manual-scan', handler)
     return () => window.removeEventListener('mpc-manual-scan', handler)
   }, [activeScene, activeNovel, mpcStatus])
+  const debouncedRagUpsert = useCallback(
+    debounce(async (sceneId, novelId, text) => {
+      await upsertVector(sceneId, novelId, text)
+    }, 5000),
+    []
+  )
+
   const debouncedSave = useCallback(
-    debounce(async (sceneId, html) => {
+    debounce(async (sceneId, novelId, html) => {
       setIsSaving(true)
       const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
       const words = text ? text.split(' ').length : 0
@@ -531,13 +539,17 @@ export default function EditorView({ menuOpen = false }) {
       })
       
       setIsSaving(false)
+      // ── RAG: index updated text asynchronously ────────────────
+      if (novelId && text.length > 10) {
+        debouncedRagUpsert(sceneId, novelId, text)
+      }
     }, 1000),
-    [updateScene]
+    [updateScene, debouncedRagUpsert]
   )
 
   const handleEditorChange = (html) => {
     if (activeScene) {
-      debouncedSave(activeScene.id, html)
+      debouncedSave(activeScene.id, activeNovel?.id, html)
       // ── MPC trigger ──────────────────────────────────────────────
       triggerMpcAnalysis(html)
     }
