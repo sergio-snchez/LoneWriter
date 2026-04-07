@@ -90,44 +90,89 @@ function cosineSimilarity(a, b) {
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
+/** Split text into chunks of given max words, with some overlap to preserve context boundaries */
+export function chunkText(text, maxWords = 250, overlap = 30) {
+  const words = text.split(/\s+/);
+  if (words.length <= maxWords) return [text];
+
+  const chunks = [];
+  for (let i = 0; i < words.length; i += (maxWords - overlap)) {
+    const chunk = words.slice(i, i + maxWords).join(' ');
+    if (chunk.trim()) chunks.push(chunk);
+  }
+  return chunks;
+}
+
 /**
- * Index (upsert) a paragraph/scene text.
+ * Index (upsert) a paragraph/scene text intelligently.
  * Call this after the editor save debounce.
  * @param {number} sceneId
  * @param {number} novelId
  * @param {string} text  - plain text (no HTML)
  */
 export async function upsertVector(sceneId, novelId, text) {
-  if (!text || text.trim().length < 10) return;
-  const trimmed = text.trim();
-  const hash = hashText(trimmed);
-
-  // Check if we already have an up-to-date vector for this scene
-  const existing = await db.vectors.where('sceneId').equals(sceneId).first();
-  if (existing && existing.textHash === hash) {
-    // Text hasn't changed, no need to re-embed
+  if (!text || text.trim().length < 10) {
+    await deleteVectorsForScene(sceneId);
     return;
   }
-
-  try {
-    const embedding = await getEmbedding(trimmed);
-    const record = {
-      sceneId,
-      novelId,
-      text: trimmed,
-      textHash: hash,
-      embedding, // plain number array
-      indexedAt: new Date().toISOString()
-    };
-
-    if (existing) {
-      await db.vectors.update(existing.id, record);
-    } else {
-      await db.vectors.add(record);
+  const trimmed = text.trim();
+  
+  // Transform scene into chunks to avoid model truncation (limit 512 tokens) and improve granularity
+  const chunks = chunkText(trimmed, 250, 30);
+  
+  // Extraemos todos los vectores previos de esta escena
+  const existingVectors = await db.vectors.where('sceneId').equals(sceneId).toArray();
+  const existingHashesMap = new Map();
+  for (const v of existingVectors) {
+    existingHashesMap.set(v.textHash, v);
+  }
+  
+  const currentChunkHashes = new Set();
+  const chunksToProcess = [];
+  
+  // Calcular hashes de los nuevos chunks y separar cuáles necesitan ser enviados a la IA
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    const hash = hashText(chunk);
+    currentChunkHashes.add(hash);
+    
+    // Solo lo re-vectorizamos si el chunk no existía idéntico previamente en esta escena
+    if (!existingHashesMap.has(hash)) {
+      chunksToProcess.push({ index: i, text: chunk, hash });
     }
-    console.log('[RAG] Vector upserted for scene', sceneId);
-  } catch (err) {
-    console.error('[RAG] Failed to embed scene', sceneId, err);
+  }
+  
+  // Borramos los viejos chunks cuyo hash ya no está presente (ej. texto editado/eliminado)
+  const idsToDelete = [];
+  for (const v of existingVectors) {
+    if (!currentChunkHashes.has(v.textHash)) {
+      idsToDelete.push(v.id);
+    }
+  }
+  if (idsToDelete.length > 0) {
+    await db.vectors.bulkDelete(idsToDelete);
+  }
+  
+  // Módulo de embedding intensivo: procesamos solo los chunks nuevos/modificados
+  for (const pending of chunksToProcess) {
+    try {
+      const embedding = await getEmbedding(pending.text);
+      await db.vectors.add({
+        sceneId,
+        novelId,
+        chunkIndex: pending.index,
+        text: pending.text,
+        textHash: pending.hash,
+        embedding,
+        indexedAt: new Date().toISOString()
+      });
+    } catch (err) {
+      console.error('[RAG] Fallo procesando chunk de escena', sceneId, err);
+    }
+  }
+  
+  if (chunksToProcess.length > 0 || idsToDelete.length > 0) {
+    console.log(`[RAG] Escena ${sceneId} indexada: borrados ${idsToDelete.length} chunks antiguos, generados ${chunksToProcess.length} nuevos.`);
   }
 }
 
