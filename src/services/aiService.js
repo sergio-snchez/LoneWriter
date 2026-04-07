@@ -179,6 +179,10 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
       systemPrompt += `\n---`;
     }
 
+    if (config.ragContext) {
+      systemPrompt += `\n\n[RECUERDOS DE CAPÍTULOS ANTERIORES DEL MANUSCRITO]\n${config.ragContext}\n---\nUSA ESTA INFORMACIÓN PASADA DEL MANUSCRITO PARA SUSTENTAR TUS OPINIONES O RESPONDER PREGUNTAS DEL USUARIO SOBRE EVENTOS PREVIOS.`;
+    }
+
     // Convert debate history into chat-style messages
     // We represent the agent's own previous messages as 'assistant' and everything else as 'user'
     const chatMessages = history.map(msg => {
