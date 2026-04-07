@@ -346,7 +346,8 @@ export const NovelProvider = ({ children }) => {
     await db.transaction('rw', [
       db.novels, db.acts, db.chapters, db.scenes,
       db.characters, db.locations, db.objects, db.lore,
-      db.resources, db.dailyProgress, db.debateAgents, db.debateSessions
+      db.resources, db.dailyProgress, db.debateAgents, db.debateSessions,
+      db.oracleEntries, db.lastRewrite, db.mpcIgnored
     ], async () => {
       // Delete narrative structure
       const actsToDelete = await db.acts.where('novelId').equals(id).toArray();
@@ -368,6 +369,10 @@ export const NovelProvider = ({ children }) => {
       // Delete AI debate data
       await db.debateAgents.where('novelId').equals(id).delete();
       await db.debateSessions.where('novelId').equals(id).delete();
+      // Delete extra AI tables
+      await db.oracleEntries.where('novelId').equals(id).delete();
+      await db.lastRewrite.where('novelId').equals(id).delete();
+      await db.mpcIgnored.where('novelId').equals(id).delete();
       // Delete the novel itself
       await db.novels.delete(id);
     });
