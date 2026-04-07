@@ -53,9 +53,10 @@ const GENERIC_WORDS = new Set([
   'primero', 'último', 'última',
 ]);
 
-// ─── Regex: detecta palabras que empiezan en mayúscula y no son inicio de oración ──
-// Busca palabras en mayúscula que vienen DESPUÉS de un espacio (no tras punto/inicio)
-const PROPER_NOUN_REGEX = /(?<=[ \t,;:—–"«‹()\[\]])([A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ][a-záéíóúàèìòùäëïöüâêîôûñ\u2019']{2,}(?:\s+[A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ][a-záéíóúàèìòùäëïöüâêîôûñ\u2019']{2,}){0,3})/gu;
+// ─── Regex: detecta palabras que empiezan en mayúscula en cualquier posición ──
+// Captura nombres propios tanto en mitad de frase como al inicio de párrafo/oración.
+// Se ignoran palabras justo después de punto (inicio de frase normal) en extractCandidates.
+const PROPER_NOUN_REGEX = /(?:^|(?<=[.!?¿¡\n\r—–""«‹()\[\] \t,;:]))([A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ][a-záéíóúàèìòùäëïöüâêîôûñ\u2019']{1,}(?:\s+[A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ][a-záéíóúàèìòùäëïöüâêîôûñ\u2019']{1,}){0,3})/gmu;
 
 // ─── Carga los nombres ya registrados en el compendio ───────────────────────
 export async function loadRegisteredEntityNames(novelId) {
@@ -107,15 +108,20 @@ export function extractCandidates(text, registeredNames = new Set(), ignoredName
   PROPER_NOUN_REGEX.lastIndex = 0;
 
   while ((match = PROPER_NOUN_REGEX.exec(plainText)) !== null) {
-    const raw = match[1].trim();
+    // Group 2 contains the proper noun (group 1 is the optional leading context char)
+    const raw = (match[2] || match[1] || '').trim();
+    if (!raw) continue;
     const lower = raw.toLowerCase();
 
     // Filtrar stopwords y genéricos
     if (SENTENCE_START_WORDS.has(lower)) continue;
     if (GENERIC_WORDS.has(lower)) continue;
 
-    // Filtrar si ya está registrado o descartado
-    const isRegistered = [...registeredNames].some(n => n.toLowerCase() === lower);
+    // Filtrar si ya está registrado exacto o es una parte sustancial de uno registrado (ej. "Loro Dorado" part of "El Loro Dorado")
+    const isRegistered = [...registeredNames].some(n => {
+      const regLower = n.toLowerCase();
+      return regLower === lower || (regLower.includes(lower) && lower.includes(' '));
+    });
     if (isRegistered) continue;
     
     // Y descartados (ignorados siguen siendo guardados en lower por addToIgnoredNames)
