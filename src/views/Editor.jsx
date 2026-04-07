@@ -642,7 +642,8 @@ export default function EditorView({ menuOpen = false }) {
         loadIgnoredNames(activeNovel.id),
       ])
 
-      const candidates = extractCandidates(plainText, registeredNames, ignoredNames)
+      // Pass empty set for registered names to send all proper nouns to AI for evaluation
+      const candidates = extractCandidates(plainText, new Set(), ignoredNames)
       console.log('[MPC] Candidatos extraídos localmente:', candidates);
       
       if (candidates.length === 0) {
