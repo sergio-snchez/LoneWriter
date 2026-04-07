@@ -1235,7 +1235,7 @@ ${plainText}
               </div>
               <div className={`oracle-tab__entry-text ${isExpanded ? 'oracle-tab__entry-text--expanded' : 'oracle-tab__entry-text--clamped'}`} dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanText) }}>
               </div>
-              {cleanText.length > 300 && (
+              {cleanText.length > 200 && (
                 <button
                   className="oracle-tab__read-more"
                   onClick={() => toggleExpanded(entry.id)}
