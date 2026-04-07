@@ -426,20 +426,35 @@ function DebateTab({ activeScene }) {
     addDebateMessage(userMsg)
 
     let compendiumInfo = ''
-    if (useCompendiumContext && activeNovel) {
+    let ragInfo = ''
+    if (activeNovel) {
       try {
-        const searchResult = await debouncedSearchRef.current(text, activeNovel.id)
-        if (searchResult?.formatted) {
-          compendiumInfo = `\n\n--- INFORMACIÓN DEL COMPENDIO (contexto relevante) ---\n${searchResult.formatted}`
-          setCompendiumContext(searchResult.formatted)
+        const ragTimeout = new Promise(resolve => setTimeout(() => resolve([]), 8000));
+        const ragPromise = retrieveRelevantFragments(text, activeNovel.id, 4);
+        
+        let compendiumPromise = Promise.resolve(null);
+        if (useCompendiumContext) {
+          compendiumPromise = debouncedSearchRef.current(text, activeNovel.id);
+        }
+
+        const [compResult, ragResult] = await Promise.allSettled([
+          compendiumPromise,
+          Promise.race([ragPromise, ragTimeout])
+        ]);
+
+        if (useCompendiumContext && compResult.status === 'fulfilled' && compResult.value?.formatted) {
+          compendiumInfo = `\n\n--- INFORMACIÓN DEL COMPENDIO (contexto relevante) ---\n${compResult.value.formatted}`;
+          setCompendiumContext(compResult.value.formatted);
         } else {
-          setCompendiumContext('')
+          setCompendiumContext('');
+        }
+
+        if (ragResult.status === 'fulfilled' && ragResult.value?.length > 0) {
+          ragInfo = ragResult.value.map(f => `[Fragmento relevante guardado localmente]\n${f.text}`).join('\n\n');
         }
       } catch (err) {
-        if (err.name !== 'AbortError') {
-          console.error('[LoneWriter] Error buscando en compendio:', err)
-        }
-        setCompendiumContext('')
+        if (err.name !== 'AbortError') console.error('[LoneWriter] Error en contexto de Debate:', err);
+        setCompendiumContext('');
       }
     }
 
@@ -471,7 +486,8 @@ function DebateTab({ activeScene }) {
 
           const response = await AIService.agentChat(agent, historyWithUser, {
             provider, apiKey, model: currentModel, localBaseUrl, sceneContent, pov, roundInstruction, knowledgeBase,
-            compendiumContext: compendiumInfo || null
+            compendiumContext: compendiumInfo || null,
+            ragContext: ragInfo || null
           })
 
           logAIUsage(response.usage);
