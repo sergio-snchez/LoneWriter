@@ -622,7 +622,7 @@ export default function EditorView({ menuOpen = false }) {
       } finally {
         setMpcStatus('idle')
       }
-    }, 6000) // 6 segundos de inactividad antes de analizar, para cubrir pausas de reflexión
+    }, 2000) // 2 segundos de inactividad antes de analizar, para mayor agilidad
   }, [activeNovel, apiKey, provider, currentModel, localBaseUrl, mpcCooldownRef, MPC_COOLDOWN_MS, setMpcStatus, addMpcProposals, isMpcEnabled, logAIUsage])
 
   const handleManualMpcScan = useCallback(async () => {
