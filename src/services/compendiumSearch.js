@@ -1,77 +1,5 @@
 import { db } from '../db/database';
-
-const SPANISH_STOP_WORDS = new Set([
-  'a', 'al', 'ante', 'bajo', 'cabe', 'con', 'contra', 'de', 'del', 'desde',
-  'durante', 'en', 'entre', 'hacia', 'hasta', 'mediante', 'para', 'por',
-  'segun', 'sin', 'so', 'sobre', 'tras', 'versus', 'via',
-  'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'lo',
-  'y', 'e', 'o', 'u', 'ni', 'que', 'si', 'no',
-  'es', 'son', 'fue', 'ser', 'estar', 'ha', 'han', 'hay', 'tiene', 'tienen',
-  'se', 'su', 'sus', 'este', 'esta', 'estos', 'estas', 'ese', 'esa', 'esos', 'esas',
-  'aquel', 'aquella', 'aquellos', 'aquellas',
-  'yo', 'tu', 'nosotros', 'vosotros', 'ellos', 'ellas',
-  'me', 'te', 'le', 'nos', 'os', 'les',
-  'mi', 'mis', 'tus',
-  'como', 'cuando', 'donde', 'quien', 'cual', 'cuales',
-  'mas', 'menos', 'muy', 'tan', 'tanto', 'poco', 'mucho',
-  'algo', 'nada', 'alguien', 'nadie',
-  'todo', 'toda', 'todos', 'todas',
-  'otro', 'otra', 'otros', 'otras',
-  'mismo', 'misma', 'mismos', 'mismas',
-  'cada', 'cualquier', 'cualquiera',
-  'pero', 'aunque', 'sino', 'porque', 'pues', 'asi',
-  'entonces', 'ademas', 'embargo',
-  'ya', 'aun', 'tambien', 'solo', 'solamente',
-  'puede', 'pueden', 'podria', 'podrian', 'debe', 'deben',
-  'hace', 'hacen', 'hacer', 'hizo',
-  'dice', 'dicen', 'decir', 'dijo',
-  'va', 'van', 'ir', 'ido',
-  'viene', 'vienen', 'venir',
-  'tener',
-  'sabe', 'saben', 'saber', 'supo',
-  'quiere', 'quieren', 'querer', 'quiso',
-  'pasa', 'pasan', 'pasar', 'paso',
-  'lleva', 'llevan', 'llevar', 'llevo',
-  'da', 'dan', 'dar', 'dio',
-  've', 'ven', 'ver', 'vio',
-  'siente', 'sienten', 'sentir', 'sintio',
-  'mira', 'miran', 'mirar', 'miro',
-  'oye', 'oyen', 'oir', 'oyo',
-  'habla', 'hablan', 'hablar', 'hablo',
-  'camina', 'caminan', 'caminar', 'camino',
-  'entra', 'entran', 'entrar', 'entro',
-  'sale', 'salen', 'salir', 'salio',
-  'llega', 'llegan', 'llegar', 'llego',
-  'toma', 'toman', 'tomar', 'tomo',
-  'busca', 'buscan', 'buscar', 'busco',
-  'encuentra', 'encuentran', 'encontrar', 'encontro',
-  'pregunta', 'preguntan', 'preguntar', 'pregunto',
-  'responde', 'responden', 'responder', 'respondio',
-  'piensa', 'piensan', 'pensar', 'penso',
-  'creo', 'crees', 'cree', 'creemos', 'creen',
-  'siento', 'sientes', 'sentimos',
-  'quiero', 'quieres', 'queremos',
-  'puedo', 'puedes', 'podemos',
-  'debo', 'debes', 'debemos',
-  'tengo', 'tienes', 'tenemos',
-  'soy', 'eres', 'somos',
-  'estoy', 'estas', 'esta', 'estamos', 'estan',
-  'fui', 'fuiste', 'fueron',
-  'era', 'eras', 'eran',
-  'estaba', 'estabas', 'estaban',
-  'tenia', 'tenias', 'tenian',
-  'habia', 'habias', 'habian',
-  'hacia', 'hacias', 'hacian',
-  'dijeron', 'dije', 'dijimos',
-  'hicieron', 'hice', 'hicimos',
-  'tuvieron', 'tuve', 'tuvimos',
-  'pudieron', 'pude', 'pudimos',
-  'quisieron', 'quise', 'quisimos',
-  'vinieron', 'vine', 'vinimos',
-  'supieron', 'supe', 'supimos',
-  'vieron', 'vi', 'vimos',
-  'dieron', 'di', 'dimos',
-]);
+import { getSearchStopWords } from '../i18n/stopwords';
 
 const CATEGORY_LABELS = {
   characters: 'PERSONAJE',
@@ -117,10 +45,11 @@ export function extractKeywords(text) {
   const tokens = normalized.split(' ').filter(Boolean);
   const keywords = [];
   const seen = new Set();
+  const stopWords = getStopWords();
 
   for (const token of tokens) {
     if (token.length < 3) continue;
-    if (SPANISH_STOP_WORDS.has(token)) continue;
+    if (stopWords.has(token)) continue;
     if (seen.has(token)) continue;
     seen.add(token);
     keywords.push(token);
@@ -299,6 +228,7 @@ export async function fetchDetectedEntityData(detectedEntities, novelId) {
 
     const nameField = config.nameField;
     const entityName = entity.name;
+    if (!entityName) continue;
 
     const items = await db[table].where('novelId').equals(novelId).toArray();
     const match = items.find(item => {

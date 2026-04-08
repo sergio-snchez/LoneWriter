@@ -1,4 +1,5 @@
 import { db } from '../db/database';
+import { getEntityStopWords } from '../i18n/stopwords';
 
 const ENTITY_TABLES = ['characters', 'locations', 'objects', 'lore', 'resources'];
 
@@ -9,32 +10,6 @@ const ENTITY_LABELS = {
   lore: 'lore',
   resources: 'recurso',
 };
-
-const STOPWORDS = new Set([
-  'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas',
-  'de', 'del', 'al',
-  'a', 'en', 'con', 'por', 'para', 'sin', 'sobre', 'entre', 'hasta', 'desde', 'hacia',
-  'y', 'e', 'o', 'u', 'pero', 'ni', 'que', 'si', 'no', 'ya', 'así', 'como', 'porque',
-  'es', 'son', 'está', 'están', 'ser', 'siendo', 'sido', 'estar', 'he', 'ha', 'han', 'hay',
-  'este', 'esta', 'esto', 'estos', 'estas', 'ese', 'esa', 'eso', 'esos', 'esas',
-  'aquel', 'aquella', 'aquello', 'aquellos', 'aquellas',
-  'mi', 'tu', 'su', 'nuestro', 'nuestra', 'mis', 'tus', 'sus', 'nuestros', 'nuestras',
-  'me', 'te', 'se', 'nos', 'os',
-  'lo', 'le', 'les',
-  'mas', 'más', 'muy', 'todo', 'toda', 'todos', 'todas', 'cada',
-  'cual', 'cuales', 'donde', 'cuando', 'cuanto', 'cuanta',
-  'otro', 'otra', 'otros', 'otras',
-  'mismo', 'misma', 'mismos', 'mismas',
-  'primero', 'primera', 'último', 'última',
-  'gran', 'grande', 'grandes', 'pequeño', 'pequeña', 'pequeños', 'pequeñas',
-  'nuevo', 'nueva', 'nuevos', 'nuevas', 'viejo', 'vieja', 'viejos', 'viejas',
-  'bueno', 'buena', 'buenos', 'buenas', 'malo', 'mala', 'malos', 'malas',
-  'poco', 'poca', 'pocos', 'pocas', 'mucho', 'mucha', 'muchos', 'muchas',
-  'ahora', 'antes', 'después', 'siempre', 'nunca', 'jamás',
-  'aquí', 'allí', 'allá', 'aca', 'ahí',
-  'bien', 'mal', 'mejor', 'peor',
-  'solo', 'sólo', 'sola',
-]);
 
 const CRITICAL_FIELDS = {
   characters: ['name', 'role', 'occupation', 'traits'],
@@ -127,40 +102,44 @@ export function detectEntitiesInText(text, entityData) {
     if (!items || items.length === 0) continue;
 
     for (const item of items) {
-      const primaryName = item.name || item.title || '';
-      if (!primaryName) continue;
+      try {
+        const primaryName = item.name || item.title || '';
+        if (!primaryName) continue;
 
-      const key = `${table}:${normalizeText(primaryName)}`;
-      if (seen.has(key)) continue;
+        const key = `${table}:${normalizeText(primaryName)}`;
+        if (seen.has(key)) continue;
 
-      const terms = extractTerms(item, table);
-      const criticalMatches = new Set();
-      const doubtfulMatches = new Set();
+        const terms = extractTerms(item, table);
+        const criticalMatches = new Set();
+        const doubtfulMatches = new Set();
 
-      for (const { word, isCritical } of terms) {
-        if (isCritical) {
-          if (textTokens.includes(word)) {
-            criticalMatches.add(word);
-          }
-        } else {
-          if (word.length >= MIN_LENGTH_DOUBTFUL && textTokens.includes(word)) {
-            doubtfulMatches.add(word);
+        for (const { word, isCritical } of terms) {
+          if (isCritical) {
+            if (textTokens.includes(word)) {
+              criticalMatches.add(word);
+            }
+          } else {
+            if (word.length >= MIN_LENGTH_DOUBTFUL && textTokens.includes(word)) {
+              doubtfulMatches.add(word);
+            }
           }
         }
-      }
 
-      const hasCritical = criticalMatches.size > 0;
-      const hasDoubtful = doubtfulMatches.size >= 2;
+        const hasCritical = criticalMatches.size > 0;
+        const hasDoubtful = doubtfulMatches.size >= 2;
 
-      if (hasCritical || hasDoubtful) {
-        seen.add(key);
-        detections.push({
-          type: table,
-          label: ENTITY_LABELS[table],
-          name: primaryName,
-          severity: hasCritical ? 'critical' : 'doubtful',
-          matchedTerms: [...criticalMatches, ...doubtfulMatches],
-        });
+        if (hasCritical || hasDoubtful) {
+          seen.add(key);
+          detections.push({
+            type: table,
+            label: ENTITY_LABELS[table],
+            name: primaryName,
+            severity: hasCritical ? 'critical' : 'doubtful',
+            matchedTerms: [...criticalMatches, ...doubtfulMatches],
+          });
+        }
+      } catch (err) {
+        console.error('[EntityDetector] Error processing item:', item, err);
       }
     }
   }
@@ -230,6 +209,10 @@ export function createDebouncedEntityDetector(callback, delay = 3000) {
 
 export function parseOracleResponse(text) {
   try {
+    if (!text || typeof text !== 'string') {
+      return { hasContradiction: false, message: '' };
+    }
+    
     const jsonMatch = text.match(/\{[\s\S]*"hasContradiction"[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
@@ -239,6 +222,10 @@ export function parseOracleResponse(text) {
       };
     }
   } catch (e) {
+  }
+
+  if (!text) {
+    return { hasContradiction: false, message: '' };
   }
 
   const contradictionKeywords = [

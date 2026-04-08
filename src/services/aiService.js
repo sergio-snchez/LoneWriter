@@ -382,6 +382,8 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
   _callLocal: async (prompt, model, baseUrl) => {
     const url = `${(baseUrl || 'http://localhost:1234/v1').replace(/\/$/, '')}/chat/completions`;
     try {
+      console.log('[Local AI] Request:', { url, model, promptLength: prompt.length });
+      
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -393,18 +395,30 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
         }),
       });
 
+      console.log('[Local AI] Response status:', response.status);
+
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
         throw new Error(errData.error?.message || `Error ${response.status} conectando con el servidor local (${url})`);
       }
 
       const data = await response.json();
-      return data.choices?.[0]?.message?.content?.trim() || 'Error al generar la respuesta.';
+      console.log('[Local AI] Response data:', JSON.stringify(data).slice(0, 500));
+      
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) {
+        throw new Error('La IA local no devolvió contenido. Verifica que el modelo esté cargado correctamente en LM Studio.');
+      }
+      
+      return {
+        text: content.trim(),
+        usage: data.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+      };
     } catch (error) {
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         throw new Error(`No se pudo conectar con el servidor local en ${url}. Asegúrate de que LM Studio u Ollama está en ejecución.`);
       }
-      console.error('Error in AIService._callLocal:', error);
+      console.error('[Local AI] Error:', error);
       throw error;
     }
   },
