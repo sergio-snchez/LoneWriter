@@ -27,9 +27,11 @@ const normalizeHtmlForEditor = (html) => {
 
 const normalizeTextForDisplay = (text) => {
   if (!text) return '';
-  let cleaned = text.replace(/\n{3,}/g, '\n\n');
-  cleaned = cleaned.replace(/(<br\s*\/?>){2,}/gi, '<br/>');
-  return cleaned;
+  return text
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/^\s+|\s+$/g, '');
 }
 
 // ─── Mock data ────────────────────────────────────────────────
@@ -800,7 +802,7 @@ function DebateTab({ activeScene }) {
             return (
               <div key={msg.id} className="debate-msg debate-msg--error">
                 <AlertTriangle size={13} />
-                <span><strong>{msg.agentName}:</strong> <span dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.text) }} /></span>
+                <span><strong>{msg.agentName}:</strong> <span dangerouslySetInnerHTML={{ __html: renderMarkdown(normalizeTextForDisplay(msg.text)) }} /></span>
               </div>
             )
           }
@@ -975,10 +977,7 @@ function OracleTab({ activeScene }) {
 
   const stripJsonBlock = (text) => {
     let cleaned = text.replace(/\{[\s\S]*"hasContradiction"[\s\S]*\}/g, '').trim();
-    cleaned = cleaned.replace(/\n{2,}/g, '\n');
-    cleaned = cleaned.replace(/(<br\s*\/?>)\1{2,}/gi, '$1');
-    cleaned = cleaned.replace(/\s*<br\s*\/?>\s*\n\s*/gi, '<br/>');
-    cleaned = cleaned.replace(/<br\/>\s*<br\/\s*>/gi, '<br/>');
+    cleaned = normalizeTextForDisplay(cleaned);
     return cleaned;
   }
 
@@ -996,7 +995,11 @@ function OracleTab({ activeScene }) {
     setError('')
 
     try {
+      console.log('[Oracle] Starting check. detectedEntities:', JSON.stringify(oracleStatus.detectedEntities));
+      
       const plainText = activeScene.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+      console.log('[Oracle] plainText length:', plainText.length);
+      
       if (!plainText || plainText.length < 10) {
         setError(t('oraculo.error_corto'))
         setIsChecking(false)
@@ -1008,10 +1011,19 @@ function OracleTab({ activeScene }) {
         setTimeout(() => resolve([]), 15000)
       )
 
+      console.log('[Oracle] oracleStatus:', oracleStatus.status, 'entities:', oracleStatus.detectedEntities?.length);
+
       const [compResult, ragResult] = await Promise.allSettled([
         // Compendium entity sheets
         (activeNovel && oracleStatus.detectedEntities?.length > 0)
-          ? fetchDetectedEntityData(oracleStatus.detectedEntities, activeNovel.id)
+          ? (async () => {
+              try {
+                return await fetchDetectedEntityData(oracleStatus.detectedEntities, activeNovel.id);
+              } catch (e) {
+                console.error('[Oracle] fetchDetectedEntityData error:', e);
+                return '';
+              }
+            })()
           : Promise.resolve(''),
         // RAG context (capped at 15s so it never blocks)
         activeNovel?.id
@@ -1053,6 +1065,11 @@ ${plainText}
       })
 
       logAIUsage(response.usage)
+      console.log('[Oracle] response.text:', response.text);
+
+      if (!response.text) {
+        throw new Error('La IA no devolvió texto');
+      }
 
       const parsed = checkOracleResponse(response.text)
 
@@ -1068,7 +1085,8 @@ ${plainText}
         compendiumUsed: compendiumInfo,
       })
     } catch (err) {
-      setError(t('oraculo.error_consulta', { error: err.message }))
+      console.error('[Oracle] Full error:', err);
+      setError(t('oraculo.error_consulta', { error: err.message + ' - ' + err.stack }))
     } finally {
       setIsChecking(false)
     }
@@ -1128,12 +1146,12 @@ ${plainText}
               <span className="oracle-entities-wrapper">
                 <span className="oracle-entities-label">{t('oraculo.coincidencias')}</span>
                 <span className="oracle-entities-list">
-                  {oracleStatus.detectedEntities.map((e, i) => (
+                  {oracleStatus.detectedEntities.filter(e => e?.name).map((e, i) => (
                     <Tooltip key={e.name} content={
                       <div>
                         <strong>{e.name}</strong> ({e.label})
                         <br />
-                        {e.matchedTerms.join(', ')}
+                        {e.matchedTerms?.join(', ')}
                       </div>
                     }>
                       <span className="oracle-entity-tag oracle-entity-tag--hoverable">
@@ -1148,12 +1166,12 @@ ${plainText}
               <span className="oracle-entities-wrapper">
                 <span className="oracle-entities-label">{t('oraculo.coincidencias')}</span>
                 <span className="oracle-entities-list">
-                  {oracleStatus.detectedEntities.map((e, i) => (
+                  {oracleStatus.detectedEntities.filter(e => e?.name).map((e, i) => (
                     <Tooltip key={e.name} content={
                       <div>
                         <strong>{e.name}</strong> ({e.label})
                         <br />
-                        {e.matchedTerms.join(', ')}
+                        {e.matchedTerms?.join(', ')}
                       </div>
                     }>
                       <span className="oracle-entity-tag oracle-entity-tag--error oracle-entity-tag--hoverable">

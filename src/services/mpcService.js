@@ -12,50 +12,10 @@
 
 import { db } from '../db/database';
 import { AIService } from './aiService';
-
-// ─── Stopwords ampliadas (inicio de frase + stopwords normales) ──────────────
-const SENTENCE_START_WORDS = new Set([
-  // Artículos y determinantes
-  'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'lo',
-  'al', 'del',
-  // Preposiciones
-  'a', 'ante', 'bajo', 'con', 'contra', 'de', 'desde', 'durante',
-  'en', 'entre', 'hacia', 'hasta', 'mediante', 'para', 'por',
-  'según', 'sin', 'sobre', 'tras',
-  // Conjunciones
-  'y', 'e', 'o', 'u', 'ni', 'pero', 'sino', 'aunque', 'porque',
-  'que', 'si', 'como', 'cuando', 'donde', 'mientras', 'pues',
-  // Pronombres
-  'yo', 'él', 'ella', 'ellos', 'ellas', 'nosotros', 'vosotros',
-  'me', 'te', 'se', 'nos', 'os', 'le', 'les',
-  'mi', 'tu', 'su', 'mis', 'tus', 'sus',
-  'este', 'esta', 'estos', 'estas', 'ese', 'esa', 'esos', 'esas',
-  'aquel', 'aquella', 'aquellos', 'aquellas',
-  // Verbos auxiliares y comunes al inicio
-  'es', 'son', 'era', 'eran', 'fue', 'fueron', 'ser', 'estar',
-  'ha', 'han', 'había', 'han', 'haber',
-  'hay', 'hubo',
-  // Adverbios y otros
-  'ya', 'no', 'sí', 'también', 'tampoco', 'más', 'muy', 'tan',
-  'así', 'aquí', 'allí', 'allá', 'ahí', 'ahora', 'antes', 'después',
-  'siempre', 'nunca', 'jamás', 'bien', 'mal', 'solo', 'sólo',
-  'todo', 'toda', 'todos', 'todas', 'cada', 'otro', 'otra',
-]);
-
-// Palabras que nunca son entidades narrativas aunque estén en mayúscula
-const GENERIC_WORDS = new Set([
-  'dios', 'señor', 'señora', 'don', 'doña', 'rey', 'reina', 'príncipe',
-  'princesa', 'padre', 'madre', 'hijo', 'hija', 'hermano', 'hermana',
-  'capitán', 'capitana', 'general', 'doctor', 'doctora', 'profesor',
-  'profesora', 'norte', 'sur', 'este', 'oeste', 'tierra', 'mar', 'cielo',
-  'sol', 'luna', 'mundo', 'vida', 'muerte', 'dios', 'dioses', 'nuevo',
-  'nueva', 'gran', 'grande', 'viejo', 'vieja', 'pequeño', 'primera',
-  'primero', 'último', 'última',
-]);
+import i18n from '../i18n/i18n';
+import { getSentenceStartWords, getGenericWords } from '../i18n/stopwords';
 
 // ─── Regex: detecta palabras que empiezan en mayúscula en cualquier posición ──
-// Captura nombres propios tanto en mitad de frase como al inicio de párrafo/oración.
-// Se ignoran palabras justo después de punto (inicio de frase normal) en extractCandidates.
 const PROPER_NOUN_REGEX = /(?:^|(?<=[.!?¿¡\n\r—–""«‹()\[\] \t,;:]))([A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ][a-záéíóúàèìòùäëïöüâêîôûñ\u2019']{1,}(?:\s+[A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ][a-záéíóúàèìòùäëïöüâêîôûñ\u2019']{1,}){0,3})/gmu;
 
 // ─── Carga los nombres ya registrados en el compendio ───────────────────────
@@ -82,7 +42,7 @@ export async function loadRegisteredEntityNames(novelId) {
 export async function loadIgnoredNames(novelId) {
   if (!novelId) return new Set();
   const entries = await db.mpcIgnored.where('novelId').equals(novelId).toArray();
-  return new Set(entries.map(e => e.name.toLowerCase()));
+  return new Set(entries.filter(e => e?.name).map(e => e.name.toLowerCase()));
 }
 
 // ─── Paso 1: Detección local de candidatos (sin IA) ─────────────────────────
@@ -113,9 +73,11 @@ export function extractCandidates(text, registeredNames = new Set(), ignoredName
     if (!raw) continue;
     const lower = raw.toLowerCase();
 
-    // Filtrar stopwords y genéricos
-    if (SENTENCE_START_WORDS.has(lower)) continue;
-    if (GENERIC_WORDS.has(lower)) continue;
+    // Filtrar stopwords y genéricos usando el idioma actual
+    const sentenceStartWords = getSentenceStartWords();
+    const genericWords = getGenericWords();
+    if (sentenceStartWords.has(lower)) continue;
+    if (genericWords.has(lower)) continue;
 
     // Filtrar si ya está registrado exacto o es una parte sustancial de uno registrado (ej. "Loro Dorado" part of "El Loro Dorado")
     const isRegistered = [...registeredNames].some(n => {
