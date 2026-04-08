@@ -108,7 +108,7 @@ export const AIProvider = ({ children }) => {
   }, [isMpcEnabled]);
 
   const mpcCooldownRef = useRef(null); // timestamp de último análisis
-  const MPC_COOLDOWN_MS = 45_000; // 45 segundos entre análisis a la IA para ahorrar tokens
+  const MPC_COOLDOWN_MS = 15_000; // 15 segundos entre análisis a la IA para ahorrar tokens pero mantener fluidez
 
   const currentModel = selectedModels[provider] || DEFAULT_MODELS[provider] || '';
 
