@@ -363,7 +363,7 @@ function ProgressBar({ value, max, label, sublabel, color }) {
   )
 }
 
-export default function EditorView({ menuOpen = false }) {
+export default function EditorView({ menuOpen = false, onNavigate }) {
   const { t } = useTranslation('editor')
   const { 
     acts, activeNovel, characters, updateScene, 
@@ -379,9 +379,7 @@ export default function EditorView({ menuOpen = false }) {
     mpcProposals, mpcStatus, setMpcStatus, addMpcProposals,
     mpcCooldownRef, MPC_COOLDOWN_MS,
     logAIUsage,
-    isMpcEnabled,
-    isMpcDrawerOpen, 
-    setIsMpcDrawerOpen
+    isMpcEnabled
   } = useAI()
 
   // MPC state
@@ -642,8 +640,7 @@ export default function EditorView({ menuOpen = false }) {
         loadIgnoredNames(activeNovel.id),
       ])
 
-      // Pass empty set for registered names to send all proper nouns to AI for evaluation
-      const candidates = extractCandidates(plainText, new Set(), ignoredNames)
+      const candidates = extractCandidates(plainText, registeredNames, ignoredNames)
       console.log('[MPC] Candidatos extraídos localmente:', candidates);
       
       if (candidates.length === 0) {
@@ -1178,7 +1175,13 @@ export default function EditorView({ menuOpen = false }) {
                         } ${
                           mpcProposals.length > 0 ? 'mpc-traffic-light--active' : ''
                         }`}
-                        onClick={() => setIsMpcDrawerOpen(true)}
+                        onClick={() => {
+                          if (mpcProposals.length > 0 || mpcStatus === 'analyzing') {
+                            onNavigate('compendium');
+                          } else {
+                            handleManualMpcScan();
+                          }
+                        }}
                       >
                         {mpcProposals.length > 0 || mpcStatus === 'analyzing' ? (
                           <span className="mpc-traffic-light__count">{mpcProposals.length > 0 ? mpcProposals.length : <Loader2 size={12} className="spin" />}</span>

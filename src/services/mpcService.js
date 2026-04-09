@@ -167,7 +167,7 @@ ESQUEMA DE RESPUESTA (devuelve ÚNICAMENTE el JSON, sin texto adicional, sin mar
   try {
     const response = await AIService._callWithConfig(prompt, aiConfig);
     return { 
-      proposals: parseMpcResponse(response.text, maxProposals), 
+      proposals: parseMpcResponse(response.text, maxProposals, registeredNames), 
       usage: response.usage 
     };
   } catch (error) {
@@ -184,7 +184,7 @@ ESQUEMA DE RESPUESTA (devuelve ÚNICAMENTE el JSON, sin texto adicional, sin mar
  * @param {number} maxProposals - Máximo de propuestas a incluir
  * @returns {Object[]} - Array de propuestas con id único
  */
-export function parseMpcResponse(rawResponse, maxProposals = 5) {
+export function parseMpcResponse(rawResponse, maxProposals = 5, registeredNames = new Set()) {
   if (!rawResponse) return [];
 
   try {
@@ -203,6 +203,15 @@ export function parseMpcResponse(rawResponse, maxProposals = 5) {
         if (!item.confidence || !['high', 'medium', 'low'].includes(item.confidence)) return false;
         const nameOrTitle = item.name || item.title;
         if (!nameOrTitle || typeof nameOrTitle !== 'string' || nameOrTitle.trim().length < 2) return false;
+        
+        // Filtrar entidades que ya existen en el compendio
+        const itemLower = nameOrTitle.toLowerCase().trim();
+        const isAlreadyRegistered = [...registeredNames].some(n => {
+          const regLower = n.toLowerCase().trim();
+          return regLower === itemLower || regLower.includes(itemLower) || itemLower.includes(regLower);
+        });
+        if (isAlreadyRegistered) return false;
+        
         return true;
       })
       .slice(0, maxProposals)

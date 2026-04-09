@@ -122,7 +122,7 @@
     "subtitulo": "{{count}} possible entity detected in your text",
     "subtitulo_plural": "{{count}} possible entities detected in your text",
     "empty_desc_1": "The MPC will analyze your text as you write and suggest new entries for the Compendium.",
-    "empty_desc_2": "For a complete manual scan of the scene, it must be open in the Editor.",
+    "empty_desc_2": "For a complete manual scan of the scene, you must be in the Editor and select the text you want to scan.",
     "escanear_ahora": "Scan current scene",
     "scan_from_editor": "Open a scene in the Editor to scan",
     "ignorar_todas": "Dismiss all",
