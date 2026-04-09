@@ -74,6 +74,10 @@
     "plataforma_valor": "Vite + Electron",
     "idioma": "Language",
     "idioma_hint": "Select the application interface language.",
+    "tema": "Theme",
+    "tema_hint": "Choose between dark mode (classic) or light mode (modern manuscript).",
+    "tema_oscuro": "Dark",
+    "tema_claro": "Light",
     "enlaces_titulo": "Links",
     "github_link": "GitHub Repository",
     "buymeacoffee_link": "Support the project (Buy Me a Coffee)"

@@ -31,6 +31,13 @@ export default function App() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
   const [aiPanelTab, setAiPanelTab] = useState('rewrite')
+  const [theme, setTheme] = useState(() => localStorage.getItem('lw_theme') || 'dark')
+
+  // Apply theme to document and persist
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('lw_theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     const handleOpenOracle = () => {
@@ -401,6 +408,8 @@ export default function App() {
         isOpen={settingsOpen} 
         onClose={() => setSettingsOpen(false)} 
         initialTab={settingsTab}
+        theme={theme}
+        setTheme={setTheme}
       />
 
       {/* Main layout */}

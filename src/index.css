@@ -60,6 +60,50 @@
   --sidebar-w: 260px;
 }
 
+/* ─── Light Theme: Manuscrito Moderno ─── */
+:root[data-theme="light"] {
+  --bg-base:       #FCF8F2;
+  --bg-surface:    #F5F0E6;
+  --bg-elevated:   #FFFFFF;
+  --bg-hover:      #EDE7DE;
+
+  /* Accent – ocre suave / cuero claro */
+  --accent:        #D4A373;
+  --accent-light:  #B8895E;
+  --accent-dim:    rgba(212, 163, 115, 0.12);
+
+  /* Text – marrón carbón oscuro */
+  --text-primary:  #3C3633;
+  --text-secondary:#6B5F54;
+  --text-muted:   #9A8B80;
+
+  /* Borders & dividers */
+  --border:        rgba(60, 54, 51, 0.08);
+  --border-accent: rgba(212, 163, 115, 0.35);
+
+  /* Status colors – ajustados para tema claro */
+  --green:  #4A9B72;
+  --red:    #C75C5C;
+  --gold:   #C99B5D;
+  --blue:   #5A8FC4;
+
+  /* Shadows – más sutiles para tema claro */
+  --shadow-sm: 0 2px 6px rgba(60, 54, 51, 0.08);
+  --shadow-md: 0 4px 16px rgba(60, 54, 51, 0.12);
+  --shadow-lg: 0 8px 32px rgba(60, 54, 51, 0.16);
+}
+
+/* ─── Tags secundarias – beige rosado (ambos temas) ─── */
+:root {
+  --tag-bg:        rgba(212, 163, 115, 0.1);
+  --tag-text:      #B8956E;
+}
+
+:root[data-theme="light"] {
+  --tag-bg:        rgba(180, 160, 140, 0.15);
+  --tag-text:      #9A7B6A;
+}
+
 html, body, #root {
   height: 100%;
   width: 100%;
