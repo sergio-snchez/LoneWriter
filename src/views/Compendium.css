@@ -124,7 +124,7 @@
 }
 .compendium-tab--active {
   background: var(--accent-dim);
-  color: var(--accent-light);
+  color: var(--accent);
   border-color: var(--border-accent);
 }
 

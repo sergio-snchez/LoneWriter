@@ -4,7 +4,7 @@ import {
   Bold, Italic, List, ListOrdered, Quote, 
   Heading1, Heading2, Undo, Redo, Eraser
 } from 'lucide-react';
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAI } from '../context/AIContext';
 import { Tooltip } from './Tooltip';
@@ -33,6 +33,7 @@ export default function RichEditor({ content, onChange, placeholder }) {
   const editorRef = useRef(null);
   const oracleScanRef = useRef(null);
   const lastSelectionRef = useRef('');
+  const [editorError, setEditorError] = useState(null);
 
   if (!oracleScanRef.current) {
     oracleScanRef.current = createDebouncedOracleScan((text) => {
@@ -51,6 +52,10 @@ export default function RichEditor({ content, onChange, placeholder }) {
     content: content,
     onCreate: ({ editor }) => {
       editorRef.current = editor;
+    },
+    onError: (error) => {
+      console.error('[RichEditor] Error:', error);
+      setEditorError(error.message);
     },
     onUpdate: ({ editor }) => {
       editorRef.current = editor;
@@ -115,6 +120,21 @@ export default function RichEditor({ content, onChange, placeholder }) {
 
   if (!editor) {
     return null;
+  }
+
+  if (editorError) {
+    return (
+      <div className="rich-editor" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+        <p>Error cargando el editor: {editorError}</p>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => window.location.reload()}
+          style={{ marginTop: '16px' }}
+        >
+          Recargar página
+        </button>
+      </div>
+    );
   }
 
   return (
