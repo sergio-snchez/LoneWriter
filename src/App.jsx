@@ -20,7 +20,6 @@ import { ExportService } from './services/exportService'
 import { GoogleDriveService } from './services/googleDriveService'
 import { db } from './db/database'
 import './App.css'
-import MpcProposalDrawer from './components/MpcProposalDrawer'
 import RagToast from './components/RagToast'
 
 export default function App() {
@@ -31,7 +30,6 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
-  const { isMpcDrawerOpen, setIsMpcDrawerOpen } = useAI();
   const [aiPanelTab, setAiPanelTab] = useState('rewrite')
 
   useEffect(() => {
@@ -226,7 +224,7 @@ export default function App() {
       );
     }
     switch (activeView) {
-      case 'editor':     return <EditorView menuOpen={menuOpen} />
+      case 'editor':     return <EditorView menuOpen={menuOpen} onNavigate={setActiveView} />
       case 'compendium': return <CompendiumView />
       case 'resources':  return <ResourcesView />
       default:           return <EditorView />
@@ -458,20 +456,6 @@ export default function App() {
           onOpenSettings={(tab) => {
             setSettingsTab(tab || 'ia');
             setSettingsOpen(true);
-          }}
-        />
-
-        <MpcProposalDrawer
-          isOpen={isMpcDrawerOpen}
-          onClose={() => setIsMpcDrawerOpen(false)}
-          activeScene={activeScene}
-          onEditProposal={(proposal) => {
-            setIsMpcDrawerOpen(false);
-            setActiveView('compendium');
-            // Dispatch event so CompendiumView can open the edit panel
-            setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('mpc-edit-proposal', { detail: { proposal } }));
-            }, 50);
           }}
         />
       </div>
