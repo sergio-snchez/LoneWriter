@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { 
   X, Cloud, RefreshCw, LogIn, LogOut, 
   Sparkles, Shield, Info, AlertTriangle, Key, ExternalLink,
-  Heart, Languages, Globe
+  Heart, Languages, Globe, History
 } from 'lucide-react';
+import { Tooltip } from './Tooltip';
 import { useAI } from '../context/AIContext';
 import { useNovel } from '../context/NovelContext';
 import { GoogleDriveService } from '../services/googleDriveService';
@@ -37,7 +38,7 @@ const UsageMeter = ({ label, value, max, unit }) => {
   );
 };
 
-const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
+const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme, openModal }) => {
   const { t } = useTranslation('settings');
   const { t: tc } = useTranslation('common');
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -60,6 +61,8 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [isCloudLinked, setIsCloudLinked] = useState(GoogleDriveService.isAuthenticated());
+  const [showRevisions, setShowRevisions] = useState(false);
+  const [revisions, setRevisions] = useState([]);
 
   if (!isOpen) return null;
 
@@ -69,6 +72,14 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
       await GoogleDriveService.authenticate();
       setIsCloudLinked(true);
       toggleCloudSync(true);
+      
+      const cloudFile = await GoogleDriveService.findBackupFile();
+      if (cloudFile && cloudFile.modifiedTime) {
+        const cloudDate = new Date(cloudFile.modifiedTime).getTime();
+        window.dispatchEvent(new CustomEvent('cloud-version-available', { 
+          detail: { date: cloudDate } 
+        }));
+      }
     } catch (error) {
       console.error('Error linking Google Drive:', error);
       const msg = !import.meta.env.VITE_GOOGLE_CLIENT_ID 
@@ -90,6 +101,40 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
     setIsSyncing(true);
     await performCloudSync();
     setIsSyncing(false);
+  };
+
+  const handleShowRevisions = async () => {
+    setIsSyncing(true);
+    try {
+      const revs = await GoogleDriveService.getRevisions();
+      setRevisions(revs || []);
+      setShowRevisions(true);
+    } catch (error) {
+      console.error('Error loading revisions:', error);
+      alert('Error al cargar el historial de versiones');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleRestoreRevision = async (revisionId, revisionDate) => {
+    if (!confirm(`¿Restaurar copia del ${new Date(revisionDate).toLocaleString()}? Esto sobrescribirá todos los datos actuales.`)) return;
+    
+    setIsSyncing(true);
+    try {
+      const cloudData = await GoogleDriveService.downloadRevision(revisionId);
+      if (cloudData) {
+        window.dispatchEvent(new CustomEvent('restore-from-revision', {
+          detail: { data: cloudData, date: revisionDate }
+        }));
+        setShowRevisions(false);
+      }
+    } catch (error) {
+      console.error('Error restoring revision:', error);
+      alert('Error al restaurar la versión');
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const AI_PROVIDER_LINKS = {
@@ -174,36 +219,96 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
                        cloudSyncStatus === 'error' ? t('nube.error_guardar') :
                        `${t('nube.ultima_copia', { date: lastCloudSync ? new Date(lastCloudSync).toLocaleString() : t('nube.nunca') })}`}
                     </span>
-                    <button className="btn btn-ghost btn-sm" onClick={handleManualSync} disabled={isSyncing || cloudSyncStatus === 'syncing'}>
-                      <RefreshCw size={12} className={isSyncing || cloudSyncStatus === 'syncing' ? 'spinner' : ''} />
-                      {t('nube.sincronizar_ahora')}
-                    </button>
+                    <Tooltip content={t('nube.ver_historial')}>
+                      <button className="btn btn-ghost btn-sm" onClick={handleShowRevisions} disabled={isSyncing}>
+                        <History size={12} />
+                      </button>
+                    </Tooltip>
+                    <Tooltip content={t('nube.sincronizar_ahora')}>
+                      <button className="btn btn-ghost btn-sm" onClick={handleManualSync} disabled={isSyncing || cloudSyncStatus === 'syncing'}>
+                        <RefreshCw size={12} className={isSyncing || cloudSyncStatus === 'syncing' ? 'spinner' : ''} />
+                        {t('nube.sincronizar_ahora')}
+                      </button>
+                    </Tooltip>
                   </div>
                 )}
               </div>
 
-              {isCloudLinked && (
-                <div className="settings-section" style={{ marginTop: '10px' }}>
-                  <div className="sync-toggle-group">
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      <label>{t('nube.sincronizacion_automatica')}</label>
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{t('nube.proteccion_cache')}</span>
+              {showRevisions && (
+                <div style={{ marginTop: '12px', padding: '12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 600 }}>{t('nube.historial_titulo')}</span>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setShowRevisions(false)}>
+                      <X size={14} />
+                    </button>
+                  </div>
+                  {revisions.length === 0 ? (
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t('nube.sin_revisiones')}</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto' }}>
+                      {revisions.slice().reverse().map((rev) => (
+                        <div key={rev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-sm)' }}>
+                          <span style={{ fontSize: '12px' }}>{new Date(rev.modifiedTime).toLocaleString()}</span>
+                          <button className="btn btn-primary btn-sm" onClick={() => handleRestoreRevision(rev.id, rev.modifiedTime)} disabled={isSyncing}>
+                            {t('nube.restaurar')}
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                    <input 
-                      type="checkbox" 
-                      className="form-toggle" 
-                      checked={isCloudSyncEnabled} 
-                      onChange={(e) => toggleCloudSync(e.target.checked)}
-                      style={{ height: '20px', width: '20px', cursor: 'pointer', accentColor: 'var(--accent)' }}
-                    />
+                  )}
+                </div>
+              )}
+
+              {isCloudLinked && (
+                <>
+                  <div style={{ padding: '12px', background: 'var(--accent-dim)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-accent)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <label style={{ fontSize: '13px' }}>{t('nube.sincronizacion_automatica')}</label>
+                        <span style={{ fontSize: '11px', color: 'var(--accent-light)' }}>{t('nube.proteccion_cache')}</span>
+                      </div>
+                      <input 
+                        type="checkbox" 
+                        className="form-toggle" 
+                        checked={isCloudSyncEnabled} 
+                        onChange={(e) => toggleCloudSync(e.target.checked)}
+                        style={{ height: '20px', width: '20px', cursor: 'pointer', accentColor: 'var(--accent)' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px', paddingTop: '8px', borderTop: '1px solid var(--border-accent)' }}>
+                      <Shield size={16} style={{ color: 'var(--accent-light)', flexShrink: 0 }} />
+                      <p style={{ fontSize: '11px', color: 'var(--accent-light)', margin: 0 }} dangerouslySetInnerHTML={{ __html: t('nube.seguridad_hint', { interpolation: { escapeValue: false } }) }}>
+                      </p>
+                    </div>
                   </div>
                   
-                  <div className="settings-info-box" style={{ padding: '12px', background: 'var(--accent-dim)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-accent)', display: 'flex', gap: '10px' }}>
-                     <Shield size={16} style={{ color: 'var(--accent-light)', flexShrink: 0 }} />
-                     <p style={{ fontSize: '11px', color: 'var(--accent-light)', margin: 0 }} dangerouslySetInnerHTML={{ __html: t('nube.seguridad_hint', { interpolation: { escapeValue: false } }) }}>
-                     </p>
+                  <div className="settings-section" style={{ marginTop: '16px' }}>
+                    <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <ExternalLink size={14} />
+                      {t('general.enlaces_titulo')}
+                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                      <a 
+                        href="https://github.com/sergio-snchez/LoneWriter" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '12px' }}
+                      >
+                        <ExternalLink size={14} />
+                        {t('general.github_link')}
+                      </a>
+                      <a 
+                        href="https://buymeacoffee.com/sergio.snchez" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '12px' }}
+                      >
+                        <Heart size={14} />
+                        {t('general.buymeacoffee_link')}
+                      </a>
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
           </div>
@@ -334,6 +439,8 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
                 <span className="settings-info-value">{t('general.base_datos_valor')}</span>
                 <span className="settings-info-label">{t('general.plataforma')}</span>
                 <span className="settings-info-value">{t('general.plataforma_valor')}</span>
+                <span className="settings-info-label">{t('general.tecnologia_rag')}</span>
+                <span className="settings-info-value">{t('general.tecnologia_rag_valor')}</span>
               </div>
             </div>
             <div className="settings-section">
@@ -348,28 +455,63 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud' }) => {
             </div>
             <div className="settings-section">
               <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ExternalLink size={14} />
-                {t('general.enlaces_titulo')}
+                <Info size={14} />
+                {t('general.tema')}
               </span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <a 
-                  href="https://github.com/sergio-snchez/LoneWriter" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '12px' }}
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
+                {t('general.tema_hint')}
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => setTheme('dark')}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    borderRadius: 'var(--radius-md)',
+                    border: theme === 'dark' ? '2px solid var(--accent)' : '2px solid var(--border)',
+                    background: theme === 'dark' ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all var(--trans-fast)'
+                  }}
                 >
-                  <ExternalLink size={14} />
-                  {t('general.github_link')}
-                </a>
-                <a 
-                  href="https://buymeacoffee.com/sergio.snchez" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '12px' }}
+                  <div style={{ 
+                    width: '32px', 
+                    height: '32px', 
+                    borderRadius: '50%', 
+                    background: `linear-gradient(135deg, #2B2E3E 50%, #21262d 50%)`,
+                    border: '1px solid rgba(255,255,255,0.2)'
+                  }} />
+                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('general.tema_oscuro')}</span>
+                </button>
+                <button
+                  onClick={() => setTheme('light')}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    borderRadius: 'var(--radius-md)',
+                    border: theme === 'light' ? '2px solid var(--accent)' : '2px solid var(--border)',
+                    background: theme === 'light' ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all var(--trans-fast)'
+                  }}
                 >
-                  <Heart size={14} />
-                  {t('general.buymeacoffee_link')}
-                </a>
+                  <div style={{ 
+                    width: '32px', 
+                    height: '32px', 
+                    borderRadius: '50%', 
+                    background: `linear-gradient(135deg, #FEFAF1 50%, #F5F2E7 50%)`,
+                    border: '1px solid rgba(60,54,51,0.2)'
+                  }} />
+                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('general.tema_claro')}</span>
+                </button>
               </div>
             </div>
           </div>

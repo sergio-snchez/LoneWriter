@@ -3,6 +3,7 @@ import i18n from '../i18n/i18n';
 import { db } from '../db/database';
 import { ExportService } from '../services/exportService';
 import { GoogleDriveService } from '../services/googleDriveService';
+import { deleteVectorsForScene, deleteVectorsForNovel, indexPendingScenes } from '../services/ragService';
 
 const NovelContext = createContext();
 
@@ -217,6 +218,9 @@ export const NovelProvider = ({ children }) => {
       await reloadData(id);
       setActiveNovel({ ...novel, wordCount: realWords });
       localStorage.setItem('activeNovelId', id);
+      
+      // Auto-index scenes that don't have RAG vectors yet (e.g. from older sessions)
+      indexPendingScenes(id);
     }
   };
 
@@ -342,7 +346,8 @@ export const NovelProvider = ({ children }) => {
     await db.transaction('rw', [
       db.novels, db.acts, db.chapters, db.scenes,
       db.characters, db.locations, db.objects, db.lore,
-      db.resources, db.dailyProgress, db.debateAgents, db.debateSessions
+      db.resources, db.dailyProgress, db.debateAgents, db.debateSessions,
+      db.oracleEntries, db.lastRewrite, db.mpcIgnored
     ], async () => {
       // Delete narrative structure
       const actsToDelete = await db.acts.where('novelId').equals(id).toArray();
@@ -364,9 +369,15 @@ export const NovelProvider = ({ children }) => {
       // Delete AI debate data
       await db.debateAgents.where('novelId').equals(id).delete();
       await db.debateSessions.where('novelId').equals(id).delete();
+      // Delete extra AI tables
+      await db.oracleEntries.where('novelId').equals(id).delete();
+      await db.lastRewrite.where('novelId').equals(id).delete();
+      await db.mpcIgnored.where('novelId').equals(id).delete();
       // Delete the novel itself
       await db.novels.delete(id);
     });
+    // ── RAG: remove all embeddings for this novel ──
+    await deleteVectorsForNovel(id);
     setAllNovels(prev => prev.filter(n => n.id !== id));
     if (activeNovel?.id === id) setActiveNovel(null);
     setPendingSync(true);
@@ -385,6 +396,10 @@ export const NovelProvider = ({ children }) => {
     const act = await db.acts.get(id);
     const chapters = await db.chapters.where('actId').equals(id).toArray();
     for (const ch of chapters) {
+      const scenes = await db.scenes.where('chapterId').equals(ch.id).toArray();
+      for (const sc of scenes) {
+        await deleteVectorsForScene(sc.id); // ── RAG cascade
+      }
       await db.scenes.where('chapterId').equals(ch.id).delete();
     }
     await db.chapters.where('actId').equals(id).delete();
@@ -405,6 +420,10 @@ export const NovelProvider = ({ children }) => {
   const deleteChapter = async (id) => {
     const ch = await db.chapters.get(id);
     const act = await db.acts.get(ch.actId);
+    const scenes = await db.scenes.where('chapterId').equals(id).toArray();
+    for (const sc of scenes) {
+      await deleteVectorsForScene(sc.id); // ── RAG cascade
+    }
     await db.scenes.where('chapterId').equals(id).delete();
     await db.chapters.delete(id);
     await reloadData(act.novelId);
@@ -426,6 +445,7 @@ export const NovelProvider = ({ children }) => {
     const ch = await db.chapters.get(sc.chapterId);
     const act = await db.acts.get(ch.actId);
     await db.scenes.delete(id);
+    await deleteVectorsForScene(id); // ── RAG cascade
     await reloadData(act.novelId);
     setPendingSync(true);
   };

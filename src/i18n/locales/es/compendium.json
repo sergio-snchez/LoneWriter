@@ -122,7 +122,7 @@
     "subtitulo": "{{count}} posible entidad detectada en tu texto",
     "subtitulo_plural": "{{count}} posibles entidades detectadas en tu texto",
     "empty_desc_1": "El MPC analizará tu texto mientras escribes y sugerirá nuevas entidades para el Compendio.",
-    "empty_desc_2": "Para un escaneo manual completo de la escena, debe estar abierta en el Editor.",
+    "empty_desc_2": "Para un escaneo manual completo de la escena, debes estar en el Editor y seleccionar el texto que quieres escanear.",
     "escanear_ahora": "Escanear escena actual",
     "scan_from_editor": "Abre una escena en el Editor para escanear",
     "ignorar_todas": "Ignorar todas",

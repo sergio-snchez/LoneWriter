@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Users, MapPin, Package, BookOpen, Star, ExternalLink,
-  Search, Filter, ChevronRight, Plus, Tag, PenLine, Trash2, X, Zap, Sparkles, Loader2
+  Search, Filter, ChevronRight, Plus, Tag, PenLine, Trash2, 
+  X, Zap, Sparkles, Loader2, CheckCircle2
 } from 'lucide-react'
 import { useNovel } from '../context/NovelContext'
 import { useAI } from '../context/AIContext'
@@ -11,6 +12,8 @@ import { extractKeywords, TABLE_CONFIG } from '../services/compendiumSearch'
 import { Tooltip } from '../components/Tooltip'
 
 import { AIService } from '../services/aiService'
+import { ProposalCard } from '../components/MpcProposalDrawer'
+import { retrieveRelevantFragments } from '../services/ragService'
 import './Compendium.css'
 
 /* ---- Curated Color Palette ---- */
@@ -39,7 +42,7 @@ function ColorPicker({ value, onChange }) {
 }
 
 /* ---- Panel de Formulario Lateral ---- */
-function CompendiumPanel({ type, item, characters, onClose, onSave }) {
+function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel }) {
   const { t } = useTranslation('compendium')
   const { acts } = useNovel()
   const { provider, apiKey, currentModel, localBaseUrl, logAIUsage } = useAI()
@@ -123,34 +126,58 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
     
     setIsAiLoading(true);
     try {
-      const MAX_CHARS = 50000;
+      const MAX_CHARS = 15000;
+      const nameToMatch = formData.name || formData.title || "";
       
-      // Optimizacion: Priorizar escenas que mencionan el nombre
-      const nameToMatch = (formData.name || formData.title || "").toLowerCase();
-      let allScenes = [];
-      for (const act of (acts || [])) {
-        for (const ch of (act.chapters || [])) {
-          for (const sc of (ch.scenes || [])) {
-            if (sc.content) allScenes.push(sc);
+      let fullText = "";
+      
+      // Usar RAG para obtener fragmentos relevantes
+      if (activeNovel?.id && nameToMatch.trim().length >= 2) {
+        try {
+          const ragTimeout = new Promise(resolve => setTimeout(() => resolve([]), 10000));
+          const ragPromise = retrieveRelevantFragments(nameToMatch, activeNovel.id, 8);
+          const ragFragments = await Promise.race([ragPromise, ragTimeout]);
+          
+          if (ragFragments && ragFragments.length > 0) {
+            fullText = ragFragments.join('\n\n---\n');
+            console.log('[Compendium] RAG encontró', ragFragments.length, 'fragmentos relevantes');
           }
+        } catch (ragErr) {
+          console.warn('[Compendium] RAG falló, usando método tradicional:', ragErr.message);
         }
       }
-
-      // 1. Filtrar escenas relevantes
-      const relevantScenes = allScenes.filter(sc => 
-        sc.content && sc.content.toLowerCase().includes(nameToMatch)
-      );
-
-      // 2. Si no hay suficientes escenas relevantes, usar las últimas escenas escritas como respaldo
-      const contextScenes = relevantScenes.length > 5 ? relevantScenes : allScenes.slice(-15);
-
-      let fullText = "";
-      for (const sc of contextScenes) {
-        fullText += sc.content.replace(/<[^>]*>/g, ' ') + "\n";
-        if (fullText.length > MAX_CHARS) break;
+      
+      // Fallback: método tradicional si RAG no funcionó
+      if (!fullText) {
+        let allScenes = [];
+        for (const act of (acts || [])) {
+          for (const ch of (act.chapters || [])) {
+            for (const sc of (ch.scenes || [])) {
+              if (sc.content) allScenes.push(sc);
+            }
+          }
+        }
+        
+        const relevantScenes = allScenes.filter(sc => 
+          sc.content && sc.content.toLowerCase().includes(nameToMatch.toLowerCase())
+        );
+        
+        const contextScenes = relevantScenes.length > 5 ? relevantScenes : allScenes.slice(-15);
+        
+        for (const sc of contextScenes) {
+          fullText += sc.content.replace(/<[^>]*>/g, ' ') + "\n";
+          if (fullText.length > MAX_CHARS) break;
+        }
+      }
+      
+      if (!fullText.trim()) {
+        alert(t('formulario.completar_ia_fallo', { error: 'No se encontró contexto relevante en la novela' }));
+        setIsAiLoading(false);
+        return;
       }
       
       const config = { provider, apiKey, model: currentModel, localBaseUrl };
+      console.log('[Compendium] Generando', type, 'con IA:', formData.name || formData.title);
       const res = await AIService.autoCompleteCompendiumEntry(
         fullText,
         type,
@@ -162,16 +189,13 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
       logAIUsage(res.usage);
       const aiData = res.data;
 
-      // Update form data conservatively with new AI JSON
       setFormData(prev => {
         const next = { ...prev };
-        // Shallow merge simple fields
         Object.keys(aiData).forEach(k => {
           if (aiData[k] !== undefined && aiData[k] !== null && aiData[k] !== "") {
             next[k] = aiData[k];
           }
         });
-        // Special raw fields parsing for inputs
         if (next.traits && Array.isArray(next.traits)) next._rawTraits = next.traits.join(', ');
         if (next.tags && Array.isArray(next.tags)) next._rawTags = next.tags.join(', ');
         return next;
@@ -256,11 +280,13 @@ function CompendiumPanel({ type, item, characters, onClose, onSave }) {
                       </select>
                       <div className="relation-row__fields">
                         <input
+                          name="type"
                           placeholder={t('formulario.personajes.relacion_para_mi')}
                           value={rel.type}
                           onChange={e => handleRelationChange(i, 'type', e.target.value)}
                         />
                         <input
+                          name="reverseType"
                           placeholder={t('formulario.personajes.relacion_para_el')}
                           value={rel.reverseType}
                           onChange={e => handleRelationChange(i, 'reverseType', e.target.value)}
@@ -701,10 +727,11 @@ function LoreCard({ entry, onEdit, onDelete, onToggleIgnore }) {
 /* ---- Main Compendium view ---- */
 export default function CompendiumView() {
   const { t } = useTranslation('compendium')
-  const { characters, locations, objects, lore, addCompendiumEntry, updateCompendiumEntry, deleteCompendiumEntry } = useNovel()
+  const { characters, locations, objects, lore, addCompendiumEntry, updateCompendiumEntry, deleteCompendiumEntry, activeNovel } = useNovel()
   const { 
     mpcProposals, dismissMpcProposal, isMpcEnabled, setIsMpcEnabled,
-    isMpcDrawerOpen, setIsMpcDrawerOpen, mpcStatus
+    mpcStatus,
+    acceptMpcProposal, dismissMpcProposalPermanently, clearMpcProposals
   } = useAI()
   const { openModal } = useModal()
   const [activeSection, setActiveSection] = useState('characters')
@@ -717,6 +744,8 @@ export default function CompendiumView() {
   // Filter State
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState([]);
+  const [isMpcOverlayOpen, setIsMpcOverlayOpen] = useState(false);
+  const [acceptingMpcId, setAcceptingMpcId] = useState(null);
 
   // Limpiar filtros al cambiar de sección
   useEffect(() => {
@@ -851,6 +880,61 @@ export default function CompendiumView() {
     const table = getTableForSection(activeSection);
     const newValue = item.ignoredForOracle === 1 ? 0 : 1;
     await updateCompendiumEntry(table, item.id, { ignoredForOracle: newValue });
+  };
+
+  // ---- MPC Accordion Functions ----
+  const buildMpcCompendiumData = (proposal) => {
+    const { id: _id, confidence: _c, reason: _r, type, ...data } = proposal;
+    if (type === 'lore') {
+      if (!data.title && data.name) { data.title = data.name; delete data.name; }
+    }
+    if (data.entityType !== undefined) {
+      data.type = data.entityType;
+      delete data.entityType;
+    }
+    if (type === 'characters') {
+      data.initials = data.initials || (data.name || '').substring(0, 2).toUpperCase();
+      data.color = data.color || '#6b9fd4';
+    }
+    return { type, data };
+  };
+
+  const handleMpcAccept = async (proposal) => {
+    setAcceptingMpcId(proposal.id);
+    try {
+      const { type, data } = buildMpcCompendiumData(proposal);
+      await addCompendiumEntry(type, data);
+      acceptMpcProposal(proposal.id);
+    } catch (err) {
+      console.error('[MPC] Error al aceptar propuesta:', err);
+    } finally {
+      setAcceptingMpcId(null);
+    }
+  };
+
+  const handleMpcEdit = (proposal) => {
+    setActiveSection(proposal.type);
+    const data = { ...proposal };
+    delete data.id; delete data.confidence; delete data.reason; delete data.type;
+    if (proposal.type === 'characters') {
+      data.initials = data.initials || (data.name || '').substring(0, 2).toUpperCase();
+      data.color = data.color || '#6b9fd4';
+    }
+    if (proposal.type === 'lore' && data.name && !data.title) {
+      data.title = data.name;
+      delete data.name;
+    }
+    setEditingItem(data);
+    setIsPanelOpen(true);
+    dismissMpcProposal(proposal.id);
+  };
+
+  const handleMpcDismiss = (id) => {
+    dismissMpcProposal(id);
+  };
+
+  const handleMpcDismissPermanently = (proposal) => {
+    dismissMpcProposalPermanently(proposal);
   };
 
   const handleSavePanel = async (data) => {
@@ -998,20 +1082,22 @@ export default function CompendiumView() {
           ))}
         </div>
 
-        {/* MPC Badge in Compendium */}
-        <div style={{ padding: '0 0 16px 0', display: 'flex', justifyContent: 'center' }}>
+        {/* MPC Badge - abre overlay flotante */}
+        <div className="compendium-mpc-badge">
           <div
-            className={`mpc-pill ${
-              mpcStatus === 'analyzing' ? 'mpc-pill--analyzing' : ''
+            className={`compendium-mpc-badge__button ${
+              mpcStatus === 'analyzing' ? 'compendium-mpc-badge--analyzing' : ''
             } ${
-              mpcProposals.length > 0 ? 'mpc-pill--active' : ''
+              mpcProposals.length > 0 ? 'compendium-mpc-badge--active' : ''
             }`}
-            onClick={() => setIsMpcDrawerOpen(true)}
+            onClick={() => setIsMpcOverlayOpen(true)}
           >
             {mpcProposals.length > 0 || mpcStatus === 'analyzing' ? (
-              <span className="mpc-pill__count">{mpcProposals.length > 0 ? mpcProposals.length : <Loader2 size={12} className="spin" />}</span>
+              <span className="compendium-mpc-badge__count">
+                {mpcProposals.length > 0 ? mpcProposals.length : <Loader2 size={12} className="spin" />}
+              </span>
             ) : (
-              <Sparkles size={14} className="mpc-pill__icon" />
+              <Sparkles size={14} className="compendium-mpc-badge__icon" />
             )}
             <span>
               {mpcStatus === 'analyzing' ? t('ai:oraculo.consultando') : t('compendium:mpc.titulo')}
@@ -1152,9 +1238,96 @@ export default function CompendiumView() {
           type={activeSection} 
           item={editingItem} 
           characters={characters}
+          activeNovel={activeNovel}
           onClose={() => setIsPanelOpen(false)} 
           onSave={handleSavePanel} 
         />
+      )}
+
+      {/* MPC Overlay Flotante */}
+      {isMpcOverlayOpen && (
+        <div className="compendium-mpc-overlay" onClick={() => setIsMpcOverlayOpen(false)}>
+          <div className="compendium-mpc-overlay__panel" onClick={(e) => e.stopPropagation()}>
+            <div className="compendium-mpc-overlay__header">
+              <div className="compendium-mpc-overlay__title">
+                <Sparkles size={18} className="compendium-mpc-overlay__icon" />
+                <span>{t('compendium:mpc.titulo')}</span>
+                {mpcStatus === 'analyzing' && (
+                  <Loader2 size={14} className="spin" />
+                )}
+              </div>
+              <button className="btn btn-ghost btn-icon" onClick={() => setIsMpcOverlayOpen(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            
+            <div className="compendium-mpc-overlay__body">
+              {mpcProposals.length === 0 ? (
+                <div className="compendium-mpc-overlay__empty">
+                  {mpcStatus === 'analyzing' ? (
+                    <>
+                      <Loader2 size={32} className="spin" style={{ color: 'var(--accent)' }} />
+                      <p>{t('ai:oraculo.consultando')}</p>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={32} style={{ opacity: 0.3, color: '#9b72cf' }} />
+                      <p>
+                        {t('compendium:mpc.empty_desc_1')}
+                        <br /><br />
+                        <span style={{ color: 'var(--gold)', opacity: 0.7, fontStyle: 'italic' }}>
+                          {t('compendium:mpc.empty_desc_2')}
+                        </span>
+                      </p>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="compendium-mpc-overlay__subtitle">
+                    {mpcProposals.length === 1 
+                      ? t('compendium:mpc.subtitulo', { count: 1 })
+                      : t('compendium:mpc.subtitulo_plural', { count: mpcProposals.length })
+                    }
+                  </div>
+                  <div className="compendium-mpc-overlay__cards">
+                    {mpcProposals.map(proposal => (
+                      <ProposalCard
+                        key={proposal.id}
+                        proposal={proposal}
+                        onAccept={handleMpcAccept}
+                        onEdit={handleMpcEdit}
+                        onDismiss={handleMpcDismiss}
+                        onDismissPermanently={handleMpcDismissPermanently}
+                        isAccepting={acceptingMpcId === proposal.id}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {mpcProposals.length > 1 && (
+              <div className="compendium-mpc-overlay__footer">
+                <button className="btn btn-ghost" onClick={clearMpcProposals}>
+                  <Trash2 size={13} />
+                  {t('compendium:mpc.ignorar_todas')}
+                </button>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={async () => {
+                    for (const proposal of [...mpcProposals]) {
+                      await handleMpcAccept(proposal);
+                    }
+                  }}
+                >
+                  <CheckCircle2 size={13} />
+                  {t('compendium:mpc.aceptar_todas')}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
 

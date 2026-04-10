@@ -132,12 +132,12 @@
 
 .sidebar__nav-item--active {
   background: var(--accent-dim);
-  color: var(--accent-light);
+  color: var(--accent);
   border-color: var(--border-accent);
 }
 .sidebar__nav-item--active:hover {
   background: var(--accent-dim);
-  color: var(--accent-light);
+  color: var(--accent);
 }
 
 .sidebar__nav-icon {

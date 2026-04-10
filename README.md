@@ -6,7 +6,7 @@
 
 </div>
 
-# LoneWriter v1.5-MPC (Stable) 🖋️
+# LoneWriter v1.5-compendio (Stable) 🖋️
 
 > **Your "Narrative Operating System": The AI that listens to you, organizes your chaos, and monitors your world's coherence while you only worry about writing.**
 >
@@ -32,7 +32,8 @@ LoneWriter is a minimalist and powerful application designed for writers seeking
 ### 🤖 Invisible AI & Lore Monitor (MPC)
 - **MPC (Compendium Proposal Monitor):** Goodbye to "world bureaucracy." LoneWriter listens as you write and automatically detects new entities (characters, places, objects). It suggests them in a non-intrusive purple panel so you can add them to your compendium with one click, without stopping your narrative flow.
 - **Magic Auto-complete:** Mentioned a new sword or a mysterious village? Use the sparkle button in the Compendium to let the AI scan your novel and automatically fill in descriptions, traits, and relationships for you.
-- **Oracle Verdicts (Continuity Linter):** Real-time paragraph-by-paragraph coherence analysis. It acts as a "logic corrector" that detects contradictions with your established lore (e.g., a dead character reappearing or an object mistakenly changing owners).
+- **RAG Engine (all-MiniLM-L6-v2):** Semantic search powered by local embeddings (Transformers.js). Your entire novel is vectorized in the browser — context-aware queries without external APIs, keeping your data private.
+- **Oracle Verdicts (Continuity Lintor):** Real-time paragraph-by-paragraph coherence analysis. It acts as a "logic corrector" that detects contradictions with your established lore (e.g., a dead character reappearing or an object mistakenly changing owners).
 - **Selective Exclusion:** Control which Compendium entities participate in coherence analysis with one click to avoid false positives during dreams or flashbacks.
 
 ### 🧠 Advanced AI Assistant
@@ -55,6 +56,7 @@ LoneWriter is a minimalist and powerful application designed for writers seeking
 
 - **Core:** React + Vite
 - **Database:** Dexie.js (IndexedDB)
+- **RAG Engine:** Transformers.js (all-MiniLM-L6-v2) — local embeddings in browser
 - **i18n:** i18next + react-i18next
 - **Compression:** pako (gzip)
 - **PWA:** Vite PWA Plugin (Service Workers, Offline support)
@@ -84,7 +86,7 @@ Designed and developed with ♥ by **Sergio Sánchez** with Antigravity.
 
 ---
 
-*LoneWriter v1.4-multilingual - Your personal space to bring great stories to life.*
+*LoneWriter v1.5-compendio - Your personal space to bring great stories to life.*
 
 ---
 

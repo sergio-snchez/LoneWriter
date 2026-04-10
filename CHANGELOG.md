@@ -6,9 +6,41 @@
 
 </div>
 
-## [LoneWriter v1.4-multilingual (Stable)] - 2026-04-03
+## [LoneWriter v1.5-compendio (Stable)] - 2026-04-10
 
 ### Added
+- **RAG (Retrieval-Augmented Generation)**: Vector-based semantic search engine for the Oracle and Compendium AI features. Embeddings stored in IndexedDB using Transformers.js (`ort-wasm-simd`), enabling context-aware queries without external APIs.
+- **MPC (Compendium Proposal Monitor)**: As you write, the app automatically detects potential new entities (characters, places, objects, lore). A non-intrusive purple panel suggests adding them to your Compendium with one click.
+- **Local AI Server Support**: New provider option for Ollama and LM Studio local models with configurable base URL (e.g., `http://localhost:1234/v1`).
+- **Theme Switcher**: Toggle between dark mode ("Classic") and light mode ("Modern Manuscript") in Settings > General. Theme persists in localStorage.
+- **Cloud Backup Check on Link**: When linking a Google Drive account, automatically checks if a backup exists and prompts to restore if found.
+- **Google Drive Version History**: Button to view and restore previous backup versions from Google Drive's native revision system.
+- **Console Logs**: Added debug logs for all major AI operations (Rewrite, Debate, Oracle, RAG, Compendium AI) to help troubleshoot.
+
+### Changed
+- **Google Drive Sync**: Backups now use Google Drive's native revision system for version history.
+- **UI Improvements**: Smaller theme selector buttons with bicolor circles representing each theme. Merged sync toggle and security info into single box. Moved links section to Cloud tab.
+- **Database Optimization**: Added compound index `[novelId+sceneId]` to `lastRewrite` table for faster queries (Dexie.js v10 schema).
+- **Tooltips**: Added custom Tooltip component to all cloud sync buttons in Settings.
+
+### Fixed
+- **Last Rewrite queries**: Added missing compound index to prevent performance warnings in console.
+- **Cloud restore race condition**: Added `isRestoring` flag and `cloudCheckInProgress` to prevent duplicate restorations.
+- **Character relationship sync**: Bidirectional relationship changes now properly propagate to both character sheets.
+
+### CSS
+- **New files**: `ragWorker.js` (web worker for embeddings), extended `Compendium.css` for MPC panel.
+- **Theme support**: Added light theme CSS variables in `index.css` (`--theme-light` data attribute).
+- **SettingsModal.css**: Updated theme selector styling with bicolor circles.
+
+---
+
+## [LoneWriter v1.4-multilingual (Stable)] - 2026-04-04
+
+### Added
+- **Viewport meta responsive**: Support `safe-area-inset` for notch/bars on mobile devices
+- **Drawer navigation on mobile**: Hamburger menu for sidebar on screens <768px
+- **Collapsible tree panel**: Narrative tree view as drawer on mobile
 - **Internationalization system (i18n)**: Complete implementation with `i18next` and `react-i18next` — entire interface translated to **Spanish** and **English**
 - **Language selector**: Dropdown in Settings > General with `Español` / `English`, automatic persistence in `localStorage`
 - **Structured JSON dictionaries**: 7 namespaces (`common`, `app`, `editor`, `compendium`, `resources`, `ai`, `settings`) with ~400+ keys per language
@@ -18,6 +50,10 @@
 - **Traffic light text change in Oracle**: "Párrafo coherente" → "Sin coincidencias halladas"
 
 ### Changed
+- **Editor full-width on mobile**: Occupies full width, tree view hidden by default on <768px
+- **Optimized touch targets**: Touch targets and responsive typography across all views
+- **Badges → colored dots**: Status badges on scene rows displayed as colored dots on mobile
+- **Styled debate button**: Uppercase + letter-spacing for new session button
 - **Complete versioning**: `v1.3-oráculo` → `v1.4-multilingual` throughout the application
 - **Compression with pako**: Replaced `CompressionStream` (non-universal native API) with `pako` for gzip compression compatible with all browsers
 - **Google Drive sync**: Backups now upload in compressed format (`application/octet-stream`)
@@ -26,18 +62,23 @@
 - **AI panel tabs**: Translated to `Reescribir` / `Debate` / `Oráculo` (ES) and `Rewrite` / `Debate` / `Oracle` (EN)
 
 ### Fixed
+- **Duplicate word counting**: Fixed in chapter accordion
+- **Security hint**: Syntax `<0>` replaced by `<strong>` in EN/ES (Settings)
 - **Stack overflow in compression**: `btoa(String.fromCharCode(...array))` caused error with large data; replaced with chunk-based conversion of 8192 bytes
 - **Duplicate tabs in AIPanel**: Removed duplicate Debate and Oracle tabs from previous edits
 - **`<Trans>` without namespace**: Fixed `bienvenida.creditos` adding `ns="app"` to Trans component
 - **Character relationships not synchronized**: Previous diffing logic didn't propagate `type`/`reverseType` changes to the other character
 
+### UI Enhancements
+- **Goals editor**: Golden border + glow + active dot indicator
+- **Goals templates**: Chapter range (cap./ch.), 3-line layout (wds./pal.)
+- **Continuous numbering**: Chapters numbered globally across all acts
+
 ### CSS
+- **New files**: `Editor.css` (+337), `Compendium.css` (+189), `Resources.css` (+81)
+- **Updated**: App.css, AIPanel.css, RichEditor.css, Sidebar.css, SettingsModal.css
 - **LanguageSelector.css**: New component with styled language dropdown
 - **AIPanel.css**: More compact debate session selector (`max-width: 140px`), text truncated to `90px`, dropdown expanded to `300px`, items font reduced to `11px`
-- **AIPanel.css**: New styles for rewrite spinner, tooltips, and improved layout
-- **Resources.css**: New file with styles for Resources view
-- **Editor.css**: Styles for Oracle traffic light, tooltips, and tree header layout
-- **Compendium.css**: Styles for ignored cards (`card--ignored`), AI Context badges, and active zap button
 
 ---
 

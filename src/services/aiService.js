@@ -8,6 +8,43 @@ const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
+/** Retryable HTTP status codes (rate-limit / server overload) */
+const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
+
+/**
+ * fetch() wrapper with exponential backoff retry.
+ * @param {string} url
+ * @param {RequestInit} options
+ * @param {number} maxRetries - default 3
+ * @returns {Promise<Response>}
+ */
+async function fetchWithRetry(url, options, maxRetries = 3) {
+  let lastError;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (RETRYABLE_STATUSES.has(response.status)) {
+        // Clone before reading — we may need to read again on retry display
+        const waitMs = Math.min(1000 * 2 ** attempt, 8000); // 1s, 2s, 4s
+        console.warn(`[AIService] HTTP ${response.status} — retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        if (attempt < maxRetries - 1) {
+          await new Promise(r => setTimeout(r, waitMs));
+          continue;
+        }
+        // Last attempt: return response to let caller handle the error body
+        return response;
+      }
+      return response;
+    } catch (err) {
+      lastError = err;
+      if (attempt < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, 1000 * 2 ** attempt));
+      }
+    }
+  }
+  throw lastError;
+}
+
 export const AIService = {
   /**
    * Generic rewrite function
@@ -142,6 +179,10 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
       systemPrompt += `\n---`;
     }
 
+    if (config.ragContext) {
+      systemPrompt += `\n\n[RECUERDOS DE CAPÍTULOS ANTERIORES DEL MANUSCRITO]\n${config.ragContext}\n---\nUSA ESTA INFORMACIÓN PASADA DEL MANUSCRITO PARA SUSTENTAR TUS OPINIONES O RESPONDER PREGUNTAS DEL USUARIO SOBRE EVENTOS PREVIOS.`;
+    }
+
     // Convert debate history into chat-style messages
     // We represent the agent's own previous messages as 'assistant' and everything else as 'user'
     const chatMessages = history.map(msg => {
@@ -183,7 +224,7 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
   _callGemini: async (prompt, apiKey, model) => {
     try {
       const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
-      const response = await fetch(url, {
+      const response = await fetchWithRetry(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -220,7 +261,7 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
    */
   _callOpenAI: async (prompt, apiKey, model) => {
     try {
-      const response = await fetch(OPENAI_API_URL, {
+      const response = await fetchWithRetry(OPENAI_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -258,7 +299,7 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
    */
   _callClaude: async (prompt, apiKey, model) => {
     try {
-      const response = await fetch(CLAUDE_API_URL, {
+      const response = await fetchWithRetry(CLAUDE_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -298,7 +339,7 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
    */
   _callOpenRouter: async (prompt, apiKey, model) => {
     try {
-      const response = await fetch(OPENROUTER_API_URL, {
+      const response = await fetchWithRetry(OPENROUTER_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -341,6 +382,8 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
   _callLocal: async (prompt, model, baseUrl) => {
     const url = `${(baseUrl || 'http://localhost:1234/v1').replace(/\/$/, '')}/chat/completions`;
     try {
+      console.log('[Local AI] Request:', { url, model, promptLength: prompt.length });
+      
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -352,18 +395,30 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
         }),
       });
 
+      console.log('[Local AI] Response status:', response.status);
+
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
         throw new Error(errData.error?.message || `Error ${response.status} conectando con el servidor local (${url})`);
       }
 
       const data = await response.json();
-      return data.choices?.[0]?.message?.content?.trim() || 'Error al generar la respuesta.';
+      console.log('[Local AI] Response data:', JSON.stringify(data).slice(0, 500));
+      
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) {
+        throw new Error('La IA local no devolvió contenido. Verifica que el modelo esté cargado correctamente en LM Studio.');
+      }
+      
+      return {
+        text: content.trim(),
+        usage: data.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+      };
     } catch (error) {
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         throw new Error(`No se pudo conectar con el servidor local en ${url}. Asegúrate de que LM Studio u Ollama está en ejecución.`);
       }
-      console.error('Error in AIService._callLocal:', error);
+      console.error('[Local AI] Error:', error);
       throw error;
     }
   },
