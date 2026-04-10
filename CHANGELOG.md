@@ -6,7 +6,7 @@
 
 </div>
 
-## [LoneWriter v1.5-compendio (Stable)] - 2026-04-10
+## [LoneWriter v1.5-compendium (Stable)] - 2026-04-10
 
 ### Added
 - **RAG (Retrieval-Augmented Generation)**: Vector-based semantic search engine for the Oracle and Compendium AI features. Embeddings stored in IndexedDB using Transformers.js (`ort-wasm-simd`), enabling context-aware queries without external APIs.

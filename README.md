@@ -6,7 +6,7 @@
 
 </div>
 
-# LoneWriter v1.5-compendio (Stable) 🖋️
+# LoneWriter v1.5-compendium (Stable) 🖋️
 
 > **Your "Narrative Operating System": The AI that listens to you, organizes your chaos, and monitors your world's coherence while you only worry about writing.**
 >
@@ -86,7 +86,7 @@ Designed and developed with ♥ by **Sergio Sánchez** with Antigravity.
 
 ---
 
-*LoneWriter v1.5-compendio - Your personal space to bring great stories to life.*
+*LoneWriter v1.5-compendium - Your personal space to bring great stories to life.*
 
 ---
 
