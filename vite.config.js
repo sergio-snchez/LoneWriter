@@ -12,7 +12,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       workbox: {
-        maximumFileSizeToCacheInBytes: 6000000 // Aumentar límite a 6MB para el bundle
+        maximumFileSizeToCacheInBytes: 30000000 // Aumentar límite a 30MB para el bundle de WASM
       },
       devOptions: {
         enabled: true
