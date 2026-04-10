@@ -505,13 +505,45 @@ export const AIProvider = ({ children }) => {
 
   // Agent mutators
   const updateDebateAgent = async (id, changes) => {
-    await db.debateAgents.update(id, changes);
-    setDebateAgents(prev => prev.map(a => a.id === id ? { ...a, ...changes } : a));
+    const isSpanish = i18n.language === 'es';
+    const langDirective = isSpanish 
+      ? 'Responde SIEMPRE en el idioma de la aplicación.' 
+      : 'You MUST always respond in the application language.';
+    
+    let finalChanges = { ...changes };
+    
+    if (changes.systemPrompt) {
+      const currentAgent = debateAgents.find(a => a.id === id);
+      const hasLangDirective = changes.systemPrompt.includes('Responde SIEMPRE') || changes.systemPrompt.includes('You MUST always respond');
+      if (!hasLangDirective) {
+        const basePrompt = currentAgent?.systemPrompt || '';
+        const hadDirective = basePrompt.includes('Responde SIEMPRE') || basePrompt.includes('You MUST always respond');
+        if (!hadDirective && changes.systemPrompt) {
+          finalChanges.systemPrompt = changes.systemPrompt + '\n\n' + langDirective;
+        }
+      }
+    }
+    
+    await db.debateAgents.update(id, finalChanges);
+    setDebateAgents(prev => prev.map(a => a.id === id ? { ...a, ...finalChanges } : a));
   };
 
   const addDebateAgent = async (agent) => {
     if (!activeNovel) return;
-    const newAgent = { ...agent, novelId: activeNovel.id, active: true };
+    
+    const isSpanish = i18n.language === 'es';
+    const langDirective = isSpanish 
+      ? 'Responde SIEMPRE en el idioma de la aplicación.' 
+      : 'You MUST always respond in the application language.';
+    
+    const systemPrompt = agent.systemPrompt || '';
+    const hasLangDirective = systemPrompt.includes('Responde SIEMPRE') || systemPrompt.includes('You MUST always respond');
+    
+    const newSystemPrompt = hasLangDirective 
+      ? systemPrompt 
+      : systemPrompt + (systemPrompt ? '\n\n' : '') + langDirective;
+    
+    const newAgent = { ...agent, systemPrompt: newSystemPrompt, novelId: activeNovel.id, active: true };
     const id = await db.debateAgents.add(newAgent);
     newAgent.id = id;
     setDebateAgents(prev => [...prev, newAgent]);

@@ -585,8 +585,12 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
 
       const candidates = extractCandidates(plainText, registeredNames, ignoredNames)
       console.log('[MPC] Candidatos extraídos localmente:', candidates);
+      console.log('[MPC] Texto a analizar:', plainText.substring(0, 200));
       
-      if (candidates.length === 0) return
+      if (candidates.length === 0) {
+        console.log('[MPC] No hay candidatos, saliendo')
+        return
+      }
 
       // Paso 2: análisis IA (solo si hay candidatos)
       console.log('[MPC] Enviando a IA para clasificar candidatos...');
@@ -600,6 +604,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
           model: currentModel,
           localBaseUrl,
         }
+        console.log('[MPC] aiConfig:', aiConfig);
         const { proposals, usage } = await analyzeWithAI(
           candidates,
           plainText,
@@ -607,6 +612,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
           aiConfig,
           5
         )
+        console.log('[MPC] Respuesta recibida, proposals:', proposals);
         
         logAIUsage(usage)
         
