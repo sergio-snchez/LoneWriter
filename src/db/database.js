@@ -57,4 +57,10 @@ db.version(9).stores({
   vectors: '++id, sceneId, novelId, textHash, text' // text is the paragraph content
 });
 
+// v10: Índice compuesto para lastRewrite
+// Mejora rendimiento de consultas por novelId + sceneId
+db.version(10).stores({
+  lastRewrite: '++id, [novelId+sceneId], novelId, sceneId'
+});
+
 export default db;

@@ -177,6 +177,7 @@ function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel 
       }
       
       const config = { provider, apiKey, model: currentModel, localBaseUrl };
+      console.log('[Compendium] Generando', type, 'con IA:', formData.name || formData.title);
       const res = await AIService.autoCompleteCompendiumEntry(
         fullText,
         type,
@@ -279,11 +280,13 @@ function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel 
                       </select>
                       <div className="relation-row__fields">
                         <input
+                          name="type"
                           placeholder={t('formulario.personajes.relacion_para_mi')}
                           value={rel.type}
                           onChange={e => handleRelationChange(i, 'type', e.target.value)}
                         />
                         <input
+                          name="reverseType"
                           placeholder={t('formulario.personajes.relacion_para_el')}
                           value={rel.reverseType}
                           onChange={e => handleRelationChange(i, 'reverseType', e.target.value)}

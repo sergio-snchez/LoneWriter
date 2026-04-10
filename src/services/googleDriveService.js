@@ -152,5 +152,55 @@ export const GoogleDriveService = {
       console.error('[GoogleDrive] Download error:', error);
       throw error;
     }
+  },
+
+  /**
+   * Get list of file revisions
+   */
+  getRevisions: async () => {
+    try {
+      if (!GoogleDriveService.isAuthenticated()) await GoogleDriveService.authenticate();
+
+      const existingFile = await GoogleDriveService.findBackupFile();
+      if (!existingFile) return null;
+
+      const response = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${existingFile.id}/revisions?fields=revisions(id,modifiedTime,size)`,
+        { headers: { 'Authorization': `Bearer ${accessToken}` } }
+      );
+
+      if (!response.ok) throw new Error('Error al obtener revisiones');
+
+      const data = await response.json();
+      return data.revisions || [];
+    } catch (error) {
+      console.error('[GoogleDrive] Get revisions error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Download a specific revision
+   */
+  downloadRevision: async (revisionId) => {
+    try {
+      if (!GoogleDriveService.isAuthenticated()) await GoogleDriveService.authenticate();
+
+      const existingFile = await GoogleDriveService.findBackupFile();
+      if (!existingFile) return null;
+
+      const response = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${existingFile.id}/revisions/${revisionId}?alt=media`,
+        { headers: { 'Authorization': `Bearer ${accessToken}` } }
+      );
+
+      if (!response.ok) throw new Error('Error al descargar revisión');
+
+      const text = await response.text();
+      return await decodeFromLwrt(text);
+    } catch (error) {
+      console.error('[GoogleDrive] Download revision error:', error);
+      throw error;
+    }
   }
 };

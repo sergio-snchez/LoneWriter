@@ -6,7 +6,7 @@
 
 </div>
 
-# LoneWriter v1.5-MPC (Stable) 🖋️
+# LoneWriter v1.5-compendio (Stable) 🖋️
 
 > **Tu "Sistema Operativo Narrativo": La IA que te escucha, organiza tu caos y vigila la coherencia de tu mundo mientras tú solo te preocupas de escribir.**
 >
@@ -32,6 +32,7 @@ LoneWriter es una aplicación minimalista y potente diseñada para escritores qu
 ### 🤖 IA Invisible y Monitor de Lore (MPC)
 - **MPC (Monitor de Propuestas del Compendio):** Adiós a la "burocracia del mundo". LoneWriter te escucha mientras escribes y detecta automáticamente nuevas entidades (personajes, lugares, objetos). Las sugiere en un panel lila no intrusivo para que las añadas al compendio con un clic, sin dejar de narrar.
 - **Autocompletado Mágico:** ¿Has mencionado una espada o un pueblo nuevo? Usa el botón de destellos en el Compendio para que la IA escanee tu novela y rellene automáticamente la descripción, rasgos y relaciones de la ficha por ti.
+- **Motor RAG (all-MiniLM-L6-v2):** Búsqueda semántica potenciada por embeddings locales (Transformers.js). Tu novela completa se vectoriza en el navegador — consultas contextuales sin APIs externas, manteniendo tus datos privados.
 - **Veredictos del Oráculo (Continuity Linter):** Análisis de coherencia párrafo a párrafo. Actúa como un "corrector de lógica" en tiempo real que detecta contradicciones con tu lore establecido (ej: un personaje muerto que reaparece o un objeto que cambia de dueño por error).
 - **Exclusión Selectiva:** Controla qué entidades del Compendio participan en el análisis de coherencia con un clic para evitar falsos positivos en sueños o flashbacks.
 
@@ -55,6 +56,7 @@ LoneWriter es una aplicación minimalista y potente diseñada para escritores qu
 
 - **Core:** React + Vite
 - **Base de Datos:** Dexie.js (IndexedDB)
+- **Motor RAG:** Transformers.js (all-MiniLM-L6-v2) — embeddings locales en navegador
 - **i18n:** i18next + react-i18next
 - **Compresión:** pako (gzip)
 - **PWA:** Vite PWA Plugin (Service Workers, Offline support)
@@ -84,7 +86,7 @@ Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
 
 ---
 
-*LoneWriter v1.4-multilenguaje - Tu espacio personal para dar vida a grandes historias.*
+*LoneWriter v1.5-compendio - Tu espacio personal para dar vida a grandes historias.*
 
 ---
 

@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { 
   X, Cloud, RefreshCw, LogIn, LogOut, 
   Sparkles, Shield, Info, AlertTriangle, Key, ExternalLink,
-  Heart, Languages, Globe
+  Heart, Languages, Globe, History
 } from 'lucide-react';
+import { Tooltip } from './Tooltip';
 import { useAI } from '../context/AIContext';
 import { useNovel } from '../context/NovelContext';
 import { GoogleDriveService } from '../services/googleDriveService';
@@ -60,6 +61,8 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [isCloudLinked, setIsCloudLinked] = useState(GoogleDriveService.isAuthenticated());
+  const [showRevisions, setShowRevisions] = useState(false);
+  const [revisions, setRevisions] = useState([]);
 
   if (!isOpen) return null;
 
@@ -98,6 +101,40 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
     setIsSyncing(true);
     await performCloudSync();
     setIsSyncing(false);
+  };
+
+  const handleShowRevisions = async () => {
+    setIsSyncing(true);
+    try {
+      const revs = await GoogleDriveService.getRevisions();
+      setRevisions(revs || []);
+      setShowRevisions(true);
+    } catch (error) {
+      console.error('Error loading revisions:', error);
+      alert('Error al cargar el historial de versiones');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleRestoreRevision = async (revisionId, revisionDate) => {
+    if (!confirm(`¿Restaurar copia del ${new Date(revisionDate).toLocaleString()}? Esto sobrescribirá todos los datos actuales.`)) return;
+    
+    setIsSyncing(true);
+    try {
+      const cloudData = await GoogleDriveService.downloadRevision(revisionId);
+      if (cloudData) {
+        window.dispatchEvent(new CustomEvent('restore-from-revision', {
+          detail: { data: cloudData, date: revisionDate }
+        }));
+        setShowRevisions(false);
+      }
+    } catch (error) {
+      console.error('Error restoring revision:', error);
+      alert('Error al restaurar la versión');
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const AI_PROVIDER_LINKS = {
@@ -182,13 +219,45 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                        cloudSyncStatus === 'error' ? t('nube.error_guardar') :
                        `${t('nube.ultima_copia', { date: lastCloudSync ? new Date(lastCloudSync).toLocaleString() : t('nube.nunca') })}`}
                     </span>
-                    <button className="btn btn-ghost btn-sm" onClick={handleManualSync} disabled={isSyncing || cloudSyncStatus === 'syncing'}>
-                      <RefreshCw size={12} className={isSyncing || cloudSyncStatus === 'syncing' ? 'spinner' : ''} />
-                      {t('nube.sincronizar_ahora')}
-                    </button>
+                    <Tooltip content={t('nube.ver_historial')}>
+                      <button className="btn btn-ghost btn-sm" onClick={handleShowRevisions} disabled={isSyncing}>
+                        <History size={12} />
+                      </button>
+                    </Tooltip>
+                    <Tooltip content={t('nube.sincronizar_ahora')}>
+                      <button className="btn btn-ghost btn-sm" onClick={handleManualSync} disabled={isSyncing || cloudSyncStatus === 'syncing'}>
+                        <RefreshCw size={12} className={isSyncing || cloudSyncStatus === 'syncing' ? 'spinner' : ''} />
+                        {t('nube.sincronizar_ahora')}
+                      </button>
+                    </Tooltip>
                   </div>
                 )}
               </div>
+
+              {showRevisions && (
+                <div style={{ marginTop: '12px', padding: '12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 600 }}>{t('nube.historial_titulo')}</span>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setShowRevisions(false)}>
+                      <X size={14} />
+                    </button>
+                  </div>
+                  {revisions.length === 0 ? (
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t('nube.sin_revisiones')}</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto' }}>
+                      {revisions.slice().reverse().map((rev) => (
+                        <div key={rev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-sm)' }}>
+                          <span style={{ fontSize: '12px' }}>{new Date(rev.modifiedTime).toLocaleString()}</span>
+                          <button className="btn btn-primary btn-sm" onClick={() => handleRestoreRevision(rev.id, rev.modifiedTime)} disabled={isSyncing}>
+                            {t('nube.restaurar')}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {isCloudLinked && (
                 <>
@@ -370,6 +439,8 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                 <span className="settings-info-value">{t('general.base_datos_valor')}</span>
                 <span className="settings-info-label">{t('general.plataforma')}</span>
                 <span className="settings-info-value">{t('general.plataforma_valor')}</span>
+                <span className="settings-info-label">{t('general.tecnologia_rag')}</span>
+                <span className="settings-info-value">{t('general.tecnologia_rag_valor')}</span>
               </div>
             </div>
             <div className="settings-section">
