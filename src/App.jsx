@@ -410,6 +410,7 @@ export default function App() {
         initialTab={settingsTab}
         theme={theme}
         setTheme={setTheme}
+        openModal={openModal}
       />
 
       {/* Main layout */}
