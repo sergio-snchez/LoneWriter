@@ -38,6 +38,7 @@ const resources = {
 };
 
 const savedLanguage = localStorage.getItem('app_language') || 'en';
+const defaultLanguage = savedLanguage;
 
 i18n.use(initReactI18next).init({
   resources,
