@@ -1,3 +1,12 @@
+/**
+ * @deprecated Este componente ya no se utiliza.
+ * La funcionalidad del Drawer de MPC se ha movido al acordión MPC en Compendium.jsx.
+ * Este archivo se conserva por compatibilidad temporal.
+ * 
+ * @see Compendium.jsx - componente principal del compendio con acordión MPC integrado
+ * @see ProposalCard - componente exportado y reutilizado en Compendium.jsx
+ */
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -23,7 +32,7 @@ const TYPE_TRANSLATION_KEYS = {
 };
 
 // ─── Tarjeta de propuesta individual ─────────────────────────────────────────
-function ProposalCard({ proposal, onAccept, onEdit, onDismiss, onDismissPermanently, isAccepting }) {
+export function ProposalCard({ proposal, onAccept, onEdit, onDismiss, onDismissPermanently, isAccepting }) {
   const { t } = useTranslation('compendium');
   const [expanded, setExpanded] = useState(false);
   

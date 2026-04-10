@@ -12,50 +12,11 @@
 
 import { db } from '../db/database';
 import { AIService } from './aiService';
+import i18n from '../i18n/i18n';
+import { getSentenceStartWords, getGenericWords } from '../i18n/stopwords';
 
-// ─── Stopwords ampliadas (inicio de frase + stopwords normales) ──────────────
-const SENTENCE_START_WORDS = new Set([
-  // Artículos y determinantes
-  'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'lo',
-  'al', 'del',
-  // Preposiciones
-  'a', 'ante', 'bajo', 'con', 'contra', 'de', 'desde', 'durante',
-  'en', 'entre', 'hacia', 'hasta', 'mediante', 'para', 'por',
-  'según', 'sin', 'sobre', 'tras',
-  // Conjunciones
-  'y', 'e', 'o', 'u', 'ni', 'pero', 'sino', 'aunque', 'porque',
-  'que', 'si', 'como', 'cuando', 'donde', 'mientras', 'pues',
-  // Pronombres
-  'yo', 'él', 'ella', 'ellos', 'ellas', 'nosotros', 'vosotros',
-  'me', 'te', 'se', 'nos', 'os', 'le', 'les',
-  'mi', 'tu', 'su', 'mis', 'tus', 'sus',
-  'este', 'esta', 'estos', 'estas', 'ese', 'esa', 'esos', 'esas',
-  'aquel', 'aquella', 'aquellos', 'aquellas',
-  // Verbos auxiliares y comunes al inicio
-  'es', 'son', 'era', 'eran', 'fue', 'fueron', 'ser', 'estar',
-  'ha', 'han', 'había', 'han', 'haber',
-  'hay', 'hubo',
-  // Adverbios y otros
-  'ya', 'no', 'sí', 'también', 'tampoco', 'más', 'muy', 'tan',
-  'así', 'aquí', 'allí', 'allá', 'ahí', 'ahora', 'antes', 'después',
-  'siempre', 'nunca', 'jamás', 'bien', 'mal', 'solo', 'sólo',
-  'todo', 'toda', 'todos', 'todas', 'cada', 'otro', 'otra',
-]);
-
-// Palabras que nunca son entidades narrativas aunque estén en mayúscula
-const GENERIC_WORDS = new Set([
-  'dios', 'señor', 'señora', 'don', 'doña', 'rey', 'reina', 'príncipe',
-  'princesa', 'padre', 'madre', 'hijo', 'hija', 'hermano', 'hermana',
-  'capitán', 'capitana', 'general', 'doctor', 'doctora', 'profesor',
-  'profesora', 'norte', 'sur', 'este', 'oeste', 'tierra', 'mar', 'cielo',
-  'sol', 'luna', 'mundo', 'vida', 'muerte', 'dios', 'dioses', 'nuevo',
-  'nueva', 'gran', 'grande', 'viejo', 'vieja', 'pequeño', 'primera',
-  'primero', 'último', 'última',
-]);
-
-// ─── Regex: detecta palabras que empiezan en mayúscula y no son inicio de oración ──
-// Busca palabras en mayúscula que vienen DESPUÉS de un espacio (no tras punto/inicio)
-const PROPER_NOUN_REGEX = /(?<=[ \t,;:—–"«‹()\[\]])([A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ][a-záéíóúàèìòùäëïöüâêîôûñ\u2019']{2,}(?:\s+[A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ][a-záéíóúàèìòùäëïöüâêîôûñ\u2019']{2,}){0,3})/gu;
+// ─── Regex: detecta palabras que empiezan en mayúscula en cualquier posición ──
+const PROPER_NOUN_REGEX = /(?:^|(?<=[.!?¿¡\n\r—–""«‹()\[\] \t,;:]))([A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ][a-záéíóúàèìòùäëïöüâêîôûñ\u2019']{1,}(?:\s+[A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ][a-záéíóúàèìòùäëïöüâêîôûñ\u2019']{1,}){0,3})/gmu;
 
 // ─── Carga los nombres ya registrados en el compendio ───────────────────────
 export async function loadRegisteredEntityNames(novelId) {
@@ -69,10 +30,10 @@ export async function loadRegisteredEntityNames(novelId) {
   ]);
 
   const names = new Set();
-  for (const c of chars) if (c.name) names.add(c.name.toLowerCase());
-  for (const l of locs)  if (l.name) names.add(l.name.toLowerCase());
-  for (const o of objs)  if (o.name) names.add(o.name.toLowerCase());
-  for (const e of loreEntries) if (e.title) names.add(e.title.toLowerCase());
+  for (const c of chars) if (c.name) names.add(c.name.trim());
+  for (const l of locs)  if (l.name) names.add(l.name.trim());
+  for (const o of objs)  if (o.name) names.add(o.name.trim());
+  for (const e of loreEntries) if (e.title) names.add(e.title.trim());
 
   return names;
 }
@@ -81,7 +42,7 @@ export async function loadRegisteredEntityNames(novelId) {
 export async function loadIgnoredNames(novelId) {
   if (!novelId) return new Set();
   const entries = await db.mpcIgnored.where('novelId').equals(novelId).toArray();
-  return new Set(entries.map(e => e.name.toLowerCase()));
+  return new Set(entries.filter(e => e?.name).map(e => e.name.toLowerCase()));
 }
 
 // ─── Paso 1: Detección local de candidatos (sin IA) ─────────────────────────
@@ -107,15 +68,25 @@ export function extractCandidates(text, registeredNames = new Set(), ignoredName
   PROPER_NOUN_REGEX.lastIndex = 0;
 
   while ((match = PROPER_NOUN_REGEX.exec(plainText)) !== null) {
-    const raw = match[1].trim();
+    // Group 2 contains the proper noun (group 1 is the optional leading context char)
+    const raw = (match[2] || match[1] || '').trim();
+    if (!raw) continue;
     const lower = raw.toLowerCase();
 
-    // Filtrar stopwords y genéricos
-    if (SENTENCE_START_WORDS.has(lower)) continue;
-    if (GENERIC_WORDS.has(lower)) continue;
+    // Filtrar stopwords y genéricos usando el idioma actual
+    const sentenceStartWords = getSentenceStartWords();
+    const genericWords = getGenericWords();
+    if (sentenceStartWords.has(lower)) continue;
+    if (genericWords.has(lower)) continue;
 
-    // Filtrar si ya está registrado o descartado
-    if (registeredNames.has(lower)) continue;
+    // Filtrar si ya está registrado exacto o es una parte sustancial de uno registrado (ej. "Loro Dorado" part of "El Loro Dorado")
+    const isRegistered = [...registeredNames].some(n => {
+      const regLower = n.toLowerCase();
+      return regLower === lower || (regLower.includes(lower) && lower.includes(' '));
+    });
+    if (isRegistered) continue;
+    
+    // Y descartados (ignorados siguen siendo guardados en lower por addToIgnoredNames)
     if (ignoredNames.has(lower)) continue;
 
     candidates.add(raw);
@@ -170,6 +141,7 @@ ${truncatedText}
 
 INSTRUCCIONES:
 - Analiza SOLO los candidatos listados. No inventes entidades nuevas.
+- NO propongas candidatos que sean variaciones, apodos o partes de los nombres del COMPENDIO ACTUAL (ej. si está 'El Loro de Oro', no propongas 'El Loro').
 - Para cada candidato que SÍ merezca una ficha (personaje, lugar, objeto clave, o concepto de lore), genera una entrada JSON.
 - Asigna confidence: "high" si aparece claramente como nombre propio de entidad narrativa, "medium" si es probable pero hay algo de ambigüedad, "low" si es dudoso.
 - Infiere los campos a partir del contexto del texto. Si no puedes inferirlo, deja el campo vacío "".
@@ -195,7 +167,7 @@ ESQUEMA DE RESPUESTA (devuelve ÚNICAMENTE el JSON, sin texto adicional, sin mar
   try {
     const response = await AIService._callWithConfig(prompt, aiConfig);
     return { 
-      proposals: parseMpcResponse(response.text, maxProposals), 
+      proposals: parseMpcResponse(response.text, maxProposals, registeredNames), 
       usage: response.usage 
     };
   } catch (error) {
@@ -212,7 +184,7 @@ ESQUEMA DE RESPUESTA (devuelve ÚNICAMENTE el JSON, sin texto adicional, sin mar
  * @param {number} maxProposals - Máximo de propuestas a incluir
  * @returns {Object[]} - Array de propuestas con id único
  */
-export function parseMpcResponse(rawResponse, maxProposals = 5) {
+export function parseMpcResponse(rawResponse, maxProposals = 5, registeredNames = new Set()) {
   if (!rawResponse) return [];
 
   try {
@@ -231,6 +203,15 @@ export function parseMpcResponse(rawResponse, maxProposals = 5) {
         if (!item.confidence || !['high', 'medium', 'low'].includes(item.confidence)) return false;
         const nameOrTitle = item.name || item.title;
         if (!nameOrTitle || typeof nameOrTitle !== 'string' || nameOrTitle.trim().length < 2) return false;
+        
+        // Filtrar entidades que ya existen en el compendio
+        const itemLower = nameOrTitle.toLowerCase().trim();
+        const isAlreadyRegistered = [...registeredNames].some(n => {
+          const regLower = n.toLowerCase().trim();
+          return regLower === itemLower || regLower.includes(itemLower) || itemLower.includes(regLower);
+        });
+        if (isAlreadyRegistered) return false;
+        
         return true;
       })
       .slice(0, maxProposals)

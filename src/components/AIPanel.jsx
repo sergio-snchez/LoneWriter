@@ -11,6 +11,7 @@ import { AIService } from '../services/aiService'
 import { useNovel } from '../context/NovelContext'
 import { useModal } from '../context/ModalContext'
 import { createDebouncedSearch, fetchDetectedEntityData } from '../services/compendiumSearch'
+import { retrieveRelevantFragments } from '../services/ragService'
 import { Tooltip } from './Tooltip'
 import { renderMarkdown } from '../utils/renderMarkdown'
 import './AIPanel.css'
@@ -26,9 +27,11 @@ const normalizeHtmlForEditor = (html) => {
 
 const normalizeTextForDisplay = (text) => {
   if (!text) return '';
-  let cleaned = text.replace(/\n{3,}/g, '\n\n');
-  cleaned = cleaned.replace(/(<br\s*\/?>){2,}/gi, '<br/>');
-  return cleaned;
+  return text
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/^\s+|\s+$/g, '');
 }
 
 // ─── Mock data ────────────────────────────────────────────────
@@ -147,6 +150,7 @@ function RewriteTab({ activeScene }) {
     
     setIsGenerating(true);
     try {
+      console.log('[Rewrite] Reescribiendo escena', activeScene?.id, '— objetivo:', activeGoal);
       const activeRes = resources?.filter(r => r.activeForAI && r.content) || [];
       const knowledgeBase = activeRes.length > 0 
         ? activeRes.map(r => `Archivo: [${r.name}]\nContenido:\n${r.content}`).join('\n\n')
@@ -425,24 +429,40 @@ function DebateTab({ activeScene }) {
     addDebateMessage(userMsg)
 
     let compendiumInfo = ''
-    if (useCompendiumContext && activeNovel) {
+    let ragInfo = ''
+    if (activeNovel) {
       try {
-        const searchResult = await debouncedSearchRef.current(text, activeNovel.id)
-        if (searchResult?.formatted) {
-          compendiumInfo = `\n\n--- INFORMACIÓN DEL COMPENDIO (contexto relevante) ---\n${searchResult.formatted}`
-          setCompendiumContext(searchResult.formatted)
+        const ragTimeout = new Promise(resolve => setTimeout(() => resolve([]), 8000));
+        const ragPromise = retrieveRelevantFragments(text, activeNovel.id, 4);
+        
+        let compendiumPromise = Promise.resolve(null);
+        if (useCompendiumContext) {
+          compendiumPromise = debouncedSearchRef.current(text, activeNovel.id);
+        }
+
+        const [compResult, ragResult] = await Promise.allSettled([
+          compendiumPromise,
+          Promise.race([ragPromise, ragTimeout])
+        ]);
+
+        if (useCompendiumContext && compResult.status === 'fulfilled' && compResult.value?.formatted) {
+          compendiumInfo = `\n\n--- INFORMACIÓN DEL COMPENDIO (contexto relevante) ---\n${compResult.value.formatted}`;
+          setCompendiumContext(compResult.value.formatted);
         } else {
-          setCompendiumContext('')
+          setCompendiumContext('');
+        }
+
+        if (ragResult.status === 'fulfilled' && ragResult.value?.length > 0) {
+          ragInfo = ragResult.value.map(f => `[Fragmento relevante guardado localmente]\n${f.text}`).join('\n\n');
         }
       } catch (err) {
-        if (err.name !== 'AbortError') {
-          console.error('[LoneWriter] Error buscando en compendio:', err)
-        }
-        setCompendiumContext('')
+        if (err.name !== 'AbortError') console.error('[LoneWriter] Error en contexto de Debate:', err);
+        setCompendiumContext('');
       }
     }
 
     const historyWithUser = [...debateHistory, userMsg]
+    console.log('[Debate] Iniciando debate — rondas:', rounds, '— agentes:', activeAgents.map(a => a.name).join(', '));
     for (let r = 0; r < rounds; r++) {
       for (const agent of activeAgents) {
         setLoadingAgents(prev => ({ ...prev, [agent.id]: true }))
@@ -470,7 +490,8 @@ function DebateTab({ activeScene }) {
 
           const response = await AIService.agentChat(agent, historyWithUser, {
             provider, apiKey, model: currentModel, localBaseUrl, sceneContent, pov, roundInstruction, knowledgeBase,
-            compendiumContext: compendiumInfo || null
+            compendiumContext: compendiumInfo || null,
+            ragContext: ragInfo || null
           })
 
           logAIUsage(response.usage);
@@ -783,7 +804,7 @@ function DebateTab({ activeScene }) {
             return (
               <div key={msg.id} className="debate-msg debate-msg--error">
                 <AlertTriangle size={13} />
-                <span><strong>{msg.agentName}:</strong> <span dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.text) }} /></span>
+                <span><strong>{msg.agentName}:</strong> <span dangerouslySetInnerHTML={{ __html: renderMarkdown(normalizeTextForDisplay(msg.text)) }} /></span>
               </div>
             )
           }
@@ -958,10 +979,7 @@ function OracleTab({ activeScene }) {
 
   const stripJsonBlock = (text) => {
     let cleaned = text.replace(/\{[\s\S]*"hasContradiction"[\s\S]*\}/g, '').trim();
-    cleaned = cleaned.replace(/\n{2,}/g, '\n');
-    cleaned = cleaned.replace(/(<br\s*\/?>)\1{2,}/gi, '$1');
-    cleaned = cleaned.replace(/\s*<br\s*\/?>\s*\n\s*/gi, '<br/>');
-    cleaned = cleaned.replace(/<br\/>\s*<br\/\s*>/gi, '<br/>');
+    cleaned = normalizeTextForDisplay(cleaned);
     return cleaned;
   }
 
@@ -979,25 +997,63 @@ function OracleTab({ activeScene }) {
     setError('')
 
     try {
+      console.log('[Oracle] Analizando escena', activeScene?.id, '—', activeScene.content.replace(/<[^>]*>/g, '').length, 'chars');
+      console.log('[Oracle] Starting check. detectedEntities:', JSON.stringify(oracleStatus.detectedEntities));
+      
       const plainText = activeScene.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+      console.log('[Oracle] plainText length:', plainText.length);
+      
       if (!plainText || plainText.length < 10) {
         setError(t('oraculo.error_corto'))
         setIsChecking(false)
         return
       }
 
-      let compendiumInfo = ''
-      if (activeNovel && oracleStatus.detectedEntities?.length > 0) {
-        compendiumInfo = await fetchDetectedEntityData(oracleStatus.detectedEntities, activeNovel.id)
-      }
+      // ── Run compendium + RAG in parallel, with a max 15s timeout on RAG ──
+      const ragTimeout = new Promise(resolve =>
+        setTimeout(() => resolve([]), 15000)
+      )
+
+      console.log('[Oracle] oracleStatus:', oracleStatus.status, 'entities:', oracleStatus.detectedEntities?.length);
+
+      const [compResult, ragResult] = await Promise.allSettled([
+        // Compendium entity sheets
+        (activeNovel && oracleStatus.detectedEntities?.length > 0)
+          ? (async () => {
+              try {
+                return await fetchDetectedEntityData(oracleStatus.detectedEntities, activeNovel.id);
+              } catch (e) {
+                console.error('[Oracle] fetchDetectedEntityData error:', e);
+                return '';
+              }
+            })()
+          : Promise.resolve(''),
+        // RAG context (capped at 15s so it never blocks)
+        activeNovel?.id
+          ? Promise.race([retrieveRelevantFragments(plainText, activeNovel.id, 4, activeScene?.id), ragTimeout])
+          : Promise.resolve([])
+      ])
+
+      const compendiumInfo = compResult.status === 'fulfilled' ? (compResult.value || '') : ''
       setCompContextUsed(compendiumInfo)
+
+      const fragments = ragResult.status === 'fulfilled' ? (ragResult.value || []) : []
+      if (ragResult.status === 'rejected') {
+        console.warn('[RAG] Retrieval failed (proceeding without it):', ragResult.reason)
+      }
+      const ragContext = fragments.length > 0
+        ? fragments.map((f, i) => `[Fragmento ${i + 1}]: ${f}`).join('\n\n')
+        : ''
 
       const oraclePrompt = t('oracle_prompt')
 
       const fullPrompt = `${oraclePrompt}
 
---- TEXTO DEL COMPENDIO (fichas relevantes encontradas) ---
+--- TEXTO DEL COMPENDIO (FUENTE DE VERDAD ABSOLUTA) ---
 ${compendiumInfo || 'No se encontraron fichas relevantes del Compendio para este texto.'}
+
+--- CONTEXTO ANTERIOR DEL MANUSCRITO (SOLO COMO REFERENCIA, NUNCA DESMIENTE AL COMPENDIO) ---
+${ragContext || 'No hay contexto anterior indexado aún (o se está usando sin RAG).'}
 
 --- TEXTO A ANALIZAR ---
 ${plainText}
@@ -1012,6 +1068,11 @@ ${plainText}
       })
 
       logAIUsage(response.usage)
+      console.log('[Oracle] response.text:', response.text);
+
+      if (!response.text) {
+        throw new Error('La IA no devolvió texto');
+      }
 
       const parsed = checkOracleResponse(response.text)
 
@@ -1027,11 +1088,13 @@ ${plainText}
         compendiumUsed: compendiumInfo,
       })
     } catch (err) {
-      setError(t('oraculo.error_consulta', { error: err.message }))
+      console.error('[Oracle] Full error:', err);
+      setError(t('oraculo.error_consulta', { error: err.message + ' - ' + err.stack }))
     } finally {
       setIsChecking(false)
     }
   }
+
 
   const handleCopy = (id) => {
     const entry = oracleHistory.find(e => e.id === id)
@@ -1086,12 +1149,12 @@ ${plainText}
               <span className="oracle-entities-wrapper">
                 <span className="oracle-entities-label">{t('oraculo.coincidencias')}</span>
                 <span className="oracle-entities-list">
-                  {oracleStatus.detectedEntities.map((e, i) => (
+                  {oracleStatus.detectedEntities.filter(e => e?.name).map((e, i) => (
                     <Tooltip key={e.name} content={
                       <div>
                         <strong>{e.name}</strong> ({e.label})
                         <br />
-                        {e.matchedTerms.join(', ')}
+                        {e.matchedTerms?.join(', ')}
                       </div>
                     }>
                       <span className="oracle-entity-tag oracle-entity-tag--hoverable">
@@ -1106,12 +1169,12 @@ ${plainText}
               <span className="oracle-entities-wrapper">
                 <span className="oracle-entities-label">{t('oraculo.coincidencias')}</span>
                 <span className="oracle-entities-list">
-                  {oracleStatus.detectedEntities.map((e, i) => (
+                  {oracleStatus.detectedEntities.filter(e => e?.name).map((e, i) => (
                     <Tooltip key={e.name} content={
                       <div>
                         <strong>{e.name}</strong> ({e.label})
                         <br />
-                        {e.matchedTerms.join(', ')}
+                        {e.matchedTerms?.join(', ')}
                       </div>
                     }>
                       <span className="oracle-entity-tag oracle-entity-tag--error oracle-entity-tag--hoverable">
@@ -1193,7 +1256,7 @@ ${plainText}
               </div>
               <div className={`oracle-tab__entry-text ${isExpanded ? 'oracle-tab__entry-text--expanded' : 'oracle-tab__entry-text--clamped'}`} dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanText) }}>
               </div>
-              {cleanText.length > 300 && (
+              {cleanText.length > 200 && (
                 <button
                   className="oracle-tab__read-more"
                   onClick={() => toggleExpanded(entry.id)}

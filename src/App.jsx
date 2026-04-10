@@ -20,7 +20,7 @@ import { ExportService } from './services/exportService'
 import { GoogleDriveService } from './services/googleDriveService'
 import { db } from './db/database'
 import './App.css'
-import MpcProposalDrawer from './components/MpcProposalDrawer'
+import RagToast from './components/RagToast'
 
 export default function App() {
   const { t } = useTranslation('app')
@@ -30,8 +30,14 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
-  const { isMpcDrawerOpen, setIsMpcDrawerOpen } = useAI();
   const [aiPanelTab, setAiPanelTab] = useState('rewrite')
+  const [theme, setTheme] = useState(() => localStorage.getItem('lw_theme') || 'dark')
+
+  // Apply theme to document and persist
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('lw_theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     const handleOpenOracle = () => {
@@ -83,8 +89,8 @@ export default function App() {
                localStorage.setItem('lw_last_cloud_sync', date);
                await refreshAfterRestore();
              }
-           } catch (err) {
-             alert(t('error_restaurar') + err.message);
+          } catch (err) {
+            alert(t('error_restaurar') + err.message);
           } finally {
             isRestoring = false;
           }
@@ -92,8 +98,35 @@ export default function App() {
       });
     };
 
+    const handleRestoreFromRevision = async (e) => {
+      const { data: cloudData, date } = e.detail;
+      if (isRestoring) return;
+      isRestoring = true;
+
+      try {
+        await db.transaction('rw', db.tables, async () => {
+          for (const table of db.tables) {
+            await table.clear();
+            if (cloudData.tables[table.name]) {
+              await table.bulkAdd(cloudData.tables[table.name]);
+            }
+          }
+        });
+        localStorage.setItem('lw_last_cloud_sync', date);
+        await refreshAfterRestore();
+      } catch (err) {
+        alert(t('error_restaurar') + err.message);
+      } finally {
+        isRestoring = false;
+      }
+    };
+
     window.addEventListener('cloud-version-available', handleCloudVersion);
-    return () => window.removeEventListener('cloud-version-available', handleCloudVersion);
+    window.addEventListener('restore-from-revision', handleRestoreFromRevision);
+    return () => {
+      window.removeEventListener('cloud-version-available', handleCloudVersion);
+      window.removeEventListener('restore-from-revision', handleRestoreFromRevision);
+    };
   }, [openModal, refreshAfterRestore]);
 
   useEffect(() => {
@@ -225,7 +258,7 @@ export default function App() {
       );
     }
     switch (activeView) {
-      case 'editor':     return <EditorView menuOpen={menuOpen} />
+      case 'editor':     return <EditorView menuOpen={menuOpen} onNavigate={setActiveView} />
       case 'compendium': return <CompendiumView />
       case 'resources':  return <ResourcesView />
       default:           return <EditorView />
@@ -402,6 +435,9 @@ export default function App() {
         isOpen={settingsOpen} 
         onClose={() => setSettingsOpen(false)} 
         initialTab={settingsTab}
+        theme={theme}
+        setTheme={setTheme}
+        openModal={openModal}
       />
 
       {/* Main layout */}
@@ -459,21 +495,10 @@ export default function App() {
             setSettingsOpen(true);
           }}
         />
-
-        <MpcProposalDrawer
-          isOpen={isMpcDrawerOpen}
-          onClose={() => setIsMpcDrawerOpen(false)}
-          activeScene={activeScene}
-          onEditProposal={(proposal) => {
-            setIsMpcDrawerOpen(false);
-            setActiveView('compendium');
-            // Dispatch event so CompendiumView can open the edit panel
-            setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('mpc-edit-proposal', { detail: { proposal } }));
-            }, 50);
-          }}
-        />
       </div>
+
+      {/* RAG model download toast — appears once on first use */}
+      <RagToast />
     </div>
   )
 }

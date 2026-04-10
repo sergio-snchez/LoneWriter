@@ -6,9 +6,41 @@
 
 </div>
 
-## [LoneWriter v1.4-multilenguaje (Stable)] - 2026-04-03
+## [LoneWriter v1.5-compendio (Stable)] - 2026-04-10
 
 ### Added
+- **RAG (Retrieval-Augmented Generation)**: Motor de búsqueda semántica basado en vectores para el Oráculo y las funciones de IA del Compendium. Embeddings almacenados en IndexedDB usando Transformers.js (`ort-wasm-simd`), permitiendo consultas contextuales sin APIs externas.
+- **MPC (Monitor de Propuestas del Compendio)**: Mientras escribes, la app detecta automáticamente potenciales nuevas entidades (personajes, lugares, objetos, lore). Un panel morado no intrusivo sugiere añadirlas al Compendio con un clic.
+- **Servidor IA Local**: Nueva opción de proveedor para modelos locales de Ollama y LM Studio con URL base configurable (ej. `http://localhost:1234/v1`).
+- **Selector de Tema**: Alternar entre modo oscuro ("Clásico") y modo claro ("Manuscrito Moderno") en Configuración > General. El tema se guarda en localStorage.
+- **Verificación de Backup en Vinculación**: Al vincular una cuenta de Google Drive, comprueba automáticamente si existe un backup y propone restaurarlo si lo encuentra.
+- **Historial de Versiones de Google Drive**: Botón para ver y restaurar versiones anteriores de los backups usando el sistema de revisiones nativo de Google Drive.
+- **Logs de Consola**: Añadidos logs de debug para todas las operaciones principales de IA (Reescribir, Debate, Oráculo, RAG, Compendium IA) para facilitar la resolución de problemas.
+
+### Changed
+- **Sincronización Google Drive**: Los backups ahora usan el sistema de revisiones nativo de Google Drive para tener historial de versiones.
+- **Mejoras UI**: Botones selectors de tema más pequeños con círculos bicolor representando cada tema. Fusionados el toggle de sincronización y la info de seguridad en una sola caja. Movida la sección de enlaces a la pestaña Nube.
+- **Optimización de Base de Datos**: Añadido índice compuesto `[novelId+sceneId]` a la tabla `lastRewrite` para consultas más rápidas (schema Dexie.js v10).
+- **Tooltips**: Añadido componente Tooltip personalizado a todos los botones de sincronización en nube de Configuración.
+
+### Fixed
+- **Consultas de Last Rewrite**: Añadido índice compuesto faltante para evitar warnings de rendimiento en consola.
+- **Condición de carrera en restauración cloud**: Añadido flag `isRestoring` y `cloudCheckInProgress` para prevenir restauraciones duplicadas.
+- **Sincronización de relaciones de personajes**: Los cambios bidireccionales de relaciones ahora se propagan correctamente a ambas fichas.
+
+### CSS
+- **Nuevos archivos**: `ragWorker.js` (web worker para embeddings), extendido `Compendium.css` para el panel MPC.
+- **Soporte de tema**: Añadidas variables CSS de tema claro en `index.css` (data attribute `--theme-light`).
+- **SettingsModal.css**: Actualizado el estilo del selector de tema con círculos bicolor.
+
+---
+
+## [LoneWriter v1.4-multilenguaje (Stable)] - 2026-04-04
+
+### Added
+- **Viewport meta responsive**: Soporte `safe-area-inset` para notch/bars de dispositivos móviles
+- **Drawer navigation en móvil**: Menú hamburguesa para sidebar en pantallas <768px
+- **Panel de árbol colapsable**: Tree view del árbol narrativo como drawer en móvil
 - **Sistema de internacionalización (i18n)**: Implementación completa con `i18next` y `react-i18next` — toda la interfaz traducida a **Español** e **Inglés**
 - **Selector de idioma**: Dropdown en Configuración > General con `Español` / `English`, persistencia automática en `localStorage`
 - **Diccionarios JSON estructurados**: 7 namespaces (`common`, `app`, `editor`, `compendium`, `resources`, `ai`, `settings`) con ~400+ claves por idioma
@@ -18,6 +50,10 @@
 - **Cambio de texto en semáforo del Oráculo**: "Párrafo coherente" → "Sin coincidencias halladas"
 
 ### Changed
+- **Editor full-width en móvil**: Ocupa todo el ancho, tree view oculto por defecto en <768px
+- **Touch targets optimizados**: Targets táctiles y tipografía responsive en todas las vistas
+- **Badges → puntos de color**: Status badges en filas de escenas se muestran como puntos coloreados en móvil
+- **Botón de debate estilizado**: Uppercase + letter-spacing para el botón de nueva sesión
 - **Versionado completo**: `v1.3-oráculo` → `v1.4-multilenguaje` en toda la aplicación
 - **Compresión con pako**: Reemplazada `CompressionStream` (API nativa no universal) por `pako` para compresión gzip compatible con todos los navegadores
 - **Sincronización con Google Drive**: Los backups ahora se suben en formato comprimido (`application/octet-stream`)
@@ -26,12 +62,21 @@
 - **Tabs del panel IA**: Traducidas a `Reescribir` / `Debate` / `Oráculo` (ES) y `Rewrite` / `Debate` / `Oracle` (EN)
 
 ### Fixed
+- **Conteo duplicado de palabras**: Corregido en acordeón de capítulo
+- **Hint de seguridad**: Sintaxis `<0>` reemplazada por `<strong>` en EN/ES (Settings)
 - **Stack overflow en compresión**: `btoa(String.fromCharCode(...array))` causaba error con datos grandes; reemplazado por conversión chunk-based de 8192 bytes
 - **Tabs duplicadas en AIPanel**: Eliminadas pestañas duplicadas de Debate y Oráculo que quedaban de ediciones anteriores
 - **`<Trans>` sin namespace**: Corregido `bienvenida.creditos` añadiendo `ns="app"` al componente Trans
 - **Relaciones de personajes no sincronizadas**: La lógica de diffing anterior no propagaba cambios de `type`/`reverseType` al otro personaje
 
+### UI Enhancements
+- **Editor de Goals**: Borde dorado + glow + indicador de dot activo
+- **Templates de Goals**: Rango de capítulos (cap./ch.), layout de 3 líneas (wds./pal.)
+- **Numeración continua**: Capítulos numerados de forma global a través de todos los actos
+
 ### CSS
+- **Nuevos archivos**: `Editor.css` (+337), `Compendium.css` (+189), `Resources.css` (+81)
+- **Actualizados**: App.css, AIPanel.css, RichEditor.css, Sidebar.css, SettingsModal.css
 - **LanguageSelector.css**: Nuevo componente con dropdown de idioma estilizado
 - **AIPanel.css**: Selector de sesiones de debate más compacto (`max-width: 140px`), texto truncado a `90px`, dropdown ampliado a `300px`, fuente de items reducida a `11px`
 

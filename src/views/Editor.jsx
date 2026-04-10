@@ -37,6 +37,7 @@ import {
   loadIgnoredNames,
 } from '../services/mpcService'
 import debounce from 'lodash/debounce'
+import { upsertVector, deleteVectorsForScene } from '../services/ragService'
 import './Editor.css'
 import './MpcBadge.css'
 
@@ -362,7 +363,7 @@ function ProgressBar({ value, max, label, sublabel, color }) {
   )
 }
 
-export default function EditorView({ menuOpen = false }) {
+export default function EditorView({ menuOpen = false, onNavigate }) {
   const { t } = useTranslation('editor')
   const { 
     acts, activeNovel, characters, updateScene, 
@@ -378,9 +379,7 @@ export default function EditorView({ menuOpen = false }) {
     mpcProposals, mpcStatus, setMpcStatus, addMpcProposals,
     mpcCooldownRef, MPC_COOLDOWN_MS,
     logAIUsage,
-    isMpcEnabled,
-    isMpcDrawerOpen, 
-    setIsMpcDrawerOpen
+    isMpcEnabled
   } = useAI()
 
   // MPC state
@@ -518,8 +517,15 @@ export default function EditorView({ menuOpen = false }) {
     window.addEventListener('mpc-manual-scan', handler)
     return () => window.removeEventListener('mpc-manual-scan', handler)
   }, [activeScene, activeNovel, mpcStatus])
+  const debouncedRagUpsert = useCallback(
+    debounce(async (sceneId, novelId, text) => {
+      await upsertVector(sceneId, novelId, text)
+    }, 5000),
+    []
+  )
+
   const debouncedSave = useCallback(
-    debounce(async (sceneId, html) => {
+    debounce(async (sceneId, novelId, html) => {
       setIsSaving(true)
       const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
       const words = text ? text.split(' ').length : 0
@@ -531,13 +537,17 @@ export default function EditorView({ menuOpen = false }) {
       })
       
       setIsSaving(false)
+      // ── RAG: index updated text asynchronously ────────────────
+      if (novelId && text.length > 10) {
+        debouncedRagUpsert(sceneId, novelId, text)
+      }
     }, 1000),
-    [updateScene]
+    [updateScene, debouncedRagUpsert]
   )
 
   const handleEditorChange = (html) => {
     if (activeScene) {
-      debouncedSave(activeScene.id, html)
+      debouncedSave(activeScene.id, activeNovel?.id, html)
       // ── MPC trigger ──────────────────────────────────────────────
       triggerMpcAnalysis(html)
     }
@@ -610,7 +620,7 @@ export default function EditorView({ menuOpen = false }) {
       } finally {
         setMpcStatus('idle')
       }
-    }, 6000) // 6 segundos de inactividad antes de analizar, para cubrir pausas de reflexión
+    }, 2000) // 2 segundos de inactividad antes de analizar, para mayor agilidad
   }, [activeNovel, apiKey, provider, currentModel, localBaseUrl, mpcCooldownRef, MPC_COOLDOWN_MS, setMpcStatus, addMpcProposals, isMpcEnabled, logAIUsage])
 
   const handleManualMpcScan = useCallback(async () => {
@@ -1165,7 +1175,13 @@ export default function EditorView({ menuOpen = false }) {
                         } ${
                           mpcProposals.length > 0 ? 'mpc-traffic-light--active' : ''
                         }`}
-                        onClick={() => setIsMpcDrawerOpen(true)}
+                        onClick={() => {
+                          if (mpcProposals.length > 0 || mpcStatus === 'analyzing') {
+                            onNavigate('compendium');
+                          } else {
+                            handleManualMpcScan();
+                          }
+                        }}
                       >
                         {mpcProposals.length > 0 || mpcStatus === 'analyzing' ? (
                           <span className="mpc-traffic-light__count">{mpcProposals.length > 0 ? mpcProposals.length : <Loader2 size={12} className="spin" />}</span>

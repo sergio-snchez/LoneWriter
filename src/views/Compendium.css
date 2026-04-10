@@ -124,7 +124,7 @@
 }
 .compendium-tab--active {
   background: var(--accent-dim);
-  color: var(--accent-light);
+  color: var(--accent);
   border-color: var(--border-accent);
 }
 
@@ -807,6 +807,180 @@
 }
 
 /* ============================================
+   MPC BADGE (en sidebar)
+   ============================================ */
+.compendium-mpc-badge {
+  padding: 12px 14px;
+  display: flex;
+  justify-content: center;
+}
+
+.compendium-mpc-badge__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, rgba(155,114,207,0.12), rgba(107,159,212,0.08));
+  border: 1px solid rgba(155,114,207,0.25);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.compendium-mpc-badge__button:hover {
+  background: linear-gradient(135deg, rgba(155,114,207,0.2), rgba(107,159,212,0.12));
+  border-color: rgba(155,114,207,0.4);
+  transform: translateY(-1px);
+}
+
+.compendium-mpc-badge--active .compendium-mpc-badge__button,
+.compendium-mpc-badge--active .compendium-mpc-badge__button {
+  color: #c49fe8;
+  border-color: rgba(155,114,207,0.5);
+}
+
+.compendium-mpc-badge--analyzing .compendium-mpc-badge__button {
+  color: var(--accent);
+  border-color: rgba(155,114,207,0.5);
+}
+
+.compendium-mpc-badge__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: #9b72cf;
+  color: white;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.compendium-mpc-badge__icon {
+  color: #9b72cf;
+}
+
+/* ============================================
+   MPC OVERLAY FLOTANTE
+   ============================================ */
+.compendium-mpc-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: mpc-overlay-fade-in 0.2s ease;
+}
+
+@keyframes mpc-overlay-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.compendium-mpc-overlay__panel {
+  width: 90%;
+  max-width: 520px;
+  max-height: 85vh;
+  background: var(--bg-panel, var(--bg-elevated));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  animation: mpc-overlay-panel-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+@keyframes mpc-overlay-panel-in {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.compendium-mpc-overlay__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.compendium-mpc-overlay__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.compendium-mpc-overlay__icon {
+  color: #9b72cf;
+  flex-shrink: 0;
+}
+
+.compendium-mpc-overlay__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.compendium-mpc-overlay__subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.compendium-mpc-overlay__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.compendium-mpc-overlay__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.compendium-mpc-overlay__empty p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.compendium-mpc-overlay__footer {
+  display: flex;
+  gap: 10px;
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.compendium-mpc-overlay__footer .btn {
+  flex: 1;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+/* ============================================
    RESPONSIVE – MOBILE (< 768px)
    ============================================ */
 @media (max-width: 767px) {
@@ -987,6 +1161,38 @@
 
   .compendium-empty-state__title {
     font-size: 16px;
+  }
+
+  .compendium-mpc-badge {
+    padding: 10px 12px;
+  }
+
+  .compendium-mpc-badge__button {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .compendium-mpc-overlay__panel {
+    width: 95%;
+    max-height: 90vh;
+    border-radius: var(--radius-md);
+  }
+
+  .compendium-mpc-overlay__header {
+    padding: 14px 16px;
+  }
+
+  .compendium-mpc-overlay__body {
+    padding: 14px;
+  }
+
+  .compendium-mpc-overlay__footer {
+    padding: 12px 16px;
+  }
+
+  .compendium-mpc-overlay__footer .btn {
+    padding: 10px 12px;
+    font-size: 13px;
   }
 }
 
