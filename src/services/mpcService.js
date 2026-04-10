@@ -117,52 +117,16 @@ export async function analyzeWithAI(candidates, sceneText, registeredNames, aiCo
   if (!candidates || candidates.length === 0) return { proposals: [], usage: null };
   if (!aiConfig?.apiKey && aiConfig?.provider !== 'local') return { proposals: [], usage: null };
 
+  const isSpanish = i18n.language === 'es';
   const compendiumSummary = buildCompendiumSummary(registeredNames);
   
-  // Pasamos un límite muy generoso (12,000 caracteres, aprox 2,000+ palabras) para abarcar toda la escena promedio
   const truncatedText = sceneText.length > 12000
     ? '...' + sceneText.slice(-12000)
     : sceneText;
 
-  const prompt = `Eres un asistente experto en worldbuilding y construcción de universos narrativos.
-
-Tu tarea es analizar el fragmento literario que te proporciono e identificar si los CANDIDATOS DETECTADOS son entidades narrativas relevantes (personajes, lugares, objetos importantes, o conceptos de lore) que merezcan tener una ficha en el compendio de la novela.
-
-COMPENDIO ACTUAL (estos nombres ya están registrados, NO los propongas):
-${compendiumSummary}
-
-CANDIDATOS DETECTADOS (evalúa si merecen una ficha):
-${candidates.join(', ')}
-
-FRAGMENTO DE LA OBRA:
-"""
-${truncatedText}
-"""
-
-INSTRUCCIONES:
-- Analiza SOLO los candidatos listados. No inventes entidades nuevas.
-- NO propongas candidatos que sean variaciones, apodos o partes de los nombres del COMPENDIO ACTUAL (ej. si está 'El Loro de Oro', no propongas 'El Loro').
-- Para cada candidato que SÍ merezca una ficha (personaje, lugar, objeto clave, o concepto de lore), genera una entrada JSON.
-- Asigna confidence: "high" si aparece claramente como nombre propio de entidad narrativa, "medium" si es probable pero hay algo de ambigüedad, "low" si es dudoso.
-- Infiere los campos a partir del contexto del texto. Si no puedes inferirlo, deja el campo vacío "".
-- Propón un máximo de ${maxProposals} entidades. Prioriza las de mayor confianza.
-- Si ningún candidato merece una ficha, devuelve un array vacío [].
-
-ESQUEMA DE RESPUESTA (devuelve ÚNICAMENTE el JSON, sin texto adicional, sin markdown):
-[
-  {
-    "type": "characters" | "locations" | "objects" | "lore",
-    "confidence": "high" | "medium" | "low",
-    "name": "Nombre exacto tal como aparece en el texto (o 'title' para lore)",
-    "title": "Solo si type es lore, el título de la entrada",
-    "role": "Si es personaje: su rol narrativo (protagonista, antagonista, secundario...)",
-    "occupation": "Si es personaje: su ocupación o profesión",
-    "description": "Descripción breve inferida del contexto (máx. 150 caracteres)",
-    "type_detail": "Para locations: tipo de lugar. Para objects: tipo de objeto. Para lore: categoría",
-    "tags": ["tag1", "tag2"],
-    "reason": "Por qué propones añadirlo al compendio (una frase breve)"
-  }
-]`;
+  const prompt = isSpanish
+    ? `Eres un asistente experto en worldbuilding y construcción de universos narrativos.\n\nTu tarea es analizar el fragmento literario que te proporciono e identificar si los CANDIDATOS DETECTADOS son entidades narrativas relevantes (personajes, lugares, objetos importantes, o conceptos de lore) que merezcan tener una ficha en el compendio de la novela.\n\nCOMPENDIO ACTUAL (estos nombres ya están registrados, NO los propongas):\n${compendiumSummary}\n\nCANDIDATOS DETECTADOS (evalúa si merecen una ficha):\n${candidates.join(', ')}\n\nFRAGMENTO DE LA OBRA:\n"""\n${truncatedText}\n"""\n\nINSTRUCCIONES:\n- Analiza SOLO los candidatos listados. No inventes entidades nuevas.\n- NO propongas candidatos que sean variaciones, apodos o partes de los nombres del COMPENDIO ACTUAL (ej. si está 'El Loro de Oro', no propongas 'El Loro').\n- Para cada candidato que SÍ merezca una ficha (personaje, lugar, objeto clave, o concepto de lore), genera una entrada JSON.\n- Asigna confidence: "high" si aparece claramente como nombre propio de entidad narrativa, "medium" si es probable pero hay algo de ambigüedad, "low" si es dudoso.\n- Infiere los campos a partir del contexto del texto. Si no puedes inferirlo, deja el campo vacío "".\n- Propón un máximo de ${maxProposals} entidades. Prioriza las de mayor confianza.\n- Si ningún candidato merece una ficha, devuelve un array vacío [].\n\nResponde en el mismo idioma que usa el autor en su texto.\n\nESQUEMA DE RESPUESTA (devuelve ÚNICAMENTE el JSON, sin texto adicional, sin markdown):\n[\n  {\n    "type": "characters" | "locations" | "objects" | "lore",\n    "confidence": "high" | "medium" | "low",\n    "name": "Nombre exacto tal como aparece en el texto (o 'title' para lore)",\n    "title": "Solo si type es lore, el título de la entrada",\n    "role": "Si es personaje: su rol narrativo (protagonista, antagonista, secundario...)",\n    "occupation": "Si es personaje: su ocupación o profesión",\n    "description": "Descripción breve inferida del contexto (máx. 150 caracteres)",\n    "type_detail": "Para locations: tipo de lugar. Para objects: tipo de objeto. Para lore: categoría",\n    "tags": ["tag1", "tag2"],\n    "reason": "Por qué propones añadirlo al compendio (una frase breve)"\n  }\n]`
+    : `You are an expert in worldbuilding and narrative universe construction.\n\nYour task is to analyze the literary fragment I provide and identify whether the DETECTED CANDIDATES are relevant narrative entities (characters, important places, objects, or lore concepts) that deserve to have an entry in the novel's compendium.\n\nCURRENT COMPENDIUM (these names are already registered, do NOT propose them):\n${compendiumSummary}\n\nDETECTED CANDIDATES (evaluate if they deserve an entry):\n${candidates.join(', ')}\n\nWORK FRAGMENT:\n"""\n${truncatedText}\n"""\n\nINSTRUCTIONS:\n- Analyze ONLY the listed candidates. Do not invent new entities.\n- Do NOT propose candidates that are variations, nicknames, or parts of names from the CURRENT COMPENDIUM (e.g., if 'The Golden Parrot' is registered, do not propose 'The Parrot').\n- For each candidate that DOES deserve an entry (character, key place, key object, or lore concept), generate a JSON entry.\n- Assign confidence: "high" if it clearly appears as a proper name of a narrative entity, "medium" if it's probable but there's some ambiguity, "low" if it's doubtful.\n- Infer fields from the text context. If you cannot infer it, leave the field empty "".\n- Propose a maximum of ${maxProposals} entities. Prioritize those with highest confidence.\n- If no candidate deserves an entry, return an empty array [].\n\nRespond in the same language as the author uses in their text.\n\nRESPONSE SCHEMA (return ONLY the JSON, without additional text, without markdown):\n[\n  {\n    "type": "characters" | "locations" | "objects" | "lore",\n    "confidence": "high" | "medium" | "low",\n    "name": "Exact name as it appears in the text (or 'title' for lore)",\n    "title": "Only if type is lore, the entry title",\n    "role": "If character: their narrative role (protagonist, antagonist, secondary...)",\n    "occupation": "If character: their occupation or profession",\n    "description": "Brief description inferred from context (max 150 characters)",\n    "type_detail": "For locations: type of place. For objects: type of object. For lore: category",\n    "tags": ["tag1", "tag2"],\n    "reason": "Why you propose adding it to the compendium (brief sentence)"\n  }\n]`;
 
   try {
     const response = await AIService._callWithConfig(prompt, aiConfig);

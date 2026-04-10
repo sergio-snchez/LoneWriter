@@ -3,6 +3,8 @@
  * Handles communication with AI providers (OpenAI, Google Gemini, Claude, OpenRouter)
  */
 
+import i18n from '../i18n/i18n';
+
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
@@ -55,27 +57,36 @@ export const AIService = {
    */
   rewrite: async (text, goal, promptTemplate, config) => {
     const { provider, apiKey, model, customInstructions, pov, knowledgeBase } = config;
+    const isSpanish = i18n.language === 'es';
 
-    if (!apiKey && provider !== 'local') throw new Error('Se requiere una clave API para usar la IA.');
+    if (!apiKey && provider !== 'local') throw new Error(isSpanish ? 'Se requiere una clave API para usar la IA.' : 'An API key is required to use the AI.');
 
     let finalPrompt = promptTemplate;
+    const noneText = isSpanish ? 'Ninguna.' : 'None.';
 
-    // Placeholders replacement
     if (goal === 'tone') {
-      finalPrompt = finalPrompt.replace('[TONO]', customInstructions || 'más dramático');
+      const defaultTone = isSpanish ? 'más dramático' : 'more dramatic';
+      finalPrompt = finalPrompt.replace('[TONO]', customInstructions || defaultTone).replace('[TONE]', customInstructions || defaultTone);
     } else if (goal === 'length') {
-      finalPrompt = finalPrompt.replace('[LONGITUD]', customInstructions || 'conciso');
+      const defaultLength = isSpanish ? 'conciso' : 'concise';
+      finalPrompt = finalPrompt.replace('[LONGITUD]', customInstructions || defaultLength).replace('[LENGTH]', customInstructions || defaultLength);
     } else if (goal === 'character') {
-      finalPrompt = finalPrompt.replace('[PERSONAJE]', pov || 'el protagonista').replace('[CHARACTER]', pov || 'the protagonist');
+      const defaultChar = isSpanish ? 'el protagonista' : 'the protagonist';
+      finalPrompt = finalPrompt.replace('[PERSONAJE]', pov || defaultChar).replace('[CHARACTER]', pov || defaultChar);
     }
 
-    let fullPrompt = `${finalPrompt}\n\nTEXTO ORIGINAL:\n"${text}"\n\nINSTRUCCIONES ADICIONALES DEL USUARIO:\n${customInstructions || 'Ninguna.'}`;
+    const originalTextLabel = isSpanish ? 'TEXTO ORIGINAL:' : 'ORIGINAL TEXT:';
+    const additionalLabel = isSpanish ? 'INSTRUCCIONES ADICIONALES DEL USUARIO:' : "USER'S ADDITIONAL INSTRUCTIONS:";
+    let fullPrompt = `${finalPrompt}\n\n${originalTextLabel}\n"${text}"\n\n${additionalLabel}\n${customInstructions || noneText}`;
 
     if (knowledgeBase) {
-      fullPrompt += `\n\n[BASE DE CONOCIMIENTO Y REFERENCIAS DEL AUTOR]:\n${knowledgeBase}\n---\nTEN EN CUENTA ESTA BASE DE CONOCIMIENTO AL RESPONDER.`;
+      const kbLabel = isSpanish ? '[BASE DE CONOCIMIENTO Y REFERENCIAS DEL AUTOR]:' : "[AUTHOR'S KNOWLEDGE BASE AND REFERENCES]:";
+      const kbNote = isSpanish ? 'TEN EN CUENTA ESTA BASE DE CONOCIMIENTO AL RESPONDER.' : 'TAKE THIS KNOWLEDGE BASE INTO ACCOUNT WHEN RESPONDING.';
+      fullPrompt += `\n\n${kbLabel}\n${knowledgeBase}\n---\n${kbNote}`;
     }
 
-    fullPrompt += `\n\nRESCRITURA (Responde ÚNICAMENTE con el texto reescrito en formato HTML válido. Usa etiquetas <p>, <strong>, <em>, etc. NO uses Markdown. NO añadas introducciones ni explicaciones):`;
+    const outputLabel = isSpanish ? 'RESCRITURA (Responde ÚNICAMENTE con el texto reescrito en formato HTML válido. Usa etiquetas <p>, <strong>, <em>, etc. NO uses Markdown. NO añadas introducciones ni explicaciones):' : 'REWRITE (Respond ONLY with the rewritten text in valid HTML format. Use tags like <p>, <strong>, <em>, etc. Do NOT use Markdown. Do NOT add introductions or explanations):';
+    fullPrompt += `\n\n${outputLabel}`;
 
     if (provider === 'google') {
       return await AIService._callGemini(fullPrompt, apiKey, model);
@@ -102,22 +113,16 @@ export const AIService = {
    */
   autoCompleteCompendiumEntry: async (sceneText, type, name, currentData, config) => {
     const { provider, apiKey, model, localBaseUrl } = config;
-    if (!apiKey && provider !== 'local') throw new Error('Se requiere una clave API para usar la IA.');
+    const isSpanish = i18n.language === 'es';
 
-    const promptTemplate = `Actúa como un asistente literario experto. Vas a rellenar automáticamente la ficha de "${name}" (${type}) para el Compendio de la novela, infiriendo los datos ESTRICTAMENTE a partir del siguiente fragmento de la historia. No inventes absolutamente nada que no se deduzca de este texto.
+    const errorAPI = isSpanish ? 'Se requiere una clave API para usar la IA.' : 'An API key is required to use the AI.';
+    const errorProvider = isSpanish ? 'Proveedor de IA desconocido.' : 'Unknown AI provider.';
 
-[CONTEXTO DE LA NOVELA]
-${sceneText}
+    if (!apiKey && provider !== 'local') throw new Error(errorAPI);
 
-[DATOS EXISTENTES (Mantén estos o mejóralos si el texto lo justifica)]
-${JSON.stringify(currentData, null, 2)}
-
-INSTRUCCIONES DE FORMATO:
-Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json ni texto previo o posterior). Usa esta estructura según el tipo, omitiendo campos si no hay información en el texto:
-- characters: { "role": "", "occupation": "", "age": 0, "description": "", "traits": ["rasgo1", "rasgo2"], "relations": [{ "name": "NombreOtro", "type": "como lo veo", "reverseType": "como me ve" }] }
-- locations: { "type": "", "climate": "", "description": "", "tags": ["tag1"] }
-- objects: { "type": "", "description": "", "origin": "", "currentOwner": "", "tags": ["tag1"] }
-- lore: { "category": "", "summary": "", "tags": ["tag1"] }`;
+    const promptTemplate = isSpanish
+      ? `Actúa como un asistente literario experto. Vas a rellenar automáticamente la ficha de "${name}" (${type}) para el Compendio de la novela, infiriendo los datos ESTRICTAMENTE a partir del siguiente fragmento de la historia. No inventes absolutamente nada que no se deduzca de este texto.\n\n[CONTEXTO DE LA NOVELA]\n${sceneText}\n\n[DATOS EXISTENTES (Mantén estos o mejóralos si el texto lo justifica)]\n${JSON.stringify(currentData, null, 2)}\n\nINSTRUCCIONES DE FORMATO:\nDevuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json ni texto previo o posterior). Usa esta estructura según el tipo, omitiendo campos si no hay información en el texto:\n- characters: { "role": "", "occupation": "", "age": 0, "description": "", "traits": ["rasgo1", "rasgo2"], "relations": [{ "name": "NombreOtro", "type": "como lo veo", "reverseType": "como me ve" }] }\n- locations: { "type": "", "climate": "", "description": "", "tags": ["tag1"] }\n- objects: { "type": "", "description": "", "origin": "", "currentOwner": "", "tags": ["tag1"] }\n- lore: { "category": "", "summary": "", "tags": ["tag1"] }`
+      : `Act as an expert literary assistant. You will automatically fill in the entry for "${name}" (${type}) for the novel's Compendium, inferring the data STRICTLY from the following fragment of the story. Do not invent absolutely anything that cannot be deduced from this text.\n\n[NOVEL CONTEXT]\n${sceneText}\n\n[EXISTING DATA (Keep these or improve them if the text justifies)]\n${JSON.stringify(currentData, null, 2)}\n\nFORMAT INSTRUCTIONS:\nReturn ONLY valid JSON (without markdown formatting markers \`\`\`json or any preceding or following text). Use this structure according to the type, omitting fields if there is no information in the text:\n- characters: { "role": "", "occupation": "", "age": 0, "description": "", "traits": ["trait1", "trait2"], "relations": [{ "name": "OtherName", "type": "how I see them", "reverseType": "how they see me" }] }\n- locations: { "type": "", "climate": "", "description": "", "tags": ["tag1"] }\n- objects: { "type": "", "description": "", "origin": "", "currentOwner": "", "tags": ["tag1"] }\n- lore: { "category": "", "summary": "", "tags": ["tag1"] }`;
 
     let response = null;
     if (provider === 'google') {
@@ -131,7 +136,7 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
     } else if (provider === 'local') {
       response = await AIService._callLocal(promptTemplate, model, localBaseUrl);
     } else {
-      throw new Error(`Proveedor de IA desconocido: ${provider}`);
+      throw new Error(errorProvider);
     }
 
     try {
@@ -143,7 +148,7 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
       return { data: JSON.parse(text), usage: response.usage };
     } catch (e) {
       console.error("[AIService] JSON parse error in auto-complete", e, response.text);
-      throw new Error("El modelo no devolvió un JSON válido.");
+      throw new Error(i18n.language === 'es' ? 'El modelo no devolvió un JSON válido.' : 'The model did not return valid JSON.');
     }
   },
 
@@ -155,53 +160,70 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
    */
   agentChat: async (agent, history, config) => {
     const { provider, apiKey, model, localBaseUrl, sceneContent, pov, roundInstruction, knowledgeBase, compendiumContext } = config;
+    const isSpanish = i18n.language === 'es';
 
-    if (!apiKey && provider !== 'local') throw new Error('Se requiere una clave API para usar la IA.');
+    const errorAPI = isSpanish ? 'Se requiere una clave API para usar la IA.' : 'An API key is required to use the AI.';
+    const errorProvider = isSpanish ? 'Proveedor de IA desconocido.' : 'Unknown AI provider.';
+    const debateDirective = isSpanish 
+      ? `[DIRECTRIZ CRÍTICA]: Eres ÚNICA y EXCLUSIVAMENTE el ${agent.name}. NUNCA te salgas de tu rol. Habla SIEMPRE en primera persona del singular ("yo", "mi opinión"). NO hables de ti mismo en tercera persona. NO seas genérico ni complaciente.`
+      : `[CRITICAL DIRECTIVE]: You are UNIQUE and EXCLUSIVELY ${agent.name}. NEVER leave your role. ALWAYS speak in first person singular ("I", "my opinion"). Do NOT refer to yourself in third person. Do NOT be generic.`;
+    
+    if (!apiKey && provider !== 'local') throw new Error(errorAPI);
 
-    let systemPrompt = agent.systemPrompt + `\n\n[DIRECTRIZ CRÍTICA]: Eres ÚNICA y EXCLUSIVAMENTE el ${agent.name}. NUNCA te salgas de tu rol. Habla SIEMPRE en primera persona del singular ("yo", "mi opinión"). NO hables de ti mismo en tercera persona. NO seas genérico ni complaciente. Aporta valor a través de tu especialidad única, y exprésate con tu propia voz. Si discrepas con otros, argumenta tu postura en lugar de simplemente darles la razón.`;
+    let systemPrompt = agent.systemPrompt + '\n\n' + debateDirective;
 
     if (knowledgeBase) {
-      systemPrompt += `\n\n[BASE DE CONOCIMIENTO Y REFERENCIAS DEL AUTOR]:\n${knowledgeBase}\n---\nTEN EN CUENTA ESTA BASE DE CONOCIMIENTO AL RESPONDER Y EVALUAR.`;
+      const kbLabel = isSpanish ? '[BASE DE CONOCIMIENTO Y REFERENCIAS DEL AUTOR]:' : "[AUTHOR'S KNOWLEDGE BASE AND REFERENCES]:";
+      const kbNote = isSpanish ? 'TEN EN CUENTA ESTA BASE DE CONOCIMIENTO AL RESPONDER Y EVALUAR.' : 'TAKE THIS KNOWLEDGE BASE INTO ACCOUNT WHEN RESPONDING AND EVALUATING.';
+      systemPrompt += `\n\n${kbLabel}\n${knowledgeBase}\n---\n${kbNote}`;
     }
 
     if (compendiumContext) {
-      systemPrompt += `\n\n${compendiumContext}\n---\nUSA ESTA INFORMACIÓN DEL COMPENDIO PARA DAR OPINIONES MÁS PRECISAS Y FIELES AL UNIVERSO DE LA NOVELA.`;
+      const cpNote = isSpanish ? 'USA ESTA INFORMACIÓN DEL COMPENDIO PARA DAR OPINIONES MÁS PRECISAS Y FIELES AL UNIVERSO DE LA NOVELA.' : 'USE THIS COMPENDIUM INFORMATION TO GIVE MORE PRECISE OPINIONS FAITHFUL TO THE NOVEL UNIVERSE.';
+      systemPrompt += `\n\n${compendiumContext}\n---\n${cpNote}`;
     }
 
     if (sceneContent || pov) {
-      systemPrompt += `\n\n---\n[CONTEXTO DE LA ESCENA ACTUAL (Para tu referencia)]`;
+      const sceneCtx = isSpanish ? '[CONTEXTO DE LA ESCENA ACTUAL (Para tu referencia)]' : '[CURRENT SCENE CONTEXT (For your reference)]';
+      systemPrompt += `\n\n---${sceneCtx}`;
       if (pov) {
-        systemPrompt += `\nLa escena está escrita desde el punto de vista (POV) del personaje: ${pov}. (IMPORTANTE: Tú NO eres este personaje, tú eres ${agent.name} evaluando el texto).`;
+        const povNote = isSpanish 
+          ? `La escena está escrita desde el punto de vista (POV) del personaje: ${pov}. (IMPORTANTE: Tú NO eres este personaje, tú eres ${agent.name} evaluando el texto).`
+          : `The scene is written from the point of view (POV) of: ${pov}. (IMPORTANT: You are NOT this character, you are ${agent.name} evaluating the text).`;
+        systemPrompt += `\n${povNote}`;
       }
       if (sceneContent) {
-        systemPrompt += `\nTexto:\n"${sceneContent}"`;
+        const textLabel = isSpanish ? 'Texto' : 'Text';
+        systemPrompt += `\n${textLabel}:\n"${sceneContent}"`;
       }
-      systemPrompt += `\n---`;
+      systemPrompt += '\n---';
     }
 
     if (config.ragContext) {
-      systemPrompt += `\n\n[RECUERDOS DE CAPÍTULOS ANTERIORES DEL MANUSCRITO]\n${config.ragContext}\n---\nUSA ESTA INFORMACIÓN PASADA DEL MANUSCRITO PARA SUSTENTAR TUS OPINIONES O RESPONDER PREGUNTAS DEL USUARIO SOBRE EVENTOS PREVIOS.`;
+      const ragLabel = isSpanish ? '[RECUERDOS DE CAPÍTULOS ANTERIORES DEL MANUSCRITO]' : '[MEMORIES OF PREVIOUS MANUSCRIPT CHAPTERS]';
+      const ragNote = isSpanish ? 'USA ESTA INFORMACIÓN PASADA DEL MANUSCRITO PARA SUSTENTAR TUS OPINIONES O RESPONDER PREGUNTAS DEL USUARIO SOBRE EVENTOS PREVIOS.' : 'USE THIS PAST MANUSCRIPT INFORMATION TO SUPPORT YOUR OPINIONS OR ANSWER USER QUESTIONS ABOUT PREVIOUS EVENTS.';
+      systemPrompt += `\n\n${ragLabel}\n${config.ragContext}\n---\n${ragNote}`;
     }
 
-    // Convert debate history into chat-style messages
-    // We represent the agent's own previous messages as 'assistant' and everything else as 'user'
+    const authorLabel = isSpanish ? '[Autor de la obra]:' : '[Author of the work]:';
+    const participantLabel = isSpanish 
+      ? (name) => `[Participante - ${name}]:` 
+      : (name) => `[Participant - ${name}]:`;
+    const yourTurn = isSpanish 
+      ? `[TU TURNO]: Ahora te toca intervenir a ti, ${agent.name}. Revisa todo el hilo del debate anterior, sin importar a quién se dirigieran los mensajes. Mantente fiel a tu rol y a tus instrucciones. ${roundInstruction || ''}`
+      : `[YOUR TURN]: Now it's your turn, ${agent.name}. Review the entire previous debate thread, regardless of whom the messages were directed to. Stay true to your role and instructions. ${roundInstruction || ''}`;
+
     const chatMessages = history.map(msg => {
       if (msg.role === 'user') {
-        return { role: 'user', content: `[Autor de la obra]: ${msg.text}` };
+        return { role: 'user', content: authorLabel + ' ' + msg.text };
       }
-      // Agent messages: if it's this agent → assistant, otherwise fold into user context
       if (msg.agent === agent.id) {
         return { role: 'assistant', content: msg.text };
       }
-      // Other agents' responses shown as context inside a user turn
-      return { role: 'user', content: `[Participante - ${msg.agentName || msg.agent}]: ${msg.text}` };
+      return { role: 'user', content: participantLabel(msg.agentName || msg.agent) + ' ' + msg.text };
     });
 
-    // Añadimos siempre un mensaje final como "director del debate" para forzar el foco del modelo
-    chatMessages.push({
-      role: 'user',
-      content: `[TU TURNO]: Ahora te toca intervenir a ti, ${agent.name}. Revisa todo el hilo del debate anterior, sin importar a quién se dirigieran los mensajes. Mantente fiel a tu rol y a tus instrucciones. ${roundInstruction || ''}`
-    });
+    chatMessages.push({ role: 'user', content: yourTurn });
 
     if (provider === 'google') {
       return await AIService._callGeminiChat(systemPrompt, chatMessages, apiKey, model);
@@ -214,7 +236,7 @@ Devuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json 
     } else if (provider === 'local') {
       return await AIService._callLocalChat(systemPrompt, chatMessages, model, localBaseUrl);
     } else {
-      throw new Error(`Proveedor de IA desconocido: ${provider}`);
+      throw new Error(errorProvider);
     }
   },
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import i18n from '../i18n/i18n'
 import { Sparkles, MessageSquare, X, ChevronRight, ChevronLeft,
   Wand2, Send, RefreshCw, Copy, Check, RotateCcw, Trash2,
   User, Pencil, AlertTriangle, CheckCheck, Bot,
@@ -1046,19 +1047,27 @@ function OracleTab({ activeScene }) {
         : ''
 
       const oraclePrompt = t('oracle_prompt')
+      const isSpanish = i18n.language === 'es'
+
+      const oracleCompendium = isSpanish ? '--- TEXTO DEL COMPENDIO (FUENTE DE VERDAD ABSOLUTA) ---' : '--- COMPENDIUM TEXT (ABSOLUTE SOURCE OF TRUTH) ---';
+      const oraclePrevCtx = isSpanish ? '--- CONTEXTO ANTERIOR DEL MANUSCRITO (SOLO COMO REFERENCIA, NUNCA DESMIENTE AL COMPENDIO) ---' : '--- PREVIOUS MANUSCRIPT CONTEXT (ONLY AS REFERENCE, NEVER DISPUTE THE COMPENDIUM) ---';
+      const oracleNoComp = isSpanish ? 'No se encontraron fichas relevantes del Compendio para este texto.' : 'No relevant Compendium entries found for this text.';
+      const oracleNoPrev = isSpanish ? 'No hay contexto anterior indexado aún (o se está usando sin RAG).' : 'No previous context indexed yet (or RAG is not being used).';
+      const oracleText = isSpanish ? '--- TEXTO A ANALIZAR ---' : '--- TEXT TO ANALYZE ---';
+      const oracleAnswer = isSpanish ? '--- TU RESPUESTA ---' : '--- YOUR ANSWER ---';
 
       const fullPrompt = `${oraclePrompt}
 
---- TEXTO DEL COMPENDIO (FUENTE DE VERDAD ABSOLUTA) ---
-${compendiumInfo || 'No se encontraron fichas relevantes del Compendio para este texto.'}
+${oracleCompendium}
+${compendiumInfo || oracleNoComp}
 
---- CONTEXTO ANTERIOR DEL MANUSCRITO (SOLO COMO REFERENCIA, NUNCA DESMIENTE AL COMPENDIO) ---
-${ragContext || 'No hay contexto anterior indexado aún (o se está usando sin RAG).'}
+${oraclePrevCtx}
+${ragContext || oracleNoPrev}
 
---- TEXTO A ANALIZAR ---
+${oracleText}
 ${plainText}
 
---- TU RESPUESTA ---`
+${oracleAnswer}`
 
       const response = await AIService.rewrite(fullPrompt, 'style', '', {
         provider,
