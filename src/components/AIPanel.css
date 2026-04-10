@@ -604,7 +604,6 @@
 }
 
 .debate-msg__text {
-  white-space: pre-wrap;
   word-break: break-word;
 }
 
@@ -1437,7 +1436,6 @@
   font-size: 12px;
   color: var(--text-secondary);
   line-height: 1.65;
-  white-space: pre-wrap;
   word-break: break-word;
 }
 
