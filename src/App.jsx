@@ -89,8 +89,8 @@ export default function App() {
                localStorage.setItem('lw_last_cloud_sync', date);
                await refreshAfterRestore();
              }
-           } catch (err) {
-             alert(t('error_restaurar') + err.message);
+          } catch (err) {
+            alert(t('error_restaurar') + err.message);
           } finally {
             isRestoring = false;
           }
@@ -98,8 +98,35 @@ export default function App() {
       });
     };
 
+    const handleRestoreFromRevision = async (e) => {
+      const { data: cloudData, date } = e.detail;
+      if (isRestoring) return;
+      isRestoring = true;
+
+      try {
+        await db.transaction('rw', db.tables, async () => {
+          for (const table of db.tables) {
+            await table.clear();
+            if (cloudData.tables[table.name]) {
+              await table.bulkAdd(cloudData.tables[table.name]);
+            }
+          }
+        });
+        localStorage.setItem('lw_last_cloud_sync', date);
+        await refreshAfterRestore();
+      } catch (err) {
+        alert(t('error_restaurar') + err.message);
+      } finally {
+        isRestoring = false;
+      }
+    };
+
     window.addEventListener('cloud-version-available', handleCloudVersion);
-    return () => window.removeEventListener('cloud-version-available', handleCloudVersion);
+    window.addEventListener('restore-from-revision', handleRestoreFromRevision);
+    return () => {
+      window.removeEventListener('cloud-version-available', handleCloudVersion);
+      window.removeEventListener('restore-from-revision', handleRestoreFromRevision);
+    };
   }, [openModal, refreshAfterRestore]);
 
   useEffect(() => {

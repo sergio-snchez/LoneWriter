@@ -150,6 +150,7 @@ function RewriteTab({ activeScene }) {
     
     setIsGenerating(true);
     try {
+      console.log('[Rewrite] Reescribiendo escena', activeScene?.id, '— objetivo:', activeGoal);
       const activeRes = resources?.filter(r => r.activeForAI && r.content) || [];
       const knowledgeBase = activeRes.length > 0 
         ? activeRes.map(r => `Archivo: [${r.name}]\nContenido:\n${r.content}`).join('\n\n')
@@ -461,6 +462,7 @@ function DebateTab({ activeScene }) {
     }
 
     const historyWithUser = [...debateHistory, userMsg]
+    console.log('[Debate] Iniciando debate — rondas:', rounds, '— agentes:', activeAgents.map(a => a.name).join(', '));
     for (let r = 0; r < rounds; r++) {
       for (const agent of activeAgents) {
         setLoadingAgents(prev => ({ ...prev, [agent.id]: true }))
@@ -995,6 +997,7 @@ function OracleTab({ activeScene }) {
     setError('')
 
     try {
+      console.log('[Oracle] Analizando escena', activeScene?.id, '—', activeScene.content.replace(/<[^>]*>/g, '').length, 'chars');
       console.log('[Oracle] Starting check. detectedEntities:', JSON.stringify(oracleStatus.detectedEntities));
       
       const plainText = activeScene.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()

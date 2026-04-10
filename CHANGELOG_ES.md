@@ -6,6 +6,35 @@
 
 </div>
 
+## [LoneWriter v1.5-compendio (Stable)] - 2026-04-10
+
+### Added
+- **RAG (Retrieval-Augmented Generation)**: Motor de búsqueda semántica basado en vectores para el Oráculo y las funciones de IA del Compendium. Embeddings almacenados en IndexedDB usando Transformers.js (`ort-wasm-simd`), permitiendo consultas contextuales sin APIs externas.
+- **MPC (Monitor de Propuestas del Compendio)**: Mientras escribes, la app detecta automáticamente potenciales nuevas entidades (personajes, lugares, objetos, lore). Un panel morado no intrusivo sugiere añadirlas al Compendio con un clic.
+- **Servidor IA Local**: Nueva opción de proveedor para modelos locales de Ollama y LM Studio con URL base configurable (ej. `http://localhost:1234/v1`).
+- **Selector de Tema**: Alternar entre modo oscuro ("Clásico") y modo claro ("Manuscrito Moderno") en Configuración > General. El tema se guarda en localStorage.
+- **Verificación de Backup en Vinculación**: Al vincular una cuenta de Google Drive, comprueba automáticamente si existe un backup y propone restaurarlo si lo encuentra.
+- **Historial de Versiones de Google Drive**: Botón para ver y restaurar versiones anteriores de los backups usando el sistema de revisiones nativo de Google Drive.
+- **Logs de Consola**: Añadidos logs de debug para todas las operaciones principales de IA (Reescribir, Debate, Oráculo, RAG, Compendium IA) para facilitar la resolución de problemas.
+
+### Changed
+- **Sincronización Google Drive**: Los backups ahora usan el sistema de revisiones nativo de Google Drive para tener historial de versiones.
+- **Mejoras UI**: Botones selectors de tema más pequeños con círculos bicolor representando cada tema. Fusionados el toggle de sincronización y la info de seguridad en una sola caja. Movida la sección de enlaces a la pestaña Nube.
+- **Optimización de Base de Datos**: Añadido índice compuesto `[novelId+sceneId]` a la tabla `lastRewrite` para consultas más rápidas (schema Dexie.js v10).
+- **Tooltips**: Añadido componente Tooltip personalizado a todos los botones de sincronización en nube de Configuración.
+
+### Fixed
+- **Consultas de Last Rewrite**: Añadido índice compuesto faltante para evitar warnings de rendimiento en consola.
+- **Condición de carrera en restauración cloud**: Añadido flag `isRestoring` y `cloudCheckInProgress` para prevenir restauraciones duplicadas.
+- **Sincronización de relaciones de personajes**: Los cambios bidireccionales de relaciones ahora se propagan correctamente a ambas fichas.
+
+### CSS
+- **Nuevos archivos**: `ragWorker.js` (web worker para embeddings), extendido `Compendium.css` para el panel MPC.
+- **Soporte de tema**: Añadidas variables CSS de tema claro en `index.css` (data attribute `--theme-light`).
+- **SettingsModal.css**: Actualizado el estilo del selector de tema con círculos bicolor.
+
+---
+
 ## [LoneWriter v1.4-multilenguaje (Stable)] - 2026-04-04
 
 ### Added

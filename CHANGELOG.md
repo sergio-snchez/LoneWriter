@@ -6,6 +6,35 @@
 
 </div>
 
+## [LoneWriter v1.5-compendio (Stable)] - 2026-04-10
+
+### Added
+- **RAG (Retrieval-Augmented Generation)**: Vector-based semantic search engine for the Oracle and Compendium AI features. Embeddings stored in IndexedDB using Transformers.js (`ort-wasm-simd`), enabling context-aware queries without external APIs.
+- **MPC (Compendium Proposal Monitor)**: As you write, the app automatically detects potential new entities (characters, places, objects, lore). A non-intrusive purple panel suggests adding them to your Compendium with one click.
+- **Local AI Server Support**: New provider option for Ollama and LM Studio local models with configurable base URL (e.g., `http://localhost:1234/v1`).
+- **Theme Switcher**: Toggle between dark mode ("Classic") and light mode ("Modern Manuscript") in Settings > General. Theme persists in localStorage.
+- **Cloud Backup Check on Link**: When linking a Google Drive account, automatically checks if a backup exists and prompts to restore if found.
+- **Google Drive Version History**: Button to view and restore previous backup versions from Google Drive's native revision system.
+- **Console Logs**: Added debug logs for all major AI operations (Rewrite, Debate, Oracle, RAG, Compendium AI) to help troubleshoot.
+
+### Changed
+- **Google Drive Sync**: Backups now use Google Drive's native revision system for version history.
+- **UI Improvements**: Smaller theme selector buttons with bicolor circles representing each theme. Merged sync toggle and security info into single box. Moved links section to Cloud tab.
+- **Database Optimization**: Added compound index `[novelId+sceneId]` to `lastRewrite` table for faster queries (Dexie.js v10 schema).
+- **Tooltips**: Added custom Tooltip component to all cloud sync buttons in Settings.
+
+### Fixed
+- **Last Rewrite queries**: Added missing compound index to prevent performance warnings in console.
+- **Cloud restore race condition**: Added `isRestoring` flag and `cloudCheckInProgress` to prevent duplicate restorations.
+- **Character relationship sync**: Bidirectional relationship changes now properly propagate to both character sheets.
+
+### CSS
+- **New files**: `ragWorker.js` (web worker for embeddings), extended `Compendium.css` for MPC panel.
+- **Theme support**: Added light theme CSS variables in `index.css` (`--theme-light` data attribute).
+- **SettingsModal.css**: Updated theme selector styling with bicolor circles.
+
+---
+
 ## [LoneWriter v1.4-multilingual (Stable)] - 2026-04-04
 
 ### Added
