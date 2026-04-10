@@ -37,7 +37,7 @@ const UsageMeter = ({ label, value, max, unit }) => {
   );
 };
 
-const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme }) => {
+const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme, openModal }) => {
   const { t } = useTranslation('settings');
   const { t: tc } = useTranslation('common');
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -69,6 +69,14 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme 
       await GoogleDriveService.authenticate();
       setIsCloudLinked(true);
       toggleCloudSync(true);
+      
+      const cloudFile = await GoogleDriveService.findBackupFile();
+      if (cloudFile && cloudFile.modifiedTime) {
+        const cloudDate = new Date(cloudFile.modifiedTime).getTime();
+        window.dispatchEvent(new CustomEvent('cloud-version-available', { 
+          detail: { date: cloudDate } 
+        }));
+      }
     } catch (error) {
       console.error('Error linking Google Drive:', error);
       const msg = !import.meta.env.VITE_GOOGLE_CLIENT_ID 
@@ -183,27 +191,55 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme 
               </div>
 
               {isCloudLinked && (
-                <div className="settings-section" style={{ marginTop: '10px' }}>
-                  <div className="sync-toggle-group">
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      <label>{t('nube.sincronizacion_automatica')}</label>
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{t('nube.proteccion_cache')}</span>
+                <>
+                  <div style={{ padding: '12px', background: 'var(--accent-dim)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-accent)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <label style={{ fontSize: '13px' }}>{t('nube.sincronizacion_automatica')}</label>
+                        <span style={{ fontSize: '11px', color: 'var(--accent-light)' }}>{t('nube.proteccion_cache')}</span>
+                      </div>
+                      <input 
+                        type="checkbox" 
+                        className="form-toggle" 
+                        checked={isCloudSyncEnabled} 
+                        onChange={(e) => toggleCloudSync(e.target.checked)}
+                        style={{ height: '20px', width: '20px', cursor: 'pointer', accentColor: 'var(--accent)' }}
+                      />
                     </div>
-                    <input 
-                      type="checkbox" 
-                      className="form-toggle" 
-                      checked={isCloudSyncEnabled} 
-                      onChange={(e) => toggleCloudSync(e.target.checked)}
-                      style={{ height: '20px', width: '20px', cursor: 'pointer', accentColor: 'var(--accent)' }}
-                    />
+                    <div style={{ display: 'flex', gap: '10px', paddingTop: '8px', borderTop: '1px solid var(--border-accent)' }}>
+                      <Shield size={16} style={{ color: 'var(--accent-light)', flexShrink: 0 }} />
+                      <p style={{ fontSize: '11px', color: 'var(--accent-light)', margin: 0 }} dangerouslySetInnerHTML={{ __html: t('nube.seguridad_hint', { interpolation: { escapeValue: false } }) }}>
+                      </p>
+                    </div>
                   </div>
                   
-                  <div className="settings-info-box" style={{ padding: '12px', background: 'var(--accent-dim)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-accent)', display: 'flex', gap: '10px' }}>
-                     <Shield size={16} style={{ color: 'var(--accent-light)', flexShrink: 0 }} />
-                     <p style={{ fontSize: '11px', color: 'var(--accent-light)', margin: 0 }} dangerouslySetInnerHTML={{ __html: t('nube.seguridad_hint', { interpolation: { escapeValue: false } }) }}>
-                     </p>
+                  <div className="settings-section" style={{ marginTop: '16px' }}>
+                    <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <ExternalLink size={14} />
+                      {t('general.enlaces_titulo')}
+                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                      <a 
+                        href="https://github.com/sergio-snchez/LoneWriter" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '12px' }}
+                      >
+                        <ExternalLink size={14} />
+                        {t('general.github_link')}
+                      </a>
+                      <a 
+                        href="https://buymeacoffee.com/sergio.snchez" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '12px' }}
+                      >
+                        <Heart size={14} />
+                        {t('general.buymeacoffee_link')}
+                      </a>
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
           </div>
@@ -375,7 +411,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme 
                     width: '32px', 
                     height: '32px', 
                     borderRadius: '50%', 
-                    background: '#23252e',
+                    background: `linear-gradient(135deg, #2B2E3E 50%, #21262d 50%)`,
                     border: '1px solid rgba(255,255,255,0.2)'
                   }} />
                   <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('general.tema_oscuro')}</span>
@@ -400,37 +436,11 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme 
                     width: '32px', 
                     height: '32px', 
                     borderRadius: '50%', 
-                    background: '#FCF8F2',
+                    background: `linear-gradient(135deg, #FEFAF1 50%, #F5F2E7 50%)`,
                     border: '1px solid rgba(60,54,51,0.2)'
                   }} />
                   <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('general.tema_claro')}</span>
                 </button>
-              </div>
-            </div>
-            <div className="settings-section">
-              <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ExternalLink size={14} />
-                {t('general.enlaces_titulo')}
-              </span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <a 
-                  href="https://github.com/sergio-snchez/LoneWriter" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '12px' }}
-                >
-                  <ExternalLink size={14} />
-                  {t('general.github_link')}
-                </a>
-                <a 
-                  href="https://buymeacoffee.com/sergio.snchez" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '12px' }}
-                >
-                  <Heart size={14} />
-                  {t('general.buymeacoffee_link')}
-                </a>
               </div>
             </div>
           </div>

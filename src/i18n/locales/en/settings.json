@@ -14,7 +14,7 @@
   },
   "nube": {
     "seccion_titulo": "Google Drive Sync",
-    "seccion_hint": "Protect your projects by automatically syncing them with your own Google Drive account.",
+    "seccion_hint": "Protect your projects by syncing them with your Google Drive account.",
     "cuenta_vinculada": "Account linked",
     "no_vinculado": "Not linked",
     "google_drive_activo": "Google Drive Active",
