@@ -1,4 +1,10 @@
 {
+  "settings": {
+    "general": {
+      "clear_cache_confirm": "¿Eliminar caché y recargar la app? Esto borrará tus preferencias (tema, idioma, configuración de IA. ¡Asegúrate de sincronizar con Google Drive o de exportar tus proyectos!",
+      "clear_cache_error": "Error al limpiar la caché. Intenta recargar manualmente."
+    }
+  },
   "botones": {
     "cancelar": "Cancelar",
     "guardar": "Guardar",

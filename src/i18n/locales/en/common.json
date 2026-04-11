@@ -1,4 +1,10 @@
 {
+  "settings": {
+    "general": {
+      "clear_cache_confirm": "Clear cache and reload the app? This will erase your preferences (theme, language, AI config. Make sure to sync with Google Drive or export your projects!",
+      "clear_cache_error": "Error clearing cache. Try reloading manually."
+    }
+  },
   "botones": {
     "cancelar": "Cancel",
     "guardar": "Save",

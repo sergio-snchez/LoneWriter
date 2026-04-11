@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { 
-  Sparkles, Loader2, Download, Upload, FileDown, 
+import {
+  Sparkles, Loader2, Download, Upload, FileDown,
   ChevronDown, BookOpen, CheckCircle2, Plus, Trash2, PenLine,
   Settings, Heart, Menu, X, RotateCcw
 } from 'lucide-react'
@@ -10,6 +10,9 @@ import Sidebar from './components/Sidebar'
 import AIPanel from './components/AIPanel'
 import SettingsModal from './components/SettingsModal'
 import { Tooltip } from './components/Tooltip'
+import LanguageSelector from './components/LanguageSelector'
+import TypingEffect from './components/TypingEffect'
+import './components/TypingEffect.css'
 import EditorView from './views/Editor'
 import CompendiumView from './views/Compendium'
 import ResourcesView from './views/Resources'
@@ -50,14 +53,14 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsTab, setSettingsTab] = useState('cloud')
   const [menuOpen, setMenuOpen] = useState(false)
-  
+
   const { openModal } = useModal();
-  
-  const { 
+
+  const {
     activeNovel, activeScene, allNovels, loading, acts,
     switchNovel, createNovel, deleteNovel, updateNovelTarget, refreshAfterRestore
   } = useNovel();
-  
+
   const fileInputRef = useRef(null);
   const projectMenuRef = useRef(null);
 
@@ -76,19 +79,19 @@ export default function App() {
           isRestoring = true;
 
           try {
-             const cloudData = await GoogleDriveService.downloadBackup();
-             if (cloudData) {
-               await db.transaction('rw', db.tables, async () => {
-                 for (const table of db.tables) {
-                   await table.clear();
-                   if (cloudData.tables[table.name]) {
-                     await table.bulkAdd(cloudData.tables[table.name]);
-                   }
-                 }
-               });
-               localStorage.setItem('lw_last_cloud_sync', date);
-               await refreshAfterRestore();
-             }
+            const cloudData = await GoogleDriveService.downloadBackup();
+            if (cloudData) {
+              await db.transaction('rw', db.tables, async () => {
+                for (const table of db.tables) {
+                  await table.clear();
+                  if (cloudData.tables[table.name]) {
+                    await table.bulkAdd(cloudData.tables[table.name]);
+                  }
+                }
+              });
+              localStorage.setItem('lw_last_cloud_sync', date);
+              await refreshAfterRestore();
+            }
           } catch (err) {
             alert(t('error_restaurar') + err.message);
           } finally {
@@ -159,7 +162,7 @@ export default function App() {
   const renderView = () => {
     if (!activeNovel) {
       const recentNovels = allNovels.slice(0, 5);
-      
+
       return (
         <div className="welcome-screen">
           <div className="welcome-screen__container">
@@ -169,7 +172,11 @@ export default function App() {
               </div>
               <h1 className="welcome-screen__title">{t('bienvenida.titulo')}</h1>
               <p className="welcome-screen__subtitle">
-                {t('bienvenida.subtitulo')}
+                <TypingEffect
+                  text={'   ' + t('bienvenida.subtitulo')}
+                  speed={40}
+                  delay={800}
+                />
               </p>
               <button
                 className="btn btn-primary welcome-screen__btn"
@@ -192,7 +199,7 @@ export default function App() {
                     const lastDate = new Date(n.lastEdited || 0).toLocaleDateString(undefined, {
                       day: 'numeric', month: 'short', year: 'numeric'
                     });
-                    
+
                     return (
                       <div key={n.id} className="project-card" onClick={() => switchNovel(n.id)}>
                         <div className="project-card__header">
@@ -220,7 +227,7 @@ export default function App() {
                       </div>
                     );
                   })}
-                  
+
                   {allNovels.length > 5 && (
                     <div className="project-card project-card--more" onClick={() => setMenuOpen(true)}>
                       <div className="more-content">
@@ -233,6 +240,41 @@ export default function App() {
               </section>
             )}
 
+            {allNovels.length === 0 && (
+              <section className="welcome-screen__setup">
+                <div className="setup-header">
+                  <h2 className="setup-title">{t('bienvenida.configurar_titulo')}</h2>
+                  <p className="setup-subtitle">{t('bienvenida.configurar_subtitulo_line1')}</p>
+                  <p className="setup-subtitle-italic">{t('bienvenida.configurar_subtitulo_line2')}</p>
+                </div>
+                <div className="setup-options">
+                  <div className="setup-option">
+                    <span className="setup-option__label">{t('general.idioma')}</span>
+                    <LanguageSelector />
+                  </div>
+                  <div className="setup-divider" />
+                  <div className="setup-option">
+                    <div className="theme-toggle-modern">
+                      <button
+                        className={`theme-btn-modern ${theme === 'light' ? 'active' : ''}`}
+                        onClick={() => setTheme('light')}
+                      >
+                        <div className="theme-preview theme-preview--light" />
+                        <span>{t('general.tema_claro')}</span>
+                      </button>
+                      <button
+                        className={`theme-btn-modern ${theme === 'dark' ? 'active' : ''}`}
+                        onClick={() => setTheme('dark')}
+                      >
+                        <div className="theme-preview theme-preview--dark" />
+                        <span>{t('general.tema_oscuro')}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
             <footer style={{ marginTop: 'auto', paddingTop: '60px', paddingBottom: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
               <p style={{ margin: 0, fontSize: '13px' }}>
                 {t('bienvenida.version')}
@@ -241,9 +283,9 @@ export default function App() {
                 <Trans i18nKey="bienvenida.creditos" ns="app" components={[<strong />]} />
               </p>
               <div style={{ marginTop: '20px' }}>
-                <a 
-                  href="https://buymeacoffee.com/sergio.snchez" 
-                  target="_blank" 
+                <a
+                  href="https://buymeacoffee.com/sergio.snchez"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-ghost"
                   style={{ fontSize: '12px', gap: '8px', opacity: 0.8 }}
@@ -258,10 +300,10 @@ export default function App() {
       );
     }
     switch (activeView) {
-      case 'editor':     return <EditorView menuOpen={menuOpen} onNavigate={setActiveView} />
+      case 'editor': return <EditorView menuOpen={menuOpen} onNavigate={setActiveView} />
       case 'compendium': return <CompendiumView />
-      case 'resources':  return <ResourcesView />
-      default:           return <EditorView />
+      case 'resources': return <ResourcesView />
+      default: return <EditorView />
     }
   }
 
@@ -314,12 +356,12 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <input 
-        type="file" 
-        ref={fileInputRef} 
+      <input
+        type="file"
+        ref={fileInputRef}
         style={{ display: 'none' }}
-        accept=".lwrt" 
-        onChange={handleFileChange} 
+        accept=".lwrt"
+        onChange={handleFileChange}
       />
 
       {/* Landscape warning overlay */}
@@ -332,30 +374,30 @@ export default function App() {
       <header className="app-topbar">
         <div className="app-topbar__left">
           <div className="app-topbar__project-menu" ref={projectMenuRef}>
-            <button 
+            <button
               className={`btn btn-ghost project-menu-btn ${menuOpen ? 'active' : ''}`}
               onClick={() => setMenuOpen(!menuOpen)}
             >
               {t('menu.proyecto')}
               <ChevronDown size={14} />
             </button>
-            
+
             {menuOpen && (
               <div className="project-dropdown">
                 <div className="dropdown-label">{t('menu.mis_proyectos')}</div>
                 {allNovels.map(n => (
                   <div key={n.id} className="project-item-row">
-                    <button 
+                    <button
                       className={`project-select-btn ${activeNovel?.id === n.id ? 'active' : ''}`}
                       onClick={() => { switchNovel(n.id); setMenuOpen(false); }}
                     >
                       <BookOpen size={14} />
-                      <span style={{flex: 1}}>{n.title}</span>
+                      <span style={{ flex: 1 }}>{n.title}</span>
                       {activeNovel?.id === n.id && <CheckCircle2 size={12} className="text-success" />}
                     </button>
                     <Tooltip content={t('menu.eliminar_tooltip')}>
-                      <button 
-                        className="project-delete-btn" 
+                      <button
+                        className="project-delete-btn"
                         onClick={(e) => handleDeleteProject(e, n.id)}
                       >
                         <Trash2 size={14} />
@@ -363,7 +405,7 @@ export default function App() {
                     </Tooltip>
                   </div>
                 ))}
-                
+
                 <div className="dropdown-divider" />
                 <button onClick={() => { handleCreateProject(); setMenuOpen(false); }}>
                   <Plus size={14} />
@@ -389,8 +431,8 @@ export default function App() {
           <span className="app-topbar__novel">{activeNovel?.title || t('menu.sin_titulo')}</span>
         </div>
         <Tooltip content={t('topbar.estadisticas_tooltip')}>
-          <div 
-            className="app-topbar__center" 
+          <div
+            className="app-topbar__center"
             onClick={() => window.dispatchEvent(new CustomEvent('toggle-stats'))}
             style={{ cursor: 'pointer' }}
           >
@@ -417,8 +459,8 @@ export default function App() {
             </button>
           </Tooltip>
           <Tooltip content={t('topbar.configuracion')}>
-            <button 
-              className="btn btn-ghost btn-icon topbar-settings-btn" 
+            <button
+              className="btn btn-ghost btn-icon topbar-settings-btn"
               onClick={() => {
                 setSettingsTab('general');
                 setSettingsOpen(true);
@@ -431,9 +473,9 @@ export default function App() {
       </header>
 
       {/* Modals */}
-      <SettingsModal 
-        isOpen={settingsOpen} 
-        onClose={() => setSettingsOpen(false)} 
+      <SettingsModal
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
         initialTab={settingsTab}
         theme={theme}
         setTheme={setTheme}
@@ -453,7 +495,7 @@ export default function App() {
         </div>
 
         {/* Mobile hamburger button */}
-        <button 
+        <button
           className="mobile-menu-btn"
           onClick={() => setMobileDrawerOpen(true)}
           aria-label={t('menu.abrir_navegacion')}
@@ -484,10 +526,10 @@ export default function App() {
         <main className="app-main">
           {renderView()}
         </main>
-        
-        <AIPanel 
-          open={aiPanelOpen} 
-          onClose={() => setAiPanelOpen(false)} 
+
+        <AIPanel
+          open={aiPanelOpen}
+          onClose={() => setAiPanelOpen(false)}
           activeScene={activeScene}
           defaultTab={aiPanelTab}
           onOpenSettings={(tab) => {

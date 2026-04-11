@@ -13,6 +13,9 @@
   "bienvenida": {
     "titulo": "Bienvenido a LoneWriter",
     "subtitulo": "Tu espacio personal para dar vida a grandes historias.",
+    "configurar_titulo": "Configura tu experiencia",
+    "configurar_subtitulo_line1": "Elige tu idioma y tema preferido antes de comenzar.",
+    "configurar_subtitulo_line2": "Recuerda que puedes cambiarlo en cualquier momento desde configuración.",
     "boton_nueva": "Nueva Novela",
     "continuar": "Continuar escribiendo",
     "proyectos_total": "{{count}} proyectos totales",
@@ -23,6 +26,12 @@
     "version": "LoneWriter v1.5-compendio",
     "creditos": "Diseñado y desarrollado con ♥ por <0>Sergio Sánchez</0> con Antigravity.",
     "apoyar": "Apoyar el proyecto (Invítame a un café)"
+  },
+  "general": {
+    "idioma": "Idioma",
+    "tema": "Tema",
+    "tema_claro": "Claro",
+    "tema_oscuro": "Oscuro"
   },
   "error_exportar": "Error al exportar el proyecto: ",
   "cargando": "Cargando LoneWriter...",
@@ -45,6 +54,6 @@
   },
   "autor_defecto": "Autor",
   "landscape": {
-    "mensaje": "Por favor, rota tu dispositivo a vertical para continuar escribiendo"
+    "mensaje": "Por favor, gira tu dispositivo a vertical para seguir escribiendo"
   }
 }

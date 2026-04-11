@@ -4,12 +4,14 @@
     "navegacion": {
       "nube": "Cloud & Backup",
       "ia": "Artificial Intelligence",
+      "interfaz": "User Interface",
       "general": "General"
     }
   },
   "encabezados": {
     "nube": "Cloud Sync",
     "ia": "AI Settings",
+    "interfaz": "User Interface",
     "general": "Information"
   },
   "nube": {
@@ -78,6 +80,9 @@
     "plataforma_valor": "Vite + PWA",
     "tecnologia_rag": "RAG Engine",
     "tecnologia_rag_valor": "Transformers.js (all-MiniLM-L6-v2)",
+    "recargar_app": "Clear Cache & Reload",
+    "recargar_app_hint": "Clears LoneWriter cache and erases your preferences. Restarts the app.",
+    "recargar_app_boton": "Clear Cache & Reload",
     "idioma": "Language",
     "idioma_hint": "Select the application interface language.",
     "tema": "Theme",
