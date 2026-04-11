@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  X, Cloud, RefreshCw, LogIn, LogOut, 
+import {
+  X, Cloud, RefreshCw, LogIn, LogOut,
   Sparkles, Shield, Info, AlertTriangle, Key, ExternalLink,
-  Heart, Languages, Globe, History
+  Heart, Languages, Globe, History, RotateCw, Palette
 } from 'lucide-react';
 import { Tooltip } from './Tooltip';
 import { useAI } from '../context/AIContext';
@@ -42,27 +42,44 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
   const { t } = useTranslation('settings');
   const { t: tc } = useTranslation('common');
   const [activeTab, setActiveTab] = useState(initialTab);
-  
+
   // Update activeTab when initialTab changes (e.g. when opening from different places)
   React.useEffect(() => {
     if (isOpen) setActiveTab(initialTab);
   }, [isOpen, initialTab]);
 
-  const { 
-    provider, setProvider, apiKey, setApiKey, 
-    localBaseUrl, setLocalBaseUrl, selectedModels, 
+  const {
+    provider, setProvider, apiKey, setApiKey,
+    localBaseUrl, setLocalBaseUrl, selectedModels,
     setModelForProvider, usageStats
   } = useAI();
 
-  const { 
-    isCloudSyncEnabled, cloudSyncStatus, lastCloudSync, 
-    toggleCloudSync, performCloudSync 
+  const {
+    isCloudSyncEnabled, cloudSyncStatus, lastCloudSync,
+    toggleCloudSync, performCloudSync
   } = useNovel();
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [isCloudLinked, setIsCloudLinked] = useState(GoogleDriveService.isAuthenticated());
   const [showRevisions, setShowRevisions] = useState(false);
   const [revisions, setRevisions] = useState([]);
+
+  const handleClearCache = async () => {
+    const confirmMessage = tc('settings.general.clear_cache_confirm');
+    if (!window.confirm(confirmMessage)) return;
+
+    try {
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)));
+      }
+      localStorage.clear();
+      window.location.reload();
+    } catch (err) {
+      console.error('Error clearing cache:', err);
+      alert(tc('settings.general.clear_cache_error'));
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -72,17 +89,17 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
       await GoogleDriveService.authenticate();
       setIsCloudLinked(true);
       toggleCloudSync(true);
-      
+
       const cloudFile = await GoogleDriveService.findBackupFile();
       if (cloudFile && cloudFile.modifiedTime) {
         const cloudDate = new Date(cloudFile.modifiedTime).getTime();
-        window.dispatchEvent(new CustomEvent('cloud-version-available', { 
-          detail: { date: cloudDate } 
+        window.dispatchEvent(new CustomEvent('cloud-version-available', {
+          detail: { date: cloudDate }
         }));
       }
     } catch (error) {
       console.error('Error linking Google Drive:', error);
-      const msg = !import.meta.env.VITE_GOOGLE_CLIENT_ID 
+      const msg = !import.meta.env.VITE_GOOGLE_CLIENT_ID
         ? t('errores.client_id_no_configurado')
         : t('errores.error_conexion_google');
       alert(msg);
@@ -119,7 +136,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
 
   const handleRestoreRevision = async (revisionId, revisionDate) => {
     if (!confirm(`¿Restaurar copia del ${new Date(revisionDate).toLocaleString()}? Esto sobrescribirá todos los datos actuales.`)) return;
-    
+
     setIsSyncing(true);
     try {
       const cloudData = await GoogleDriveService.downloadRevision(revisionId);
@@ -183,7 +200,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
               <p className="settings-section__hint" style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px' }}>
                 {t('nube.seccion_hint')}
               </p>
-              
+
               <div className="cloud-sync-card">
                 <div className="cloud-sync-card__header">
                   <div className="cloud-sync-card__icon">
@@ -215,9 +232,9 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                 {isCloudLinked && (
                   <div className="cloud-sync-card__footer">
                     <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginRight: 'auto' }}>
-                      {cloudSyncStatus === 'syncing' ? t('nube.sincronizando') : 
-                       cloudSyncStatus === 'error' ? t('nube.error_guardar') :
-                       `${t('nube.ultima_copia', { date: lastCloudSync ? new Date(lastCloudSync).toLocaleString() : t('nube.nunca') })}`}
+                      {cloudSyncStatus === 'syncing' ? t('nube.sincronizando') :
+                        cloudSyncStatus === 'error' ? t('nube.error_guardar') :
+                          `${t('nube.ultima_copia', { date: lastCloudSync ? new Date(lastCloudSync).toLocaleString() : t('nube.nunca') })}`}
                     </span>
                     <Tooltip content={t('nube.ver_historial')}>
                       <button className="btn btn-ghost btn-sm" onClick={handleShowRevisions} disabled={isSyncing}>
@@ -267,10 +284,10 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                         <label style={{ fontSize: '13px' }}>{t('nube.sincronizacion_automatica')}</label>
                         <span style={{ fontSize: '11px', color: 'var(--accent-light)' }}>{t('nube.proteccion_cache')}</span>
                       </div>
-                      <input 
-                        type="checkbox" 
-                        className="form-toggle" 
-                        checked={isCloudSyncEnabled} 
+                      <input
+                        type="checkbox"
+                        className="form-toggle"
+                        checked={isCloudSyncEnabled}
                         onChange={(e) => toggleCloudSync(e.target.checked)}
                         style={{ height: '20px', width: '20px', cursor: 'pointer', accentColor: 'var(--accent)' }}
                       />
@@ -281,25 +298,25 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="settings-section" style={{ marginTop: '16px' }}>
                     <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <ExternalLink size={14} />
                       {t('general.enlaces_titulo')}
                     </span>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
-                      <a 
-                        href="https://github.com/sergio-snchez/LoneWriter" 
-                        target="_blank" 
+                      <a
+                        href="https://github.com/sergio-snchez/LoneWriter"
+                        target="_blank"
                         rel="noopener noreferrer"
                         style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '12px' }}
                       >
                         <ExternalLink size={14} />
                         {t('general.github_link')}
                       </a>
-                      <a 
-                        href="https://buymeacoffee.com/sergio.snchez" 
-                        target="_blank" 
+                      <a
+                        href="https://buymeacoffee.com/sergio.snchez"
+                        target="_blank"
                         rel="noopener noreferrer"
                         style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '12px' }}
                       >
@@ -321,7 +338,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                 <Sparkles size={14} />
                 {t('ia.seccion_titulo')}
               </span>
-              
+
               <div className="ai-settings-group">
                 <label>{t('ia.proveedor_label')}</label>
                 <select className="ai-settings-select" value={provider} onChange={(e) => setProvider(e.target.value)}>
@@ -399,24 +416,24 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                   <RefreshCw size={14} />
                   {t('ia.consumo_titulo')}
                 </span>
-                
+
                 {provider === 'local' ? (
                   <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '10px' }}>
                     ✨ {t('ia.consumo_ilimitado')}
                   </p>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '12px' }}>
-                    <UsageMeter 
-                      label={t('ia.consumo_tokens')} 
-                      value={usageStats?.tokens || 0} 
-                      max={PROVIDER_LIMITS[provider]?.tokens || 500000} 
-                      unit="tokens" 
+                    <UsageMeter
+                      label={t('ia.consumo_tokens')}
+                      value={usageStats?.tokens || 0}
+                      max={PROVIDER_LIMITS[provider]?.tokens || 500000}
+                      unit="tokens"
                     />
-                    <UsageMeter 
-                      label={t('ia.consumo_peticiones')} 
-                      value={usageStats?.requests || 0} 
-                      max={PROVIDER_LIMITS[provider]?.requests || 1000} 
-                      unit="reqs" 
+                    <UsageMeter
+                      label={t('ia.consumo_peticiones')}
+                      value={usageStats?.requests || 0}
+                      max={PROVIDER_LIMITS[provider]?.requests || 1000}
+                      unit="reqs"
                     />
                   </div>
                 )}
@@ -424,25 +441,9 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
             </div>
           </div>
         );
-      case 'general':
+      case 'ui':
         return (
           <div className="settings-tab">
-            <div className="settings-section">
-              <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Info size={14} />
-                {t('general.seccion_titulo')}
-              </span>
-              <div className="settings-info-grid">
-                <span className="settings-info-label">{t('general.version')}</span>
-                <span className="settings-info-value">{t('general.version_valor')}</span>
-                <span className="settings-info-label">{t('general.base_datos')}</span>
-                <span className="settings-info-value">{t('general.base_datos_valor')}</span>
-                <span className="settings-info-label">{t('general.plataforma')}</span>
-                <span className="settings-info-value">{t('general.plataforma_valor')}</span>
-                <span className="settings-info-label">{t('general.tecnologia_rag')}</span>
-                <span className="settings-info-value">{t('general.tecnologia_rag_valor')}</span>
-              </div>
-            </div>
             <div className="settings-section">
               <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Languages size={14} />
@@ -478,11 +479,11 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                     transition: 'all var(--trans-fast)'
                   }}
                 >
-                  <div style={{ 
-                    width: '32px', 
-                    height: '32px', 
-                    borderRadius: '50%', 
-                    background: `linear-gradient(135deg, #2B2E3E 50%, #21262d 50%)`,
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, #2B2E3A 50%, #23252E 50%)`,
                     border: '1px solid rgba(255,255,255,0.2)'
                   }} />
                   <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('general.tema_oscuro')}</span>
@@ -503,16 +504,53 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                     transition: 'all var(--trans-fast)'
                   }}
                 >
-                  <div style={{ 
-                    width: '32px', 
-                    height: '32px', 
-                    borderRadius: '50%', 
-                    background: `linear-gradient(135deg, #FEFAF1 50%, #F5F2E7 50%)`,
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, #F5F0E6 50%, #FCF8F2 50%)`,
                     border: '1px solid rgba(60,54,51,0.2)'
                   }} />
                   <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('general.tema_claro')}</span>
                 </button>
               </div>
+            </div>
+          </div>
+        );
+      case 'general':
+        return (
+          <div className="settings-tab">
+            <div className="settings-section">
+              <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Info size={14} />
+                {t('general.seccion_titulo')}
+              </span>
+              <div className="settings-info-grid">
+                <span className="settings-info-label">{t('general.version')}</span>
+                <span className="settings-info-value">{t('general.version_valor')}</span>
+                <span className="settings-info-label">{t('general.base_datos')}</span>
+                <span className="settings-info-value">{t('general.base_datos_valor')}</span>
+                <span className="settings-info-label">{t('general.plataforma')}</span>
+                <span className="settings-info-value">{t('general.plataforma_valor')}</span>
+                <span className="settings-info-label">{t('general.tecnologia_rag')}</span>
+                <span className="settings-info-value">{t('general.tecnologia_rag_valor')}</span>
+              </div>
+            </div>
+            <div className="settings-section">
+              <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <RotateCw size={14} />
+                {t('general.recargar_app')}
+              </span>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
+                {t('general.recargar_app_hint')}
+              </p>
+              <button
+                className="btn btn-primary"
+                onClick={handleClearCache}
+              >
+                <RotateCw size={14} />
+                {t('general.recargar_app_boton')}
+              </button>
             </div>
           </div>
         );
@@ -529,21 +567,28 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
             <span className="settings-modal__sidebar-title">{t('sidebar.titulo')}</span>
           </div>
           <nav className="settings-modal__nav">
-            <button 
+            <button
               className={`settings-modal__nav-item ${activeTab === 'cloud' ? 'settings-modal__nav-item--active' : ''}`}
               onClick={() => setActiveTab('cloud')}
             >
               <Cloud size={16} />
               {t('sidebar.navegacion.nube')}
             </button>
-            <button 
+            <button
               className={`settings-modal__nav-item ${activeTab === 'ia' ? 'settings-modal__nav-item--active' : ''}`}
               onClick={() => setActiveTab('ia')}
             >
               <Sparkles size={16} />
               {t('sidebar.navegacion.ia')}
             </button>
-            <button 
+            <button
+              className={`settings-modal__nav-item ${activeTab === 'ui' ? 'settings-modal__nav-item--active' : ''}`}
+              onClick={() => setActiveTab('ui')}
+            >
+              <Palette size={16} />
+              {t('sidebar.navegacion.interfaz')}
+            </button>
+            <button
               className={`settings-modal__nav-item ${activeTab === 'general' ? 'settings-modal__nav-item--active' : ''}`}
               onClick={() => setActiveTab('general')}
             >
@@ -552,12 +597,13 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
             </button>
           </nav>
         </div>
-        
+
         <div className="settings-modal__content">
           <div className="settings-modal__header">
             <span className="settings-modal__title">
               {activeTab === 'cloud' && t('encabezados.nube')}
               {activeTab === 'ia' && t('encabezados.ia')}
+              {activeTab === 'ui' && t('encabezados.interfaz')}
               {activeTab === 'general' && t('encabezados.general')}
             </span>
             <button className="settings-modal__close" onClick={onClose}>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import i18n from '../i18n/i18n'
 import {
   Users, MapPin, Package, BookOpen, Star, ExternalLink,
   Search, Filter, ChevronRight, Plus, Tag, PenLine, Trash2, 
@@ -42,17 +43,30 @@ function ColorPicker({ value, onChange }) {
 }
 
 /* ---- Panel de Formulario Lateral ---- */
+const CATEGORIES = [
+  { id: 'characters', icon: Users },
+  { id: 'locations', icon: MapPin },
+  { id: 'objects', icon: Package },
+  { id: 'lore', icon: BookOpen },
+];
+
 function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel }) {
   const { t } = useTranslation('compendium')
   const { acts } = useNovel()
   const { provider, apiKey, currentModel, localBaseUrl, logAIUsage } = useAI()
   const [formData, setFormData] = useState(item || {});
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(type);
+
+  useEffect(() => {
+    setSelectedCategory(type);
+  }, [type]);
 
   useEffect(() => {
     const initial = { ...item };
     if (initial.traits) initial._rawTraits = initial.traits.join(', ');
     if (initial.tags) initial._rawTags = initial.tags.join(', ');
+    initial._originalCategory = type;
     setFormData(initial);
   }, [item, type]);
 
@@ -86,18 +100,28 @@ function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel 
 
   const handleSubmit = () => {
     const data = { ...formData };
+    const cat = selectedCategory;
     
-    // Fallbacks si no hay color o iniciales
-    if (type === 'characters') {
+    if (cat !== type) {
+      delete data.id;
+      delete data.relations;
+      delete data.scopes;
+    }
+    
+    if (cat === 'characters') {
       data.name = data.name || 'Nuevo personaje';
-      data.initials = data.initials || data.name.substring(0,2).toUpperCase();
+      data.initials = data.initials || (data.name || '').substring(0,2).toUpperCase();
       data.color = data.color || '#6b9fd4';
-    } else if (type === 'locations') {
+    } else if (cat === 'locations') {
       data.name = data.name || 'Nueva localización';
       data.color = data.color || '#6b9fd4';
-    } else if (type === 'objects') {
+    } else if (cat === 'objects') {
       data.name = data.name || 'Nuevo objeto';
-    } else if (type === 'lore') {
+    } else if (cat === 'lore') {
+      if (data.name && !data.title) {
+        data.title = data.name;
+        delete data.name;
+      }
       data.title = data.title || 'Nueva entrada de lore';
     }
     
@@ -113,7 +137,7 @@ function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel 
     delete data._rawTraits;
     delete data._rawTags;
     
-    onSave(data);
+    onSave(data, selectedCategory);
   };
 
   let titleText = item ? t('panel.editar') : t('panel.añadir');
@@ -233,7 +257,42 @@ function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel 
       </div>
       
       <div className="compendium-panel__body">
-        {type === 'characters' && (
+        {item && (
+          <div className="compendium-form-group">
+            <label>
+              {i18n.language === 'es' ? 'Seleccionar categoría' : 'Select category'}
+            </label>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {CATEGORIES.map(cat => {
+                const IconComp = cat.icon;
+                return (
+                  <Tooltip key={cat.id} content={t(`tabs.${cat.id}`)}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCategory(cat.id)}
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '8px',
+                        border: selectedCategory === cat.id ? '1px solid var(--accent)' : '1px solid var(--border)',
+                        background: selectedCategory === cat.id ? 'var(--accent-dim)' : 'transparent',
+                        color: selectedCategory === cat.id ? 'var(--accent)' : 'var(--text-muted)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      <IconComp size={18} />
+                    </button>
+                  </Tooltip>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {selectedCategory === 'characters' && (
           <>
             <div className="compendium-form-group">
               <label>{t('formulario.personajes.nombre')}</label>
@@ -316,7 +375,7 @@ function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel 
           </>
         )}
 
-        {type === 'locations' && (
+        {selectedCategory === 'locations' && (
           <>
             <div className="compendium-form-group">
               <label>{t('formulario.localizaciones.nombre')}</label>
@@ -376,7 +435,7 @@ function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel 
           </>
         )}
 
-        {type === 'objects' && (
+        {selectedCategory === 'objects' && (
           <>
             <div className="compendium-form-group">
               <label>{t('formulario.objetos.nombre')}</label>
@@ -423,7 +482,7 @@ function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel 
           </>
         )}
 
-        {type === 'lore' && (
+        {selectedCategory === 'lore' && (
           <>
             <div className="compendium-form-group">
               <label>{t('formulario.lore.titulo')}</label>
@@ -912,21 +971,36 @@ export default function CompendiumView() {
     }
   };
 
-  const handleMpcEdit = (proposal) => {
-    setActiveSection(proposal.type);
-    const data = { ...proposal };
-    delete data.id; delete data.confidence; delete data.reason; delete data.type;
-    if (proposal.type === 'characters') {
-      data.initials = data.initials || (data.name || '').substring(0, 2).toUpperCase();
-      data.color = data.color || '#6b9fd4';
+  const handleMpcEdit = async (proposal) => {
+    setAcceptingMpcId(proposal.id);
+    console.log('[MPC] handleMpcEdit iniciada, proposal:', proposal);
+    
+    try {
+      const { type, data } = buildMpcCompendiumData(proposal);
+      console.log('[MPC] Datos parseados, type:', type, 'data:', data);
+      
+      const savedId = await addCompendiumEntry(type, data);
+      console.log('[MPC] Entrada guardada, id:', savedId);
+      
+      dismissMpcProposal(proposal.id);
+      console.log('[MPC] Proposal despachada');
+      
+      const savedItem = { 
+        ...data, 
+        id: savedId,
+        _isNewlyCreated: true
+      };
+      console.log('[MPC] Abriendo panel con item:', savedItem);
+      
+      setActiveSection(type);
+      setEditingItem(savedItem);
+      setIsPanelOpen(true);
+      setIsMpcOverlayOpen(false);
+    } catch (err) {
+      console.error('[MPC] Error editando propuesta:', err);
+    } finally {
+      setAcceptingMpcId(null);
     }
-    if (proposal.type === 'lore' && data.name && !data.title) {
-      data.title = data.name;
-      delete data.name;
-    }
-    setEditingItem(data);
-    setIsPanelOpen(true);
-    dismissMpcProposal(proposal.id);
   };
 
   const handleMpcDismiss = (id) => {
@@ -937,10 +1011,18 @@ export default function CompendiumView() {
     dismissMpcProposalPermanently(proposal);
   };
 
-  const handleSavePanel = async (data) => {
-    const isUpdate = !!editingItem;
+  const handleSavePanel = async (data, newCategory) => {
+    const targetCategory = newCategory || activeSection;
+    const isFreshlyCreated = data._isNewlyCreated;
+    delete data._isNewlyCreated;
+    const isUpdate = !!editingItem && !isFreshlyCreated;
+    const isMpcProposal = !!data._mpcId;
+    const mpcId = data._mpcId;
+    const originalCategory = data._originalCategory || activeSection;
+    delete data._mpcId;
+    delete data._originalCategory;
     
-    if (activeSection === 'characters') {
+    if (targetCategory === 'characters') {
       let newRels = (data.relations || []).filter(r => r.name);
       data.relations = newRels;
 
@@ -984,19 +1066,40 @@ export default function CompendiumView() {
         promises.push(updateCompendiumEntry('characters', otherChar.id, { relations: existingRels }));
       }
 
-      if (isUpdate) promises.push(updateCompendiumEntry(activeSection, editingItem.id, data));
-      else promises.push(addCompendiumEntry(activeSection, data));
+      if (isUpdate) promises.push(updateCompendiumEntry(targetCategory, editingItem.id, data));
+      else promises.push(addCompendiumEntry(targetCategory, data));
 
       await Promise.all(promises);
+      
+      if (isMpcProposal && mpcId) {
+        dismissMpcProposal(mpcId);
+      }
+      
       setIsPanelOpen(false);
       return;
     } // -- Fin logica bidireccional
 
-    if (isUpdate) {
-      await updateCompendiumEntry(activeSection, editingItem.id, data);
+    const categoryChanged = targetCategory !== originalCategory;
+    
+    if (isFreshlyCreated) {
+      if (isMpcProposal && mpcId) {
+        dismissMpcProposal(mpcId);
+      }
+    } else if (isUpdate) {
+      if (categoryChanged) {
+        await deleteCompendiumEntry(originalCategory, editingItem.id);
+        await addCompendiumEntry(targetCategory, data);
+      } else {
+        await updateCompendiumEntry(targetCategory, editingItem.id, data);
+      }
     } else {
-      await addCompendiumEntry(activeSection, data);
+      await addCompendiumEntry(targetCategory, data);
+      
+      if (isMpcProposal && mpcId) {
+        dismissMpcProposal(mpcId);
+      }
     }
+    
     setIsPanelOpen(false);
   };
 

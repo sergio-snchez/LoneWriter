@@ -13,6 +13,9 @@
   "bienvenida": {
     "titulo": "Welcome to LoneWriter",
     "subtitulo": "Your personal space to bring great stories to life.",
+    "configurar_titulo": "Set up your experience",
+    "configurar_subtitulo_line1": "Choose your preferred language and theme before starting.",
+    "configurar_subtitulo_line2": "You can change these settings anytime from configuration.",
     "boton_nueva": "New Novel",
     "continuar": "Continue writing",
     "proyectos_total": "{{count}} total projects",
@@ -24,11 +27,17 @@
     "creditos": "Designed and developed with ♥ by <0>Sergio Sánchez</0> with Antigravity.",
     "apoyar": "Support the project (Buy me a coffee)"
   },
+  "general": {
+    "idioma": "Language",
+    "tema": "Theme",
+    "tema_claro": "Light",
+    "tema_oscuro": "Dark"
+  },
   "error_exportar": "Error exporting project: ",
   "cargando": "Loading LoneWriter...",
   "menu": {
     "proyecto": "Project",
-    "mis_proyectos": "My Projects",
+    "mis_proyectos": "Mis Proyectos",
     "eliminar_tooltip": "Delete project",
     "nueva_novela": "New Novel...",
     "importar": "Import Projects (.lwrt)",

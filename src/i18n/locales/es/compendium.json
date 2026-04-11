@@ -5,7 +5,14 @@
     "personajes": "Personajes",
     "localizaciones": "Localizaciones",
     "objetos": "Objetos y artefactos",
-    "lore": "Lore e historia"
+    "lore": "Lore e historia",
+    "characters": "Personajes",
+    "locations": "Lugares",
+    "objects": "Objetos",
+    "lore": "Lore"
+  },
+  "formulario": {
+    "seleccionar_categoria": "Seleccionar categoría"
   },
   "resumen": {
     "personajes": "Personajes",

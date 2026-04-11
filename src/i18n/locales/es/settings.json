@@ -4,12 +4,14 @@
     "navegacion": {
       "nube": "Nube y Backup",
       "ia": "Inteligencia Artificial",
+      "interfaz": "Interfaz de Usuario",
       "general": "General"
     }
   },
   "encabezados": {
     "nube": "Sincronización en la Nube",
     "ia": "Parámetros de IA",
+    "interfaz": "Interfaz de Usuario",
     "general": "Información"
   },
   "nube": {
@@ -78,6 +80,9 @@
     "plataforma_valor": "Vite + PWA",
     "tecnologia_rag": "Motor RAG",
     "tecnologia_rag_valor": "Transformers.js (all-MiniLM-L6-v2)",
+    "recargar_app": "Eliminar Caché y Recargar",
+    "recargar_app_hint": "Elimina la caché de LoneWriter y borra tus preferencias. Reinicia la app.",
+    "recargar_app_boton": "Eliminar Caché y Recargar",
     "idioma": "Idioma",
     "idioma_hint": "Selecciona el idioma de la interfaz de la aplicación.",
     "tema": "Tema",
