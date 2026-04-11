@@ -6,6 +6,23 @@
 
 </div>
 
+## [LoneWriter v1.6-beta] - 2026-04-11
+
+### Added
+- **Nueva Pestaña "Interfaz" de Configuración**: Reorganizada la configuración en 4 pestañas: Nube y Backup, Inteligencia Artificial, Interfaz y General. Los selectores de Idioma y Tema movidos a la nueva pestaña Interfaz.
+- **Botón Eliminar Caché y Recargar**: Nueva opción en Configuración > General para limpiar la caché del Service Worker y las preferencias de localStorage. Equivalente a "Ctrl+F5" en navegadores de escritorio - ayuda a resolver problemas de carga en PWAs de Android. Incluye advertencia de confirmación pedindo sincronizar con Google Drive o exportar antes de usar.
+- **Selector de Categoría en Compendium**: Al editar entradas del Compendio (personajes, lugares, objetos, lore), ahora puedes cambiar la categoría usando botones de iconos. Útil para corregir误clasificaciones del MPC o reorganizar entradas.
+- **Efecto de Escritura en Pantalla de Bienvenida**: El subtítulo "Tu espacio personal para dar vida a grandes historias." ahora se muestra con animación de escritura y cursor parpadeante como una máquina de escribir.
+- **Toolbar Fijo Corregido**: La barra de herramientas del editor (B I H1 H2 ...) ahora se mantiene fija arriba mientras haces scroll en escenas largas. Corregido el problema de overflow del contenedor de scroll.
+
+### Changed
+- **Flujo "Editar" del MPC Mejorado**: Al editar una entidad propuesta por el MPC, ahora primero guarda la entrada y luego abre el panel de edición. Antes intentaba editar una entrada no existente y Fall Fall Fallba.
+- **Reorganización de Ajustes PWA**: Modal de ajustes ahora organizado en 4 pestañas con mejor agrupación: Nube (backup), IA (proveedores), Interfaz (idioma/tema), General (info app + caché).
+
+### Fixed
+- **Bug del Efecto de Escritura**: Corregido problema donde desaparecía el primer carácter al ejecutar la animación. Ahora preserva todos los caracteres correctamente.
+- **Cambio de Categoría del Compendio**: Corregido problema donde no funcionaba cambiar categoría al editar una entrada existente. Ahora borra correctamente de la tabla old y crea en la nueva tabla.
+
 ## [LoneWriter v1.5-compendio (Stable)] - 2026-04-10
 
 ### Added

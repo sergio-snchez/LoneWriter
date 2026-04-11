@@ -547,9 +547,11 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
               <button
                 className="btn btn-primary"
                 onClick={handleClearCache}
+                style={{ maxWidth: '300px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
-                <RotateCw size={14} />
-                {t('general.recargar_app_boton')}
+                <AlertTriangle size={16} />
+                <span>{t('general.recargar_app_boton')}</span>
+                <AlertTriangle size={16} />
               </button>
             </div>
           </div>
