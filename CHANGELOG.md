@@ -6,6 +6,23 @@
 
 </div>
 
+## [LoneWriter v1.6-beta] - 2026-04-11
+
+### Added
+- **New "Interface" Settings Tab**: reorganized Settings into 4 tabs: Cloud & Backup, Artificial Intelligence, Interface, and General. Language and Theme selectors moved to new Interface tab.
+- **Clear Cache & Reload Button**: New option in Settings > General to clear Service Worker cache and localStorage preferences. Equivalent to "Ctrl+F5" in desktop browsers - helps resolve loading issues on Android PWAs. Includes confirmation warning to sync with Google Drive or export before using.
+- **Category Selector in Compendium**: When editing Compendium entries (characters, locations, objects, lore), now you can change the category using icon buttons. Useful for fixing MPC misclassifications or reorganizing entries.
+- **Typing Effect on Welcome Screen**: Subtitle "Your personal space to bring great stories to life." now displays with a typing animation and blinking cursor like a typewriter.
+- **Fixed Toolbar Sticky**: Editor toolbar (B I H1 H2 ...) now stays fixed at top while scrolling through long scenes. Fixed scroll container overflow issue.
+
+### Changed
+- **MPC "Edit" Flow Improved**: When editing a proposed entity from MPC, now it first saves the entry, then opens the edit panel. Previously it tried to edit a non-existent entry which failed.
+- **PWA Settings Reorganization**: Settings modal now organized into 4 tabs with better grouping: Cloud (backup), AI (providers), Interface (language/theme), General (app info + cache).
+
+### Fixed
+- **Typing Effect Bug**: Fixed first character disappearing issue when typing effect animation ran. Now preserves all characters correctly.
+- **Compendium Category Change**: Fixed category change not working when editing an existing entry. Now properly deletes from old table and creates in new table.
+
 ## [LoneWriter v1.5-compendium (Stable)] - 2026-04-10
 
 ### Added
