@@ -71,7 +71,10 @@
     "consumo_ilimitado": "Sin límites (Local)",
     "test_conexion": "Probar conexión",
     "test_conexion_ok": "✓ Conexión OK",
-    "test_conexion_error": "✗ Error de conexión"
+    "test_conexion_error": "✗ Error de conexión",
+    "stopwords_titulo": "Palabras filtradas (Stopwords)",
+    "stopwords_desc": "Palabras separadas por coma que se ignoran al detectar entidades para el Oráculo.",
+    "stopwords_placeholder": "edificio, coche, encima, debajo, antes, después"
   },
   "general": {
     "seccion_titulo": "Información de la Aplicación",

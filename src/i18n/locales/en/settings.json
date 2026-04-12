@@ -71,7 +71,10 @@
     "consumo_ilimitado": "Unlimited (Local)",
     "test_conexion": "Test connection",
     "test_conexion_ok": "✓ Connection OK",
-    "test_conexion_error": "✗ Connection error"
+    "test_conexion_error": "✗ Connection error",
+    "stopwords_titulo": "Filtered Words (Stopwords)",
+    "stopwords_desc": "Comma-separated words to ignore when detecting entities for the Oracle.",
+    "stopwords_placeholder": "building, car, above, below, before, after"
   },
   "general": {
     "seccion_titulo": "Application Information",

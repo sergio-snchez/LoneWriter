@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next';
 import {
   X, Cloud, RefreshCw, LogIn, LogOut,
   Sparkles, Shield, Info, AlertTriangle, Key, ExternalLink,
-  Heart, Languages, Globe, History, RotateCw, Palette, Zap
+  Heart, Languages, Globe, History, RotateCw, Palette, Zap, ChevronDown, ChevronRight
 } from 'lucide-react';
 import { Tooltip } from './Tooltip';
 import { useAI, DEFAULT_MODELS } from '../context/AIContext';
 import { useNovel } from '../context/NovelContext';
+import { userStopwordsCache, saveUserStopwords } from '../i18n/stopwords';
 import { GoogleDriveService } from '../services/googleDriveService';
 import LanguageSelector from './LanguageSelector';
 import './SettingsModal.css';
@@ -74,6 +75,34 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
         setTestConnStatus(null);
         setTestConnResult(null);
       }, 3000);
+    }
+  };
+
+  const [showStopwordsSection, setShowStopwordsSection] = useState(false);
+  const [customStopwords, setCustomStopwords] = useState('');
+  const currentLang = i18n.language || 'es';
+
+  const loadCustomStopwords = useCallback(() => {
+    try {
+      const cache = userStopwordsCache || { es: new Set(), en: new Set() };
+      const userWords = cache[currentLang] || new Set();
+      setCustomStopwords(userWords && userWords.size > 0 ? Array.from(userWords).join(', ') : '');
+    } catch (e) {
+      setCustomStopwords('');
+    }
+  }, [currentLang]);
+
+  useEffect(() => {
+    loadCustomStopwords();
+  }, [loadCustomStopwords]);
+
+  const handleSaveStopwords = async () => {
+    try {
+      const words = customStopwords.split(',').map(w => w.trim().toLowerCase()).filter(w => w);
+      await saveUserStopwords(currentLang, words);
+      setCustomStopwords(words.join(', '));
+    } catch (e) {
+      console.error('Error saving stopwords:', e);
     }
   };
 
@@ -488,6 +517,61 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                     />
                   </div>
                 )}
+
+                {/* Stopwords personalizadas */}
+                <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
+                  <button
+                    onClick={() => setShowStopwordsSection(!showStopwordsSection)}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px', 
+                      background: 'none', 
+                      border: 'none', 
+                      color: 'var(--text)',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      width: '100%',
+                      textAlign: 'left'
+                    }}
+                  >
+                    {showStopwordsSection ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                    {t('ia.stopwords_titulo') || 'Palabras filtradas (Stopwords)'}
+                  </button>
+                  
+                  {showStopwordsSection && (
+                    <div style={{ marginTop: '12px' }}>
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                        {t('ia.stopwords_desc') || 'Palabras separadas por coma que se ignoran en la detección de entidades del Oráculo.'}
+                      </p>
+                      <textarea
+                        value={customStopwords}
+                        onChange={(e) => setCustomStopwords(e.target.value)}
+                        placeholder={t('ia.stopwords_placeholder') || 'palabra1, palabra2, palabra3'}
+                        style={{
+                          width: '100%',
+                          minHeight: '80px',
+                          padding: '8px',
+                          fontSize: '12px',
+                          fontFamily: 'monospace',
+                          border: '1px solid var(--border)',
+                          borderRadius: 'var(--radius-sm)',
+                          background: 'var(--bg)',
+                          color: 'var(--text)',
+                          resize: 'vertical'
+                        }}
+                      />
+                      <button
+                        onClick={handleSaveStopwords}
+                        className="btn btn-primary btn-sm"
+                        style={{ marginTop: '8px' }}
+                      >
+                        {t('general.guardar') || 'Guardar'}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
