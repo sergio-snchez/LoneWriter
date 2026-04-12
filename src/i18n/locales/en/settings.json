@@ -68,7 +68,10 @@
     "consumo_titulo": "Quota & Usage Control (Today)",
     "consumo_tokens": "Tokens consumed",
     "consumo_peticiones": "Requests (API Calls)",
-    "consumo_ilimitado": "Unlimited (Local)"
+    "consumo_ilimitado": "Unlimited (Local)",
+    "test_conexion": "Test connection",
+    "test_conexion_ok": "✓ Connection OK",
+    "test_conexion_error": "✗ Connection error"
   },
   "general": {
     "seccion_titulo": "Application Information",

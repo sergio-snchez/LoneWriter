@@ -4,6 +4,9 @@ import { db } from '../db/database';
 import { useNovel } from './NovelContext';
 import { createDebouncedEntityDetector, parseOracleResponse } from '../services/entityDetector';
 import { addToIgnoredNames } from '../services/mpcService';
+import { AIService } from '../services/aiService';
+
+const AI_PROVIDERS = ['google', 'openai', 'anthropic', 'openrouter', 'local'];
 
 const AIContext = createContext();
 
@@ -15,7 +18,7 @@ export const useAI = () => {
   return context;
 };
 
-const DEFAULT_MODELS = {
+export const DEFAULT_MODELS = {
   google:      'gemini-2.0-flash',
   openai:      'gpt-4o-mini',
   anthropic:   'claude-3-5-sonnet-20241022',
@@ -63,15 +66,106 @@ const getDefaultDebateAgents = () => [
   },
 ];
 
+const emptyProviderConfig = { model: '', apiKey: '', localBaseUrl: '' };
+
 export const AIProvider = ({ children }) => {
   const { activeNovel, activeScene } = useNovel();
+  
+  // Provider activo (solo esto en localStorage)
   const [provider, setProvider] = useState(() => localStorage.getItem('ai_provider') || 'google');
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('ai_api_key') || '');
-  const [localBaseUrl, setLocalBaseUrlState] = useState(() => localStorage.getItem('ai_local_base_url') || 'http://localhost:1234/v1');
-  const [selectedModels, setSelectedModels] = useState(() => {
-    const saved = localStorage.getItem('ai_selected_models');
-    return saved ? JSON.parse(saved) : { ...DEFAULT_MODELS };
+  
+  // Todas las configs de todos los proveedores (cargadas una vez de Dexie)
+  const [allConfigs, setAllConfigs] = useState(() => {
+    const initial = {};
+    for (const p of AI_PROVIDERS) {
+      initial[p] = { ...emptyProviderConfig };
+    }
+    return initial;
   });
+  const [configsLoaded, setConfigsLoaded] = useState(false);
+
+  // Cargar TODAS las configs desde Dexie al inicio
+  useEffect(() => {
+    const loadAllConfigs = async () => {
+      try {
+        const rows = await db.aiProviderConfigs.toArray();
+        const loaded = {};
+        for (const p of AI_PROVIDERS) {
+          loaded[p] = { ...emptyProviderConfig };
+        }
+        for (const row of rows) {
+          if (loaded[row.provider]) {
+            loaded[row.provider] = {
+              model: loaded[row.provider].model || row.model || '',
+              apiKey: loaded[row.provider].apiKey || row.apiKey || '',
+              localBaseUrl: loaded[row.provider].localBaseUrl || row.localBaseUrl || '',
+            };
+          }
+        }
+        setAllConfigs(loaded);
+        setConfigsLoaded(true);
+      } catch (err) {
+        console.error('[AIContext] Error loading configs:', err);
+        setConfigsLoaded(true);
+      }
+    };
+    loadAllConfigs();
+  }, []);
+
+  // Valores del provider activo
+  const currentConfig = allConfigs[provider] || emptyProviderConfig;
+  const apiKey = currentConfig.apiKey || '';
+  // selectedModel usa default solo para llamadas API, pero el input puede estar vacío
+  const selectedModel = currentConfig.model ? currentConfig.model : DEFAULT_MODELS[provider];
+  const localBaseUrl = currentConfig.localBaseUrl || 'http://localhost:1234/v1';
+
+  // Función simple para guardar en Dexie - preserva data previa
+  const saveProviderConfig = async (prov, updates) => {
+    try {
+      const existing = await db.aiProviderConfigs.where('provider').equals(prov).first();
+      const data = { 
+        provider: prov, 
+        ...updates,
+        updatedAt: new Date().toISOString() 
+      };
+      // Si existe, preserva campos que no están en updates
+      if (existing) {
+        data.id = existing.id;
+        if (!updates.model && existing.model) data.model = existing.model;
+        if (!updates.apiKey && existing.apiKey) data.apiKey = existing.apiKey;
+        if (!updates.localBaseUrl && existing.localBaseUrl) data.localBaseUrl = existing.localBaseUrl;
+      }
+      await db.aiProviderConfigs.put(data);
+    } catch (err) {
+      console.error('[AIContext] Save error:', err);
+    }
+  };
+
+  // Setters simples envueltos en useCallback
+  const setApiKey = useCallback(async (val, prov) => {
+    const targetProvider = prov || provider;
+    setAllConfigs(prev => ({
+      ...prev,
+      [targetProvider]: { ...prev[targetProvider], apiKey: val }
+    }));
+    await saveProviderConfig(targetProvider, { apiKey: val });
+  }, [provider]);
+
+  const setModelForProvider = useCallback(async (prov, modelId) => {
+    setAllConfigs(prev => ({
+      ...prev,
+      [prov]: { ...prev[prov], model: modelId }
+    }));
+    await saveProviderConfig(prov, { model: modelId });
+  }, []);
+
+  const setLocalBaseUrl = useCallback(async (val) => {
+    setAllConfigs(prev => ({
+      ...prev,
+      local: { ...prev.local, localBaseUrl: val }
+    }));
+    await saveProviderConfig('local', { localBaseUrl: val });
+  }, []);
   const [prompts, setPrompts] = useState(() => {
     return DEFAULT_PROMPTS();
   });
@@ -110,7 +204,7 @@ export const AIProvider = ({ children }) => {
   const mpcCooldownRef = useRef(null); // timestamp de último análisis
   const MPC_COOLDOWN_MS = 15_000; // 15 segundos entre análisis a la IA para ahorrar tokens pero mantener fluidez
 
-  const currentModel = selectedModels[provider] || DEFAULT_MODELS[provider] || '';
+  const currentModel = selectedModel;
 
   // ── AI Usage Monitoring ──────────────────────────────────────────────────
   const [usageStats, setUsageStats] = useState({ tokens: 0, requests: 0 });
@@ -567,24 +661,6 @@ export const AIProvider = ({ children }) => {
   }, [provider]);
 
   useEffect(() => {
-    localStorage.setItem('ai_api_key', apiKey);
-  }, [apiKey]);
-
-  useEffect(() => {
-    localStorage.setItem('ai_selected_models', JSON.stringify(selectedModels));
-  }, [selectedModels]);
-
-  const setModelForProvider = (prov, modelId) => {
-    setSelectedModels(prev => ({ ...prev, [prov]: modelId }));
-  };
-
-  const setLocalBaseUrl = (val) => {
-    setLocalBaseUrlState(val);
-    localStorage.setItem('ai_local_base_url', val);
-  };
-
-
-  useEffect(() => {
     localStorage.setItem('ai_custom_prompts', JSON.stringify(prompts));
   }, [prompts]);
 
@@ -639,7 +715,8 @@ export const AIProvider = ({ children }) => {
     provider, setProvider,
     apiKey, setApiKey,
     localBaseUrl, setLocalBaseUrl,
-    selectedModels, setModelForProvider,
+    allConfigs,
+    setModelForProvider,
     currentModel,
     prompts, updatePrompt, resetPrompt,
     selection, setSelection,
@@ -671,7 +748,8 @@ export const AIProvider = ({ children }) => {
     logAIUsage,
     refreshUsage,
     isMpcDrawerOpen, 
-    setIsMpcDrawerOpen
+    setIsMpcDrawerOpen,
+    testConnection: AIService.testConnection
   };
 
   return <AIContext.Provider value={value}>{children}</AIContext.Provider>;

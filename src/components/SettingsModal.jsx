@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 import {
   X, Cloud, RefreshCw, LogIn, LogOut,
   Sparkles, Shield, Info, AlertTriangle, Key, ExternalLink,
-  Heart, Languages, Globe, History, RotateCw, Palette
+  Heart, Languages, Globe, History, RotateCw, Palette, Zap
 } from 'lucide-react';
 import { Tooltip } from './Tooltip';
-import { useAI } from '../context/AIContext';
+import { useAI, DEFAULT_MODELS } from '../context/AIContext';
 import { useNovel } from '../context/NovelContext';
 import { GoogleDriveService } from '../services/googleDriveService';
 import LanguageSelector from './LanguageSelector';
@@ -50,8 +50,8 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
 
   const {
     provider, setProvider, apiKey, setApiKey,
-    localBaseUrl, setLocalBaseUrl, selectedModels,
-    setModelForProvider, usageStats
+    localBaseUrl, setLocalBaseUrl,
+    allConfigs, setModelForProvider, usageStats, testConnection
   } = useAI();
 
   const {
@@ -63,6 +63,19 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
   const [isCloudLinked, setIsCloudLinked] = useState(GoogleDriveService.isAuthenticated());
   const [showRevisions, setShowRevisions] = useState(false);
   const [revisions, setRevisions] = useState([]);
+  const [testConnStatus, setTestConnStatus] = useState(null);
+  const [testConnResult, setTestConnResult] = useState(null);
+
+  const updateTestConnection = (status, result = null) => {
+    setTestConnStatus(status);
+    setTestConnResult(result);
+    if (status === 'success') {
+      setTimeout(() => {
+        setTestConnStatus(null);
+        setTestConnResult(null);
+      }, 3000);
+    }
+  };
 
   const handleClearCache = async () => {
     const confirmMessage = tc('settings.general.clear_cache_confirm');
@@ -355,7 +368,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                 <input
                   type="text"
                   className="ai-settings-input"
-                  value={selectedModels[provider] || ''}
+                  value={allConfigs[provider]?.model ?? ''}
                   onChange={(e) => setModelForProvider(provider, e.target.value)}
                   placeholder={provider === 'local' ? t('ia.modelo_placeholder_local') : t('ia.modelo_placeholder_remoto')}
                 />
@@ -384,7 +397,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                   <input
                     type="text"
                     className="ai-settings-input"
-                    value={localBaseUrl}
+                    value={allConfigs[provider]?.localBaseUrl ?? ''}
                     onChange={(e) => setLocalBaseUrl(e.target.value)}
                     placeholder={t('ia.servidor_url_placeholder')}
                   />
@@ -395,8 +408,8 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                   <input
                     type="password"
                     className="ai-settings-input"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
+                    value={allConfigs[provider]?.apiKey ?? ''}
+                    onChange={(e) => setApiKey(e.target.value, provider)}
                     placeholder={t('ia.api_key_placeholder')}
                   />
                   <div className="ai-settings-links">
@@ -412,17 +425,55 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
 
               {/* Usage Monitor */}
               <div className="settings-section settings-section--usage" style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
-                <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <RefreshCw size={14} />
-                  {t('ia.consumo_titulo')}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <RefreshCw size={14} />
+                    {t('ia.consumo_titulo')}
+                  </span>
+                  <Tooltip content={t('ia.test_conexion') || 'Probar conexión'}>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={async () => {
+                        const config = { provider, apiKey: apiKey || allConfigs[provider]?.apiKey, model: allConfigs[provider]?.model || DEFAULT_MODELS[provider], localBaseUrl: allConfigs[provider]?.localBaseUrl };
+                        setTestConnStatus('testing');
+                        const result = await testConnection(config);
+                        updateTestConnection(result.success ? 'success' : 'error', result.error);
+                      }}
+                      disabled={testConnStatus === 'testing'}
+                      style={{ 
+                        color: testConnStatus === 'success' ? 'var(--green)' : testConnStatus === 'error' ? 'var(--red)' : 'var(--text-muted)',
+                        padding: '4px 8px',
+                        minWidth: 'auto'
+                      }}
+                    >
+                      {testConnStatus === 'testing' ? (
+                        <RefreshCw size={14} className="spinner" />
+                      ) : (
+                        <Zap size={14} />
+                      )}
+                    </button>
+                  </Tooltip>
+                </div>
+
+                {testConnStatus && testConnStatus !== 'testing' && (
+                  <p style={{ 
+                    fontSize: '11px', 
+                    color: testConnStatus === 'success' ? 'var(--green)' : 'var(--red)', 
+                    marginBottom: '8px',
+                    background: testConnStatus === 'success' ? 'rgba(92, 185, 138, 0.1)' : 'rgba(224, 112, 112, 0.1)',
+                    padding: '4px 8px',
+                    borderRadius: 'var(--radius-sm)'
+                  }}>
+                    {testConnStatus === 'success' ? t('ia.test_conexion_ok') : `${t('ia.test_conexion_error')}: ${testConnResult || 'Error'}`}
+                  </p>
+                )}
 
                 {provider === 'local' ? (
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '10px' }}>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                     ✨ {t('ia.consumo_ilimitado')}
                   </p>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '12px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <UsageMeter
                       label={t('ia.consumo_tokens')}
                       value={usageStats?.tokens || 0}

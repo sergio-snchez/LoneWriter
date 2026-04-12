@@ -68,7 +68,10 @@
     "consumo_titulo": "Control de Cuota y Consumo (Hoy)",
     "consumo_tokens": "Tokens consumidos",
     "consumo_peticiones": "Peticiones (API Calls)",
-    "consumo_ilimitado": "Sin límites (Local)"
+    "consumo_ilimitado": "Sin límites (Local)",
+    "test_conexion": "Probar conexión",
+    "test_conexion_ok": "✓ Conexión OK",
+    "test_conexion_error": "✗ Error de conexión"
   },
   "general": {
     "seccion_titulo": "Información de la Aplicación",

@@ -6,7 +6,7 @@
 
 </div>
 
-## [LoneWriter v1.6-beta] - 2026-04-11
+## [LoneWriter v1.6-beta] - 2026-04-12
 
 ### Added
 - **New "Interface" Settings Tab**: reorganized Settings into 4 tabs: Cloud & Backup, Artificial Intelligence, Interface, and General. Language and Theme selectors moved to new Interface tab.
@@ -14,14 +14,18 @@
 - **Category Selector in Compendium**: When editing Compendium entries (characters, locations, objects, lore), now you can change the category using icon buttons. Useful for fixing MPC misclassifications or reorganizing entries.
 - **Typing Effect on Welcome Screen**: Subtitle "Your personal space to bring great stories to life." now displays with a typing animation and blinking cursor like a typewriter.
 - **Fixed Toolbar Sticky**: Editor toolbar (B I H1 H2 ...) now stays fixed at top while scrolling through long scenes. Fixed scroll container overflow issue.
+- **AI Provider Configurations in Dexie**: Each AI provider's configuration (API key, model, server URL) is now stored persistently in the Dexie database (`aiProviderConfigs` table). Switching between providers no longer loses your settings.
+- **Test Connection Button** (⚡ Zap): New button in Settings > AI tab to test API connectivity. Shows success/error status with translated messages for all providers (OpenAI, Google Gemini, Anthropic, OpenRouter, Local).
 
 ### Changed
 - **MPC "Edit" Flow Improved**: When editing a proposed entity from MPC, now it first saves the entry, then opens the edit panel. Previously it tried to edit a non-existent entry which failed.
 - **PWA Settings Reorganization**: Settings modal now organized into 4 tabs with better grouping: Cloud (backup), AI (providers), Interface (language/theme), General (app info + cache).
+- **AI Settings Persistence**: Configuration now persists in IndexedDB (Dexie) instead of localStorage.
 
 ### Fixed
 - **Typing Effect Bug**: Fixed first character disappearing issue when typing effect animation ran. Now preserves all characters correctly.
 - **Compendium Category Change**: Fixed category change not working when editing an existing entry. Now properly deletes from old table and creates in new table.
+- **AI Config Loading**: Fixed issue where switching providers would lose other providers' settings. Now each provider's config loads correctly.
 
 ## [LoneWriter v1.5-compendium (Stable)] - 2026-04-10
 

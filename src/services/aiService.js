@@ -631,6 +631,107 @@ export const AIService = {
       console.error('Error in AIService._callLocalChat:', error);
       throw error;
     }
+  },
+
+  /**
+   * Test de conexión con el proveedor
+   * @param {Object} config - { provider, apiKey, model, localBaseUrl }
+   * @returns {Promise<{success: boolean, latency: number, error?: string}>}
+   */
+  testConnection: async (config) => {
+    const { provider, apiKey, model, localBaseUrl } = config;
+    const startTime = Date.now();
+
+    try {
+      if (provider === 'openai') {
+        const response = await fetch('https://api.openai.com/v1/models', {
+          headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        const latency = Date.now() - startTime;
+        if (response.ok) return { success: true, latency };
+        if (response.status === 401) return { success: false, error: 'API key inválida', latency };
+        if (response.status === 403) return { success: false, error: 'Sin permisos', latency };
+        const err = await response.json();
+        return { success: false, error: err.error?.message || `Error ${response.status}`, latency };
+      }
+
+      if (provider === 'google') {
+        const url = `${GEMINI_API_BASE}/${model || 'gemini-2.0-flash'}:generateContent?key=${apiKey}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: 'hi' }] }] })
+        });
+        const latency = Date.now() - startTime;
+        if (response.ok) return { success: true, latency };
+        if (response.status === 401) return { success: false, error: 'API key inválida', latency };
+        if (response.status === 403) return { success: false, error: 'Sin permisos', latency };
+        const err = await response.json();
+        return { success: false, error: err.error?.message || `Error ${response.status}`, latency };
+      }
+
+      if (provider === 'anthropic') {
+        const response = await fetch(CLAUDE_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
+          },
+          body: JSON.stringify({
+            model: model || 'claude-3-5-sonnet-20241022',
+            max_tokens: 1,
+            messages: [{ role: 'user', content: 'hi' }]
+          })
+        });
+        const latency = Date.now() - startTime;
+        if (response.ok) return { success: true, latency };
+        if (response.status === 401) return { success: false, error: 'API key inválida', latency };
+        if (response.status === 403) return { success: false, error: 'Sin permisos', latency };
+        if (response.status === 429) return { success: false, error: 'Límite excedido (rate limit)', latency };
+        const err = await response.json();
+        return { success: false, error: err.error?.message || `Error ${response.status}`, latency };
+      }
+
+      if (provider === 'openrouter') {
+        const response = await fetch('https://openrouter.ai/api/v1/models', {
+          headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        const latency = Date.now() - startTime;
+        if (response.ok) return { success: true, latency };
+        if (response.status === 401) return { success: false, error: 'API key inválida', latency };
+        if (response.status === 403) return { success: false, error: 'Sin permisos', latency };
+        const err = await response.json();
+        return { success: false, error: err.error?.message || `Error ${response.status}`, latency };
+      }
+
+      if (provider === 'local') {
+        const url = `${(localBaseUrl || 'http://localhost:1234/v1').replace(/\/$/, '')}/models`;
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        
+        try {
+          const response = await fetch(url, { signal: controller.signal });
+          clearTimeout(timeout);
+          const latency = Date.now() - startTime;
+          if (response.ok) return { success: true, latency };
+          const err = await response.json().catch(() => ({}));
+          return { success: false, error: err.error?.message || `Error ${response.status}`, latency };
+        } catch (err) {
+          clearTimeout(timeout);
+          const latency = Date.now() - startTime;
+          if (err.name === 'AbortError') {
+            return { success: false, error: 'Sin respuesta (servidor caído)', latency };
+          }
+          return { success: false, error: 'No se pudo conectar', latency };
+        }
+      }
+
+      return { success: false, error: 'Proveedor desconocido' };
+    } catch (err) {
+      const latency = Date.now() - startTime;
+      return { success: false, error: err.message || 'Error de conexión', latency };
+    }
   }
 };
 
