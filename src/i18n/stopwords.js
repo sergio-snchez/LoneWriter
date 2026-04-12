@@ -311,47 +311,36 @@ export function getSearchStopWords(lang) {
   return SEARCH_STOP_WORDS[currentLang] || SEARCH_STOP_WORDS.es;
 }
 
-export function getEntityStopWords(lang) {
-  const currentLang = lang || i18n.language || 'es';
-export function getEntityStopWords(lang) {
-  const currentLang = lang || i18n.language || 'es';
-  return ENTITY_STOP_WORDS[currentLang] || ENTITY_STOP_WORDS.es;
+// stubs vacíos para compatibilidad (se implementará en futuro)
+export let userStopwordsCache = { es: new Set(), en: new Set() };
+export async function loadUserStopwords() { /* no-op */ }
+export async function saveUserStopwords(lang, words) {
+  userStopwordsCache[lang] = new Set(words);
 }
 
 export async function loadCustomStopwords() {
-  try {
-    const customWords = await db.customStopwords.toArray();
-    return new Set(customWords.map(w => w.word.toLowerCase()));
-  } catch (err) {
-    console.error('[Stopwords] Error loading custom stopwords:', err);
-    return new Set();
-  }
+  return new Set();
+}
+
+export function getEntityStopWords(lang) {
+  const currentLang = lang || i18n.language || 'es';
+  const defaults = ENTITY_STOP_WORDS[currentLang] || ENTITY_STOP_WORDS.es;
+  const userWords = userStopwordsCache[currentLang] || new Set();
+  return new Set([...defaults, ...userWords]);
 }
 
 export async function getEntityStopWordsWithCustom(lang) {
-  const hardcoded = getEntityStopWords(lang);
-  const custom = await loadCustomStopwords();
-  return new Set([...hardcoded, ...custom]);
-}
-
-export async function addCustomStopword(word) {
-  const normalized = word.trim().toLowerCase();
-  if (!normalized) return null;
-  
-  const existing = await db.customStopwords.where('word').equals(normalized).first();
-  if (existing) return existing;
-  
-  const id = await db.customStopwords.add({
-    word: normalized,
-    createdAt: new Date().toISOString()
-  });
-  return { id, word: normalized };
-}
-
-export async function deleteCustomStopword(id) {
-  await db.customStopwords.delete(id);
+  return getEntityStopWords(lang);
 }
 
 export async function getAllCustomStopwords() {
-  return await db.customStopwords.toArray();
+  return [];
+}
+
+export async function addCustomStopword(word) {
+  return { id: Date.now(), word };
+}
+
+export async function deleteCustomStopword(id) {
+  // no-op
 }
