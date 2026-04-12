@@ -1,5 +1,6 @@
 // Stopwords separated by language for MPC, Compendium Search, and Entity Detection
 import i18n from './i18n';
+import { db } from '../db/database';
 
 export const SENTENCE_START_WORDS = {
   es: new Set([
@@ -313,4 +314,42 @@ export function getSearchStopWords(lang) {
 export function getEntityStopWords(lang) {
   const currentLang = lang || i18n.language || 'es';
   return ENTITY_STOP_WORDS[currentLang] || ENTITY_STOP_WORDS.es;
+}
+
+export async function loadCustomStopwords() {
+  try {
+    const customWords = await db.customStopwords.toArray();
+    return new Set(customWords.map(w => w.word.toLowerCase()));
+  } catch (err) {
+    console.error('[Stopwords] Error loading custom stopwords:', err);
+    return new Set();
+  }
+}
+
+export async function getEntityStopWordsWithCustom(lang) {
+  const hardcoded = getEntityStopWords(lang);
+  const custom = await loadCustomStopwords();
+  return new Set([...hardcoded, ...custom]);
+}
+
+export async function addCustomStopword(word) {
+  const normalized = word.trim().toLowerCase();
+  if (!normalized) return null;
+  
+  const existing = await db.customStopwords.where('word').equals(normalized).first();
+  if (existing) return existing;
+  
+  const id = await db.customStopwords.add({
+    word: normalized,
+    createdAt: new Date().toISOString()
+  });
+  return { id, word: normalized };
+}
+
+export async function deleteCustomStopword(id) {
+  await db.customStopwords.delete(id);
+}
+
+export async function getAllCustomStopwords() {
+  return await db.customStopwords.toArray();
 }

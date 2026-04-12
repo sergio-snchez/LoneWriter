@@ -6,23 +6,27 @@
 
 </div>
 
-## [LoneWriter v1.6-beta] - 2026-04-12
+## [LoneWriter v1.6-stopwords] - 2026-04-12
 
 ### Added
 - **Nueva Pestaña "Interfaz" de Configuración**: Reorganizada la configuración en 4 pestañas: Nube y Backup, Inteligencia Artificial, Interfaz y General. Los selectores de Idioma y Tema movidos a la nueva pestaña Interfaz.
-- **Botón Eliminar Caché y Recargar**: Nueva opción en Configuración > General para limpiar la caché del Service Worker y las preferencias de localStorage. Equivalente a "Ctrl+F5" en navegadores de escritorio - ayuda a resolver problemas de carga en PWAs de Android. Incluye advertencia de confirmación pedindo sincronizar con Google Drive o exportar antes de usar.
+- **Botón Eliminar Caché y Recargar**: Nueva opción en Configuración > General para limpiar la caché del Service Worker y las preferencias de localStorage. Equivalente a "Ctrl+F5" en navegadores de escritorio - ayuda a resolver problemas de carga en PWAs de Android. Incluye advertencia de confirmación pidiendo sincronizar con Google Drive o exportar antes de usar.
 - **Selector de Categoría en Compendium**: Al editar entradas del Compendio (personajes, lugares, objetos, lore), ahora puedes cambiar la categoría usando botones de iconos. Útil para corregir clasificaciones del MPC o reorganizar entradas.
 - **Efecto de Escritura en Pantalla de Bienvenida**: El subtítulo "Tu espacio personal para dar vida a grandes historias." ahora se muestra con animación de escritura y cursor parpadeante como una máquina de escribir.
 - **Toolbar Fijo Corregido**: La barra de herramientas del editor (B I H1 H2 ...) ahora se mantiene fija arriba mientras haces scroll en escenas largas. Corregido el problema de overflow del contenedor de scroll.
 - **Configuraciones de Proveedores IA en Dexie**: La configuración de cada proveedor de IA (clave API, modelo, URL del servidor) ahora se guarda de forma persistente en la base de datos Dexie (tabla `aiProviderConfigs`). Cambiar de proveedor ya no borra la configuración.
 - **Botón de Prueba de Conexión** (⚡ Zap): Nuevo botón en Configuración > IA para probar la conectividad de la API. Muestra estado de éxito/error con mensajes traducidos para todos los proveedores (OpenAI, Google Gemini, Anthropic, OpenRouter, Local).
+- **Interfaz de Palabras Filtradas del Oráculo**: Reorganizada la gestión de stopwords en la vista Recursos. Las palabras por defecto/sistema están fijadas en una tarjeta "Archivo del sistema" y las personalizadas se gestionan mediante un modal de edición.
 
 ### Changed
 - **Flujo "Editar" del MPC Mejorado**: Al editar una entidad propuesta por el MPC, ahora primero guarda la entrada y luego abre el panel de edición. Antes intentaba editar una entrada no existente y fallaba.
 - **Reorganización de Ajustes PWA**: Modal de ajustes ahora organizado en 4 pestañas con mejor agrupación: Nube (backup), IA (proveedores), Interfaz (idioma/tema), General (info app + caché).
 - **Persistencia de Configuración IA**: La configuración ahora se guarda en IndexedDB (Dexie) en lugar de localStorage.
+- **UX de Stopwords**: Movida la gestión de stopwords personalizadas de una sección estática a una tarjeta de archivo ficticio en la lista de Recursos para mayor consistencia.
 
 ### Fixed
+- **Conexión OpenRouter**: Corregida la prueba de conexión añadiendo los headers obligatorios (`HTTP-Referer`, `X-Title`). Actualizado el flujo para probar tanto la clave API como la disponibilidad del modelo.
+- **Flujo de Prueba de Conexión**: Estandarizados los tests de conexión para proveedores IA (OpenAI, Google, Anthropic, OpenRouter) verificando tanto la clave como el modelo antes de reportar éxito.
 - **Bug del Efecto de Escritura**: Corregido problema donde desaparecía el primer carácter al ejecutar la animación. Ahora preserva todos los caracteres correctamente.
 - **Cambio de Categoría del Compendio**: Corregido problema donde no funcionaba cambiar categoría al editar una entrada existente. Ahora borra correctamente de la tabla antigua y crea en la nueva.
 - **Carga de Configuración IA**: Corregido problema donde cambiar de proveedor borraba la configuración de otros proveedores. Ahora la configuración de cada proveedor se carga correctamente.

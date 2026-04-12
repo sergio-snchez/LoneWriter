@@ -19,8 +19,20 @@
   "archivo_importado": "Imported file",
   "excluido": "Excluded from coherence analysis",
   "incluido": "Included in coherence analysis",
+  "contexto_ia": "AI Context",
   "ver": "View",
   "eliminar": "Delete",
   "vista_previa_no_disponible": "Preview not available for this file type.",
-  "formato": "Format: {{type}}"
+  "formato": "Format: {{type}}",
+  "stopwords_titulo": "Oracle Filtered Words",
+  "stopwords_pinned": "Pinned",
+  "stopwords_count_short": "words",
+  "stopwords_editar": "Edit",
+  "stopwords_modal_titulo": "Edit filtered words",
+  "stopwords_modal_texto": "Filtered words (stopwords) are common terms that the Oracle ignores during analysis to focus on relevant elements of your story. Add or remove terms as needed.",
+  "stopwords_add_placeholder": "Add word...",
+  "stopwords_add": "Add",
+  "stopwords_empty": "No custom words.",
+  "stopwords_personalizada_badge": "Custom",
+  "archivo_sistema": "System file"
 }

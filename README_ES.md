@@ -6,7 +6,7 @@
 
 </div>
 
-# LoneWriter v1.5-compendio (Stable) 🖋️
+# LoneWriter v1.6-stopwords 🖋️
 
 > **Tu "Sistema Operativo Narrativo": La IA que te escucha, organiza tu caos y vigila la coherencia de tu mundo mientras tú solo te preocupas de escribir.**
 >
@@ -28,18 +28,22 @@ LoneWriter es una aplicación minimalista y potente diseñada para escritores qu
 - **Enfoque Zen:** Interfaz limpia diseñada para minimizar las distracciones y maximizar la creatividad.
 - **Estadísticas en Tiempo Real:** Controla tu progreso de palabras y objetivos diarios.
 - **Responsive Design:** Interfaz optimizada para móviles y tablets con navegación drawer, targets táctiles y paneles colapsables.
+- **Selector de Categoría:** Cambia rápidamente la categoría (Personaje, Lugar, etc.) de las entradas del compendio.
 
 ### 🤖 IA Invisible y Monitor de Lore (MPC)
 - **MPC (Monitor de Propuestas del Compendio):** Adiós a la "burocracia del mundo". LoneWriter te escucha mientras escribes y detecta automáticamente nuevas entidades (personajes, lugares, objetos). Las sugiere en un panel lila no intrusivo para que las añadas al compendio con un clic, sin dejar de narrar.
 - **Autocompletado Mágico:** ¿Has mencionado una espada o un pueblo nuevo? Usa el botón de destellos en el Compendio para que la IA escanee tu novela y rellene automáticamente la descripción, rasgos y relaciones de la ficha por ti.
 - **Motor RAG (all-MiniLM-L6-v2):** Búsqueda semántica potenciada por embeddings locales (Transformers.js). Tu novela completa se vectoriza en el navegador — consultas contextuales sin APIs externas, manteniendo tus datos privados.
 - **Veredictos del Oráculo (Continuity Linter):** Análisis de coherencia párrafo a párrafo. Actúa como un "corrector de lógica" en tiempo real que detecta contradicciones con tu lore establecido (ej: un personaje muerto que reaparece o un objeto que cambia de dueño por error).
+- **Palabras Filtradas (Stopwords):** Gestiona términos personalizados en la sección Recursos para refinar la detección de entidades y el análisis de coherencia.
 - **Exclusión Selectiva:** Controla qué entidades del Compendio participan en el análisis de coherencia con un clic para evitar falsos positivos en sueños o flashbacks.
 
 ### 🧠 Asistente de IA Avanzado
 - **Múltiples Modelos:** Soporte para Gemini, GPT-4o, Claude 3.5 y modelos locales (LM Studio/Ollama).
+- **Configuración Persistente:** Cada configuración de proveedor de IA se guarda de forma segura en la base de datos Dexie.
+- **Prueba de Conexión:** Verifica tus claves API y conectividad del modelo con el nuevo botón ⚡ Probar conexión.
 - **Herramientas Literarias:** Reescribe escenas, ajusta el tono, mejora el ritmo o cambia el punto de vista (POV) con inteligencia contextual.
-- **Sistema de Debate:** Múltiples agentes IA debaten entre sí sobre tu escena con rondas configurables y sesiones persistentes para Feedback crítico profundo.
+- **Sistema de Debate:** Múltiples agentes IA debutan entre sí sobre tu escena con rondas configurables y sesiones persistentes para Feedback crítico profundo.
 
 ### 📚 Compendio y Lore
 - **Biblioteca de Personajes:** Fichas detalladas con rasgos, motivaciones y arcos.
@@ -51,6 +55,7 @@ LoneWriter es una aplicación minimalista y potente diseñada para escritores qu
 - **Privacidad Primero:** Tus datos se guardan localmente (IndexedDB) y opcionalmente en tu propio espacio personal de Google.
 - **Exportación Comprimida:** Descarga tu proyecto completo en formato `.lwrt` comprimido con gzip (ilegible en texto plano) o genera un documento de Word (`.docx`).
 - **Compatibilidad hacia atrás:** El importador detecta automáticamente archivos `.lwrt` antiguos (JSON plano) y nuevos (comprimidos).
+- **Gestión de Ajustes:** Interfaz organizada con pestañas dedicadas para ajustes de Nube, IA, Interfaz y General. Limpia la caché y restablece preferencias fácilmente.
 
 ## 🛠️ Tecnologías
 
@@ -86,7 +91,7 @@ Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
 
 ---
 
-*LoneWriter v1.5-compendio - Tu espacio personal para dar vida a grandes historias.*
+*LoneWriter v1.6-stopwords - Tu espacio personal para dar vida a grandes historias.*
 
 ---
 
