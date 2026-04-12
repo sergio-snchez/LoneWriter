@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   X, Cloud, RefreshCw, LogIn, LogOut,
@@ -40,7 +40,7 @@ const UsageMeter = ({ label, value, max, unit }) => {
 };
 
 const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme, openModal }) => {
-  const { t } = useTranslation('settings');
+  const { t, i18n } = useTranslation('settings');
   const { t: tc } = useTranslation('common');
   const [activeTab, setActiveTab] = useState(initialTab);
 

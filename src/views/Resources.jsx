@@ -7,10 +7,10 @@ import {
 } from 'lucide-react'
 import { useNovel } from '../context/NovelContext'
 import { useAI } from '../context/AIContext'
-import { Tooltip } from '../components/Tooltip'
-import { renderMarkdown } from '../utils/renderMarkdown'
-import { getEntityStopWords, getAllCustomStopwords, addCustomStopword, deleteCustomStopword } from '../i18n/stopwords'
-import './Resources.css'
+import { Tooltip } from '../components/Tooltip';
+import { renderMarkdown } from '../utils/renderMarkdown';
+import { getEntityStopWords, getAllCustomStopwords, addCustomStopword, deleteCustomStopword } from '../i18n/stopwords';
+import './Resources.css';
 
 const ALLOWED_EXTENSIONS = ['txt', 'md', 'json', 'csv']
 
