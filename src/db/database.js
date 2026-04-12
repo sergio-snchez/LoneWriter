@@ -63,4 +63,10 @@ db.version(10).stores({
   lastRewrite: '++id, [novelId+sceneId], novelId, sceneId'
 });
 
+// v11: Configuraciones de proveedores IA
+// Permite guardar la config de cada proveedor (apiKey, model, localBaseUrl)
+db.version(11).stores({
+  aiProviderConfigs: 'provider'
+});
+
 export default db;
