@@ -1,6 +1,13 @@
 // Stopwords separated by language for MPC, Compendium Search, and Entity Detection
 import i18n from './i18n';
 
+// stubs vacíos para compatibilidad (se implementará en futuro)
+let userStopwordsCache = { es: new Set(), en: new Set() };
+async function loadUserStopwords() { /* no-op */ }
+async function saveUserStopwords(lang, words) {
+  userStopwordsCache[lang] = new Set(words);
+}
+
 export const SENTENCE_START_WORDS = {
   es: new Set([
     'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'lo', 'al', 'del',
@@ -312,5 +319,9 @@ export function getSearchStopWords(lang) {
 
 export function getEntityStopWords(lang) {
   const currentLang = lang || i18n.language || 'es';
-  return ENTITY_STOP_WORDS[currentLang] || ENTITY_STOP_WORDS.es;
+  const defaults = ENTITY_STOP_WORDS[currentLang] || ENTITY_STOP_WORDS.es;
+  const userWords = userStopwordsCache[currentLang] || new Set();
+  return new Set([...defaults, ...userWords]);
 }
+
+export { loadUserStopwords, saveUserStopwords, userStopwordsCache };
