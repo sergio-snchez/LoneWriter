@@ -187,6 +187,37 @@ export const AIProvider = ({ children }) => {
   });
   const entityDetectorRef = useRef(createDebouncedEntityDetector(() => {}, 2000));
 
+  const forceEntityRecheck = useCallback(() => {
+    if (!activeNovel || !oracleText) return;
+    const plainText = oracleText.trim();
+    if (plainText.length < 3) return;
+    entityDetectorRef.current.immediate(plainText, activeNovel.id, i18n.language)
+      .then(({ detections }) => {
+        const criticalDetections = detections.filter(d => d.severity === 'critical');
+        const doubtfulDetections = detections.filter(d => d.severity === 'doubtful');
+        
+        if (criticalDetections.length > 0) {
+          setOracleStatus(prev => ({
+            ...prev,
+            status: 'suspicious',
+            detectedEntities: criticalDetections,
+          }));
+        } else if (doubtfulDetections.length >= 2) {
+          setOracleStatus(prev => ({
+            ...prev,
+            status: 'suspicious',
+            detectedEntities: doubtfulDetections,
+          }));
+        } else {
+          setOracleStatus(prev => ({
+            ...prev,
+            status: 'idle',
+            detectedEntities: [],
+          }));
+        }
+      });
+  }, [activeNovel, oracleText, i18n.language]);
+
   // ── MPC — Monitor de Propuestas del Compendio ─────────────────────────────
   // 'idle' | 'analyzing' | 'error'
   const [mpcStatus, setMpcStatus] = useState('idle');
@@ -464,7 +495,7 @@ export const AIProvider = ({ children }) => {
       return;
     }
 
-    entityDetectorRef.current.immediate(plainText, activeNovel.id)
+    entityDetectorRef.current.immediate(plainText, activeNovel.id, i18n.language)
       .then(({ detections }) => {
         const criticalDetections = detections.filter(d => d.severity === 'critical');
         const doubtfulDetections = detections.filter(d => d.severity === 'doubtful');
@@ -723,7 +754,7 @@ export const AIProvider = ({ children }) => {
     oracleText, setOracleText,
     lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite,
     oracleHistory, addOracleEntry, clearOracleHistory, deleteOracleEntry, toggleOracleCorrected, checkedEntries,
-    oracleStatus, checkOracleResponse, resetOracleStatus, markOracleContradiction,
+    oracleStatus, checkOracleResponse, resetOracleStatus, markOracleContradiction, forceEntityRecheck,
     debateAgents, debateHistory,
     addDebateMessage, clearDebateHistory,
     updateDebateAgent, addDebateAgent, removeDebateAgent, toggleDebateAgent,

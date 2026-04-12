@@ -6,7 +6,7 @@
 
 </div>
 
-## [LoneWriter v1.6-beta] - 2026-04-12
+## [LoneWriter v1.6-stopwords] - 2026-04-12
 
 ### Added
 - **New "Interface" Settings Tab**: reorganized Settings into 4 tabs: Cloud & Backup, Artificial Intelligence, Interface, and General. Language and Theme selectors moved to new Interface tab.
@@ -16,13 +16,17 @@
 - **Fixed Toolbar Sticky**: Editor toolbar (B I H1 H2 ...) now stays fixed at top while scrolling through long scenes. Fixed scroll container overflow issue.
 - **AI Provider Configurations in Dexie**: Each AI provider's configuration (API key, model, server URL) is now stored persistently in the Dexie database (`aiProviderConfigs` table). Switching between providers no longer loses your settings.
 - **Test Connection Button** (⚡ Zap): New button in Settings > AI tab to test API connectivity. Shows success/error status with translated messages for all providers (OpenAI, Google Gemini, Anthropic, OpenRouter, Local).
+- **Oracle Filtered Words Interface**: Reorganized stopwords management in Resources view. Default/system words are now pinned in a dedicated "System File" card, and custom stopwords can be managed via an edit modal.
 
 ### Changed
 - **MPC "Edit" Flow Improved**: When editing a proposed entity from MPC, now it first saves the entry, then opens the edit panel. Previously it tried to edit a non-existent entry which failed.
 - **PWA Settings Reorganization**: Settings modal now organized into 4 tabs with better grouping: Cloud (backup), AI (providers), Interface (language/theme), General (app info + cache).
 - **AI Settings Persistence**: Configuration now persists in IndexedDB (Dexie) instead of localStorage.
+- **Stopwords UX**: Moved custom stopword management from a static section to a system-fictional file card in the Resources list for better consistency.
 
 ### Fixed
+- **OpenRouter Connection**: Fixed connection test for OpenRouter by adding mandatory headers (`HTTP-Referer`, `X-Title`). Updated connection flow to test both API key and model availability.
+- **Connection Test Flow**: Standardized AI provider connection tests (OpenAI, Google, Anthropic, OpenRouter) to verify both key and model before reporting success.
 - **Typing Effect Bug**: Fixed first character disappearing issue when typing effect animation ran. Now preserves all characters correctly.
 - **Compendium Category Change**: Fixed category change not working when editing an existing entry. Now properly deletes from old table and creates in new table.
 - **AI Config Loading**: Fixed issue where switching providers would lose other providers' settings. Now each provider's config loads correctly.

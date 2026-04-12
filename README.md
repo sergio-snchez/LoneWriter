@@ -6,7 +6,7 @@
 
 </div>
 
-# LoneWriter v1.5-compendium (Stable) 🖋️
+# LoneWriter v1.6-stopwords 🖋️
 
 > **Your "Narrative Operating System": The AI that listens to you, organizes your chaos, and monitors your world's coherence while you only worry about writing.**
 >
@@ -28,16 +28,20 @@ LoneWriter is a minimalist and powerful application designed for writers seeking
 - **Zen Focus:** Clean interface designed to minimize distractions and maximize creativity.
 - **Real-time Statistics:** Track your progress with word count and daily goals.
 - **Responsive Design:** Interface optimized for mobile and tablets with drawer navigation, touch targets and collapsible panels.
+- **Category Selector:** Quickly change category (Character, Location, etc.) for compendium entries.
 
 ### 🤖 Invisible AI & Lore Monitor (MPC)
 - **MPC (Compendium Proposal Monitor):** Goodbye to "world bureaucracy." LoneWriter listens as you write and automatically detects new entities (characters, places, objects). It suggests them in a non-intrusive purple panel so you can add them to your compendium with one click, without stopping your narrative flow.
 - **Magic Auto-complete:** Mentioned a new sword or a mysterious village? Use the sparkle button in the Compendium to let the AI scan your novel and automatically fill in descriptions, traits, and relationships for you.
 - **RAG Engine (all-MiniLM-L6-v2):** Semantic search powered by local embeddings (Transformers.js). Your entire novel is vectorized in the browser — context-aware queries without external APIs, keeping your data private.
-- **Oracle Verdicts (Continuity Lintor):** Real-time paragraph-by-paragraph coherence analysis. It acts as a "logic corrector" that detects contradictions with your established lore (e.g., a dead character reappearing or an object mistakenly changing owners).
+- **Oracle Verdicts (Continuity Linter):** Real-time paragraph-by-paragraph coherence analysis. It acts as a "logic corrector" that detects contradictions with your established lore (e.g., a dead character reappearing or an object mistakenly changing owners).
+- **Oracle Stopwords:** Manage custom filtered words in the Resources section to fine-tune entity detection and coherence analysis.
 - **Selective Exclusion:** Control which Compendium entities participate in coherence analysis with one click to avoid false positives during dreams or flashbacks.
 
 ### 🧠 Advanced AI Assistant
 - **Multiple Models:** Support for Gemini, GPT-4o, Claude 3.5 and local models (LM Studio/Ollama).
+- **Persistent Configs:** Each AI provider configuration is now stored securely in the Dexie database.
+- **Connection Test:** Verify your API keys and model connectivity with the new ⚡ Test Connection button.
 - **Literary Tools:** Rewrite scenes, adjust tone, improve pacing, or change POV with contextual intelligence.
 - **Debate System:** Multiple AI agents debate your scene with configurable rounds and persistent sessions for deep critical feedback.
 
@@ -51,6 +55,7 @@ LoneWriter is a minimalist and powerful application designed for writers seeking
 - **Privacy First:** Your data is saved locally (IndexedDB) and optionally in your own Google personal space.
 - **Compressed Export:** Download your complete project in compressed `.lwrt` format (unreadable as plain text) or generate a Word document (`.docx`).
 - **Backward Compatibility:** The importer automatically detects old (plain JSON) and new (compressed) `.lwrt` files.
+- **Settings Management:** Organized interface with dedicated tabs for Cloud, AI, Interface, and General settings. Easily clear cache and reset preferences.
 
 ## 🛠️ Technologies
 
@@ -86,7 +91,7 @@ Designed and developed with ♥ by **Sergio Sánchez** with Antigravity.
 
 ---
 
-*LoneWriter v1.5-compendium - Your personal space to bring great stories to life.*
+*LoneWriter v1.6-stopwords - Your personal space to bring great stories to life.*
 
 ---
 

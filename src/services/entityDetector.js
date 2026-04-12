@@ -1,5 +1,5 @@
 import { db } from '../db/database';
-import { getEntityStopWords } from '../i18n/stopwords';
+import { getEntityStopWords, getEntityStopWordsWithCustom, loadCustomStopwords } from '../i18n/stopwords';
 
 const ENTITY_TABLES = ['characters', 'locations', 'objects', 'lore', 'resources'];
 
@@ -90,13 +90,16 @@ export async function loadAllEntityData(novelId) {
   return result;
 }
 
-export function detectEntitiesInText(text, entityData) {
+export function detectEntitiesInText(text, entityData, customStopWords = null) {
   if (!text || typeof text !== 'string' || !entityData) return [];
 
   const detections = [];
   const seen = new Set();
   const cleanedText = normalizeText(text);
   const textTokens = tokenize(cleanedText);
+
+  const stopWords = customStopWords instanceof Set ? customStopWords : new Set();
+  const filteredTextTokens = textTokens.filter(t => !stopWords.has(t));
 
   for (const [table, items] of Object.entries(entityData)) {
     if (!items || items.length === 0) continue;
@@ -115,11 +118,11 @@ export function detectEntitiesInText(text, entityData) {
 
         for (const { word, isCritical } of terms) {
           if (isCritical) {
-            if (textTokens.includes(word)) {
+            if (filteredTextTokens.includes(word)) {
               criticalMatches.add(word);
             }
           } else {
-            if (word.length >= MIN_LENGTH_DOUBTFUL && textTokens.includes(word)) {
+            if (word.length >= MIN_LENGTH_DOUBTFUL && filteredTextTokens.includes(word)) {
               doubtfulMatches.add(word);
             }
           }
@@ -152,7 +155,11 @@ export function createDebouncedEntityDetector(callback, delay = 3000) {
   let lastResolve = null;
   let lastReject = null;
 
-  const debounced = (text, novelId) => {
+  const getStopWords = async (lang) => {
+    return await getEntityStopWordsWithCustom(lang);
+  };
+
+  const debounced = async (text, novelId, lang = 'es') => {
     if (timeoutId) clearTimeout(timeoutId);
 
     if (lastReject) {
@@ -161,14 +168,17 @@ export function createDebouncedEntityDetector(callback, delay = 3000) {
       lastResolve = null;
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       lastResolve = resolve;
       lastReject = reject;
 
       timeoutId = setTimeout(async () => {
         try {
-          const entityData = await loadAllEntityData(novelId);
-          const detections = detectEntitiesInText(text, entityData);
+          const [entityData, customStopWords] = await Promise.all([
+            loadAllEntityData(novelId),
+            getStopWords(lang)
+          ]);
+          const detections = detectEntitiesInText(text, entityData, customStopWords);
           if (lastResolve) lastResolve({ entityData, detections });
           lastResolve = null;
           lastReject = null;
@@ -191,7 +201,7 @@ export function createDebouncedEntityDetector(callback, delay = 3000) {
     timeoutId = null;
   };
 
-  debounced.immediate = async (text, novelId) => {
+  debounced.immediate = async (text, novelId, lang = 'es') => {
     if (timeoutId) clearTimeout(timeoutId);
     if (lastReject) {
       lastReject(new DOMException('Entity detection cancelled', 'AbortError'));
@@ -199,8 +209,11 @@ export function createDebouncedEntityDetector(callback, delay = 3000) {
       lastResolve = null;
     }
     timeoutId = null;
-    const entityData = await loadAllEntityData(novelId);
-    const detections = detectEntitiesInText(text, entityData);
+    const [entityData, customStopWords] = await Promise.all([
+      loadAllEntityData(novelId),
+      getStopWords(lang)
+    ]);
+    const detections = detectEntitiesInText(text, entityData, customStopWords);
     return { entityData, detections };
   };
 

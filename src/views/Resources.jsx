@@ -1,15 +1,67 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   FileText, Upload, Search, FolderOpen, Tag, Calendar, HardDrive,
-  ExternalLink, Trash2, Eye, Filter, Plus, Zap, AlertCircle, X
+  ExternalLink, Trash2, Eye, Filter, Plus, Zap, AlertCircle, X, Lock,
+  Pin, Edit
 } from 'lucide-react'
 import { useNovel } from '../context/NovelContext'
+import { useAI } from '../context/AIContext'
 import { Tooltip } from '../components/Tooltip'
 import { renderMarkdown } from '../utils/renderMarkdown'
+import { getEntityStopWords, getAllCustomStopwords, addCustomStopword, deleteCustomStopword } from '../i18n/stopwords'
 import './Resources.css'
 
 const ALLOWED_EXTENSIONS = ['txt', 'md', 'json', 'csv']
+
+
+function StopwordsModal({ isOpen, onClose, customWords, onAdd, onDelete, t }) {
+  const [newWord, setNewWord] = useState('')
+
+  if (!isOpen) return null
+
+  return (
+    <div className="modal-overlay" onClick={onClose} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000 }}>
+      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 12, width: '90%', maxWidth: 500, padding: 20 }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>{t('stopwords_modal_titulo')}</h3>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>{t('stopwords_modal_texto')}</p>
+        
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <input
+            type="text"
+            value={newWord}
+            onChange={e => setNewWord(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && newWord.trim() && (onAdd(newWord), setNewWord(''))}
+            placeholder={t('stopwords_add_placeholder')}
+            style={{ flex: 1, padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text-primary)', fontSize: '13px' }}
+          />
+          <button onClick={() => newWord.trim() && (onAdd(newWord), setNewWord(''))} className="btn btn-primary" style={{ padding: '8px 16px' }}>
+            {t('stopwords_add')}
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 200, overflowY: 'auto', padding: '10px', background: 'var(--bg-surface)', borderRadius: 6 }}>
+          {customWords.length === 0 ? (
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t('stopwords_empty')}</span>
+          ) : (
+            customWords.map(w => (
+              <span key={w.id} style={{ background: 'rgba(100,180,100,0.15)', color: 'var(--success)', padding: '4px 8px', borderRadius: 4, fontSize: '12px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                {w.word}
+                <button onClick={() => onDelete(w.id)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'inherit', display: 'flex' }}>
+                  <X size={12} />
+                </button>
+              </span>
+            ))
+          )}
+        </div>
+        
+        <div style={{ marginTop: 20, textAlign: 'right' }}>
+          <button className="btn btn-ghost" onClick={onClose}>Cerrar</button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function formatBytes(bytes, decimals = 2) {
   if (!+bytes) return '0 Bytes'
@@ -37,7 +89,7 @@ function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
         {res.ignoredForOracle !== 1 && (
           <div style={{ marginTop: '4px' }}>
             <span style={{ color: '#d4a853', fontSize: '10px', fontWeight: 600, background: 'rgba(212, 168, 83, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <Zap size={10} style={{ fill: 'currentColor' }} /> {t('incluido')}
+              <Zap size={10} style={{ fill: 'currentColor' }} /> {t('contexto_ia')}
             </span>
           </div>
         )}
@@ -60,7 +112,7 @@ function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
       </div>
 
       <div className="res-row__actions">
-        <Tooltip content={res.ignoredForOracle === 1 ? t('excluido') : t('incluido')}>
+        <Tooltip content={res.ignoredForOracle === 1 ? t('excluido') : t('contexto_ia')}>
           <button 
             className={`res-action-btn ${res.ignoredForOracle !== 1 ? 'res-action-btn--ai-active' : ''}`}
             aria-label="Ignorar en coherencia del Oráculo" 
@@ -87,12 +139,47 @@ function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
 export default function ResourcesView() {
   const { t } = useTranslation('resources')
   const { resources, addCompendiumEntry, deleteCompendiumEntry, updateCompendiumEntry } = useNovel()
+  const { forceEntityRecheck } = useAI()
   const [query, setQuery] = useState('')
   const [activeTag, setActiveTag] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
   
   const [viewingRes, setViewingRes] = useState(null)
+  const [showStopwordsModal, setShowStopwordsModal] = useState(false)
+  const [customWords, setCustomWords] = useState([])
+  const [stopwordsLoading, setStopwordsLoading] = useState(true)
   const fileInputRef = useRef(null)
+
+  useEffect(() => {
+    loadCustomWords()
+  }, [])
+
+  const loadCustomWords = async () => {
+    setStopwordsLoading(true)
+    try {
+      const words = await getAllCustomStopwords()
+      setCustomWords(words)
+    } catch (err) {
+      console.error('[Stopwords] Error loading:', err)
+    }
+    setStopwordsLoading(false)
+  }
+
+  const handleAddStopword = async (word) => {
+    const trimmed = word.trim().toLowerCase()
+    if (!trimmed) return
+    const result = await addCustomStopword(trimmed)
+    if (result) {
+      setCustomWords(prev => [...prev, result])
+      setTimeout(() => forceEntityRecheck(), 100)
+    }
+  }
+
+  const handleDeleteStopword = async (id) => {
+    await deleteCustomStopword(id)
+    setCustomWords(prev => prev.filter(w => w.id !== id))
+    setTimeout(() => forceEntityRecheck(), 100)
+  }
 
   const clearFilters = () => {
     setActiveTag(null)
@@ -206,7 +293,7 @@ export default function ResourcesView() {
 
       {/* Filter panel */}
       {showFilters && (
-        <div style={{ margin: '0 26px 0', padding: '14px 16px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ margin: '0 26px 16px', padding: '14px 16px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('filtros_activos')}</span>
           {hasActiveFilters && (
             <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '2px 8px', height: 'auto' }} onClick={clearFilters}>
@@ -251,15 +338,43 @@ export default function ResourcesView() {
       </div>
 
       {/* File list */}
-      {filtered.length === 0 ? (
-        <div className="resources-empty">
-          <FolderOpen size={40} />
-          <p>{t('sin_resultados')}</p>
-          <span>{t('sin_resultados_sub')}</span>
+      <div className="resources-list">
+        {/* Stopwords Fictional Card - Always Pinned at Top */}
+        <div className="res-row" style={{ border: '2px solid var(--accent)' }}>
+          <div className="res-row__icon-wrap" style={{ background: 'rgba(212,168,83,0.12)' }}>
+            <Pin size={18} style={{ color: 'var(--accent)' }} />
+          </div>
+          <div className="res-row__info">
+            <div className="res-row__title-wrap">
+              <span className="res-row__name" style={{ flexShrink: 1 }}>{t('stopwords_titulo')}</span>
+            </div>
+            <div style={{ marginTop: '4px' }}>
+              <span style={{ color: 'var(--accent-light)', fontSize: '10px', fontWeight: 600, background: 'rgba(212, 168, 83, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Pin size={10} style={{ fill: 'currentColor' }} /> {t('stopwords_pinned')}
+              </span>
+            </div>
+            <span className="res-row__desc">{t('archivo_sistema')}</span>
+          </div>
+          <div className="res-row__meta">
+            <span className="badge badge-gold">{customWords.length} {t('stopwords_count_short')}</span>
+          </div>
+          <div className="res-row__actions">
+            <Tooltip content={t('stopwords_editar')}>
+              <button className="res-action-btn" aria-label={t('stopwords_editar')} onClick={() => setShowStopwordsModal(true)}>
+                <Edit size={14} />
+              </button>
+            </Tooltip>
+          </div>
         </div>
-      ) : (
-        <div className="resources-list">
-          {filtered.map(res => (
+
+        {filtered.length === 0 ? (
+          <div className="resources-empty">
+            <FolderOpen size={40} />
+            <p>{t('sin_resultados')}</p>
+            <span>{t('sin_resultados_sub')}</span>
+          </div>
+        ) : (
+          filtered.map(res => (
             <ResourceRow 
               key={res.id} 
               res={res} 
@@ -267,9 +382,9 @@ export default function ResourcesView() {
               onToggleIgnore={(r) => updateCompendiumEntry('resources', r.id, { ignoredForOracle: r.ignoredForOracle ? 0 : 1 })}
               onView={setViewingRes}
             />
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
 
       {/* Drop zone hint */}
       <div 
@@ -308,6 +423,16 @@ export default function ResourcesView() {
           </div>
         </div>
       )}
+
+      {/* Stopwords Modal */}
+      <StopwordsModal 
+        isOpen={showStopwordsModal}
+        onClose={() => setShowStopwordsModal(false)}
+        customWords={customWords}
+        onAdd={handleAddStopword}
+        onDelete={handleDeleteStopword}
+        t={t}
+      />
     </div>
   )
 }
