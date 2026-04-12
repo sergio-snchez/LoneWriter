@@ -313,6 +313,8 @@ export function getSearchStopWords(lang) {
 
 export function getEntityStopWords(lang) {
   const currentLang = lang || i18n.language || 'es';
+export function getEntityStopWords(lang) {
+  const currentLang = lang || i18n.language || 'es';
   return ENTITY_STOP_WORDS[currentLang] || ENTITY_STOP_WORDS.es;
 }
 

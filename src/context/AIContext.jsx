@@ -5,6 +5,7 @@ import { useNovel } from './NovelContext';
 import { createDebouncedEntityDetector, parseOracleResponse } from '../services/entityDetector';
 import { addToIgnoredNames } from '../services/mpcService';
 import { AIService } from '../services/aiService';
+import { loadUserStopwords } from '../i18n/stopwords';
 
 const AI_PROVIDERS = ['google', 'openai', 'anthropic', 'openrouter', 'local'];
 
@@ -110,6 +111,7 @@ export const AIProvider = ({ children }) => {
       }
     };
     loadAllConfigs();
+    loadUserStopwords();
   }, []);
 
   // Valores del provider activo
