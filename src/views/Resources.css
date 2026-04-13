@@ -140,9 +140,8 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
 }
 .res-row__desc {
   font-size: 12px;
@@ -338,12 +337,20 @@
     padding: 12px 16px;
     padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
 
   .res-row {
     flex-direction: column;
-    padding: 14px;
-    gap: 10px;
+    padding: 18px;
+    gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    flex-wrap: wrap;
+    min-height: 120px;
   }
 
   .res-row__meta {
@@ -352,12 +359,20 @@
     gap: 12px;
     min-width: auto;
     flex-wrap: wrap;
+    width: 100%;
+    padding-top: 8px;
   }
 
   .res-row__actions {
     flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    padding-top: 8px;
+    gap: 8px;
     opacity: 1;
-    gap: 6px;
+    visibility: visible;
+    justify-content: flex-start;
+    align-items: center;
   }
 
   .res-action-btn {
@@ -380,6 +395,7 @@
 
   .res-row__name {
     font-size: 14px;
+    word-break: break-word;
   }
 
   .res-row__desc {
