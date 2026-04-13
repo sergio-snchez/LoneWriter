@@ -709,28 +709,28 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
               onClick={() => setActiveTab('cloud')}
             >
               <Cloud size={16} />
-              {t('sidebar.navegacion.nube')}
+              <span className="settings-modal__nav-label">{t('sidebar.navegacion.nube')}</span>
             </button>
             <button
               className={`settings-modal__nav-item ${activeTab === 'ia' ? 'settings-modal__nav-item--active' : ''}`}
               onClick={() => setActiveTab('ia')}
             >
               <Sparkles size={16} />
-              {t('sidebar.navegacion.ia')}
+              <span className="settings-modal__nav-label">{t('sidebar.navegacion.ia')}</span>
             </button>
             <button
               className={`settings-modal__nav-item ${activeTab === 'ui' ? 'settings-modal__nav-item--active' : ''}`}
               onClick={() => setActiveTab('ui')}
             >
               <Palette size={16} />
-              {t('sidebar.navegacion.interfaz')}
+              <span className="settings-modal__nav-label">{t('sidebar.navegacion.interfaz')}</span>
             </button>
             <button
               className={`settings-modal__nav-item ${activeTab === 'general' ? 'settings-modal__nav-item--active' : ''}`}
               onClick={() => setActiveTab('general')}
             >
               <Info size={16} />
-              {t('sidebar.navegacion.general')}
+              <span className="settings-modal__nav-label">{t('sidebar.navegacion.general')}</span>
             </button>
           </nav>
         </div>
