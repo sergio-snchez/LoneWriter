@@ -72,7 +72,7 @@ db.version(11).stores({
 // v12: Stopwords personalizadas del usuario para el Oráculo
 // Permite al usuario agregar/eliminar palabras que serán filtradas al detectar entidades
 db.version(12).stores({
-  customStopwords: '++id, word, createdAt'
+  customStopwords: '++id, word, language, createdAt'
 });
 
 export default db;

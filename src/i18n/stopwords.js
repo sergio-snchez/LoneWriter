@@ -311,11 +311,44 @@ export function getSearchStopWords(lang) {
   return SEARCH_STOP_WORDS[currentLang] || SEARCH_STOP_WORDS.es;
 }
 
-// stubs vacíos para compatibilidad (se implementará en futuro)
+// Persistencia de stopwords personalizadas del usuario
 export let userStopwordsCache = { es: new Set(), en: new Set() };
-export async function loadUserStopwords() { /* no-op */ }
+
+export async function loadUserStopwords() {
+  try {
+    const words = await db.customStopwords.toArray();
+    const byLang = { es: new Set(), en: new Set() };
+    words.forEach(w => {
+      const lang = w.language || 'es';
+      if (byLang[lang]) {
+        byLang[lang].add(w.word);
+      }
+    });
+    userStopwordsCache = byLang;
+    return byLang;
+  } catch (e) {
+    console.error('Error loading user stopwords:', e);
+    return { es: new Set(), en: new Set() };
+  }
+}
+
 export async function saveUserStopwords(lang, words) {
-  userStopwordsCache[lang] = new Set(words);
+  try {
+    const existingWords = await db.customStopwords.where('language').equals(lang).toArray();
+    const existingWordsSet = new Set(existingWords.map(w => w.word));
+    
+    const newWords = words.filter(w => !existingWordsSet.has(w));
+    
+    if (newWords.length > 0) {
+      await db.customStopwords.bulkAdd(
+        newWords.map(w => ({ word: w, language: lang, createdAt: new Date().toISOString() }))
+      );
+    }
+    
+    await loadUserStopwords();
+  } catch (e) {
+    console.error('Error saving user stopwords:', e);
+  }
 }
 
 export async function loadCustomStopwords() {
@@ -330,17 +363,39 @@ export function getEntityStopWords(lang) {
 }
 
 export async function getEntityStopWordsWithCustom(lang) {
+  await loadUserStopwords();
   return getEntityStopWords(lang);
 }
 
 export async function getAllCustomStopwords() {
-  return [];
+  try {
+    return await db.customStopwords.toArray();
+  } catch (e) {
+    console.error('Error getting all custom stopwords:', e);
+    return [];
+  }
 }
 
 export async function addCustomStopword(word) {
-  return { id: Date.now(), word };
+  try {
+    const id = await db.customStopwords.add({
+      word: word,
+      language: i18n.language || 'es',
+      createdAt: new Date().toISOString()
+    });
+    await loadUserStopwords();
+    return { id, word };
+  } catch (e) {
+    console.error('Error adding custom stopword:', e);
+    return null;
+  }
 }
 
 export async function deleteCustomStopword(id) {
-  // no-op
+  try {
+    await db.customStopwords.delete(id);
+    await loadUserStopwords();
+  } catch (e) {
+    console.error('Error deleting custom stopword:', e);
+  }
 }
