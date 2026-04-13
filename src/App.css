@@ -1046,4 +1046,29 @@
   .modal-title {
     font-size: 20px;
   }
+
+  .setup-options {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .setup-divider {
+    display: none;
+  }
+
+  .setup-option {
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .theme-toggle-modern {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .theme-btn-modern {
+    padding: 16px;
+    min-width: 120px;
+  }
 }
