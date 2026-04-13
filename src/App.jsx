@@ -26,7 +26,7 @@ import './App.css'
 import RagToast from './components/RagToast'
 
 export default function App() {
-  const { t } = useTranslation('app')
+  const { t, i18n } = useTranslation('app')
   const { t: tc } = useTranslation('common')
   const [activeView, setActiveView] = useState('editor')
   const [pendingMpcProposal, setPendingMpcProposal] = useState(null)
@@ -53,6 +53,12 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsTab, setSettingsTab] = useState('cloud')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [typingComplete, setTypingComplete] = useState(false)
+
+  // Reset typing when language changes
+  useEffect(() => {
+    setTypingComplete(false)
+  }, [i18n?.language])
 
   const { openModal } = useModal();
 
@@ -173,9 +179,11 @@ export default function App() {
               <h1 className="welcome-screen__title">{t('bienvenida.titulo')}</h1>
               <p className="welcome-screen__subtitle">
                 <TypingEffect
+                  key={`welcome-typing-${i18n?.language || 'es'}`}
                   text={'   ' + t('bienvenida.subtitulo')}
                   speed={40}
                   delay={800}
+                  onComplete={() => setTypingComplete(true)}
                 />
               </p>
               <button
@@ -250,21 +258,23 @@ export default function App() {
                 <div className="setup-options">
                   <div className="setup-option">
                     <span className="setup-option__label">{t('general.idioma')}</span>
-                    <LanguageSelector />
+                    <div style={{ opacity: typingComplete ? 1 : 0.3, pointerEvents: typingComplete ? 'auto' : 'none', transition: 'opacity 0.3s' }}>
+                      <LanguageSelector />
+                    </div>
                   </div>
                   <div className="setup-divider" />
                   <div className="setup-option">
-                    <div className="theme-toggle-modern">
+                    <div className="theme-toggle-modern" style={{ opacity: typingComplete ? 1 : 0.3, pointerEvents: typingComplete ? 'auto' : 'none', transition: 'opacity 0.3s' }}>
                       <button
                         className={`theme-btn-modern ${theme === 'light' ? 'active' : ''}`}
-                        onClick={() => setTheme('light')}
+                        onClick={() => typingComplete && setTheme('light')}
                       >
                         <div className="theme-preview theme-preview--light" />
                         <span>{t('general.tema_claro')}</span>
                       </button>
                       <button
                         className={`theme-btn-modern ${theme === 'dark' ? 'active' : ''}`}
-                        onClick={() => setTheme('dark')}
+                        onClick={() => typingComplete && setTheme('dark')}
                       >
                         <div className="theme-preview theme-preview--dark" />
                         <span>{t('general.tema_oscuro')}</span>
