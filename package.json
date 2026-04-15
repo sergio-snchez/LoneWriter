@@ -33,7 +33,6 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.0.0",
-    "sharp": "^0.34.5",
     "vite": "^7.3.1",
     "vite-plugin-node-polyfills": "^0.25.0",
     "vite-plugin-pwa": "^1.2.0"
