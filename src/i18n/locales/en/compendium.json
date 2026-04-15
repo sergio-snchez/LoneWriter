@@ -5,14 +5,10 @@
     "personajes": "Characters",
     "localizaciones": "Locations",
     "objetos": "Objects & artifacts",
-    "lore": "Lore & history",
     "characters": "Characters",
     "locations": "Locations",
     "objects": "Objects",
     "lore": "Lore"
-  },
-  "formulario": {
-    "seleccionar_categoria": "Select category"
   },
   "resumen": {
     "personajes": "Characters",
@@ -49,6 +45,7 @@
     "guardar": "Save entry"
   },
   "formulario": {
+    "seleccionar_categoria": "Select category",
     "completar_ia_tooltip": "Magically extract details from your novel's text",
     "completar_ia_error": "Please enter at least a name or title before attempting to extract data.",
     "completar_ia_fallo": "Auto-complete error: {{error}}",

@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import i18n from '../i18n/i18n'
 import {
-  Users, MapPin, Package, BookOpen, Star, ExternalLink,
+  Users, MapPin, Package, BookOpen,
   Search, Filter, ChevronRight, Plus, Tag, PenLine, Trash2, 
   X, Zap, Sparkles, Loader2, CheckCircle2
 } from 'lucide-react'
@@ -260,7 +259,7 @@ function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel 
         {item && (
           <div className="compendium-form-group">
             <label>
-              {i18n.language === 'es' ? 'Seleccionar categoría' : 'Select category'}
+              {t('formulario.seleccionar_categoria')}
             </label>
             <div style={{ display: 'flex', gap: '6px' }}>
               {CATEGORIES.map(cat => {

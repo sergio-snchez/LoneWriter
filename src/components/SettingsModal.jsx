@@ -1,17 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   X, Cloud, RefreshCw, LogIn, LogOut,
   Sparkles, Shield, Info, AlertTriangle, Key, ExternalLink,
-  Heart, Languages, Globe, History, RotateCw, Palette, Zap
+  Heart, Languages, History, RotateCw, Palette, Zap
 } from 'lucide-react';
 import { Tooltip } from './Tooltip';
 import { useAI, DEFAULT_MODELS } from '../context/AIContext';
 import { useNovel } from '../context/NovelContext';
 import { GoogleDriveService } from '../services/googleDriveService';
 import LanguageSelector from './LanguageSelector';
-import './SettingsModal.css';
-
 import './SettingsModal.css';
 
 const PROVIDER_LIMITS = {
