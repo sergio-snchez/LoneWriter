@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import {
   FileText, Upload, Search, FolderOpen, Tag, Calendar, HardDrive,
   ExternalLink, Trash2, Eye, Filter, Plus, Zap, AlertCircle, X, Lock,
-  Pin, Edit
+  Pin, Edit, ChevronDown, ChevronUp
 } from 'lucide-react'
 import { useNovel } from '../context/NovelContext'
 import { useAI } from '../context/AIContext'
@@ -143,6 +143,7 @@ export default function ResourcesView() {
   const [query, setQuery] = useState('')
   const [activeTag, setActiveTag] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
+  const [alertsExpanded, setAlertsExpanded] = useState(false)
   
   const [viewingRes, setViewingRes] = useState(null)
   const [showStopwordsModal, setShowStopwordsModal] = useState(false)
@@ -274,21 +275,32 @@ export default function ResourcesView() {
         </div>
       </div>
 
-      <div className="resources-alerts" style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px 26px 4px' }}>
+      <div className={`resources-alerts ${alertsExpanded ? 'resources-alerts--expanded' : 'resources-alerts--collapsed'}`}>
         {/* Beta Warning + Formatos */}
-        <div style={{ padding: '12px 16px', background: 'rgba(224,112,112,0.08)', border: '1px solid rgba(224,112,112,0.25)', borderRadius: '8px', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexShrink: 0, marginTop: '1px' }}>
-            <span style={{ background: 'var(--red)', color: '#fff', borderRadius: '99px', fontSize: '10px', fontWeight: 700, padding: '2px 8px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Beta</span>
+        <div className="resource-alert resource-alert--beta">
+          <span className="resource-alert__badge-wrap">
+            <span className="resource-alert__badge">Beta</span>
           </span>
-          <div style={{ lineHeight: '1.5' }} dangerouslySetInnerHTML={{ __html: `<strong style="color: var(--red); display: block; margin-bottom: 4px">${t('beta_titulo')}</strong>${t('beta_texto')}` }}>
+          <div className="resource-alert__content">
+            <strong style={{ color: 'var(--red)', display: 'block', marginBottom: '4px' }}>{t('beta_titulo')}</strong>
+            <span className="resource-alert__text" dangerouslySetInnerHTML={{ __html: t('beta_texto') }}></span>
           </div>
         </div>
         
-        <div style={{ padding: '12px 16px', background: 'rgba(212,168,83,0.1)', border: '1px solid rgba(212,168,83,0.25)', borderRadius: '8px', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-          <Zap size={16} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: '2px' }} />
-          <div style={{ lineHeight: '1.5' }} dangerouslySetInnerHTML={{ __html: `<strong style="color: var(--accent-light); display: block; margin-bottom: 4px">${t('tokens_titulo')}</strong>${t('tokens_texto')}` }}>
+        <div className="resource-alert resource-alert--warning">
+          <Zap size={16} className="resource-alert__icon" />
+          <div className="resource-alert__content">
+            <strong style={{ color: 'var(--accent-light)', display: 'block', marginBottom: '4px' }}>{t('tokens_titulo')}</strong>
+            <span className="resource-alert__text" dangerouslySetInnerHTML={{ __html: t('tokens_texto') }}></span>
           </div>
         </div>
+
+        <button 
+          className="resources-alerts__toggle" 
+          onClick={() => setAlertsExpanded(!alertsExpanded)}
+        >
+          {alertsExpanded ? <><ChevronUp size={14} /> {t('ocultar_detalles')}</> : <><ChevronDown size={14} /> {t('mostrar_detalles')}</>}
+        </button>
       </div>
 
       {/* Filter panel */}

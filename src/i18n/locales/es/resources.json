@@ -34,5 +34,7 @@
   "stopwords_add": "Añadir",
   "stopwords_empty": "No hay palabras personalizadas.",
   "stopwords_personalizada_badge": "Personalizada",
-  "archivo_sistema": "Archivo del sistema"
+  "archivo_sistema": "Archivo del sistema",
+  "mostrar_detalles": "Mostrar detalles",
+  "ocultar_detalles": "Ocultar detalles"
 }
