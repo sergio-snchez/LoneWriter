@@ -65,12 +65,14 @@
     "word": "Word",
     "sin_pov": "Sin POV",
     "tooltip_oraculo": "Haz clic para que la IA verifique si este párrafo contradice alguna ficha del Compendio",
+    "tooltip_sugerencias": "Ver sugerencias de entidades para activar en el Oráculo",
     "sin_coincidencias": "Sin elementos clave",
     "coincidencias": "Elementos del Compendio presentes",
     "contradiccion": "Contradicción en este párrafo",
     "palabras_escena": "{{count}} palabras en esta escena",
     "meta_escena": "Meta: {{count}} palabras por escena",
-    "seleccionar_escena": "Selecciona una escena para comenzar a escribir"
+    "seleccionar_escena": "Selecciona una escena para comenzar a escribir",
+    "sugerencias": "Sugerencias"
   },
   "estadisticas": {
     "titulo": "Estadísticas del proyecto",

@@ -38,7 +38,8 @@
     "error_ia_titulo": "Error de IA",
     "error_ia_mensaje": "Hubo un problema al contactar con el proveedor: {{error}}",
     "error_ia_boton": "Cerrar",
-    "hint_prompt": "Puedes usar [TONO], [LONGITUD] o [PERSONAJE] como variables."
+    "hint_prompt": "Puedes usar [TONO], [LONGITUD] o [PERSONAJE] como variables.",
+    "include_context": "Incluir contexto anterior"
   },
   "rewrite_prompts": {
     "style": "Reescribe el siguiente texto para mejorar su estilo literario, haciéndolo más sugerente y evocador, pero manteniendo el significado original.",
@@ -162,5 +163,21 @@
     "agente_corrector_desc": "Gramática y estilo"
   },
   "oracle_prompt": "Actúa como el Oráculo de LoneWriter, un asistente de continuidad cuya función es validar la coherencia del texto comparándolo con las fichas del Compendio y el contexto del manuscrito anterior.\nTu objetivo es detectar contradicciones de trama o lore. No critiques el estilo ni la narrativa.\n\nJERARQUÍA DE VERDAD:\n1. EL COMPENDIO ES LA VERDAD ABSOLUTA. Si el Compendio contradice al manuscrito anterior o al texto actual, el Compendio SIEMPRE tiene la razón.\n2. El Contexto del Manuscrito anterior te sirve de memoria de eventos pasados para evitar errores de continuidad (ej: el personaje usa una espada que había perdido en un capítulo anterior).\n\nREGLA DE ORO: Si un elemento aparece en el texto y su ficha del Compendio tiene poca información, ASUME QUE ES PLENAMENTE VÁLIDO. NO adviertas que 'carece de validez' o 'no está definido'.\nSOLO reporta un problema si el texto dice A y el Compendio o el Contexto Anterior dicen OTRA COSA TOTALMENTE OPUESTA. Si el Compendio y el Contexto Anterior difieren, obedece al Compendio.\nSi todo está en orden, simplemente di que no hay contradicciones en un tono profesional (máx 1 párrafo). No seas complaciente.\n\nIMPORTANTE: Responde ÚNICAMENTE en HTML válido (<p>, <strong>, <em>, <ul>, <li>). NO uses Markdown.",
-  "language_directive": "Responde SIEMPRE en español."
+  "language_directive": "Responde SIEMPRE en español.",
+  "suggestions": {
+    "title": "Sugerencias de Entidades",
+    "activate": "Activar para Oráculo",
+    "dismiss": "Descartar",
+    "apply_all": "Aplicar todas",
+    "empty": "No se detectaron entidades en el texto",
+    "hint": "Los pronombres se resuelven automáticamente a la última entidad mencionada",
+    "anaphora_indicator": "🟣",
+    "entities": {
+      "characters": "personaje",
+      "locations": "ubicación",
+      "objects": "objeto",
+      "lore": "lore",
+      "resources": "recurso"
+    }
+  }
 }

@@ -50,10 +50,10 @@ export const AIService = {
    * @param {string} text - Original selection
    * @param {string} goal - Goal ID (style, tone, etc.)
    * @param {string} promptTemplate - The prompt to use
-   * @param {Object} config - { provider, apiKey, model, customInstructions, pov }
+   * @param {Object} config - { provider, apiKey, model, customInstructions, pov, previousContext }
    */
   rewrite: async (text, goal, promptTemplate, config) => {
-    const { provider, apiKey, model, customInstructions, pov, knowledgeBase } = config;
+    const { provider, apiKey, model, customInstructions, pov, knowledgeBase, previousContext } = config;
     const isSpanish = i18n.language === 'es';
 
     if (!apiKey && provider !== 'local') throw new Error(isSpanish ? 'Se requiere una clave API para usar la IA.' : 'An API key is required to use the AI.');
@@ -75,6 +75,14 @@ export const AIService = {
     const originalTextLabel = isSpanish ? 'TEXTO ORIGINAL:' : 'ORIGINAL TEXT:';
     const additionalLabel = isSpanish ? 'INSTRUCCIONES ADICIONALES DEL USUARIO:' : "USER'S ADDITIONAL INSTRUCTIONS:";
     let fullPrompt = `${finalPrompt}\n\n${originalTextLabel}\n"${text}"\n\n${additionalLabel}\n${customInstructions || noneText}`;
+
+    if (previousContext) {
+      const contextLabel = isSpanish ? '[CONTEXTO PREVIO]:' : '[PREVIOUS CONTEXT]:';
+      const contextNote = isSpanish 
+        ? 'ADAPTA la fluidez del texto nuevo al estilo y ritmo del contexto anterior. NO reescribas el texto antiguo.' 
+        : 'ADAPT the flow of the new text to match the style and rhythm of the previous context. Do NOT rewrite the old text.';
+      fullPrompt += `\n\n${contextLabel}\n"${previousContext}"\n\n${contextNote}`;
+    }
 
     if (knowledgeBase) {
       const kbLabel = isSpanish ? '[BASE DE CONOCIMIENTO Y REFERENCIAS DEL AUTOR]:' : "[AUTHOR'S KNOWLEDGE BASE AND REFERENCES]:";
