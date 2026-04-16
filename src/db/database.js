@@ -27,16 +27,16 @@ db.version(4).stores({
   novels: '++id, title, author, status, targetScenes, lastEdited, uiExpanded'
 });
 
-db.version(6).stores({
-  oracleEntries: '++id, novelId, sceneId, createdAt, isCorrected'
-});
-
 db.version(5).stores({
   characters: '++id, novelId, name, role, ignoredForOracle',
   locations: '++id, novelId, name, type, ignoredForOracle',
   objects: '++id, novelId, name, type, ignoredForOracle',
   lore: '++id, novelId, title, category, ignoredForOracle',
   resources: '++id, novelId, name, type, ignoredForOracle'
+});
+
+db.version(6).stores({
+  oracleEntries: '++id, novelId, sceneId, createdAt, isCorrected'
 });
 
 // v7: MPC — Monitor de Propuestas del Compendio

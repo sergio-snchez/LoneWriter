@@ -26,14 +26,11 @@ async function fetchWithRetry(url, options, maxRetries = 3) {
     try {
       const response = await fetch(url, options);
       if (RETRYABLE_STATUSES.has(response.status)) {
-        // Clone before reading — we may need to read again on retry display
-        const waitMs = Math.min(1000 * 2 ** attempt, 8000); // 1s, 2s, 4s
-        console.warn(`[AIService] HTTP ${response.status} — retrying in ${waitMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        const waitMs = Math.min(1000 * 2 ** attempt, 8000);
         if (attempt < maxRetries - 1) {
           await new Promise(r => setTimeout(r, waitMs));
           continue;
         }
-        // Last attempt: return response to let caller handle the error body
         return response;
       }
       return response;
@@ -404,8 +401,6 @@ export const AIService = {
   _callLocal: async (prompt, model, baseUrl) => {
     const url = `${(baseUrl || 'http://localhost:1234/v1').replace(/\/$/, '')}/chat/completions`;
     try {
-      console.log('[Local AI] Request:', { url, model, promptLength: prompt.length });
-      
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -417,15 +412,12 @@ export const AIService = {
         }),
       });
 
-      console.log('[Local AI] Response status:', response.status);
-
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
         throw new Error(errData.error?.message || `Error ${response.status} conectando con el servidor local (${url})`);
       }
 
       const data = await response.json();
-      console.log('[Local AI] Response data:', JSON.stringify(data).slice(0, 500));
       
       const content = data.choices?.[0]?.message?.content;
       if (!content) {
@@ -440,7 +432,6 @@ export const AIService = {
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         throw new Error(`No se pudo conectar con el servidor local en ${url}. Asegúrate de que LM Studio u Ollama está en ejecución.`);
       }
-      console.error('[Local AI] Error:', error);
       throw error;
     }
   },
