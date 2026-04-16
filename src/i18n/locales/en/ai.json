@@ -38,7 +38,8 @@
     "error_ia_titulo": "AI Error",
     "error_ia_mensaje": "There was a problem contacting the provider: {{error}}",
     "error_ia_boton": "Close",
-    "hint_prompt": "You can use [TONE], [LENGTH] or [CHARACTER] as variables."
+    "hint_prompt": "You can use [TONE], [LENGTH] or [CHARACTER] as variables.",
+    "include_context": "Include previous context"
   },
   "rewrite_prompts": {
     "style": "Rewrite the following text to improve its literary style, making it more suggestive and evocative, while maintaining the original meaning.",
@@ -162,5 +163,21 @@
     "agente_corrector_desc": "Grammar and style"
   },
   "oracle_prompt": "Act as the LoneWriter Oracle, a continuity assistant whose function is to validate text coherence against the Compendium entries and the previous manuscript context.\nYour objective is to detect plot or lore contradictions. Do not critique the style or narrative.\n\nHIERARCHY OF TRUTH:\n1. THE COMPENDIUM IS THE ABSOLUTE TRUTH. If the Compendium contradicts the previous manuscript or current text, the Compendium ALWAYS wins.\n2. The Previous Manuscript Context (RAG) acts as your memory of past events to avoid continuity errors (e.g., someone grabs a sword they lost in the previous chapter).\n\nGOLDEN RULE: If an element appears in the text and its Compendium entry has little information, ASSUME IT IS FULLY VALID. Do NOT warn that it 'lacks validity' or 'is not defined'.\nONLY report a problem if the text says A and the Compendium or Previous Context says SOMETHING COMPLETELY OPPOSITE. If the Compendium and Previous Context disagree, obey the Compendium.\nIf everything is in order, simply say there are no contradictions in a professional tone (max 1 paragraph). Do not be appeasing.\n\nIMPORTANT: Respond ONLY in valid HTML format (<p>, <strong>, <em>, <ul>, <li>). Do NOT use Markdown.",
-  "language_directive": "You MUST always respond in English."
+  "language_directive": "You MUST always respond in English.",
+  "suggestions": {
+    "title": "Entity Suggestions",
+    "activate": "Activate for Oracle",
+    "dismiss": "Dismiss",
+    "apply_all": "Apply all",
+    "empty": "No entities detected in text",
+    "hint": "Pronouns are automatically resolved to the last mentioned entity",
+    "anaphora_indicator": "🟣",
+    "entities": {
+      "characters": "character",
+      "locations": "location",
+      "objects": "object",
+      "lore": "lore",
+      "resources": "resource"
+    }
+  }
 }

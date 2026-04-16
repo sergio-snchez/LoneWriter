@@ -1,0 +1,232 @@
+.entity-suggestion-panel {
+  background: var(--bg-elevated, #1e1e2e);
+  border: 1px solid var(--accent, #6b5b95);
+  border-radius: 8px;
+  padding: 12px;
+  max-width: 320px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.entity-suggestion-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.1));
+}
+
+.entity-suggestion-panel__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #e0e0e0);
+}
+
+.entity-suggestion-panel__title svg {
+  color: var(--accent, #6b5b95);
+}
+
+.suggestion-count {
+  background: var(--accent, #6b5b95);
+  color: white;
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.entity-suggestion-panel__actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.entity-suggestion-panel__content {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.entity-suggestion-panel__empty {
+  text-align: center;
+  padding: 24px 12px;
+  color: var(--text-muted, #888);
+}
+
+.entity-suggestion-panel__empty svg {
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+.entity-suggestion-panel__empty p {
+  font-size: 12px;
+  margin: 0;
+}
+
+.suggestion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.entity-suggestion-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg-base, #2a2a3e);
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.entity-suggestion-chip:hover {
+  border-color: var(--accent, #6b5b95);
+  background: var(--bg-hover, #333);
+}
+
+.entity-suggestion-chip--anaphora {
+  border-color: rgba(138, 43, 226, 0.4);
+  background: rgba(138, 43, 226, 0.1);
+}
+
+.entity-suggestion-chip__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: var(--accent, #6b5b95);
+  color: white;
+}
+
+.entity-suggestion-chip__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.entity-suggestion-chip__name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary, #e0e0e0);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entity-suggestion-chip__meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-muted, #888);
+}
+
+.anaphora-badge {
+  font-size: 10px;
+}
+
+.match-icons {
+  letter-spacing: -2px;
+}
+
+.score {
+  opacity: 0.7;
+}
+
+.entity-suggestion-chip__actions {
+  display: flex;
+  gap: 4px;
+}
+
+.chip-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chip-btn--activate {
+  background: var(--accent, #6b5b95);
+  color: white;
+}
+
+.chip-btn--activate:hover {
+  background: var(--accent-hover, #8b7bb5);
+  transform: scale(1.1);
+}
+
+.chip-btn--dismiss {
+  background: transparent;
+  color: var(--text-muted, #888);
+}
+
+.chip-btn--dismiss:hover {
+  background: rgba(255, 0, 0, 0.2);
+  color: #ff6b6b;
+}
+
+.entity-suggestion-panel__footer {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+}
+
+.hint-text {
+  font-size: 10px;
+  color: var(--text-muted, #888);
+  margin: 0;
+  text-align: center;
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.btn-primary {
+  background: var(--accent, #6b5b95);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover, #8b7bb5);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted, #888);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary, #e0e0e0);
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+}

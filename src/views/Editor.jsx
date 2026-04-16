@@ -379,7 +379,9 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     mpcProposals, mpcStatus, setMpcStatus, addMpcProposals,
     mpcCooldownRef, MPC_COOLDOWN_MS,
     logAIUsage,
-    isMpcEnabled
+    isMpcEnabled,
+    scanForEntitySuggestions,
+    entitySuggestions
   } = useAI()
 
   // MPC state
@@ -550,6 +552,11 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       debouncedSave(activeScene.id, activeNovel?.id, html)
       // ── MPC trigger ──────────────────────────────────────────────
       triggerMpcAnalysis(html)
+      // ── Entity Suggestions trigger (heuristic, zero-cost) ─────────
+      const plainText = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+      if (plainText.length > 50 && scanForEntitySuggestions) {
+        scanForEntitySuggestions(plainText)
+      }
     }
   }
 
@@ -1183,6 +1190,23 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                         )}
                         <span>
                           {mpcStatus === 'analyzing' ? t('ai:oraculo.consultando') : t('compendium:mpc.titulo')}
+                        </span>
+                      </div>
+                    </Tooltip>
+                  )}
+                  {/* ── Entity Suggestions Badge ─────────────────────── */}
+                  {activeScene && entitySuggestions.length > 0 && (
+                    <Tooltip content={t('editor:tooltip_sugerencias')}>
+                      <div
+                        className="entity-suggestion-badge entity-suggestion-badge--active"
+                        onClick={() => window.dispatchEvent(new CustomEvent('open-entity-suggestions'))}
+                      >
+                        <Sparkles size={14} />
+                        <span className="entity-suggestion-badge__count">
+                          {entitySuggestions.length}
+                        </span>
+                        <span className="entity-suggestion-badge__label">
+                          {t('editor:sugerencias')}
                         </span>
                       </div>
                     </Tooltip>

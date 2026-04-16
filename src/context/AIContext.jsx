@@ -180,6 +180,15 @@ export const AIProvider = ({ children }) => {
   const [lastRewrite, setLastRewrite] = useState('');
   const [oracleText, setOracleText] = useState('');
 
+  // ── Entity Suggestions (Heuristic Active Entity Suggester) ──────────────
+  const [entitySuggestions, setEntitySuggestions] = useState([]);
+  const [isEntitySuggestionsVisible, setIsEntitySuggestionsVisible] = useState(false);
+  const [activeEntitySuggestions, setActiveEntitySuggestions] = useState([]);
+
+  const entitySuggesterRef = useRef(null);
+  const entityScanDebounceRef = useRef(null);
+  const entityDataCacheRef = useRef(null);
+
   // ── Oracle History & Status (Async Dexie) ────────────────────────────────
   const [oracleHistory, setOracleHistory] = useState([]);
   const [oracleStatus, setOracleStatus] = useState({
@@ -314,6 +323,101 @@ export const AIProvider = ({ children }) => {
       localStorage.setItem(`mpc_prop_${activeNovelId}`, JSON.stringify(mpcProposals));
     }
   }, [mpcProposals, activeNovelId]);
+
+  // ── Entity Suggestions (Heuristic Suggester) ─────────────────────────────
+  const initEntitySuggester = useCallback(async () => {
+    if (!activeNovelId || !entitySuggesterRef.current) return;
+    
+    try {
+      // Reset suggester context when novel changes
+      entitySuggesterRef.current.resetContext();
+      entityDataCacheRef.current = null;
+      
+      const { loadEntityDataForSuggestion, getEntitySuggester } = await import('../services/heuristicEntitySuggester');
+      const data = await loadEntityDataForSuggestion(activeNovelId);
+      entityDataCacheRef.current = data;
+      
+      const totalEntities = Object.values(data).reduce((sum, arr) => sum + arr.length, 0);
+      console.log('[EntitySuggester] Loaded', totalEntities, 'entities for novel', activeNovelId);
+    } catch (err) {
+      console.error('[AIContext] Error loading entity data for suggestions:', err);
+    }
+  }, [activeNovelId]);
+
+  const scanForEntitySuggestions = useCallback(async (text) => {
+    if (!entitySuggesterRef.current || !entityDataCacheRef.current) return;
+    
+    if (entityScanDebounceRef.current) {
+      clearTimeout(entityScanDebounceRef.current);
+    }
+    
+    entityScanDebounceRef.current = setTimeout(() => {
+      try {
+        const suggester = entitySuggesterRef.current;
+        suggester.setLanguage(i18n.language);
+        
+        console.log('[EntitySuggester] Scanning text:', text.substring(0, 50) + '...');
+        
+        const suggestions = suggester.scanTextForEntities(text, entityDataCacheRef.current);
+        
+        console.log('[EntitySuggester] Scan complete:', suggestions.length, 'suggestions');
+        
+        const formatted = suggestions.map(s => ({
+          ...s,
+          displayIcons: [...new Set(s.matchTypes.map(m => {
+            if (m.type === 'anaphora') return '🟣';
+            if (m.type === 'name' || m.type === 'nickname') return '🔵';
+            return '⚪';
+          }))].join(''),
+          isAnaphora: s.matchTypes.some(m => m.type === 'anaphora')
+        }));
+        
+        setEntitySuggestions(formatted);
+        setIsEntitySuggestionsVisible(formatted.length > 0);
+      } catch (err) {
+        console.error('[AIContext] Error scanning for entity suggestions:', err);
+      }
+    }, 500); // Reduced from 800ms to 500ms
+  }, []);
+
+  const activateEntitySuggestion = useCallback((suggestion) => {
+    setActiveEntitySuggestions(prev => {
+      const exists = prev.find(e => e.id === suggestion.id && e.table === suggestion.table);
+      if (exists) return prev;
+      return [...prev, { id: suggestion.id, table: suggestion.table, name: suggestion.name }];
+    });
+  }, []);
+
+  const dismissEntitySuggestion = useCallback((suggestion) => {
+    setEntitySuggestions(prev => prev.filter(s => 
+      !(s.id === suggestion.id && s.table === suggestion.table)
+    ));
+  }, []);
+
+  const applyAllSuggestions = useCallback(() => {
+    const toActivate = entitySuggestions.filter(s => 
+      !activeEntitySuggestions.find(e => e.id === s.id && e.table === s.table)
+    );
+    setActiveEntitySuggestions(prev => [...prev, ...toActivate]);
+    setEntitySuggestions([]);
+    setIsEntitySuggestionsVisible(false);
+  }, [entitySuggestions, activeEntitySuggestions]);
+
+  useEffect(() => {
+    if (activeNovelId) {
+      if (!entitySuggesterRef.current) {
+        import('../services/heuristicEntitySuggester').then(({ getEntitySuggester }) => {
+          entitySuggesterRef.current = getEntitySuggester();
+        });
+      }
+      initEntitySuggester();
+    }
+    return () => {
+      if (entityScanDebounceRef.current) {
+        clearTimeout(entityScanDebounceRef.current);
+      }
+    };
+  }, [activeNovelId, initEntitySuggester]);
 
   // ── Debate Agents & Sessions (Async Dexie) ────────────────────────
   const [debateAgents, setDebateAgents] = useState(getDefaultDebateAgents());
@@ -782,6 +886,15 @@ export const AIProvider = ({ children }) => {
     refreshUsage,
     isMpcDrawerOpen, 
     setIsMpcDrawerOpen,
+    // Entity Suggestions
+    entitySuggestions,
+    isEntitySuggestionsVisible,
+    activeEntitySuggestions,
+    scanForEntitySuggestions,
+    activateEntitySuggestion,
+    dismissEntitySuggestion,
+    applyAllSuggestions,
+    setIsEntitySuggestionsVisible,
     testConnection: AIService.testConnection
   };
 

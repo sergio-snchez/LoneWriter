@@ -14,6 +14,7 @@ import { useModal } from '../context/ModalContext'
 import { createDebouncedSearch, fetchDetectedEntityData } from '../services/compendiumSearch'
 import { retrieveRelevantFragments } from '../services/ragService'
 import { Tooltip } from './Tooltip'
+import EntitySuggestionPanel from './EntitySuggestionPanel'
 import { renderMarkdown } from '../utils/renderMarkdown'
 import './AIPanel.css'
 
@@ -33,6 +34,27 @@ const normalizeTextForDisplay = (text) => {
     .replace(/\r/g, '\n')
     .replace(/[ \t]+/g, ' ')
     .replace(/^\s+|\s+$/g, '');
+}
+
+function extractPreviousContext(content, selection, maxWords = 120) {
+  if (!content || !selection) return null;
+  
+  const plainText = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const selectionLower = selection.toLowerCase();
+  const plainLower = plainText.toLowerCase();
+  
+  const selectionIndex = plainLower.indexOf(selectionLower);
+  if (selectionIndex === -1) return null;
+  
+  const textBefore = plainText.substring(0, selectionIndex);
+  const wordsBefore = textBefore.split(/\s+/).filter(w => w.length > 0);
+  
+  if (wordsBefore.length === 0) return null;
+  
+  const startIndex = Math.max(0, wordsBefore.length - maxWords);
+  const contextWords = wordsBefore.slice(startIndex);
+  
+  return contextWords.join(' ');
 }
 
 // ─── Mock data ────────────────────────────────────────────────
@@ -127,7 +149,13 @@ function RewriteTab({ activeScene }) {
   const { 
     selection, provider, apiKey, localBaseUrl, prompts, currentModel,
     lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite, updatePrompt,
-    logAIUsage
+    logAIUsage,
+    entitySuggestions,
+    isEntitySuggestionsVisible,
+    activateEntitySuggestion,
+    dismissEntitySuggestion,
+    applyAllSuggestions,
+    setIsEntitySuggestionsVisible
   } = useAI();
   const { resources } = useNovel();
   const { openModal } = useModal();
@@ -137,6 +165,7 @@ function RewriteTab({ activeScene }) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isEditingPrompt, setIsEditingPrompt] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [includePreviousContext, setIncludePreviousContext] = useState(true)
 
   const handleRewrite = async () => {
     if (!selection) {
@@ -157,6 +186,12 @@ function RewriteTab({ activeScene }) {
         ? activeRes.map(r => `Archivo: [${r.name}]\nContenido:\n${r.content}`).join('\n\n')
         : null;
 
+      const previousContext = includePreviousContext 
+        ? extractPreviousContext(activeScene?.content, selection, 120)
+        : null;
+      
+      console.log('[Rewrite] previousContext:', previousContext ? `${previousContext.substring(0, 80)}...` : 'null');
+
       const response = await AIService.rewrite(selection, activeGoal, prompts[activeGoal], {
         provider,
         apiKey,
@@ -164,7 +199,8 @@ function RewriteTab({ activeScene }) {
         localBaseUrl,
         customInstructions: instruction,
         pov: activeScene?.pov,
-        knowledgeBase
+        knowledgeBase,
+        previousContext
       });
       logAIUsage(response.usage);
       saveLastRewrite(response.text, activeGoal, instruction, selection);
@@ -252,6 +288,18 @@ function RewriteTab({ activeScene }) {
               </button>
             </Tooltip>
           ))}
+        </div>
+
+        {/* Context toggle */}
+        <div className="rewrite-context-toggle">
+          <label className="context-toggle-label">
+            <input
+              type="checkbox"
+              checked={includePreviousContext}
+              onChange={(e) => setIncludePreviousContext(e.target.checked)}
+            />
+            <span>{t('rewrite.include_context')}</span>
+          </label>
         </div>
       </div>
 
@@ -341,6 +389,16 @@ function RewriteTab({ activeScene }) {
           </div>
         </div>
       )}
+
+      {/* Entity Suggestions Panel */}
+      <EntitySuggestionPanel
+        suggestions={entitySuggestions}
+        isVisible={isEntitySuggestionsVisible}
+        onActivateEntity={activateEntitySuggestion}
+        onDismissSuggestion={dismissEntitySuggestion}
+        onApplyAll={applyAllSuggestions}
+        onClose={() => setIsEntitySuggestionsVisible(false)}
+      />
     </div>
   )
 }
