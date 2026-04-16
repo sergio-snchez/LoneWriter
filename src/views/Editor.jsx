@@ -567,13 +567,11 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       // Respetar cooldown entre análisis
       const now = Date.now()
       if (mpcCooldownRef.current && (now - mpcCooldownRef.current) < MPC_COOLDOWN_MS) {
-        console.log('[MPC] En cooldown, faltan', Math.round((MPC_COOLDOWN_MS - (now - mpcCooldownRef.current))/1000), 's');
         return
       }
 
       const plainText = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
       if (plainText.length < 20) {
-        console.log('[MPC] Texto muy corto:', plainText.length, 'chars');
         return // texto muy corto, no analizar
       }
 
@@ -584,16 +582,12 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       ])
 
       const candidates = extractCandidates(plainText, registeredNames, ignoredNames)
-      console.log('[MPC] Candidatos extraídos localmente:', candidates);
-      console.log('[MPC] Texto a analizar:', plainText.substring(0, 200));
       
       if (candidates.length === 0) {
-        console.log('[MPC] No hay candidatos, saliendo')
         return
       }
 
       // Paso 2: análisis IA (solo si hay candidatos)
-      console.log('[MPC] Enviando a IA para clasificar candidatos...');
       setMpcStatus('analyzing')
       mpcCooldownRef.current = now
 
@@ -604,7 +598,6 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
           model: currentModel,
           localBaseUrl,
         }
-        console.log('[MPC] aiConfig:', aiConfig);
         const { proposals, usage } = await analyzeWithAI(
           candidates,
           plainText,
@@ -616,13 +609,10 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
         
         logAIUsage(usage)
         
-        console.log('[MPC] IA devolvió propuestas:', proposals);
-
         if (proposals.length > 0) {
           addMpcProposals(proposals)
         }
       } catch (err) {
-        console.error('[MPC] Error en análisis:', err)
       } finally {
         setMpcStatus('idle')
       }
@@ -647,7 +637,6 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       ])
 
       const candidates = extractCandidates(plainText, registeredNames, ignoredNames)
-      console.log('[MPC] Candidatos extraídos localmente:', candidates);
       
       if (candidates.length === 0) {
         setMpcStatus('idle')
@@ -663,13 +652,11 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       )
       
       logAIUsage(usage)
-      console.log('[MPC] IA devolvió propuestas:', proposals);
 
       if (proposals.length > 0) {
         addMpcProposals(proposals)
       }
     } catch (err) {
-      console.error('[MPC] Manual scan error:', err)
     } finally {
       setMpcStatus('idle')
     }

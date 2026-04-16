@@ -172,7 +172,6 @@ export async function upsertVector(sceneId, novelId, text) {
   }
   
   if (chunksToProcess.length > 0 || idsToDelete.length > 0) {
-    console.log(`[RAG] Escena ${sceneId} indexada: borrados ${idsToDelete.length} chunks antiguos, generados ${chunksToProcess.length} nuevos.`);
   }
 }
 
@@ -181,7 +180,6 @@ export async function upsertVector(sceneId, novelId, text) {
  */
 export async function deleteVectorsForScene(sceneId) {
   await db.vectors.where('sceneId').equals(sceneId).delete();
-  console.log('[RAG] Vectors deleted for scene', sceneId);
 }
 
 /**
@@ -189,7 +187,6 @@ export async function deleteVectorsForScene(sceneId) {
  */
 export async function deleteVectorsForNovel(novelId) {
   await db.vectors.where('novelId').equals(novelId).delete();
-  console.log('[RAG] Vectors deleted for novel', novelId);
 }
 
 /**
@@ -253,7 +250,6 @@ export async function indexPendingScenes(novelId) {
         }
       }
     }
-    console.log('[RAG] Batch indexing complete for novel', novelId);
   } catch (err) {
     console.error('[RAG] Batch indexing error:', err);
   }

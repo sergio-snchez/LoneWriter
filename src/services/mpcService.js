@@ -135,7 +135,6 @@ export async function analyzeWithAI(candidates, sceneText, registeredNames, aiCo
       usage: response.usage 
     };
   } catch (error) {
-    console.error('[MPC] Error en análisis IA:', error);
     return { proposals: [], usage: null };
   }
 }
@@ -200,7 +199,6 @@ export function parseMpcResponse(rawResponse, maxProposals = 5, registeredNames 
         tags: Array.isArray(item.tags) ? item.tags.filter(t => typeof t === 'string') : [],
       }));
   } catch (error) {
-    console.error('[MPC] Error parseando respuesta IA:', error);
     return [];
   }
 }
