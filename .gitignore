@@ -41,6 +41,9 @@ logs/
 .DS_Store
 Thumbs.db
 
+# Kilo
+.kilo/plans/
+
 # Other
 .antigravity/
 .gemini/
