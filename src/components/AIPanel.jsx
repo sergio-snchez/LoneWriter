@@ -14,7 +14,6 @@ import { useModal } from '../context/ModalContext'
 import { createDebouncedSearch, fetchDetectedEntityData } from '../services/compendiumSearch'
 import { retrieveRelevantFragments } from '../services/ragService'
 import { Tooltip } from './Tooltip'
-import EntitySuggestionPanel from './EntitySuggestionPanel'
 import { renderMarkdown } from '../utils/renderMarkdown'
 import './AIPanel.css'
 
@@ -149,13 +148,7 @@ function RewriteTab({ activeScene }) {
   const { 
     selection, provider, apiKey, localBaseUrl, prompts, currentModel,
     lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite, updatePrompt,
-    logAIUsage,
-    entitySuggestions,
-    isEntitySuggestionsVisible,
-    activateEntitySuggestion,
-    dismissEntitySuggestion,
-    applyAllSuggestions,
-    setIsEntitySuggestionsVisible
+    logAIUsage
   } = useAI();
   const { resources } = useNovel();
   const { openModal } = useModal();
@@ -389,16 +382,6 @@ function RewriteTab({ activeScene }) {
           </div>
         </div>
       )}
-
-      {/* Entity Suggestions Panel */}
-      <EntitySuggestionPanel
-        suggestions={entitySuggestions}
-        isVisible={isEntitySuggestionsVisible}
-        onActivateEntity={activateEntitySuggestion}
-        onDismissSuggestion={dismissEntitySuggestion}
-        onApplyAll={applyAllSuggestions}
-        onClose={() => setIsEntitySuggestionsVisible(false)}
-      />
     </div>
   )
 }

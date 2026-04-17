@@ -47,16 +47,8 @@ export default function App() {
       setAiPanelTab('oracle');
       setAiPanelOpen(true);
     };
-    const handleOpenEntitySuggestions = () => {
-      setAiPanelTab('rewrite');
-      setAiPanelOpen(true);
-    };
     window.addEventListener('open-oracle-panel', handleOpenOracle);
-    window.addEventListener('open-entity-suggestions', handleOpenEntitySuggestions);
-    return () => {
-      window.removeEventListener('open-oracle-panel', handleOpenOracle);
-      window.removeEventListener('open-entity-suggestions', handleOpenEntitySuggestions);
-    };
+    return () => window.removeEventListener('open-oracle-panel', handleOpenOracle);
   }, []);
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsTab, setSettingsTab] = useState('cloud')

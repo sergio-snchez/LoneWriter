@@ -65,14 +65,12 @@
     "word": "Word",
     "sin_pov": "No POV",
     "tooltip_oraculo": "Click to let AI verify if this paragraph contradicts your Compendium",
-    "tooltip_sugerencias": "View entity suggestions to activate in Oracle",
     "sin_coincidencias": "No key elements",
     "coincidencias": "Compendium elements present",
     "contradiccion": "Contradiction in this paragraph",
     "palabras_escena": "{{count}} words in this scene",
     "meta_escena": "Goal: {{count}} words per scene",
-    "seleccionar_escena": "Select a scene to start writing",
-    "sugerencias": "Suggestions"
+    "seleccionar_escena": "Select a scene to start writing"
   },
   "estadisticas": {
     "titulo": "Project statistics",
