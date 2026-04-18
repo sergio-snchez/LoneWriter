@@ -6,6 +6,24 @@
 
 </div>
 
+## [LoneWriter v1.7-anáfora] - 2026-04-18
+
+### Added
+- **Motor de Saliencia (Anáforas)**: Detección en tiempo real de pronombres y sus referencias (correferencias) en la pestaña del Oráculo. Ayuda a mantener la consistencia en escenas complejas con múltiples personajes.
+- **Objetivo Rápido "Idioma"**: Nuevo icono de "Globo" en el panel de Reescribir para traducir rápidamente o ajustar el registro lingüístico de un párrafo.
+- **Contexto al Reescribir**: Nuevo interruptor para incluir el párrafo anterior como contexto para la IA, asegurando una mejor continuidad estilística y narrativa al reescribir.
+- **Rediseño de la UI del Oráculo**: Rediseñadas las secciones de "Entidades Detectadas" y "Motor de Saliencia" en paneles simétricos y colapsables con scroll interno y contadores de correferencias.
+- **Paneles Reseteables y Redimensionables**: Añadida la capacidad de redimensionar mediante arrastre tanto el panel de IA como el de Estructura Narrativa, permitiendo adaptar la mesa de trabajo a cualquier monitor.
+
+### Changed
+- **Optimización de Prompts de Saliencia**: Agrupadas las detecciones por pronombre (ej: "«ella» podría referirse a Megan o a Clara") para reducir el consumo de tokens y mejorar la claridad para la IA.
+- **Lógica de Inyección del Prompt**: Mejorado el prompt del Oráculo con un límite máximo de 20 pronombres para evitar el desbordamiento del contexto en escenas extremadamente largas.
+- **Internacionalización**: Actualizados los locales de `ai` (EN/ES) con nuevas claves para cabeceras del motor de saliencia y descripciones del objetivo de idioma.
+
+### Fixed
+- **Prompt por Defecto del Idioma**: Corregido un problema donde el prompt por defecto no se cargaba al seleccionar el objetivo de Idioma por primera vez.
+- **Problemas de Scroll en el Oráculo**: Las listas largas de entidades detectadas o anáforas ya no desbordan el panel de IA; ahora se mantienen dentro de contenedores con scroll.
+
 ## [LoneWriter v1.6-stopwords] - 2026-04-12
 
 ### Added

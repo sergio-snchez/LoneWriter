@@ -23,9 +23,7 @@
  * Es la técnica más robusta para contenedor header + área scrollable.
  */
 .editor-view__tree {
-  width: 420px;
-  min-width: 320px;
-  max-width: 520px;
+  width: var(--tree-width, 400px);
   flex-shrink: 0;
   border-right: 1px solid var(--border);
   background: var(--bg-base);
@@ -35,6 +33,26 @@
   /* La altura es 100% de .editor-view que tiene height explícito */
   height: 100%;
   overflow: hidden;
+  position: relative;
+}
+
+.editor-view__tree--dragging {
+  transition: none !important;
+}
+
+.tree-panel__resizer {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 50;
+  transition: background var(--trans-fast);
+}
+
+.tree-panel__resizer:hover, .tree-panel__resizer:active {
+  background: var(--accent);
 }
 
 /* ---- Tree header (grid row 1: auto) ---- */
@@ -413,6 +431,48 @@
 }
 .scene-row:hover .scene-row__btn { opacity: 1; }
 
+/* ---- Editor Tree Narrow Adjustments ---- */
+.editor-view__tree--narrow .scene-row {
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.editor-view__tree--narrow .scene-row__meta {
+  width: 100%;
+  padding-left: 38px; /* Alignment with title: num (30px) + gap (8px) */
+  margin-top: 1px;
+}
+
+.editor-view__tree--narrow .badge {
+  padding: 1px 6px;
+  height: 18px; /* Slightly smaller height */
+  line-height: 1;
+}
+
+.editor-view__tree--narrow .chapter-accordion__words {
+  display: block;
+  margin-top: 2px;
+}
+
+.editor-view__tree--narrow .chapter-accordion__num-row {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.editor-view__tree--narrow .act-section__meta {
+  display: none; /* Hide act meta in very narrow view to focus on title */
+}
+
+.editor-view__tree--narrow .act-section__header {
+  padding: 10px 14px;
+}
+
+.editor-view__tree--narrow .chapter-accordion__progress-bar,
+.editor-view__tree--narrow .act-section__progress-bar {
+  width: 60px; /* Narrower progress bars */
+}
+
 /* ---- Right panel ---- */
 .editor-view__right {
   flex: 1;
@@ -649,6 +709,8 @@
   padding: 16px 24px;
   flex-direction: row;
   align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .editor-header__info {
@@ -687,10 +749,10 @@
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
-  padding: 8px 32px 8px 10px;
+  padding: 4px 24px 4px 8px;
   border-radius: 4px;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
   font-family: 'Inter', sans-serif;
@@ -726,8 +788,11 @@
 .editor-header__status-row {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 16px;
   margin-top: 12px;
+  flex-wrap: wrap;
+  width: 100%;
 }
 
 .editor-traffic-light {
@@ -735,6 +800,7 @@
   align-items: center;
   gap: 8px;
   padding: 4px 10px;
+  height: 24px;
   border-radius: var(--radius-sm);
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -1345,6 +1411,7 @@
   .editor-header__status-row {
     flex-wrap: wrap;
     gap: 8px;
+    justify-content: flex-end;
   }
 
   .editor-body {
@@ -1445,16 +1512,9 @@
     font-size: 14px;
   }
 
-  .btn-sm {
-    padding: 7px 14px;
-  }
-
-  .editor-traffic-light {
-    padding: 6px 12px;
-  }
+  /* Removed oversized .btn-sm mobile override to use global .btn-sm */
 
   .editor-traffic-light .oracle-traffic-light__label {
-    font-size: 12px;
     max-width: 140px;
   }
 

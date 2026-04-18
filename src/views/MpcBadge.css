@@ -64,6 +64,7 @@
   align-items: center;
   gap: 8px;
   padding: 4px 10px;
+  height: 24px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);

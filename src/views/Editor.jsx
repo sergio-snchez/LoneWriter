@@ -42,10 +42,10 @@ import './Editor.css'
 import './MpcBadge.css'
 
 const STATUS_MAP = {
-  'Finalizado':    { icon: CheckCircle2, cls: 'status-done',    badge: 'badge-green' },
-  'En progreso':   { icon: AlertCircle,  cls: 'status-wip',     badge: 'badge-gold'  },
-  'Borrador':      { icon: Circle,       cls: 'status-draft',   badge: 'badge-muted' },
-  'Sin comenzar':  { icon: Circle,       cls: 'status-none',    badge: 'badge-muted' },
+  'Finalizado': { icon: CheckCircle2, cls: 'status-done', badge: 'badge-green' },
+  'En progreso': { icon: AlertCircle, cls: 'status-wip', badge: 'badge-gold' },
+  'Borrador': { icon: Circle, cls: 'status-draft', badge: 'badge-muted' },
+  'Sin comenzar': { icon: Circle, cls: 'status-none', badge: 'badge-muted' },
 }
 
 const STATUS_OPTIONS = ['Sin comenzar', 'Borrador', 'En progreso', 'Finalizado'];
@@ -73,7 +73,7 @@ function EditableTitle({ title, onSave, className, isPlayfair, isBold }) {
 
   if (isEditing) {
     return (
-      <input 
+      <input
         className={`edit-input ${className}`}
         value={val}
         onChange={e => setVal(e.target.value)}
@@ -84,10 +84,10 @@ function EditableTitle({ title, onSave, className, isPlayfair, isBold }) {
         }}
         autoFocus
         onClick={e => e.stopPropagation()}
-        style={{ 
-          width: '100%', padding: '2px 4px', border: '1px solid var(--accent)', 
-          borderRadius: '4px', background: 'var(--bg-base)', color: 'var(--text-primary)', 
-          outline: 'none', fontFamily: isPlayfair ? "'Playfair Display', serif" : "'Inter', sans-serif", 
+        style={{
+          width: '100%', padding: '2px 4px', border: '1px solid var(--accent)',
+          borderRadius: '4px', background: 'var(--bg-base)', color: 'var(--text-primary)',
+          outline: 'none', fontFamily: isPlayfair ? "'Playfair Display', serif" : "'Inter', sans-serif",
           fontWeight: isBold ? 600 : 500, fontSize: 'inherit'
         }}
       />
@@ -96,8 +96,8 @@ function EditableTitle({ title, onSave, className, isPlayfair, isBold }) {
 
   return (
     <Tooltip content={t('editable.doble_clic')}>
-      <span 
-        className={className} 
+      <span
+        className={className}
         onDoubleClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
       >
         {title}
@@ -127,10 +127,10 @@ function SortableSceneRow({ scene, chapterIndex, sceneIndex, isActive, onSelect,
   };
 
   return (
-    <div 
+    <div
       ref={setNodeRef}
       style={style}
-      className={`scene-row ${isActive ? 'scene-row--active' : ''}`} 
+      className={`scene-row ${isActive ? 'scene-row--active' : ''}`}
       onClick={() => onSelect(scene)}
     >
       <div className="scene-row__grip" {...attributes} {...listeners}>
@@ -140,10 +140,10 @@ function SortableSceneRow({ scene, chapterIndex, sceneIndex, isActive, onSelect,
         {chapterIndex + 1}.{sceneIndex + 1}
       </div>
       <div className="scene-row__info">
-        <EditableTitle 
-          title={scene.title} 
-          className="scene-row__title" 
-          onSave={(newTitle) => onUpdate(scene.id, { title: newTitle })} 
+        <EditableTitle
+          title={scene.title}
+          className="scene-row__title"
+          onSave={(newTitle) => onUpdate(scene.id, { title: newTitle })}
         />
         <span className="scene-row__pov">{scene.pov ? `POV: ${scene.pov}` : t('escena.sin_pov')}</span>
       </div>
@@ -151,8 +151,8 @@ function SortableSceneRow({ scene, chapterIndex, sceneIndex, isActive, onSelect,
         <StatusBadge status={scene.status} />
       </div>
       <div className="scene-row__actions">
-        <button 
-          className="scene-row__btn btn btn-ghost btn-icon text-danger" 
+        <button
+          className="scene-row__btn btn btn-ghost btn-icon text-danger"
           onClick={(e) => { e.stopPropagation(); onDelete(scene.id); }}
         >
           <Trash2 size={13} />
@@ -164,7 +164,7 @@ function SortableSceneRow({ scene, chapterIndex, sceneIndex, isActive, onSelect,
 
 function SortableChapterAccordion({ chapter, chapterIndex, actIndex, isOpen, onToggle, activeSceneId, onSelectScene, onAddScene, onDeleteScene, onDeleteChapter, onUpdateChapter, onUpdateScene }) {
   const { t } = useTranslation('editor')
-    const {
+  const {
     attributes,
     listeners,
     setNodeRef,
@@ -182,7 +182,7 @@ function SortableChapterAccordion({ chapter, chapterIndex, actIndex, isOpen, onT
 
   const isChapterCompleted = chapter.scenes?.length > 0 && chapter.scenes.every(s => s.status === 'Finalizado');
   const chapterWords = chapter.scenes?.reduce((acc, s) => acc + (s.wordCount || 0), 0) || 0;
-  
+
   const completedScenes = chapter.scenes?.filter(s => s.status === 'Finalizado').length || 0;
   const chapterProgress = chapter.scenes?.length > 0 ? (completedScenes / chapter.scenes.length) * 100 : 0;
 
@@ -206,10 +206,10 @@ function SortableChapterAccordion({ chapter, chapterIndex, actIndex, isOpen, onT
               </span>
               <span className="chapter-accordion__words">{t('capitulo.palabras', { count: chapterWords })}</span>
             </div>
-            <EditableTitle 
-              title={chapter.title} 
-              className="chapter-accordion__title" 
-              onSave={(newTitle) => onUpdateChapter(chapter.id, { title: newTitle })} 
+            <EditableTitle
+              title={chapter.title}
+              className="chapter-accordion__title"
+              onSave={(newTitle) => onUpdateChapter(chapter.id, { title: newTitle })}
             />
             <div className="chapter-accordion__progress-bar">
               <div className="chapter-accordion__progress-fill" style={{ width: `${chapterProgress}%` }} />
@@ -225,10 +225,10 @@ function SortableChapterAccordion({ chapter, chapterIndex, actIndex, isOpen, onT
         <div className="chapter-accordion__body">
           <SortableContext items={chapter.scenes?.map(s => `scene-${s.id}`) || []} strategy={verticalListSortingStrategy}>
             {chapter.scenes?.map((scene, scIdx) => (
-              <SortableSceneRow 
-                key={scene.id} 
-                scene={scene} 
-                chapterIndex={chapterIndex} 
+              <SortableSceneRow
+                key={scene.id}
+                scene={scene}
+                chapterIndex={chapterIndex}
                 sceneIndex={scIdx}
                 isActive={activeSceneId === scene.id}
                 onSelect={onSelectScene}
@@ -247,17 +247,17 @@ function SortableChapterAccordion({ chapter, chapterIndex, actIndex, isOpen, onT
   )
 }
 
-function SortableActSection({ 
-  act, actIndex, chapterOffset, isOpen, onToggle, activeSceneId, onSelectScene, 
-  onAddChapter, onAddScene, onDeleteScene, onDeleteChapter, 
+function SortableActSection({
+  act, actIndex, chapterOffset, isOpen, onToggle, activeSceneId, onSelectScene,
+  onAddChapter, onAddScene, onDeleteScene, onDeleteChapter,
   onDeleteAct, onUpdateAct, onUpdateChapter, onUpdateScene, expandedIds, onSubToggle
 }) {
   const { t } = useTranslation('editor')
-  const completedChapters = act.chapters?.filter(c => 
+  const completedChapters = act.chapters?.filter(c =>
     c.scenes?.length > 0 && c.scenes.every(s => s.status === 'Finalizado')
   ).length || 0;
-  
-  const actWords = act.chapters?.reduce((acc, ch) => 
+
+  const actWords = act.chapters?.reduce((acc, ch) =>
     acc + (ch.scenes?.reduce((sAcc, s) => sAcc + (s.wordCount || 0), 0) || 0), 0
   ) || 0;
 
@@ -289,11 +289,11 @@ function SortableActSection({
             {isOpen ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
           </span>
           <div className="act-section__title-group">
-            <EditableTitle 
-              title={act.title} 
-              className="act-section__title" 
+            <EditableTitle
+              title={act.title}
+              className="act-section__title"
               isPlayfair={true} isBold={true}
-              onSave={(newTitle) => onUpdateAct(act.id, { title: newTitle })} 
+              onSave={(newTitle) => onUpdateAct(act.id, { title: newTitle })}
             />
             <div className="act-section__progress-bar">
               <div className="act-section__progress-fill" style={{ width: `${actProgress}%` }} />
@@ -313,25 +313,25 @@ function SortableActSection({
         <div className="act-section__body">
           <SortableContext items={act.chapters?.map(c => `ch-${c.id}`) || []} strategy={verticalListSortingStrategy}>
             {act.chapters?.map((ch, chIdx) => {
-                const globalChapterIndex = chapterOffset + chIdx;
-                return (
-                  <SortableChapterAccordion 
-                    key={ch.id} 
-                    chapter={ch} 
-                    chapterIndex={globalChapterIndex}
-                    actIndex={actIndex}
-                    isOpen={expandedIds.has(`ch-${ch.id}`)} 
-                    onToggle={() => onSubToggle(`ch-${ch.id}`)}
-                    activeSceneId={activeSceneId}
-                    onSelectScene={onSelectScene}
-                    onAddScene={onAddScene}
-                    onDeleteScene={onDeleteScene}
-                    onDeleteChapter={onDeleteChapter}
-                    onUpdateChapter={onUpdateChapter}
-                    onUpdateScene={onUpdateScene}
-                  />
-                );
-              })}
+              const globalChapterIndex = chapterOffset + chIdx;
+              return (
+                <SortableChapterAccordion
+                  key={ch.id}
+                  chapter={ch}
+                  chapterIndex={globalChapterIndex}
+                  actIndex={actIndex}
+                  isOpen={expandedIds.has(`ch-${ch.id}`)}
+                  onToggle={() => onSubToggle(`ch-${ch.id}`)}
+                  activeSceneId={activeSceneId}
+                  onSelectScene={onSelectScene}
+                  onAddScene={onAddScene}
+                  onDeleteScene={onDeleteScene}
+                  onDeleteChapter={onDeleteChapter}
+                  onUpdateChapter={onUpdateChapter}
+                  onUpdateScene={onUpdateScene}
+                />
+              );
+            })}
           </SortableContext>
           <button className="act-section__add-ch btn btn-ghost" onClick={() => onAddChapter(act.id)}>
             <Plus size={13} />
@@ -365,8 +365,8 @@ function ProgressBar({ value, max, label, sublabel, color }) {
 
 export default function EditorView({ menuOpen = false, onNavigate }) {
   const { t } = useTranslation('editor')
-  const { 
-    acts, activeNovel, characters, updateScene, 
+  const {
+    acts, activeNovel, characters, updateScene,
     addAct, deleteAct, updateAct, addChapter, deleteChapter, updateChapter, addScene, deleteScene,
     updateActOrder, updateChapterOrder, updateSceneOrder, moveScene, moveChapter,
     updateNovelTarget, getStreak, activeScene, setActiveScene,
@@ -384,14 +384,55 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
 
   // MPC state
   const mpcDebounceRef = useRef(null)
-  
+
+  const [mobileTreeOpen, setMobileTreeOpen] = useState(false);
+  const [expandedIds, setExpandedIds] = useState(new Set());
+  const [activeDragId, setActiveDragId] = useState(null);
+
+  // Tree resizing logic
+  const [treeWidth, setTreeWidth] = useState(400);
+  const [isTreeDragging, setIsTreeDragging] = useState(false);
+  const treeDragRef = useRef(false);
+  const editorRef = useRef(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!treeDragRef.current || !editorRef.current) return;
+      const rect = editorRef.current.getBoundingClientRect();
+      let newWidth = e.clientX - rect.left;
+      if (newWidth < 400) newWidth = 400;
+      if (newWidth > 500) newWidth = 500;
+      setTreeWidth(newWidth);
+    };
+    const handleMouseUp = () => {
+      if (treeDragRef.current) {
+        treeDragRef.current = false;
+        setIsTreeDragging(false);
+        document.body.style.cursor = 'default';
+        document.body.classList.remove('no-select');
+      }
+    };
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
+  const startTreeDrag = (e) => {
+    if (window.innerWidth <= 768) return;
+    treeDragRef.current = true;
+    setIsTreeDragging(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.classList.add('no-select');
+    e.preventDefault();
+  };
+
   const [isSaving, setIsSaving] = useState(null)
-  const [expandedIds, setExpandedIds] = useState(new Set())
-  const [activeDragId, setActiveDragId] = useState(null)
   const [streak, setStreak] = useState(0)
   const [showGoalEditor, setShowGoalEditor] = useState(false)
   const [isStatsExpanded, setIsStatsExpanded] = useState(false)
-  const [mobileTreeOpen, setMobileTreeOpen] = useState(false)
   const goalEditorRef = useRef(null)
   const hoverTimerRef = useRef(null)
 
@@ -405,7 +446,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
         }
       }
     }
-    
+
     const handleToggleStats = () => {
       setIsStatsExpanded(true);
       // Optional: scroll to bottom
@@ -529,13 +570,13 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       setIsSaving(true)
       const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
       const words = text ? text.split(' ').length : 0
-      
-      await updateScene(sceneId, { 
-        content: html, 
+
+      await updateScene(sceneId, {
+        content: html,
         wordCount: words,
         lastEdited: new Date().toISOString()
       })
-      
+
       setIsSaving(false)
       // ── RAG: index updated text asynchronously ────────────────
       if (novelId && text.length > 10) {
@@ -582,7 +623,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       ])
 
       const candidates = extractCandidates(plainText, registeredNames, ignoredNames)
-      
+
       if (candidates.length === 0) {
         return
       }
@@ -606,9 +647,9 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
           5
         )
         console.log('[MPC] Respuesta recibida, proposals:', proposals);
-        
+
         logAIUsage(usage)
-        
+
         if (proposals.length > 0) {
           addMpcProposals(proposals)
         }
@@ -623,7 +664,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     if (mpcStatus === 'analyzing') return
     if (!activeScene?.content) return
     if (!activeNovel?.id) return
-    
+
     // Paso 0: Limpieza
     const html = activeScene.content
     const plainText = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
@@ -637,7 +678,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       ])
 
       const candidates = extractCandidates(plainText, registeredNames, ignoredNames)
-      
+
       if (candidates.length === 0) {
         setMpcStatus('idle')
         return
@@ -650,7 +691,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
         { provider, apiKey, model: currentModel, localBaseUrl },
         8 // Más candidatos en manual
       )
-      
+
       logAIUsage(usage)
 
       if (proposals.length > 0) {
@@ -746,7 +787,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
   const handleDragOver = (event) => {
     const { active, over } = event;
     if (!over) return;
-    
+
     // Auto-expand collapsed containers when dragging over them
     const overIdStr = over.id.toString();
     if (active.id !== over.id && (overIdStr.startsWith('act-') || overIdStr.startsWith('ch-'))) {
@@ -799,7 +840,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     // 2. Reordering Chapters or Scenes
     let activeType = activeIdStr.startsWith('ch-') ? 'chapter' : (activeIdStr.startsWith('scene-') ? 'scene' : null);
     if (!activeType) return;
-    
+
     let numericActiveId = getNumId(activeIdStr);
     let activeParentId = null;
 
@@ -842,10 +883,10 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       if (targetChapterId) {
         const targetChapter = targetAct.chapters.find(c => c.id === targetChapterId);
         const sourceChapter = acts.flatMap(a => a.chapters || []).find(c => c.id === activeParentId);
-        
+
         const currentScenes = [...(targetChapter.scenes || [])];
         const numericOverId = getNumId(overIdStr);
-        
+
         if (activeParentId === targetChapterId) {
           const oldIndex = currentScenes.findIndex(s => s.id === numericActiveId);
           const newIndex = currentScenes.findIndex(s => s.id === numericOverId);
@@ -905,11 +946,11 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
 
   const totalChapters = acts.reduce((acc, act) => acc + (act.chapters?.length || 0), 0)
   const completedChapters = acts.reduce((acc, act) => acc + (act.chapters?.filter(c => c.status === 'Finalizado').length || 0), 0)
-  
+
   const allScenes = acts.flatMap(act => (act.chapters || []).flatMap(ch => ch.scenes || []))
   const totalScenes = allScenes.length
   const completedScenes = allScenes.filter(s => s.status === 'Finalizado').length
-  
+
   const wordPct = activeNovel ? Math.round((activeNovel.wordCount / (activeNovel.targetWords || 100000)) * 100) : 0
   const scenePct = (activeNovel?.targetScenes || 60) > 0 ? Math.round((completedScenes / (activeNovel.targetScenes || 60)) * 100) : 0
 
@@ -946,7 +987,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
   );
 
   return (
-    <div className="editor-view">
+    <div className="editor-view" ref={editorRef}>
       {/* Mobile tree toggle button */}
       <button
         className="mobile-tree-toggle"
@@ -1019,7 +1060,13 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       )}
 
       {/* Desktop tree panel */}
-      <div className="editor-view__tree">
+      <div
+        className={`editor-view__tree 
+          ${isTreeDragging ? 'editor-view__tree--dragging' : ''} 
+          ${treeWidth < 380 ? 'editor-view__tree--narrow' : ''}`}
+        style={{ '--tree-width': `${treeWidth}px` }}
+      >
+        <div className="tree-panel__resizer" onMouseDown={startTreeDrag} />
         <div className="editor-view__tree-header">
           <div className="tree-header__left">
             <h1 className="section-title">{t('arbol.titulo')}</h1>
@@ -1110,8 +1157,8 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                     <div className="editor-header__metadata">
                       <div className="meta-field">
                         <Clock size={12} />
-                        <select 
-                          value={activeScene.status} 
+                        <select
+                          value={activeScene.status}
                           onChange={(e) => handleMetaChange('status', e.target.value)}
                           className="meta-select"
                         >
@@ -1123,8 +1170,8 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                       </div>
                       <div className="meta-field">
                         <Eye size={12} />
-                        <select 
-                          value={activeScene.pov} 
+                        <select
+                          value={activeScene.pov}
                           onChange={(e) => handleMetaChange('pov', e.target.value)}
                           className="meta-select"
                         >
@@ -1163,11 +1210,9 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                   {activeScene && (
                     <Tooltip content={t('compendium:mpc.tooltip')}>
                       <div
-                        className={`mpc-traffic-light ${
-                          mpcStatus === 'analyzing' ? 'mpc-traffic-light--analyzing' : ''
-                        } ${
-                          mpcProposals.length > 0 ? 'mpc-traffic-light--active' : ''
-                        }`}
+                        className={`mpc-traffic-light ${mpcStatus === 'analyzing' ? 'mpc-traffic-light--analyzing' : ''
+                          } ${mpcProposals.length > 0 ? 'mpc-traffic-light--active' : ''
+                          }`}
                         onClick={() => {
                           if (mpcProposals.length > 0 || mpcStatus === 'analyzing') {
                             onNavigate('compendium');
@@ -1189,12 +1234,12 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                   )}
                 </div>
               </div>
-              
+
               <div className="editor-body" style={menuOpen ? { pointerEvents: 'none', userSelect: 'none' } : {}}>
                 <div style={menuOpen ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
-                  <RichEditor 
-                    key={activeScene.id} 
-                    content={activeScene.content || ''} 
+                  <RichEditor
+                    key={activeScene.id}
+                    content={activeScene.content || ''}
                     onChange={handleEditorChange}
                   />
                 </div>
@@ -1229,8 +1274,8 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                 <span className="editor-stats__title">{t('estadisticas.titulo')}</span>
                 {!isStatsExpanded && (
                   <span className="stats-header__summary">
-                    {t('estadisticas.resumen', { 
-                      words: activeNovel?.wordCount?.toLocaleString() || 0, 
+                    {t('estadisticas.resumen', {
+                      words: activeNovel?.wordCount?.toLocaleString() || 0,
                       streak: streak > 0 ? t('estadisticas.dias_fuego', { count: streak }) : t('estadisticas.sin_escribir_hoy')
                     })}
                   </span>
@@ -1275,17 +1320,17 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                   <div className="goal-editor-popover" onClick={e => e.stopPropagation()}>
                     <div className="goal-editor__header">{t('objetivos.establecer')}</div>
                     <div className="goal-editor__custom">
-                      <input 
-                        type="number" 
-                        defaultValue={activeNovel?.targetWords} 
+                      <input
+                        type="number"
+                        defaultValue={activeNovel?.targetWords}
                         onBlur={(e) => updateNovelTarget(activeNovel.id, parseInt(e.target.value), activeNovel?.targetScenes)}
                         placeholder={t('objetivos.meta_personalizada')}
                       />
                     </div>
                     <div className="goal-editor__templates">
                       {GOAL_TEMPLATES.map(g => (
-                        <button 
-                          key={g.label} 
+                        <button
+                          key={g.label}
                           className="goal-template-btn"
                           onClick={() => {
                             updateNovelTarget(activeNovel.id, g.words, g.targetScenes);
