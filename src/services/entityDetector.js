@@ -1,5 +1,6 @@
 import { db } from '../db/database';
 import { getEntityStopWords, getEntityStopWordsWithCustom, loadCustomStopwords } from '../i18n/stopwords';
+import { resolveEntityGender } from './saliencyEngine';
 
 const ENTITY_TABLES = ['characters', 'locations', 'objects', 'lore', 'resources'];
 
@@ -139,6 +140,7 @@ export function detectEntitiesInText(text, entityData, customStopWords = null) {
             name: primaryName,
             severity: hasCritical ? 'critical' : 'doubtful',
             matchedTerms: [...criticalMatches, ...doubtfulMatches],
+            gender: resolveEntityGender(primaryName), // Efímero: calculado al vuelo
           });
         }
       } catch (err) {

@@ -86,6 +86,8 @@
     "plataforma_valor": "Vite + PWA",
     "tecnologia_rag": "RAG Engine",
     "tecnologia_rag_valor": "Transformers.js (all-MiniLM-L6-v2)",
+    "tecnologia_saliencia": "Saliency Engine",
+    "tecnologia_saliencia_valor": "Anaphora Resolution (NLP Saliency Modeling)",
     "recargar_app": "Clear Cache & Reload",
     "recargar_app_hint": "Clears LoneWriter cache and erases your preferences. Restarts the app.",
     "recargar_app_boton": "Clear Cache & Reload",

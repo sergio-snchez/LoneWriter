@@ -633,6 +633,7 @@
 .debate-msg__text--clamped {
   display: -webkit-box;
   -webkit-line-clamp: 5;
+  line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1465,6 +1466,7 @@
 .oracle-tab__entry-text--clamped {
   display: -webkit-box;
   -webkit-line-clamp: 5;
+  line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1473,6 +1475,7 @@
 .oracle-tab__entry-text--expanded {
   display: block;
   -webkit-line-clamp: unset;
+  line-clamp: unset;
   overflow: visible;
   max-height: none;
 }
@@ -1698,6 +1701,110 @@
   cursor: pointer;
   position: relative;
 }
+
+/* ─── Coreference Chips (Motor de Saliencia) ─── */
+.oracle-coreference-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  animation: corefFadeIn 0.3s ease-out;
+}
+
+@keyframes corefFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.oracle-coreference-section__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.oracle-coreference-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: flex-start;
+  max-height: 160px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.oracle-coreference-chips::-webkit-scrollbar {
+  width: 4px;
+}
+.oracle-coreference-chips::-webkit-scrollbar-thumb {
+  background: var(--bg-hover);
+  border-radius: 99px;
+}
+
+.oracle-coreference-count {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.oracle-coreference-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 6px;
+  border-radius: 99px;
+  border: 1px solid;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: default;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.oracle-coreference-chip:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+/* Confianza baja: borde punteado */
+.oracle-coreference-chip--low {
+  border-style: dashed;
+  opacity: 0.8;
+}
+
+.chip-pronoun {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Menlo', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.chip-arrow {
+  opacity: 0.6;
+  font-size: 10px;
+}
+
+.chip-entity {
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.chip-tag {
+  font-size: 9px;
+  font-weight: 400;
+  opacity: 0.6;
+  margin-left: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-left: 1px solid currentColor;
+  padding-left: 5px;
+}
 .oracle-entity-tag--hoverable::after {
   content: '?';
   display: inline-flex;
@@ -1895,9 +2002,6 @@
     gap: 8px;
   }
 
-  .rewrite-result__apply .btn {
-  }
-
   .debate-toolbar {
     padding: 10px 12px;
     gap: 8px;
@@ -1986,9 +2090,6 @@
     padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
   }
 
-  .oracle-tab__footer .btn {
-  }
-
   .agent-edit-form {
     padding: 16px;
   }
@@ -2003,9 +2104,6 @@
     padding: 10px 12px;
   }
 
-  .agent-edit-form__footer .btn {
-  }
-
   .debate-agent-card__btn {
     width: 36px;
     height: 36px;
@@ -2013,9 +2111,6 @@
 
   .debate-back-btn {
     padding: 6px 10px;
-  }
-
-  .debate-add-agent-btn {
   }
 
   .res-action-btn {
