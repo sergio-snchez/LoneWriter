@@ -583,6 +583,8 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                 <span className="settings-info-value">{t('general.plataforma_valor')}</span>
                 <span className="settings-info-label">{t('general.tecnologia_rag')}</span>
                 <span className="settings-info-value">{t('general.tecnologia_rag_valor')}</span>
+                <span className="settings-info-label">{t('general.tecnologia_saliencia')}</span>
+                <span className="settings-info-value">{t('general.tecnologia_saliencia_valor')}</span>
               </div>
             </div>
             <div className="settings-section">

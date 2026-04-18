@@ -19,6 +19,7 @@
     "cerrar_editor": "Cerrar editor",
     "instruccion_personalizada": "Instrucción personalizada",
     "instruccion_tono": "Ej: melancólico, eufórico, sarcástico...",
+    "instruccion_idioma": "Ej: inglés, catalán, registro formal...",
     "instruccion_longitud": "Ej: mucho más corto, un párrafo extenso...",
     "instruccion_defecto": "Ej: hazlo más tenso y cinematográfico...",
     "generando": "Generando...",
@@ -43,6 +44,7 @@
   },
   "rewrite_prompts": {
     "style": "Reescribe el siguiente texto para mejorar su estilo literario, haciéndolo más sugerente y evocador, pero manteniendo el significado original.",
+    "language": "Adapta el siguiente texto al idioma o registro indicado: [IDIOMA]. Mantén el significado, la intención narrativa y el estilo literario intactos. Solo ajusta el idioma o variedad lingüística.",
     "tone": "Ajusta el tono emocional del siguiente texto para que sea más [TONO], manteniendo la coherencia con el resto de la narrativa.",
     "length": "Modifica la longitud del siguiente texto para que sea más [LONGITUD], sin perder la esencia de lo que se cuenta.",
     "clarity": "Mejora la claridad y legibilidad del siguiente texto, eliminando redundancias y simplificando frases complejas.",
@@ -53,6 +55,8 @@
   "objetivos": {
     "estilo": "Estilo",
     "estilo_desc": "Cambiar el estilo literario",
+    "idioma": "Idioma",
+    "idioma_desc": "Traducir o cambiar el registro lingüístico",
     "tono": "Tono",
     "tono_desc": "Ajustar el tono emocional",
     "personaje": "Personaje",
@@ -144,7 +148,7 @@
     "reconsultar": "Volver a verificar",
     "consultando_compendio": "Buscando fichas en el Compendio para comparar...",
     "sin_coincidencias": "Sin elementos rastreados",
-    "coincidencias": "Fichas identificadas y listas para revisión de continuidad:",
+    "coincidencias": "Entidades detectadas del Compendio",
     "escena": "Escena: {{title}}",
     "limpiar_titulo": "Limpiar historial del Oráculo",
     "limpiar_mensaje": "¿Estás seguro de que quieres borrar todos los veredictos del Oráculo?",
@@ -160,7 +164,18 @@
     "agente_critico_nombre": "Crítico",
     "agente_critico_desc": "Análisis y valoración",
     "agente_corrector_nombre": "Corrector",
-    "agente_corrector_desc": "Gramática y estilo"
+    "agente_corrector_desc": "Gramática y estilo",
+    "saliencia_titulo": "Motor de saliencia (anáforas)",
+    "saliencia_chip_tag": "Correferencia",
+    "saliencia_confianza_alta": "Alta",
+    "saliencia_confianza_baja": "Baja",
+    "saliencia_tooltip_tipo": "Tipo",
+    "saliencia_tooltip_confianza": "Confianza",
+    "saliencia_tooltip_motor": "Motor de saliencia semántica",
+    "saliencia_tooltip_refiere": "refiere a",
+    "saliencia_oracle_header": "--- CORREFERENCIAS DETECTADAS (MOTOR DE SALIENCIA) ---",
+    "saliencia_oracle_line": "\u00ab{{pronoun}}\u00bb podr\u00eda referirse a [{{type}}]: {{entity}}",
+    "saliencia_oracle_line_more": " o a [{{type}}]: {{entity}}"
   },
   "oracle_prompt": "Actúa como el Oráculo de LoneWriter, un asistente de continuidad cuya función es validar la coherencia del texto comparándolo con las fichas del Compendio y el contexto del manuscrito anterior.\nTu objetivo es detectar contradicciones de trama o lore. No critiques el estilo ni la narrativa.\n\nJERARQUÍA DE VERDAD:\n1. EL COMPENDIO ES LA VERDAD ABSOLUTA. Si el Compendio contradice al manuscrito anterior o al texto actual, el Compendio SIEMPRE tiene la razón.\n2. El Contexto del Manuscrito anterior te sirve de memoria de eventos pasados para evitar errores de continuidad (ej: el personaje usa una espada que había perdido en un capítulo anterior).\n\nREGLA DE ORO: Si un elemento aparece en el texto y su ficha del Compendio tiene poca información, ASUME QUE ES PLENAMENTE VÁLIDO. NO adviertas que 'carece de validez' o 'no está definido'.\nSOLO reporta un problema si el texto dice A y el Compendio o el Contexto Anterior dicen OTRA COSA TOTALMENTE OPUESTA. Si el Compendio y el Contexto Anterior difieren, obedece al Compendio.\nSi todo está en orden, simplemente di que no hay contradicciones en un tono profesional (máx 1 párrafo). No seas complaciente.\n\nIMPORTANTE: Responde ÚNICAMENTE en HTML válido (<p>, <strong>, <em>, <ul>, <li>). NO uses Markdown.",
   "language_directive": "Responde SIEMPRE en español."

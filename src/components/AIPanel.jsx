@@ -4,7 +4,7 @@ import i18n from '../i18n/i18n'
 import { Sparkles, MessageSquare, X, ChevronRight, ChevronLeft,
   Wand2, Send, RefreshCw, Copy, Check, RotateCcw, Trash2,
   User, Pencil, AlertTriangle, CheckCheck, Bot,
-  Lightbulb, Zap, AlignLeft, Type, Minimize2, Maximize2,
+  Lightbulb, Zap, AlignLeft, Type, Minimize2, Maximize2, Globe,
   ChevronDown, MoreHorizontal, ThumbsUp, ThumbsDown, Key, Save, BookOpen, Eye, Loader2
 } from 'lucide-react'
 import { useAI } from '../context/AIContext'
@@ -67,10 +67,11 @@ const REWRITTEN_TEXT = `El pergamino desprendía un olor a sal entremezclado con
 
 const QUICK_GOALS = [
   { id: 'style',     label: 'estilo',    icon: Pencil,     desc: 'estilo_desc' },
-  { id: 'tone',      label: 'tono',      icon: Type,       desc: 'tono_desc' },
+  { id: 'language',  label: 'idioma',    icon: Globe,      desc: 'idioma_desc' },
   { id: 'character', label: 'personaje', icon: User,       desc: 'personaje_desc' },
   { id: 'length',    label: 'longitud',  icon: Minimize2,  desc: 'longitud_desc' },
   { id: 'clarity',   label: 'claridad',  icon: Lightbulb,  desc: 'claridad_desc' },
+  { id: 'tone',      label: 'tono',      icon: Type,       desc: 'tono_desc' },
   { id: 'rhythm',    label: 'ritmo',     icon: Zap,        desc: 'ritmo_desc' },
   { id: 'cohesion',  label: 'cohesion',  icon: AlignLeft,  desc: 'cohesion_desc' },
 ]
@@ -308,6 +309,7 @@ function RewriteTab({ activeScene }) {
             className="rewrite-instruction__textarea"
             placeholder={
               activeGoal === 'tone' ? t('rewrite.instruccion_tono') :
+              activeGoal === 'language' ? t('rewrite.instruccion_idioma') :
               activeGoal === 'length' ? t('rewrite.instruccion_longitud') :
               t('rewrite.instruccion_defecto')
             }
@@ -1003,6 +1005,8 @@ function OracleTab({ activeScene }) {
   const [copiedId, setCopiedId] = useState(null)
   const [compContextUsed, setCompContextUsed] = useState('')
   const [expandedEntries, setExpandedEntries] = useState(new Set())
+  const [isSaliencyExpanded, setIsSaliencyExpanded] = useState(false)
+  const [isEntitiesExpanded, setIsEntitiesExpanded] = useState(true)
   const historyEndRef = useRef(null)
 
   const getChapterInfo = (chapterId) => {
@@ -1097,13 +1101,60 @@ function OracleTab({ activeScene }) {
       const oracleText = isSpanish ? '--- TEXTO A ANALIZAR ---' : '--- TEXT TO ANALYZE ---';
       const oracleAnswer = isSpanish ? '--- TU RESPUESTA ---' : '--- YOUR ANSWER ---';
 
+      // ── Correferencias resueltas por el engine de saliencia ─────────────────
+      // Se agrupan por pronombre para que cada línea exprese toda la ambigüedad
+      // de forma compacta: «se» → Megan o a Silas. Reduce tokens y clarifica.
+      // Máximo COREF_CAP pronombres únicos inyectados.
+      const resolvedCorefs = oracleStatus.coreferences ?? [];
+      const COREF_CAP = 20;
+
+      // 1. Deduplicar pares pronombre+entidad
+      const seenCorefKeys = new Set();
+      const dedupedCorefs = resolvedCorefs.filter(r => {
+        const key = `${r.pronoun}→${r.resolvedTo}`;
+        if (seenCorefKeys.has(key)) return false;
+        seenCorefKeys.add(key);
+        return true;
+      });
+
+      // 2. Agrupar por pronombre: { pronoun → [{ entityType, resolvedTo }, ...] }
+      const groupedByPronoun = new Map();
+      dedupedCorefs.forEach(r => {
+        if (!groupedByPronoun.has(r.pronoun)) groupedByPronoun.set(r.pronoun, []);
+        groupedByPronoun.get(r.pronoun).push({ type: r.entityType, entity: r.resolvedTo });
+      });
+
+      // 3. Respetar el cap sobre pronombres únicos, no sobre pares
+      const cappedEntries = Array.from(groupedByPronoun.entries()).slice(0, COREF_CAP);
+
+      // 4. Construir líneas: primera entidad con la plantilla base, el resto con el conector
+      const corefLines = cappedEntries.map(([pronoun, refs]) => {
+        const firstLine = t('oraculo.saliencia_oracle_line', { pronoun, type: refs[0].type, entity: refs[0].entity });
+        if (refs.length === 1) return firstLine;
+        const moreParts = refs.slice(1).map(r => t('oraculo.saliencia_oracle_line_more', { type: r.type, entity: r.entity })).join('');
+        return firstLine + moreParts;
+      });
+
+      const corefBlock = corefLines.length > 0
+        ? `${t('oraculo.saliencia_oracle_header')}\n${corefLines.join('\n')}`
+        : '';
+      // ────────────────────────────────────────────────────────────────────
+
+      const totalUnique = cappedEntries.length;
+      console.log(
+        `[Oracle] Saliency Context Block: ${resolvedCorefs.length} raw → ${dedupedCorefs.length} deduped → ${totalUnique} pronouns (cap: ${COREF_CAP}):\n`,
+        corefBlock || '(Ninguna correferencia añadida al contexto)'
+      );
+
       const fullPrompt = `${oraclePrompt}
 
 ${oracleCompendium}
 ${compendiumInfo || oracleNoComp}
 
 ${oraclePrevCtx}
-${ragContext || oracleNoPrev}
+${ragContext || oracleNoPrev}${
+  corefBlock ? `\n\n${corefBlock}` : ''
+}
 
 ${oracleText}
 ${plainText}
@@ -1189,57 +1240,107 @@ ${oracleAnswer}`
 
   return (
     <div className="oracle-tab">
-      {/* Traffic Light Indicator */}
-      <div className="oracle-tab__traffic-light">
-        <div className={`oracle-traffic-light oracle-traffic-light--${oracleStatus.status}`}>
-          <div className="oracle-traffic-light__dot" />
-          <span className="oracle-traffic-light__label">
-            {oracleStatus.status === 'idle' && t('oraculo.sin_coincidencias')}
-            {oracleStatus.status === 'suspicious' && (
-              <span className="oracle-entities-wrapper">
-                <span className="oracle-entities-label">{t('oraculo.coincidencias')}</span>
-                <span className="oracle-entities-list">
-                  {oracleStatus.detectedEntities.filter(e => e?.name).map((e, i) => (
-                    <Tooltip key={e.name} content={
-                      <div>
-                        <strong>{e.name}</strong> ({e.label})
-                        <br />
-                        {e.matchedTerms?.join(', ')}
-                      </div>
-                    }>
-                      <span className="oracle-entity-tag oracle-entity-tag--hoverable">
-                        {e.name}
-                      </span>
-                    </Tooltip>
-                  ))}
-                </span>
-              </span>
-            )}
-            {oracleStatus.status === 'error' && (
-              <span className="oracle-entities-wrapper">
-                <span className="oracle-entities-label">{t('oraculo.coincidencias')}</span>
-                <span className="oracle-entities-list">
-                  {oracleStatus.detectedEntities.filter(e => e?.name).map((e, i) => (
-                    <Tooltip key={e.name} content={
-                      <div>
-                        <strong>{e.name}</strong> ({e.label})
-                        <br />
-                        {e.matchedTerms?.join(', ')}
-                      </div>
-                    }>
-                      <span className="oracle-entity-tag oracle-entity-tag--error oracle-entity-tag--hoverable">
-                        {e.name}
-                      </span>
-                    </Tooltip>
-                  ))}
-                </span>
-              </span>
-            )}
-          </span>
+      {/* Entidades Detectadas del Compendio — solo si hay entidades */}
+      {oracleStatus.detectedEntities?.length > 0 && (
+        <div className="oracle-coreference-section">
+          <button 
+            className="oracle-coreference-section__header"
+            onClick={() => setIsEntitiesExpanded(!isEntitiesExpanded)}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer'
+            }}
+          >
+            <span className="oracle-coreference-section__label">{t('oraculo.coincidencias')}</span>
+            <ChevronDown size={14} style={{ color: 'var(--text-muted)', transform: isEntitiesExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+          </button>
+          
+          {isEntitiesExpanded && (
+            <div className="oracle-coreference-chips" style={{ marginTop: '2px' }}>
+              {oracleStatus.detectedEntities.filter(e => e?.name).map((e) => (
+                <Tooltip key={e.name} content={
+                  <div>
+                    <strong>{e.name}</strong> ({e.label})
+                    <br />
+                    {e.matchedTerms?.join(', ')}
+                  </div>
+                }>
+                  <span className={`oracle-entity-tag oracle-entity-tag--hoverable ${oracleStatus.status === 'error' ? 'oracle-entity-tag--error' : ''}`}>
+                    {e.name}
+                  </span>
+                </Tooltip>
+              ))}
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
-      {/* Scene tag */}
+      {/* Chips de correferencia */}
+      {oracleStatus.coreferences?.length > 0 && (
+        <div className="oracle-coreference-section">
+          <button 
+            className="oracle-coreference-section__header"
+            onClick={() => setIsSaliencyExpanded(!isSaliencyExpanded)}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              width: '100%',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer'
+            }}
+          >
+            <span className="oracle-coreference-section__label">{t('oraculo.saliencia_titulo')}</span>
+            <ChevronDown size={14} style={{ color: 'var(--text-muted)', transform: isSaliencyExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+          </button>
+          
+          {isSaliencyExpanded && (
+            <>
+              <div className="oracle-coreference-chips">
+                {oracleStatus.coreferences.map((ref, i) => (
+                  <Tooltip
+                    key={`${ref.pronoun}-${ref.position?.start}-${i}`}
+                    content={
+                      <div>
+                        <strong>«{ref.pronoun}»</strong> {t('oraculo.saliencia_tooltip_refiere')} <strong>{ref.resolvedTo}</strong>
+                        <br />
+                        {t('oraculo.saliencia_tooltip_tipo')}: {ref.entityType} · {t('oraculo.saliencia_tooltip_confianza')}: {ref.confidence === 'high' ? t('oraculo.saliencia_confianza_alta') : t('oraculo.saliencia_confianza_baja')}
+                        <br />
+                        {t('oraculo.saliencia_tooltip_motor')}
+                      </div>
+                    }
+                  >
+                    <span
+                      className={`oracle-coreference-chip oracle-coreference-chip--${ref.confidence}`}
+                      style={{
+                        background: ref.entityColor + '18',
+                        borderColor: ref.entityColor + '55',
+                        color: ref.entityColor,
+                      }}
+                    >
+                      <span className="chip-pronoun">«{ref.pronoun}»</span>
+                      <span className="chip-arrow">→</span>
+                      <span className="chip-entity">{ref.resolvedTo}</span>
+                      <span className="chip-tag">{t('oraculo.saliencia_chip_tag')}</span>
+                    </span>
+                  </Tooltip>
+                ))}
+              </div>
+              <span className="oracle-coreference-count">
+                {oracleStatus.coreferences.length} {oracleStatus.coreferences.length === 1 ? 'correferencia' : 'correferencias'}
+              </span>
+            </>
+          )}
+        </div>
+      )}
       {activeScene && (
         <span className="oracle-tab__scene-tag">
           <Eye size={11} /> {t('oraculo.escena', { title: activeScene.title })}

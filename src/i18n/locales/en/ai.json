@@ -19,6 +19,7 @@
     "cerrar_editor": "Close editor",
     "instruccion_personalizada": "Custom instruction",
     "instruccion_tono": "E.g.: melancholic, euphoric, sarcastic...",
+    "instruccion_idioma": "E.g.: English, French, formal register...",
     "instruccion_longitud": "E.g.: much shorter, an extensive paragraph...",
     "instruccion_defecto": "E.g.: make it more tense and cinematic...",
     "generando": "Generating...",
@@ -43,6 +44,7 @@
   },
   "rewrite_prompts": {
     "style": "Rewrite the following text to improve its literary style, making it more suggestive and evocative, while maintaining the original meaning.",
+    "language": "Adapt the following text to the specified language or register: [LANGUAGE]. Keep the meaning, narrative intent, and literary style intact. Only adjust the language or linguistic variety.",
     "tone": "Adjust the emotional tone of the following text to be more [TONE], maintaining coherence with the rest of the narrative.",
     "length": "Modify the length of the following text to be more [LENGTH], without losing the essence of what is being told.",
     "clarity": "Improve the clarity and legibility of the following text, eliminating redundancies and simplifying complex phrases.",
@@ -53,6 +55,8 @@
   "objetivos": {
     "estilo": "Style",
     "estilo_desc": "Change literary style",
+    "idioma": "Language",
+    "idioma_desc": "Translate or change the linguistic register",
     "tono": "Tone",
     "tono_desc": "Adjust emotional tone",
     "personaje": "Character",
@@ -144,7 +148,7 @@
     "reconsultar": "Re-verify continuity",
     "consultando_compendio": "Looking up Compendium entries to compare...",
     "sin_coincidencias": "No tracked elements",
-    "coincidencias": "Entries identified and ready for continuity check:",
+    "coincidencias": "Detected Compendium entities",
     "escena": "Scene: {{title}}",
     "limpiar_titulo": "Clear Oracle history",
     "limpiar_mensaje": "Are you sure you want to delete all Oracle verdicts?",
@@ -160,7 +164,18 @@
     "agente_critico_nombre": "Critic",
     "agente_critico_desc": "Analysis and evaluation",
     "agente_corrector_nombre": "Proofreader",
-    "agente_corrector_desc": "Grammar and style"
+    "agente_corrector_desc": "Grammar and style",
+    "saliencia_titulo": "Saliency Engine (anaphoras)",
+    "saliencia_chip_tag": "Coreference",
+    "saliencia_confianza_alta": "High",
+    "saliencia_confianza_baja": "Low",
+    "saliencia_tooltip_tipo": "Type",
+    "saliencia_tooltip_confianza": "Confidence",
+    "saliencia_tooltip_motor": "Semantic saliency engine",
+    "saliencia_tooltip_refiere": "refers to",
+    "saliencia_oracle_header": "--- DETECTED COREFERENCES (SALIENCY ENGINE) ---",
+    "saliencia_oracle_line": "\u00ab{{pronoun}}\u00bb might refer to [{{type}}]: {{entity}}",
+    "saliencia_oracle_line_more": " or [{{type}}]: {{entity}}"
   },
   "oracle_prompt": "Act as the LoneWriter Oracle, a continuity assistant whose function is to validate text coherence against the Compendium entries and the previous manuscript context.\nYour objective is to detect plot or lore contradictions. Do not critique the style or narrative.\n\nHIERARCHY OF TRUTH:\n1. THE COMPENDIUM IS THE ABSOLUTE TRUTH. If the Compendium contradicts the previous manuscript or current text, the Compendium ALWAYS wins.\n2. The Previous Manuscript Context (RAG) acts as your memory of past events to avoid continuity errors (e.g., someone grabs a sword they lost in the previous chapter).\n\nGOLDEN RULE: If an element appears in the text and its Compendium entry has little information, ASSUME IT IS FULLY VALID. Do NOT warn that it 'lacks validity' or 'is not defined'.\nONLY report a problem if the text says A and the Compendium or Previous Context says SOMETHING COMPLETELY OPPOSITE. If the Compendium and Previous Context disagree, obey the Compendium.\nIf everything is in order, simply say there are no contradictions in a professional tone (max 1 paragraph). Do not be appeasing.\n\nIMPORTANT: Respond ONLY in valid HTML format (<p>, <strong>, <em>, <ul>, <li>). Do NOT use Markdown.",
   "language_directive": "You MUST always respond in English."
