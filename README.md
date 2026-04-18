@@ -6,7 +6,7 @@
 
 </div>
 
-# LoneWriter v1.6-stopwords 🖋️
+# LoneWriter v1.7-anaphora 🖋️
 
 > **Your "Narrative Operating System": The AI that listens to you, organizes your chaos, and monitors your world's coherence while you only worry about writing.**
 >
@@ -36,6 +36,7 @@ LoneWriter is a minimalist and powerful application designed for writers seeking
 - **RAG Engine (all-MiniLM-L6-v2):** Semantic search powered by local embeddings (Transformers.js). Your entire novel is vectorized in the browser — context-aware queries without external APIs, keeping your data private.
 - **Oracle Verdicts (Continuity Linter):** Real-time paragraph-by-paragraph coherence analysis. It acts as a "logic corrector" that detects contradictions with your established lore (e.g., a dead character reappearing or an object mistakenly changing owners).
 - **Oracle Stopwords:** Manage custom filtered words in the Resources section to fine-tune entity detection and coherence analysis.
+- **Saliency Engine (Anaphoras):** Real-time monitoring of characters and coreferences. It detects pronouns (he, she, they, etc.) and suggests which character they refer to, helping maintain consistency and solving ambiguities in long or complex scenes.
 - **Selective Exclusion:** Control which Compendium entities participate in coherence analysis with one click to avoid false positives during dreams or flashbacks.
 
 ### 🧠 Advanced AI Assistant
@@ -43,6 +44,8 @@ LoneWriter is a minimalist and powerful application designed for writers seeking
 - **Persistent Configs:** Each AI provider configuration is now stored securely in the Dexie database.
 - **Connection Test:** Verify your API keys and model connectivity with the new ⚡ Test Connection button.
 - **Literary Tools:** Rewrite scenes, adjust tone, improve pacing, or change POV with contextual intelligence.
+- **Language Goal:** New quick rewriter goal with dedicated Globe icon. Translate paragraphs or change the linguistic register (formal, informal, local variants) with one click.
+- **Contextual Continuity:** Toggle to include the preceding paragraph when rewriting to ensure the AI maintains stylistic and narrative flow.
 - **Debate System:** Multiple AI agents debate your scene with configurable rounds and persistent sessions for deep critical feedback.
 
 ### 📚 Compendium and Lore
@@ -91,7 +94,7 @@ Designed and developed with ♥ by **Sergio Sánchez** with Antigravity.
 
 ---
 
-*LoneWriter v1.6-stopwords - Your personal space to bring great stories to life.*
+*LoneWriter v1.7-anaphora - Your personal space to bring great stories to life.*
 
 ---
 
