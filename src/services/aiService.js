@@ -53,7 +53,7 @@ export const AIService = {
    * @param {Object} config - { provider, apiKey, model, customInstructions, pov, previousContext }
    */
   rewrite: async (text, goal, promptTemplate, config) => {
-    const { provider, apiKey, model, customInstructions, pov, knowledgeBase, previousContext } = config;
+    const { provider, apiKey, model, customInstructions, pov, knowledgeBase, previousContext, saliencyContext } = config;
     const isSpanish = i18n.language === 'es';
 
     if (!apiKey && provider !== 'local') throw new Error(isSpanish ? 'Se requiere una clave API para usar la IA.' : 'An API key is required to use the AI.');
@@ -88,6 +88,10 @@ export const AIService = {
       const kbLabel = isSpanish ? '[BASE DE CONOCIMIENTO Y REFERENCIAS DEL AUTOR]:' : "[AUTHOR'S KNOWLEDGE BASE AND REFERENCES]:";
       const kbNote = isSpanish ? 'TEN EN CUENTA ESTA BASE DE CONOCIMIENTO AL RESPONDER.' : 'TAKE THIS KNOWLEDGE BASE INTO ACCOUNT WHEN RESPONDING.';
       fullPrompt += `\n\n${kbLabel}\n${knowledgeBase}\n---\n${kbNote}`;
+    }
+
+    if (saliencyContext) {
+      fullPrompt += `\n\n${saliencyContext}`;
     }
 
     const outputLabel = isSpanish ? 'RESCRITURA (Responde ÚNICAMENTE con el texto reescrito en formato HTML válido. Usa etiquetas <p>, <strong>, <em>, etc. NO uses Markdown. NO añadas introducciones ni explicaciones):' : 'REWRITE (Respond ONLY with the rewritten text in valid HTML format. Use tags like <p>, <strong>, <em>, etc. Do NOT use Markdown. Do NOT add introductions or explanations):';

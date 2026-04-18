@@ -6,7 +6,7 @@
 
 </div>
 
-# LoneWriter v1.6-stopwords 🖋️
+# LoneWriter v1.7-anáfora 🖋️
 
 > **Tu "Sistema Operativo Narrativo": La IA que te escucha, organiza tu caos y vigila la coherencia de tu mundo mientras tú solo te preocupas de escribir.**
 >
@@ -36,6 +36,7 @@ LoneWriter es una aplicación minimalista y potente diseñada para escritores qu
 - **Motor RAG (all-MiniLM-L6-v2):** Búsqueda semántica potenciada por embeddings locales (Transformers.js). Tu novela completa se vectoriza en el navegador — consultas contextuales sin APIs externas, manteniendo tus datos privados.
 - **Veredictos del Oráculo (Continuity Linter):** Análisis de coherencia párrafo a párrafo. Actúa como un "corrector de lógica" en tiempo real que detecta contradicciones con tu lore establecido (ej: un personaje muerto que reaparece o un objeto que cambia de dueño por error).
 - **Palabras Filtradas (Stopwords):** Gestiona términos personalizados en la sección Recursos para refinar la detección de entidades y el análisis de coherencia.
+- **Motor de Saliencia (Anáforas):** Monitorización en tiempo real de personajes y correferencias. Detecta pronombres (él, ella, ellos, etc.) y sugiere a qué personaje se refieren, ayudando a mantener la consistencia y resolver ambigüedades en escenas largas o complejas.
 - **Exclusión Selectiva:** Controla qué entidades del Compendio participan en el análisis de coherencia con un clic para evitar falsos positivos en sueños o flashbacks.
 
 ### 🧠 Asistente de IA Avanzado
@@ -43,6 +44,8 @@ LoneWriter es una aplicación minimalista y potente diseñada para escritores qu
 - **Configuración Persistente:** Cada configuración de proveedor de IA se guarda de forma segura en la base de datos Dexie.
 - **Prueba de Conexión:** Verifica tus claves API y conectividad del modelo con el nuevo botón ⚡ Probar conexión.
 - **Herramientas Literarias:** Reescribe escenas, ajusta el tono, mejora el ritmo o cambia el punto de vista (POV) con inteligencia contextual.
+- **Objetivo de Idioma:** Nuevo objetivo rápido de reescritura con icono de Globo. Traduce párrafos o cambia el registro lingüístico (formal, informal, variantes locales) con un clic.
+- **Continuidad Contextual:** Opción para incluir el párrafo anterior al reescribir para asegurar que la IA mantenga el flujo estilístico y narrativo.
 - **Sistema de Debate:** Múltiples agentes IA debutan entre sí sobre tu escena con rondas configurables y sesiones persistentes para Feedback crítico profundo.
 
 ### 📚 Compendio y Lore
@@ -91,7 +94,7 @@ Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
 
 ---
 
-*LoneWriter v1.6-stopwords - Tu espacio personal para dar vida a grandes historias.*
+*LoneWriter v1.7-anáfora - Tu espacio personal para dar vida a grandes historias.*
 
 ---
 
