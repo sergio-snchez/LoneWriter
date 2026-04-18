@@ -6,6 +6,24 @@
 
 </div>
 
+## [LoneWriter v1.7-anaphora] - 2026-04-18
+
+### Added
+- **Saliency Engine (Anaphoras)**: Real-time detection of pronouns and their references (coreferences) in the Oracle tab. Helps maintain consistency in complex scenes with multiple characters.
+- **Language Quick Goal**: New "Globe" icon in the Rewrite panel to quickly translate or adjust the linguistic register of a paragraph.
+- **Context-aware Rewriting**: New toggle to include the previous paragraph as context for the AI, ensuring better stylistic and narrative continuity when rewriting.
+- **Oracle UI Redesign**: Redesigned the "Detected Entities" and "Saliency Engine" sections into symmetric, collapsible panels with internal scrolling and coreference counters.
+- **Resizable Side Panels**: Added mouse-drag resizing for both the AI panel and the Narrative Structure panel with persistent layout constraints.
+
+### Changed
+- **Saliency Prompt Optimization**: Grouped detections by pronoun (e.g., "«she» could refer to Megan or Clara") to reduce token usage and improve AI clarity.
+- **Prompt Injection Logic**: Enhanced the Oracle prompt with a maximum cap of 20 pronouns to prevent context window bloat in extremely long scenes.
+- **Internationalization**: Updated `ai` locales (EN/ES) with new keys for saliency engine headers and language goal descriptions.
+
+### Fixed
+- **Language Goal Default Prompt**: Fixed an issue where the default prompt was not loading when selecting the Language goal for the first time.
+- **Oracle Scroll Issues**: Long lists of detected entities or anaphoras no longer overflow the AI panel; they now stay within scrollable containers.
+
 ## [LoneWriter v1.6-stopwords] - 2026-04-12
 
 ### Added

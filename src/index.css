@@ -150,7 +150,7 @@ body {
   align-items: center;
   padding: 2px 8px;
   border-radius: 99px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -241,6 +241,13 @@ body {
   border-color: rgba(255,255,255,0.15);
 }
 
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 11px;
+  height: 24px;
+  box-sizing: border-box;
+}
+
 .btn-icon {
   width: 28px;
   height: 28px;
@@ -325,4 +332,12 @@ body {
   .card {
     border-radius: var(--radius-md);
   }
+}
+
+/* Utilities */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }

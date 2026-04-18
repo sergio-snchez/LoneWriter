@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/i18n'
-import { Sparkles, MessageSquare, X, ChevronRight, ChevronLeft,
+import {
+  Sparkles, MessageSquare, X, ChevronRight, ChevronLeft,
   Wand2, Send, RefreshCw, Copy, Check, RotateCcw, Trash2,
   User, Pencil, AlertTriangle, CheckCheck, Bot,
   Lightbulb, Zap, AlignLeft, Type, Minimize2, Maximize2, Globe,
@@ -37,22 +38,22 @@ const normalizeTextForDisplay = (text) => {
 
 function extractPreviousContext(content, selection, maxWords = 120) {
   if (!content || !selection) return null;
-  
+
   const plainText = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   const selectionLower = selection.toLowerCase();
   const plainLower = plainText.toLowerCase();
-  
+
   const selectionIndex = plainLower.indexOf(selectionLower);
   if (selectionIndex === -1) return null;
-  
+
   const textBefore = plainText.substring(0, selectionIndex);
   const wordsBefore = textBefore.split(/\s+/).filter(w => w.length > 0);
-  
+
   if (wordsBefore.length === 0) return null;
-  
+
   const startIndex = Math.max(0, wordsBefore.length - maxWords);
   const contextWords = wordsBefore.slice(startIndex);
-  
+
   return contextWords.join(' ');
 }
 
@@ -66,20 +67,20 @@ const REWRITTEN_TEXT = `El pergamino desprendía un olor a sal entremezclado con
 —No deberías tener eso —murmuró Lyra sin moverse de la puerta, los ojos fijos en el muelle en sombras que se extendía al otro lado del cristal.`
 
 const QUICK_GOALS = [
-  { id: 'style',     label: 'estilo',    icon: Pencil,     desc: 'estilo_desc' },
-  { id: 'language',  label: 'idioma',    icon: Globe,      desc: 'idioma_desc' },
-  { id: 'character', label: 'personaje', icon: User,       desc: 'personaje_desc' },
-  { id: 'length',    label: 'longitud',  icon: Minimize2,  desc: 'longitud_desc' },
-  { id: 'clarity',   label: 'claridad',  icon: Lightbulb,  desc: 'claridad_desc' },
-  { id: 'tone',      label: 'tono',      icon: Type,       desc: 'tono_desc' },
-  { id: 'rhythm',    label: 'ritmo',     icon: Zap,        desc: 'ritmo_desc' },
-  { id: 'cohesion',  label: 'cohesion',  icon: AlignLeft,  desc: 'cohesion_desc' },
+  { id: 'style', label: 'estilo', icon: Pencil, desc: 'estilo_desc' },
+  { id: 'language', label: 'idioma', icon: Globe, desc: 'idioma_desc' },
+  { id: 'character', label: 'personaje', icon: User, desc: 'personaje_desc' },
+  { id: 'length', label: 'longitud', icon: Minimize2, desc: 'longitud_desc' },
+  { id: 'clarity', label: 'claridad', icon: Lightbulb, desc: 'claridad_desc' },
+  { id: 'tone', label: 'tono', icon: Type, desc: 'tono_desc' },
+  { id: 'rhythm', label: 'ritmo', icon: Zap, desc: 'ritmo_desc' },
+  { id: 'cohesion', label: 'cohesion', icon: AlignLeft, desc: 'cohesion_desc' },
 ]
 
 const AI_AGENTS = {
-  editor:    { id: 'editor',    name: 'Editor',    color: '#6b9fd4', bgColor: 'rgba(107,159,212,0.12)', initials: 'ED', desc: 'Estructura y narrativa' },
-  critic:    { id: 'critic',    name: 'Crítico',   color: '#e07070', bgColor: 'rgba(224,112,112,0.12)', initials: 'CR', desc: 'Análisis y valoración' },
-  corrector: { id: 'corrector', name: 'Corrector', color: '#5cb98a', bgColor: 'rgba(92,185,138,0.12)',  initials: 'CO', desc: 'Gramática y estilo' },
+  editor: { id: 'editor', name: 'Editor', color: '#6b9fd4', bgColor: 'rgba(107,159,212,0.12)', initials: 'ED', desc: 'Estructura y narrativa' },
+  critic: { id: 'critic', name: 'Crítico', color: '#e07070', bgColor: 'rgba(224,112,112,0.12)', initials: 'CR', desc: 'Análisis y valoración' },
+  corrector: { id: 'corrector', name: 'Corrector', color: '#5cb98a', bgColor: 'rgba(92,185,138,0.12)', initials: 'CO', desc: 'Gramática y estilo' },
 }
 
 const MOCK_MESSAGES = [
@@ -146,14 +147,14 @@ function AgentAvatar({ agentId, size = 28 }) {
 // ─── Tab: Rewrite ─────────────────────────────────────────────
 function RewriteTab({ activeScene }) {
   const { t } = useTranslation('ai')
-  const { 
+  const {
     selection, provider, apiKey, localBaseUrl, prompts, currentModel,
     lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite, updatePrompt,
-    logAIUsage
+    logAIUsage, oracleStatus
   } = useAI();
   const { resources } = useNovel();
   const { openModal } = useModal();
-  
+
   const [instruction, setInstruction] = useState('')
   const [activeGoal, setActiveGoal] = useState('style')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -167,24 +168,52 @@ function RewriteTab({ activeScene }) {
         title: t('rewrite.seleccion_vacia_titulo'),
         message: t('rewrite.seleccion_vacia_mensaje'),
         confirmLabel: t('rewrite.seleccion_vacia_boton'),
-        onConfirm: () => {}
+        onConfirm: () => { }
       });
       return;
     }
-    
+
     setIsGenerating(true);
     try {
       console.log('[Rewrite] Reescribiendo escena', activeScene?.id, '— objetivo:', activeGoal);
       const activeRes = resources?.filter(r => r.activeForAI && r.content) || [];
-      const knowledgeBase = activeRes.length > 0 
+      const knowledgeBase = activeRes.length > 0
         ? activeRes.map(r => `Archivo: [${r.name}]\nContenido:\n${r.content}`).join('\n\n')
         : null;
 
-      const previousContext = includePreviousContext 
+      const previousContext = includePreviousContext
         ? extractPreviousContext(activeScene?.content, selection, 120)
         : null;
-      
+
       console.log('[Rewrite] previousContext:', previousContext ? `${previousContext.substring(0, 80)}...` : 'null');
+
+      const resolvedCorefs = oracleStatus?.coreferences ?? [];
+      const COREF_CAP = 20;
+      const seenCorefKeys = new Set();
+      const dedupedCorefs = resolvedCorefs.filter(r => {
+        const key = `${r.pronoun}→${r.resolvedTo}`;
+        if (seenCorefKeys.has(key)) return false;
+        seenCorefKeys.add(key);
+        return true;
+      });
+
+      const groupedByPronoun = new Map();
+      dedupedCorefs.forEach(r => {
+        if (!groupedByPronoun.has(r.pronoun)) groupedByPronoun.set(r.pronoun, []);
+        groupedByPronoun.get(r.pronoun).push({ type: r.entityType, entity: r.resolvedTo });
+      });
+
+      const cappedEntries = Array.from(groupedByPronoun.entries()).slice(0, COREF_CAP);
+      const corefLines = cappedEntries.map(([pronoun, refs]) => {
+        const firstLine = t('oraculo.saliencia_oracle_line', { pronoun, type: refs[0].type, entity: refs[0].entity });
+        if (refs.length === 1) return firstLine;
+        const moreParts = refs.slice(1).map(r => t('oraculo.saliencia_oracle_line_more', { type: r.type, entity: r.entity })).join('');
+        return firstLine + moreParts;
+      });
+
+      const saliencyContext = corefLines.length > 0
+        ? `${t('oraculo.saliencia_oracle_header')}\n${corefLines.join('\n')}`
+        : null;
 
       const response = await AIService.rewrite(selection, activeGoal, prompts[activeGoal], {
         provider,
@@ -194,7 +223,8 @@ function RewriteTab({ activeScene }) {
         customInstructions: instruction,
         pov: activeScene?.pov,
         knowledgeBase,
-        previousContext
+        previousContext,
+        saliencyContext
       });
       logAIUsage(response.usage);
       saveLastRewrite(response.text, activeGoal, instruction, selection);
@@ -203,7 +233,7 @@ function RewriteTab({ activeScene }) {
         title: t('rewrite.error_ia_titulo'),
         message: t('rewrite.error_ia_mensaje', { error: error.message }),
         confirmLabel: t('rewrite.error_ia_boton'),
-        onConfirm: () => {}
+        onConfirm: () => { }
       });
     } finally {
       setIsGenerating(false);
@@ -246,18 +276,18 @@ function RewriteTab({ activeScene }) {
           <Zap size={12} />
           {t('rewrite.objetivo_rapido')}
           <Tooltip content={t('rewrite.editar_prompt')}>
-            <button 
-              className="rewrite-section__edit-prompt" 
+            <button
+              className="rewrite-section__edit-prompt"
               onClick={() => setIsEditingPrompt(!isEditingPrompt)}
             >
               {isEditingPrompt ? t('rewrite.cerrar_editor') : t('rewrite.ver_prompt')}
             </button>
           </Tooltip>
         </div>
-        
+
         {isEditingPrompt && (
           <div className="prompt-editor">
-            <textarea 
+            <textarea
               className="prompt-editor__textarea"
               value={prompts[activeGoal]}
               onChange={(e) => updatePrompt(activeGoal, e.target.value)}
@@ -309,9 +339,9 @@ function RewriteTab({ activeScene }) {
             className="rewrite-instruction__textarea"
             placeholder={
               activeGoal === 'tone' ? t('rewrite.instruccion_tono') :
-              activeGoal === 'language' ? t('rewrite.instruccion_idioma') :
-              activeGoal === 'length' ? t('rewrite.instruccion_longitud') :
-              t('rewrite.instruccion_defecto')
+                activeGoal === 'language' ? t('rewrite.instruccion_idioma') :
+                  activeGoal === 'length' ? t('rewrite.instruccion_longitud') :
+                    t('rewrite.instruccion_defecto')
             }
             value={instruction}
             onChange={e => setInstruction(e.target.value)}
@@ -322,9 +352,9 @@ function RewriteTab({ activeScene }) {
 
       {/* Actions */}
       <div className="rewrite-actions">
-        <button 
-          className="btn btn-primary rewrite-actions__main" 
-          id="rewrite-submit-btn" 
+        <button
+          className="btn btn-primary rewrite-actions__main"
+          id="rewrite-submit-btn"
           onClick={handleRewrite}
           disabled={isGenerating || !selection}
         >
@@ -478,7 +508,7 @@ function DebateTab({ activeScene }) {
       try {
         const ragTimeout = new Promise(resolve => setTimeout(() => resolve([]), 8000));
         const ragPromise = retrieveRelevantFragments(text, activeNovel.id, 4);
-        
+
         let compendiumPromise = Promise.resolve(null);
         if (useCompendiumContext) {
           compendiumPromise = debouncedSearchRef.current(text, activeNovel.id);
@@ -528,7 +558,7 @@ function DebateTab({ activeScene }) {
           }
 
           const activeRes = resources?.filter(res => res.activeForAI && res.content) || [];
-          const knowledgeBase = activeRes.length > 0 
+          const knowledgeBase = activeRes.length > 0
             ? activeRes.map(res => `Archivo: [${res.name}]\nContenido:\n${res.content}`).join('\n\n')
             : null;
 
@@ -571,7 +601,7 @@ function DebateTab({ activeScene }) {
   }
 
   // ── Agent Management ────────────────────────────────────────
-  const AGENT_COLORS = ['#6b9fd4','#e07070','#5cb98a','#c59de0','#e0b870','#70d4e0','#e070b8']
+  const AGENT_COLORS = ['#6b9fd4', '#e07070', '#5cb98a', '#c59de0', '#e0b870', '#70d4e0', '#e070b8']
   const saveEditingAgent = (changes) => {
     updateDebateAgent(editingAgent, changes)
     setEditingAgent(null)
@@ -687,7 +717,7 @@ function DebateTab({ activeScene }) {
 
             {sessionsMenuOpen && (
               <div className="debate-sessions-dropdown">
-                <button 
+                <button
                   className="debate-session-new-btn"
                   onClick={() => {
                     const sceneInfo = getSceneChapterLabel(activeScene)
@@ -722,17 +752,17 @@ function DebateTab({ activeScene }) {
                           }}
                         />
                       ) : (
-                        <span 
+                        <span
                           className="debate-session-title"
                           onClick={() => { switchDebateSession(session.id); setSessionsMenuOpen(false); }}
                         >
                           {session.title}
                         </span>
                       )}
-                      
+
                       <div className="debate-session-actions">
                         <Tooltip content={t('debate.renombrar')}>
-                          <button 
+                          <button
                             className="debate-session-action-btn"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -744,7 +774,7 @@ function DebateTab({ activeScene }) {
                           </button>
                         </Tooltip>
                         <Tooltip content={t('debate.borrar_chat')}>
-                          <button 
+                          <button
                             className="debate-session-action-btn"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -990,12 +1020,12 @@ function AgentEditForm({ agent, colors, onSave, onCancel, isNew, canDelete, onDe
 // ─── Tab: Oracle ──────────────────────────────────────────────
 function OracleTab({ activeScene }) {
   const { t } = useTranslation('ai')
-  const { 
-    provider, apiKey, localBaseUrl, currentModel, 
-    oracleHistory, addOracleEntry, clearOracleHistory, 
-    deleteOracleEntry, toggleOracleCorrected, checkedEntries, 
+  const {
+    provider, apiKey, localBaseUrl, currentModel,
+    oracleHistory, addOracleEntry, clearOracleHistory,
+    deleteOracleEntry, toggleOracleCorrected, checkedEntries,
     oracleStatus, checkOracleResponse, resetOracleStatus,
-    logAIUsage 
+    logAIUsage
   } = useAI()
   const { activeNovel, acts } = useNovel()
   const { openModal } = useModal()
@@ -1045,10 +1075,10 @@ function OracleTab({ activeScene }) {
     try {
       console.log('[Oracle] Analizando escena', activeScene?.id, '—', activeScene.content.replace(/<[^>]*>/g, '').length, 'chars');
       console.log('[Oracle] Starting check. detectedEntities:', JSON.stringify(oracleStatus.detectedEntities));
-      
+
       const plainText = activeScene.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
       console.log('[Oracle] plainText length:', plainText.length);
-      
+
       if (!plainText || plainText.length < 10) {
         setError(t('oraculo.error_corto'))
         setIsChecking(false)
@@ -1066,13 +1096,13 @@ function OracleTab({ activeScene }) {
         // Compendium entity sheets
         (activeNovel && oracleStatus.detectedEntities?.length > 0)
           ? (async () => {
-              try {
-                return await fetchDetectedEntityData(oracleStatus.detectedEntities, activeNovel.id);
-              } catch (e) {
-                console.error('[Oracle] fetchDetectedEntityData error:', e);
-                return '';
-              }
-            })()
+            try {
+              return await fetchDetectedEntityData(oracleStatus.detectedEntities, activeNovel.id);
+            } catch (e) {
+              console.error('[Oracle] fetchDetectedEntityData error:', e);
+              return '';
+            }
+          })()
           : Promise.resolve(''),
         // RAG context (capped at 15s so it never blocks)
         activeNovel?.id
@@ -1152,9 +1182,8 @@ ${oracleCompendium}
 ${compendiumInfo || oracleNoComp}
 
 ${oraclePrevCtx}
-${ragContext || oracleNoPrev}${
-  corefBlock ? `\n\n${corefBlock}` : ''
-}
+${ragContext || oracleNoPrev}${corefBlock ? `\n\n${corefBlock}` : ''
+        }
 
 ${oracleText}
 ${plainText}
@@ -1243,12 +1272,12 @@ ${oracleAnswer}`
       {/* Entidades Detectadas del Compendio — solo si hay entidades */}
       {oracleStatus.detectedEntities?.length > 0 && (
         <div className="oracle-coreference-section">
-          <button 
+          <button
             className="oracle-coreference-section__header"
             onClick={() => setIsEntitiesExpanded(!isEntitiesExpanded)}
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
               justifyContent: 'space-between',
               width: '100%',
               background: 'none',
@@ -1260,7 +1289,7 @@ ${oracleAnswer}`
             <span className="oracle-coreference-section__label">{t('oraculo.coincidencias')}</span>
             <ChevronDown size={14} style={{ color: 'var(--text-muted)', transform: isEntitiesExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
           </button>
-          
+
           {isEntitiesExpanded && (
             <div className="oracle-coreference-chips" style={{ marginTop: '2px' }}>
               {oracleStatus.detectedEntities.filter(e => e?.name).map((e) => (
@@ -1284,12 +1313,12 @@ ${oracleAnswer}`
       {/* Chips de correferencia */}
       {oracleStatus.coreferences?.length > 0 && (
         <div className="oracle-coreference-section">
-          <button 
+          <button
             className="oracle-coreference-section__header"
             onClick={() => setIsSaliencyExpanded(!isSaliencyExpanded)}
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
               justifyContent: 'space-between',
               width: '100%',
               background: 'none',
@@ -1301,7 +1330,7 @@ ${oracleAnswer}`
             <span className="oracle-coreference-section__label">{t('oraculo.saliencia_titulo')}</span>
             <ChevronDown size={14} style={{ color: 'var(--text-muted)', transform: isSaliencyExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
           </button>
-          
+
           {isSaliencyExpanded && (
             <>
               <div className="oracle-coreference-chips">
@@ -1459,11 +1488,10 @@ ${oracleAnswer}`
             {t('oraculo.limpiar')}
           </button>
           <button
-            className={`btn oracle-tab__check-btn-main ${
-              oracleStatus.status === 'error' ? 'btn-danger' :
+            className={`btn oracle-tab__check-btn-main ${oracleStatus.status === 'error' ? 'btn-danger' :
               oracleStatus.status === 'suspicious' ? 'oracle-tab__check-btn--alert' :
-              'btn-primary'
-            }`}
+                'btn-primary'
+              }`}
             onClick={handleCheck}
             disabled={isChecking || !activeScene?.content}
           >
@@ -1502,6 +1530,43 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
   const [activeTab, setActiveTab] = useState(defaultTab)
   const { apiKey, currentModel } = useAI()
 
+  const [panelWidth, setPanelWidth] = useState(380)
+  const [isDragging, setIsDragging] = useState(false)
+  const dragRef = useRef(false)
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!dragRef.current) return
+      let newWidth = window.innerWidth - e.clientX
+      if (newWidth < 350) newWidth = 350
+      if (newWidth > 600) newWidth = 600
+      setPanelWidth(newWidth)
+    }
+    const handleMouseUp = () => {
+      if (dragRef.current) {
+        dragRef.current = false
+        setIsDragging(false)
+        document.body.style.cursor = 'default'
+        document.body.classList.remove('no-select')
+      }
+    }
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
+
+  const startDrag = (e) => {
+    if (window.innerWidth <= 768) return; // Prevent drag on mobile
+    dragRef.current = true
+    setIsDragging(true)
+    document.body.style.cursor = 'col-resize'
+    document.body.classList.add('no-select')
+    e.preventDefault()
+  }
+
   useEffect(() => {
     if (defaultTab && open) {
       setActiveTab(defaultTab);
@@ -1510,17 +1575,22 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
 
   return (
     <>
-      <div className={`ai-panel ${open ? 'ai-panel--open' : ''}`} id="ai-panel">
+      <div
+        className={`ai-panel ${open ? 'ai-panel--open' : ''} ${isDragging ? 'ai-panel--dragging' : ''}`}
+        id="ai-panel"
+        style={open ? { '--panel-width': `${panelWidth}px` } : {}}
+      >
+        <div className="ai-panel__resizer" onMouseDown={startDrag} />
         {/* Panel header */}
         <div className="ai-panel__header">
           <div className="ai-panel__header-left">
             <Sparkles size={15} className="ai-panel__header-icon" />
             <span className="ai-panel__header-title">{t('titulo_panel')}</span>
           </div>
-          
+
           <div className="ai-panel__header-right">
             <Tooltip content={t('configurar_api')}>
-              <button 
+              <button
                 className={`ai-panel__api-btn ${!apiKey ? 'needs-key' : ''}`}
                 onClick={() => onOpenSettings('ia')}
               >
