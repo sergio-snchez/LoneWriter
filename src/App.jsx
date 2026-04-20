@@ -24,6 +24,7 @@ import { GoogleDriveService } from './services/googleDriveService'
 import { db } from './db/database'
 import './App.css'
 import RagToast from './components/RagToast'
+import MeshBackground from './components/MeshBackground'
 
 export default function App() {
   const { t, i18n } = useTranslation('app')
@@ -35,12 +36,21 @@ export default function App() {
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
   const [aiPanelTab, setAiPanelTab] = useState('rewrite')
   const [theme, setTheme] = useState(() => localStorage.getItem('lw_theme') || 'dark')
+  const [meshEnabled, setMeshEnabled] = useState(() => {
+    const saved = localStorage.getItem('lw_mesh_enabled');
+    return saved === null ? true : saved === 'true';
+  })
 
   // Apply theme to document and persist
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('lw_theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-mesh', meshEnabled ? 'on' : 'off');
+    localStorage.setItem('lw_mesh_enabled', meshEnabled);
+  }, [meshEnabled]);
 
   useEffect(() => {
     const handleOpenOracle = () => {
@@ -366,6 +376,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      <MeshBackground animate={meshEnabled} />
       <input
         type="file"
         ref={fileInputRef}
@@ -489,6 +500,8 @@ export default function App() {
         initialTab={settingsTab}
         theme={theme}
         setTheme={setTheme}
+        meshEnabled={meshEnabled}
+        setMeshEnabled={setMeshEnabled}
         openModal={openModal}
       />
 
