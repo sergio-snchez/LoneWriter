@@ -6,7 +6,9 @@
   width: var(--sidebar-w);
   min-width: var(--sidebar-w);
   height: 100%;
-  background: var(--bg-surface);
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
