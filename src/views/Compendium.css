@@ -10,13 +10,16 @@
 
 /* ---- Left tabs column ---- */
 .compendium-view__tabs {
-  width: 220px;
-  min-width: 200px;
+  width: 300px;
+  min-width: 280px;
   flex-shrink: 0;
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
 }
 
 .compendium-view__tabs-header {
@@ -96,11 +99,15 @@
 }
 
 .compendium-tabs {
-  padding: 10px 10px;
+  margin: 8px 18px auto;
+  padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 3px;
-  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-strong);
+  box-shadow: var(--shadow-sm);
 }
 
 .compendium-tab {

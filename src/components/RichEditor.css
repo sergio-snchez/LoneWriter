@@ -5,9 +5,8 @@
 .rich-editor {
   display: flex;
   flex-direction: column;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  background: transparent;
+  width: 100%;
   height: 100%;
   position: relative;
 }
@@ -15,7 +14,7 @@
 /* Traffic Light Indicator */
 .rich-editor__traffic-light {
   padding: 6px 12px;
-  background: var(--bg-elevated);
+  background: transparent;
   border-bottom: 1px solid var(--border);
   font-size: 11px;
 }
@@ -33,13 +32,10 @@
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  background: var(--bg-elevated);
+  background: transparent !important;
   border-bottom: 1px solid var(--border);
   gap: 8px;
   flex-wrap: wrap;
-  position: sticky;
-  top: 0;
-  z-index: 10;
   flex-shrink: 0;
 }
 
@@ -56,18 +52,7 @@
   flex-shrink: 0;
 }
 
-.rich-editor__toolbar {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  background: var(--bg-elevated);
-  border-bottom: 1px solid var(--border);
-  gap: 8px;
-  flex-wrap: wrap;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
+/* Duplicate toolbar rule removed to ensure translucency */
 
 .toolbar-group button {
   width: 28px;
@@ -96,26 +81,31 @@
 }
 
 .toolbar-group button:disabled {
-  opacity: 0.3;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .rich-editor__content-wrapper {
   flex: 1;
   overflow-y: auto;
-  background: var(--bg-base);
+  background: transparent;
   min-height: 0;
 }
 
 /* TipTap area */
-.tiptap-editor {
-  padding: 40px 20px; /* 20px de "aire" mantenido */
+.tiptap-editor,
+.ProseMirror {
+  padding: 40px 20px;
+  /* 20px de "aire" mantenido */
   outline: none;
   font-family: 'Merriweather', serif;
   font-size: 15px;
   line-height: 1.8;
   color: var(--text-secondary);
   min-height: 100%;
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 /* Text elements */
@@ -146,7 +136,8 @@
   color: var(--text-primary);
 }
 
-.tiptap-editor ul, .tiptap-editor ol {
+.tiptap-editor ul,
+.tiptap-editor ol {
   padding-left: 24px;
   margin-bottom: 16px;
 }
@@ -222,7 +213,8 @@
     margin: 16px 0;
   }
 
-  .tiptap-editor ul, .tiptap-editor ol {
+  .tiptap-editor ul,
+  .tiptap-editor ol {
     padding-left: 20px;
     margin-bottom: 12px;
   }

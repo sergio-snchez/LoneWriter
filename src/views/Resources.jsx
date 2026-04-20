@@ -247,7 +247,8 @@ export default function ResourcesView() {
         accept=".txt,.md,.json,.csv" 
       />
 
-      {/* Header */}
+      <div className="resources-top-glass">
+        {/* Header */}
       <div className="resources-view__header">
         <div>
           <h1 className="section-title">{t('titulo')}</h1>
@@ -347,6 +348,7 @@ export default function ResourcesView() {
             </button>
           ))}
         </div>
+      </div>
       </div>
 
       {/* File list */}

@@ -1141,7 +1141,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       </div>
 
       <div className="editor-view__right">
-        <div className={`editor-main ${activeScene ? '' : 'editor-main--empty'}`}>
+        <div className={`editor-main card ${activeScene ? '' : 'editor-main--empty'}`}>
           {activeScene ? (
             <div className="editor-container">
               <div className="editor-header">

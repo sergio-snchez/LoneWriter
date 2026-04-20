@@ -36,7 +36,7 @@ const UsageMeter = ({ label, value, max, unit }) => {
   );
 };
 
-const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme, openModal }) => {
+const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme, meshEnabled, setMeshEnabled, openModal }) => {
   const { t, i18n } = useTranslation('settings');
   const { t: tc } = useTranslation('common');
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -562,6 +562,25 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                   }} />
                   <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('general.tema_claro')}</span>
                 </button>
+              </div>
+            </div>
+            <div className="settings-section">
+              <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Zap size={14} />
+                {t('general.fondo_dinamico')}
+              </span>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
+                {t('general.fondo_dinamico_hint')}
+              </p>
+              <div style={{ padding: '12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{t('general.fondo_dinamico')}</span>
+                <input
+                  type="checkbox"
+                  className="form-toggle"
+                  checked={meshEnabled}
+                  onChange={(e) => setMeshEnabled(e.target.checked)}
+                  style={{ height: '20px', width: '20px', cursor: 'pointer', accentColor: 'var(--accent)' }}
+                />
               </div>
             </div>
           </div>

@@ -9,6 +9,12 @@
   overflow: hidden;
 }
 
+.resources-top-glass {
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+}
+
 /* Header */
 .resources-view__header {
   padding: 24px 26px 16px;
