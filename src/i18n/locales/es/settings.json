@@ -97,6 +97,8 @@
     "tema_hint": "Elige entre modo oscuro (classic) o modo claro (manuscrito moderno).",
     "tema_oscuro": "Oscuro",
     "tema_claro": "Claro",
+    "fondo_dinamico": "Fondo Dinámico",
+    "fondo_dinamico_hint": "Activa un fondo animado sutil que mejora la profundidad visual (usa más CPU/GPU).",
     "enlaces_titulo": "Enlaces",
     "github_link": "Repositorio en GitHub",
     "buymeacoffee_link": "Apoya el proyecto (Buy Me a Coffee)"

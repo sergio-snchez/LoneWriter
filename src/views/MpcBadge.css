@@ -65,14 +65,16 @@
   gap: 8px;
   padding: 4px 10px;
   height: 24px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  background: var(--bg-glass-ui);
+  border: 1px solid var(--border);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
   color: var(--text-secondary);
   font-size: 11px;
   font-weight: 400;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--trans-fast);
   white-space: nowrap;
   position: relative;
 }

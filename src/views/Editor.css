@@ -12,6 +12,7 @@
   /* 48px = altura del topbar (.app-topbar { height: 48px }) */
   height: calc(100vh - 48px);
   overflow: hidden;
+  background: transparent !important;
 }
 
 /* ---- Left tree panel ----
@@ -26,7 +27,9 @@
   width: var(--tree-width, 400px);
   flex-shrink: 0;
   border-right: 1px solid var(--border);
-  background: var(--bg-base);
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
   /* Grid: fila 1=header(auto) + fila 2=scrollable(1fr) */
   display: grid;
   grid-template-rows: auto 1fr;
@@ -145,7 +148,8 @@
 .act-section {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--bg-surface);
+  background: var(--bg-glass-strong);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   transition: border-color var(--trans-fast);
 }
@@ -266,8 +270,8 @@
   transition: border-color var(--trans-fast), background var(--trans-fast);
 }
 .chapter-accordion--open {
+  background: var(--bg-glass-strong);
   border-color: var(--border);
-  background: var(--bg-base);
 }
 
 .chapter-accordion__header {
@@ -478,25 +482,26 @@
   flex: 1;
   /* height explícito: mismo calc que .editor-view, permite overflow-y real */
   height: calc(100vh - 48px);
-  overflow-y: auto;
+  overflow: hidden;
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
   min-width: 0;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 /* ---- Editor Main Area ---- */
 .editor-main {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  /* No background here, inherits from .card */
   display: flex;
   flex-direction: column;
-  min-height: 640px;
+  min-height: 0;
   flex: 1;
-  box-shadow: var(--shadow-sm);
   overflow: hidden;
+  position: relative;
 }
 
 .editor-main--empty {
@@ -553,7 +558,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(to right, rgba(212,168,83,0.03), transparent);
+  background: transparent;
 }
 
 .editor-header__breadcrumb {
@@ -594,16 +599,30 @@
 
 .editor-body {
   flex: 1;
-  overflow-y: auto;
-  background: var(--bg-base);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: transparent;
+}
+
+/* Fix for the wrapper div injected by Editor.jsx for opacity */
+.editor-body > div {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
 }
 
 .editor-footer {
   padding: 12px 24px;
   border-top: 1px solid var(--border);
   display: flex;
+  align-items: center;
   gap: 24px;
-  background: var(--bg-elevated);
+  background: transparent;
+  flex-shrink: 0;
 }
 
 .editor-footer__item {
@@ -746,15 +765,17 @@
 .meta-select {
   appearance: none;
   -webkit-appearance: none;
-  background: var(--bg-elevated);
+  background: var(--bg-glass-ui);
   border: 1px solid var(--border);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   padding: 4px 24px 4px 8px;
   border-radius: 4px;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  transition: all var(--trans-fast);
   font-family: 'Inter', sans-serif;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b6879' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -802,11 +823,13 @@
   padding: 4px 10px;
   height: 24px;
   border-radius: var(--radius-sm);
-  background: var(--bg-elevated);
+  background: var(--bg-glass-ui);
   border: 1px solid var(--border);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
   position: relative;
   cursor: default;
-  transition: all 0.2s ease;
+  transition: all var(--trans-fast);
 }
 
 .editor-traffic-light--clickable {
@@ -890,7 +913,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: var(--bg-elevated);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 12px;
@@ -929,6 +952,17 @@
 .progress-item__sublabel { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
 
 /* ---- Drag Overlay Ghost ---- */
+.drag-overlay-ghost.kpi {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  flex: 1;
+  min-width: 0;
+}
 .drag-overlay-ghost {
   display: flex;
   align-items: center;
@@ -967,12 +1001,6 @@
   content: '';
   position: absolute;
   top: 6px;
-  right: 6px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  opacity: 0.6;
 }
 
 .goal-editor-popover {
@@ -993,6 +1021,16 @@
   animation: slideInUp 0.2s ease-out;
 }
 
+.editor-stats {
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  transition: box-shadow var(--trans-mid), border-color var(--trans-mid), transform var(--trans-mid);
+}
+
 @keyframes slideInUp {
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }
@@ -1009,7 +1047,7 @@
 .goal-editor__custom input {
   width: 100%;
   padding: 8px 10px;
-  background: var(--bg-base);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
@@ -1091,7 +1129,7 @@
   flex: 1;
   display: grid;
   grid-template-rows: 1fr auto; /* Cuerpo toma 1fr, Estadísticas toma auto */
-  background: var(--bg-base);
+  background: var(--bg-editor-view-glass);
   position: relative;
   overflow: hidden;
   height: 100%;
