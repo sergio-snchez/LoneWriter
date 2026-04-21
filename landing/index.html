@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoneWriter - The Intelligent IDE for Novelists</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/svg+xml" href="../app/public/favicon.svg" />
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="mesh-background">
+    <div class="mesh-blob mesh-blob--1"></div>
+    <div class="mesh-blob mesh-blob--2"></div>
+    <div class="mesh-blob mesh-blob--3"></div>
+    <div class="mesh-blob mesh-blob--4"></div>
+  </div>
+
+  <nav class="navbar glass-panel">
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <i data-lucide="pen-line"></i>
+        </div>
+        <span class="brand-text">LoneWriter</span>
+      </div>
+      <div class="nav-links">
+        <a href="#features" data-i18n="nav_features">Features</a>
+        <a href="#engine" data-i18n="nav_engine">MPC System</a>
+        <button id="lang-toggle" class="btn btn-ghost" style="padding: 6px 10px; font-weight: 700;">ES</button>
+        <a href="https://lonewriter.vercel.app" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+          <i data-lucide="pen-line"></i> <span data-i18n="nav_openapp">Open App</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="hero-content fade-in-up">
+        <div class="badge-pill mb-4">
+          <i data-lucide="sparkles"></i>
+          <span data-i18n="badge_version">v1.7 Anáfora is Live</span>
+        </div>
+        <h1 class="hero-title"><span data-i18n="hero_title_1">The Intelligent IDE<br/>for</span> <span class="accent-text" data-i18n="hero_title_2">Novelists</span></h1>
+        <p class="hero-subtitle" data-i18n="hero_subtitle">Compose, structure, and refine your masterwork in a distraction-free, privacy-first environment enhanced by local AI.</p>
+        <div class="hero-cta">
+          <a href="https://lonewriter.vercel.app" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
+            <span data-i18n="hero_launch">Launch Editor</span> <i data-lucide="arrow-right"></i>
+          </a>
+          <a href="#features" class="btn btn-ghost btn-lg" data-i18n="hero_discover">Discover Features</a>
+        </div>
+      </div>
+      <div class="hero-visual fade-in-up delay-1">
+        <div class="mockup-window glass-panel">
+          <div class="mockup-header">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+          <div class="mockup-body">
+            <div class="mockup-sidebar">
+              <div class="mock-line title"></div>
+              <div class="mock-line short"></div>
+              <div class="mock-line"></div>
+              <div class="mock-line half"></div>
+            </div>
+            <div class="mockup-editor">
+              <h2 class="mock-heading" data-i18n="mock_heading">Chapter 1: The Golden Parrot</h2>
+              <p class="mock-p" data-i18n="mock_p">Silas occupied his usual table, a shadowy corner at the back of The Golden Parrot, where the shadows seemed to adhere to the walls...</p>
+              <div class="mpc-floating-badge glass-panel">
+                <i data-lucide="sparkles"></i> <span data-i18n="mock_mpc">3 Entities Detected</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="features" class="section">
+      <div class="section-header fade-in">
+        <h2 class="section-title" data-i18n="features_sectitle">Built for the Architect and the Gardener</h2>
+        <p class="section-subtitle" data-i18n="features_secsub">A granular suite of tools to handle everything from scene drafting to entire world-building bibles.</p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card glass-panel fade-in-up">
+          <div class="feature-icon"><i data-lucide="book-open"></i></div>
+          <h3 data-i18n="feat_1_title">Narrative Structure</h3>
+          <p data-i18n="feat_1_desc">Organize your novel into Acts, Chapters, and Scenes. Reorder your manuscript with fluid drag-and-drop mechanics.</p>
+        </div>
+        <div class="feature-card glass-panel fade-in-up delay-1">
+          <div class="feature-icon"><i data-lucide="target"></i></div>
+          <h3 data-i18n="feat_2_title">Goal Tracking</h3>
+          <p data-i18n="feat_2_desc">Set custom word counts, chapter targets, and visually track your progress. Keep your writing streak alive.</p>
+        </div>
+        <div class="feature-card glass-panel fade-in-up delay-2">
+          <div class="feature-icon"><i data-lucide="folder-open"></i></div>
+          <h3 data-i18n="feat_3_title">Knowledge Base</h3>
+          <p data-i18n="feat_3_desc">Upload your world-building lore, specific chapter notes, and context files. Toggle them instantly for the Oracle to review.</p>
+        </div>
+        <div class="feature-card glass-panel fade-in-up">
+          <div class="feature-icon"><i data-lucide="cloud"></i></div>
+          <h3 data-i18n="feat_4_title">Cloud Sync</h3>
+          <p data-i18n="feat_4_desc">Local-first storage with optional Google Drive syncing and continuous backups to ensure your manuscript is never lost.</p>
+        </div>
+        <div class="feature-card glass-panel fade-in-up delay-1">
+          <div class="feature-icon"><i data-lucide="moon"></i></div>
+          <h3 data-i18n="feat_5_title">Dynamic Design</h3>
+          <p data-i18n="feat_5_desc">Immerse yourself in a beautifully crafted responsive UI with customizable dynamic glassmorphism and an elegant dark mode.</p>
+        </div>
+        <div class="feature-card glass-panel fade-in-up delay-2">
+          <div class="feature-icon"><i data-lucide="file-down"></i></div>
+          <h3 data-i18n="feat_6_title">Frictionless Export</h3>
+          <p data-i18n="feat_6_desc">Compile your entire project into a standard Document (.docx) with one click, perfectly formatted for publishing.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="engine" class="section section-alt">
+      <div class="split-layout">
+        <div class="split-content fade-in-up">
+          <div class="badge-pill mb-4"><i data-lucide="zap"></i> <span data-i18n="engine_badge">MPC Coreference Engine</span></div>
+          <h2 class="section-title" data-i18n="engine_title">Minimum Plausible Context</h2>
+          <p class="section-subtitle" style="margin-left:0; text-align:left;" data-i18n="engine_sub">LoneWriter extracts and categorizes important elements dynamically as you type without consuming massive amounts of AI tokens.</p>
+          <ul class="check-list">
+            <li><i data-lucide="check-circle-2"></i> <div><strong data-i18n="eng_1_label">Characters:</strong> <span data-i18n="eng_1">Tracks character traits and appearances dynamically.</span></div></li>
+            <li><i data-lucide="check-circle-2"></i> <div><strong data-i18n="eng_2_label">Locations:</strong> <span data-i18n="eng_2">Connects scenes directly to your custom world map locales.</span></div></li>
+            <li><i data-lucide="check-circle-2"></i> <div><strong data-i18n="eng_3_label">Lore & Objects:</strong> <span data-i18n="eng_3">Contextual awareness of your magical or sci-fi systems.</span></div></li>
+            <li><i data-lucide="check-circle-2"></i> <div><strong data-i18n="eng_4_label">Saliency Scoring:</strong> <span data-i18n="eng_4">Injects only the most relevant lore into your AI prompts.</span></div></li>
+          </ul>
+        </div>
+        <div class="split-visual fade-in-up delay-1">
+          <div class="compendium-mockup glass-panel">
+            <div class="c-header" data-i18n="comp_head">Compendium</div>
+            <div class="c-tabs">
+              <div class="c-tab active"><i data-lucide="users"></i> <span data-i18n="comp_char">Characters</span> <span class="c-count">24</span></div>
+              <div class="c-tab"><i data-lucide="map-pin"></i> <span data-i18n="comp_loc">Locations</span> <span class="c-count">12</span></div>
+              <div class="c-tab"><i data-lucide="box"></i> <span data-i18n="comp_obj">Objects</span> <span class="c-count">5</span></div>
+              <div class="c-tab"><i data-lucide="book"></i> <span data-i18n="comp_lore">Lore</span> <span class="c-count">8</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer glass-panel">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <div class="brand-icon">
+          <i data-lucide="pen-line"></i>
+        </div>
+        <span class="brand-text">LoneWriter</span>
+        <p data-i18n="footer_quote">Your masterpiece, structured intelligently.</p>
+      </div>
+      <div class="footer-links">
+        <div class="link-col">
+          <strong data-i18n="footer_res">Resources</strong>
+          <a href="#" data-i18n="footer_doc">Documentation</a>
+          <a href="#" data-i18n="footer_change">Changelog (v1.7)</a>
+        </div>
+        <div class="link-col">
+          <strong data-i18n="footer_auth">Author</strong>
+          <a href="https://github.com/sergio-snchez/LoneWriter">GitHub</a>
+          <a href="https://buymeacoffee.com/sergio.snchez">Buy me a Coffee</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom" data-i18n="footer_copy">
+      &copy; 2026 Sergio Sánchez. Built for creators.
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

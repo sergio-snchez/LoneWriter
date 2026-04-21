@@ -1,4 +1,4 @@
-![LoneWriter Banner](banner-lonewriter.png)
+![LoneWriter Banner](app/public/banner-lonewriter.png)
 
 <div align="center">
 
@@ -81,7 +81,7 @@ Si deseas probar LoneWriter en tu propio entorno:
    ```
 2. Instala las dependencias:
    ```bash
-   npm install
+   npm run install:app
    ```
 3. Ejecuta el servidor de desarrollo:
    ```bash

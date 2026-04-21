@@ -555,7 +555,7 @@ export const AIProvider = ({ children }) => {
           console.error('[LoneWriter] Entity detection error:', err);
         }
       });
-  }, [activeNovel, oracleText, selection]);
+  }, [activeNovel, oracleText, selection, activeScene?.id]);
 
   const markOracleContradiction = (message) => {
     setOracleStatus(prev => ({
