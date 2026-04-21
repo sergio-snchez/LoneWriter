@@ -1,0 +1,152 @@
+{
+  "titulo": "Compendium",
+  "subtitulo": "Novel references",
+  "tabs": {
+    "personajes": "Characters",
+    "localizaciones": "Locations",
+    "objetos": "Objects & artifacts",
+    "characters": "Characters",
+    "locations": "Locations",
+    "objects": "Objects",
+    "lore": "Lore"
+  },
+  "resumen": {
+    "personajes": "Characters",
+    "lugares": "Places",
+    "objetos": "Objects",
+    "entradas_lore": "Lore entries"
+  },
+  "toolbar": {
+    "buscar": "Search in {{section}} (name, description, tags)...",
+    "filtrar": "Filter",
+    "filtrar_con_cuenta": "Filter ({{count}})",
+    "limpiar": "Clear",
+    "filtrar_titulo": "Filter by tags",
+    "sin_etiquetas": "No tags available",
+    "añadir": "Add entry"
+  },
+  "vacio": {
+    "personajes": "No characters yet",
+    "localizaciones": "No locations yet",
+    "objetos": "No objects yet",
+    "lore": "No lore entries yet",
+    "subtitulo": "Bring your world to life by adding the first entry.",
+    "boton": "Add first entry"
+  },
+  "eliminar": {
+    "titulo": "Delete entry",
+    "mensaje": "Are you sure you want to permanently delete \"{{name}}\" from the compendium?",
+    "boton": "Delete Permanently"
+  },
+  "panel": {
+    "editar": "Edit entry",
+    "añadir": "Add entry",
+    "cancelar": "Cancel",
+    "guardar": "Save entry"
+  },
+  "formulario": {
+    "seleccionar_categoria": "Select category",
+    "completar_ia_tooltip": "Magically extract details from your novel's text",
+    "completar_ia_error": "Please enter at least a name or title before attempting to extract data.",
+    "completar_ia_fallo": "Auto-complete error: {{error}}",
+    "completar_ia_cargando": "COLLECTING LORE...",
+    "personajes": {
+      "nombre": "Name",
+      "nombre_placeholder": "Lyra Ashveil",
+      "rol": "Main role",
+      "rol_placeholder": "Protagonist, Antagonist...",
+      "ocupacion": "Occupation",
+      "ocupacion_placeholder": "Cartographer, Guard...",
+      "edad": "Age (Optional)",
+      "descripcion": "Detailed description",
+      "rasgos": "Traits (comma-separated)",
+      "rasgos_placeholder": "Brave, Cynical, Loyal...",
+      "relaciones": "Relations",
+      "sin_personajes": "Add more characters to the compendium to create bonds.",
+      "seleccionar": "Select character...",
+      "relacion_para_mi": "To me they are... (e.g.: Nephew)",
+      "relacion_para_el": "To them I am... (e.g.: Aunt)",
+      "eliminar_relacion": "Delete relation",
+      "añadir_vinculo": "Add bond",
+      "color": "Representative color"
+    },
+    "localizaciones": {
+      "nombre": "Location name",
+      "tipo": "Type",
+      "tipo_placeholder": "City, Ruins, Sea...",
+      "clima": "Climate / Environment",
+      "descripcion": "Description",
+      "etiquetas": "Tags (comma-separated)",
+      "etiquetas_placeholder": "Magic, Danger, Imperial",
+      "personajes_asociados": "Characters associated with this place",
+      "color": "Map color"
+    },
+    "objetos": {
+      "nombre": "Artifact name",
+      "tipo": "Type",
+      "tipo_placeholder": "Weapon, Document, Jewel...",
+      "importancia": "Narrative importance",
+      "importancia_secundario": "Secondary",
+      "importancia_relevante": "Relevant",
+      "importancia_macguffin": "MacGuffin (key element)",
+      "portador": "Current bearer",
+      "portador_desconocido": "Unknown",
+      "origen": "Historical origin",
+      "descripcion": "Description",
+      "etiquetas": "Tags (comma-separated)"
+    },
+    "lore": {
+      "titulo": "Lore title",
+      "categoria": "Logical category",
+      "categoria_placeholder": "Society, Magic, Religion...",
+      "resumen": "Summary / Content",
+      "etiquetas": "Tags (comma-separated)"
+    }
+  },
+  "tarjetas": {
+    "contexto_ia": "AI Context",
+    "años": "{{age}} years",
+    "rasgos": "Traits",
+    "relaciones": "Relations",
+    "clima": "Climate",
+    "personajes_asociados": "Associated characters",
+    "portador": "Bearer: {{name}}",
+    "macguffin": "⚡ MacGuffin",
+    "relevante": "★ Relevant",
+    "origen": "Origin",
+    "excluido": "Excluded from coherence analysis",
+    "incluido": "Included in coherence analysis",
+    "editar": "Edit",
+    "eliminar": "Delete"
+  },
+  "mpc": {
+    "titulo": "MPC Compendium",
+    "tooltip": "Compendium proposals detected by the MPC",
+    "sin_pendientes": "No pending proposals.",
+    "subtitulo": "{{count}} possible entity detected in your text",
+    "subtitulo_plural": "{{count}} possible entities detected in your text",
+    "empty_desc_1": "The MPC will analyze your text as you write and suggest new entries for the Compendium.",
+    "empty_desc_2": "For a complete manual scan of the scene, you must be in the Editor and select the text you want to scan.",
+    "escanear_ahora": "Scan current scene",
+    "scan_from_editor": "Open a scene in the Editor to scan",
+    "ignorar_todas": "Dismiss all",
+    "aceptar_todas": "Accept all",
+    "aceptar_tooltip": "Accept and save to Compendium",
+    "aceptar": "Accept",
+    "editar_tooltip": "Edit before saving",
+    "editar": "Edit",
+    "ignorar_vez": "Dismiss for now",
+    "ignorar_siempre": "Dismiss permanently (never suggest again)",
+    "confianza_alta": "High confidence",
+    "confianza_media": "Medium confidence",
+    "confianza_baja": "Low confidence",
+    "motivo_label": "📌 Reason:",
+    "tipo_personaje": "Character",
+    "tipo_lugar": "Location",
+    "tipo_objeto": "Object",
+    "tipo_lore": "Lore",
+    "interruptor_label": "Scanning (Auto)",
+    "ver_propuestas": "View {{count}} proposal",
+    "ver_propuestas_plural": "View {{count}} proposals"
+  }
+}
