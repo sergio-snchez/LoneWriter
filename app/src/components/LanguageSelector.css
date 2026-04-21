@@ -1,0 +1,20 @@
+.language-selector__select {
+  width: 220px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.language-selector__select:hover {
+  border-color: var(--accent);
+}
+
+.language-selector__select:focus {
+  border-color: var(--accent);
+}
