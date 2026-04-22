@@ -9,13 +9,29 @@
 ## [LoneWriter v1.8] - 2026-xx-xx
 
 ### Added
-- **Efectos de Interfaz Glassmorphism**: Añadido efecto de cristal esmerilado (blur + transparencia) a modales, paneles y elementos flotantes. Implementado para temas claro y oscuro con niveles de opacidad específicos por tema.
-- **Fondo Dinámico (Anti-Fatiga)**: Añadidos blobs de colores animados que se mueven suavemente detrás de la interfaz. Movimiento sutil y relajante para reducir la fatiga visual durante sesiones largas de escritura. Interruptor disponible en Configuración > Interfaz.
+- **Tipografía Premium**: Nuevo selector de fuentes curadas en Configuración > Interfaz:
+  - Sans (Inter): Máxima limpieza
+  - Serif (Playfair Display): Sensación de novela clásica
+  - Mono (JetBrains Mono): Precisión técnica
+  - Máquina de escribir (Special Elite): Estética vintage de máquina de escribir
+- **Temas Personalizados con Personalidad**: Añadidos 2 temas nuevos (4 en total):
+  - **Clásico Oscuro** (por defecto): Acentos dorados cálidos sobre gris oscuro
+  - **Moderno Claro**: Manuscrito limpio en crema
+  - **Sepia Recuerdos** (NUEVO): Tonos de papel vintage con oro antiguo
+  - **Noche Nórdica** (NUEVO): Azules profundos y acentos de aurora boreal
+- **Fondo Dinámico (Anti-Fatiga)**: Blobs de colores animados que se mueven lentamente detrás de la interfaz. Movimiento sutil y relajante para reducir la fatiga visual durante sesiones largas de escritura. Colores específicos por tema - tonos fríos para temas oscuros, tonos cálidos para temas claros. Interruptor en Configuración > Interfaz.
+- **Efectos de Interfaz Glassmorphism**: Añadido efecto de cristal esmerilado (blur + transparencia) a modales, paneles y elementos flotantes. Implementado para todos los temas con niveles de opacidad específicos.
+- **Animaciones Suaves**: Transiciones fluidas con efecto resorte para:
+  - Abrir/cerrar el Panel de IA
+  - Abrir/cerrar el Modal de Configuración
+  - Cambios de vista (Editor ↔ Compendio ↔ Recursos)
+  - Colapsar el Sidebar
 - **Motor de Razonamiento Combinado (Resolución de Anáforas)**: Sustituido el anterior Motor de Saliencia por un nuevo enfoque multi-componente:
   - **RAG (Compendio)**: Enviamos todas las fichas relevantes que el sistema detecta en el párrafo actual.
   - **Contexto Previo**: Enviamos los párrafos anteriores para que sepa de qué se está hablando y quién es quién.
   - **POV (Punto de Vista)**: Le recordamos quién es el narrador.
   - **Instrucciones de Continuidad**: El prompt del Oráculo está diseñado específicamente para usar esa información y detectar contradicciones (ej: si el RAG dice que Markus es un lobo y el texto dice que es un elfo, el Oráculo lo detectará gracias a esa conexión).
+- **Control de Tamaño de Fuente**: Nuevos botones +/- en la barra de herramientas del editor para ajustar el tamaño del texto (12-28px). La preferencia se guarda en la base de datos.
 
 ---
 

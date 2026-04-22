@@ -1,13 +1,15 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { TextStyle } from '@tiptap/extension-text-style';
 import { 
   Bold, Italic, List, ListOrdered, Quote, 
-  Heading1, Heading2, Undo, Redo, Eraser
+  Heading1, Heading2, Undo, Redo, Eraser, Minus, Plus
 } from 'lucide-react';
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAI } from '../context/AIContext';
 import { Tooltip } from './Tooltip';
+import { db } from '../db/database';
 import './RichEditor.css';
 
 function createDebouncedOracleScan(callback, delay = 3000) {
@@ -34,6 +36,33 @@ export default function RichEditor({ content, onChange, placeholder }) {
   const oracleScanRef = useRef(null);
   const lastSelectionRef = useRef('');
   const [editorError, setEditorError] = useState(null);
+  const [fontSize, setFontSize] = useState(15);
+
+  // Load font size from Dexie on mount
+  useEffect(() => {
+    const loadFontSize = async () => {
+      try {
+        const pref = await db.editorPrefs.get('fontSize');
+        if (pref && pref.value) {
+          setFontSize(pref.value);
+        }
+      } catch (err) {
+        console.error('[RichEditor] Error loading fontSize:', err);
+      }
+    };
+    loadFontSize();
+  }, []);
+
+  // Save font size to Dexie when it changes
+  const handleFontSizeChange = async (delta) => {
+    const newSize = Math.max(12, Math.min(28, fontSize + delta));
+    setFontSize(newSize);
+    try {
+      await db.editorPrefs.put({ key: 'fontSize', value: newSize });
+    } catch (err) {
+      console.error('[RichEditor] Error saving fontSize:', err);
+    }
+  };
 
   if (!oracleScanRef.current) {
     oracleScanRef.current = createDebouncedOracleScan((text) => {
@@ -48,6 +77,7 @@ export default function RichEditor({ content, onChange, placeholder }) {
           levels: [1, 2],
         },
       }),
+      TextStyle,
     ],
     content: content,
     onCreate: ({ editor }) => {
@@ -225,14 +255,32 @@ export default function RichEditor({ content, onChange, placeholder }) {
             </button>
           </Tooltip>
           <Tooltip content={t('editor_toolbar.limpiar_formato')}>
-            <button onClick={() => editor.chain().focus().unsetAllMarks().run()}>
+            <button onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}>
               <Eraser size={16} />
+            </button>
+          </Tooltip>
+        </div>
+
+        <div className="toolbar-divider" />
+
+        <div className="toolbar-group">
+          <Tooltip content={t('editor_toolbar.disminuir_fuente')}>
+            <button onClick={() => handleFontSizeChange(-1)}>
+              <Minus size={16} />
+            </button>
+          </Tooltip>
+          <span style={{ fontSize: '11px', padding: '0 4px', color: 'var(--text-muted)', minWidth: '28px', textAlign: 'center' }}>
+            {fontSize}
+          </span>
+          <Tooltip content={t('editor_toolbar.aumentar_fuente')}>
+            <button onClick={() => handleFontSizeChange(1)}>
+              <Plus size={16} />
             </button>
           </Tooltip>
         </div>
       </div>
 
-      <div className="rich-editor__content-wrapper">
+      <div className="rich-editor__content-wrapper" style={{ '--editor-font-size': `${fontSize}px` }}>
         <EditorContent editor={editor} />
       </div>
     </div>

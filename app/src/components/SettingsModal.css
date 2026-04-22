@@ -10,7 +10,61 @@
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+.settings-modal-overlay.closing {
+  animation: fadeOut 0.2s ease-in forwards;
+}
+
+.settings-modal {
+  width: 750px;
+  max-width: 90vw;
+  height: 600px;
+  max-height: 85vh;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  animation: slideInUp 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.settings-modal.closing {
+  animation: slideOutDown 0.25s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+  }
 }
 
 .settings-modal {

@@ -12,7 +12,9 @@
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  transition: width var(--trans-mid), min-width var(--trans-mid);
+  transition: width 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+              min-width 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.2s ease;
   overflow: hidden;
   position: relative;
   flex-shrink: 0;

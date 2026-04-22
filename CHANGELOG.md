@@ -9,13 +9,29 @@
 ## [LoneWriter v1.8] - 2026-xx-xx
 
 ### Added
-- **Glassmorphism Interface Effects**: Added frosted glass effect (blur + transparency) to modals, panels, and floating elements. Implemented for both light and dark themes with theme-specific opacity levels.
-- **Dynamic Background (Anti-Fatigue)**: Added animated color blobs that drift slowly behind the interface. Subtle, calming movement to reduce visual fatigue during long writing sessions. Toggle available in Settings > Interface.
+- **Premium Typography**: New curated font selector in Settings > Interface:
+  - Sans (Inter): Maximum clarity
+  - Serif (Playfair Display): Classic novel feel
+  - Mono (JetBrains Mono): Technical precision
+  - Typewriter (Special Elite): Vintage writing machine aesthetic
+- **Custom Themes with Personality**: Added 2 new themes (4 total):
+  - **Classic Dark** (default): Warm gold accents on dark gray
+  - **Modern Light**: Clean cream manuscript
+  - **Sepia Memoir** (NEW): Vintage paper tones with antique gold
+  - **Nordic Night** (NEW): Deep icy blues and aurora accents
+- **Dynamic Background (Anti-Fatigue)**: Animated color blobs that drift slowly behind the interface. Subtle, calming movement to reduce visual fatigue during long writing sessions. Theme-specific colors - cool tones for dark themes, warm tones for light themes. Toggle in Settings > Interface.
+- **Glassmorphism Interface Effects**: Added frosted glass effect (blur + transparency) to modals, panels, and floating elements. Implemented for all themes with theme-specific opacity levels.
+- **Smooth Animations**: Fluid transitions with spring easing for:
+  - AI Panel open/close
+  - Settings Modal open/close
+  - View changes (Editor ↔ Compendium ↔ Resources)
+  - Sidebar collapse
 - **Combined Reasoning Engine (Anaphora Resolution)**: Replaced the previous Saliency Engine with a new multi-component approach:
   - **RAG (Compendium)**: Sends all relevant entries detected in the current paragraph to the Oracle.
   - **Previous Context**: Sends previous paragraphs so the AI knows what is being discussed and who is who.
   - **POV (Point of View)**: Reminds the AI who the narrator is.
   - **Continuity Instructions**: The Oracle prompt is specifically designed to use this information and detect contradictions (e.g., if RAG says "Markus is a wolf" but the text says "Markus is an elf", the Oracle will detect it thanks to this connection).
+- **Font Size Control**: New +/- buttons in the editor toolbar to adjust text size (12-28px). Preference persists in database.
 
 ---
 
