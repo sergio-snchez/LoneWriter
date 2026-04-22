@@ -36,10 +36,19 @@ const UsageMeter = ({ label, value, max, unit }) => {
   );
 };
 
-const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme, meshEnabled, setMeshEnabled, openModal }) => {
+const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme, editorFont, setEditorFont, meshEnabled, setMeshEnabled, openModal }) => {
   const { t, i18n } = useTranslation('settings');
   const { t: tc } = useTranslation('common');
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 250);
+  };
 
   // Update activeTab when initialTab changes (e.g. when opening from different places)
   React.useEffect(() => {
@@ -511,12 +520,29 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
                 {t('general.tema_hint')}
               </p>
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                <button
+                  onClick={() => setTheme('nordic')}
+                  style={{
+                    padding: '10px',
+                    borderRadius: 'var(--radius-md)',
+                    border: theme === 'nordic' ? '2px solid var(--accent)' : '2px solid var(--border)',
+                    background: theme === 'nordic' ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all var(--trans-fast)'
+                  }}
+                >
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'linear-gradient(135deg, #232938 50%, #2D3347 50%)', border: '1px solid rgba(126,184,218,0.3)' }} />
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('general.tema_nordic')}</span>
+                </button>
                 <button
                   onClick={() => setTheme('dark')}
                   style={{
-                    flex: 1,
-                    padding: '12px',
+                    padding: '10px',
                     borderRadius: 'var(--radius-md)',
                     border: theme === 'dark' ? '2px solid var(--accent)' : '2px solid var(--border)',
                     background: theme === 'dark' ? 'var(--accent-dim)' : 'var(--bg-elevated)',
@@ -524,24 +550,35 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '8px',
+                    gap: '6px',
                     transition: 'all var(--trans-fast)'
                   }}
                 >
-                  <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    background: `linear-gradient(135deg, #2B2E3A 50%, #23252E 50%)`,
-                    border: '1px solid rgba(255,255,255,0.2)'
-                  }} />
-                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('general.tema_oscuro')}</span>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'linear-gradient(135deg, #2B2E3A 50%, #23252E 50%)', border: '1px solid rgba(255,255,255,0.2)' }} />
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('general.tema_oscuro')}</span>
+                </button>
+                <button
+                  onClick={() => setTheme('sepia')}
+                  style={{
+                    padding: '10px',
+                    borderRadius: 'var(--radius-md)',
+                    border: theme === 'sepia' ? '2px solid var(--accent)' : '2px solid var(--border)',
+                    background: theme === 'sepia' ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all var(--trans-fast)'
+                  }}
+                >
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'linear-gradient(135deg, #EBE2CF 50%, #F4ECD8 50%)', border: '1px solid rgba(166,124,82,0.3)' }} />
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('general.tema_sepia')}</span>
                 </button>
                 <button
                   onClick={() => setTheme('light')}
                   style={{
-                    flex: 1,
-                    padding: '12px',
+                    padding: '10px',
                     borderRadius: 'var(--radius-md)',
                     border: theme === 'light' ? '2px solid var(--accent)' : '2px solid var(--border)',
                     background: theme === 'light' ? 'var(--accent-dim)' : 'var(--bg-elevated)',
@@ -549,18 +586,99 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '8px',
+                    gap: '6px',
                     transition: 'all var(--trans-fast)'
                   }}
                 >
-                  <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    background: `linear-gradient(135deg, #F5F0E6 50%, #FCF8F2 50%)`,
-                    border: '1px solid rgba(60,54,51,0.2)'
-                  }} />
-                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('general.tema_claro')}</span>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'linear-gradient(135deg, #F5F0E6 50%, #FCF8F2 50%)', border: '1px solid rgba(60,54,51,0.2)' }} />
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('general.tema_claro')}</span>
+                </button>
+              </div>
+            </div>
+            <div className="settings-section">
+              <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Palette size={14} />
+                {t('general.fuente')}
+              </span>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
+                {t('general.fuente_hint')}
+              </p>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => setEditorFont('sans')}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: 'var(--radius-md)',
+                    border: editorFont === 'sans' ? '2px solid var(--accent)' : '2px solid var(--border)',
+                    background: editorFont === 'sans' ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'all var(--trans-fast)'
+                  }}
+                >
+                  <span style={{ fontSize: '14px', fontFamily: "'Inter', sans-serif", color: 'var(--text-primary)' }}>Aa</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('general.fuente_sans')}</span>
+                </button>
+                <button
+                  onClick={() => setEditorFont('serif')}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: 'var(--radius-md)',
+                    border: editorFont === 'serif' ? '2px solid var(--accent)' : '2px solid var(--border)',
+                    background: editorFont === 'serif' ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'all var(--trans-fast)'
+                  }}
+                >
+                  <span style={{ fontSize: '14px', fontFamily: "'Playfair Display', serif", color: 'var(--text-primary)' }}>Aa</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('general.fuente_serif')}</span>
+                </button>
+                <button
+                  onClick={() => setEditorFont('mono')}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: 'var(--radius-md)',
+                    border: editorFont === 'mono' ? '2px solid var(--accent)' : '2px solid var(--border)',
+                    background: editorFont === 'mono' ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'all var(--trans-fast)'
+                  }}
+                >
+                  <span style={{ fontSize: '14px', fontFamily: "'JetBrains Mono', monospace", color: 'var(--text-primary)' }}>Aa</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('general.fuente_mono')}</span>
+                </button>
+                <button
+                  onClick={() => setEditorFont('lora')}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: 'var(--radius-md)',
+                    border: editorFont === 'lora' ? '2px solid var(--accent)' : '2px solid var(--border)',
+                    background: editorFont === 'lora' ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'all var(--trans-fast)'
+                  }}
+                >
+                  <span style={{ fontSize: '14px', fontFamily: "'Special Elite', 'Courier New', monospace", color: 'var(--text-primary)' }}>Aa</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t('general.fuente_lora')}</span>
                 </button>
               </div>
             </div>
@@ -632,8 +750,8 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
   };
 
   return (
-    <div className="settings-modal-overlay" onClick={onClose}>
-      <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
+    <div className={`settings-modal-overlay ${isClosing ? 'closing' : ''}`} onClick={handleClose}>
+      <div className={`settings-modal ${isClosing ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="settings-modal__sidebar">
           <div className="settings-modal__sidebar-header">
             <span className="settings-modal__sidebar-title">{t('sidebar.titulo')}</span>
@@ -678,7 +796,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
               {activeTab === 'ui' && t('encabezados.interfaz')}
               {activeTab === 'general' && t('encabezados.general')}
             </span>
-            <button className="settings-modal__close" onClick={onClose}>
+            <button className="settings-modal__close" onClick={handleClose}>
               <X size={18} />
             </button>
           </div>

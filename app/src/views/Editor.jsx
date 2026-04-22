@@ -643,6 +643,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
           candidates,
           plainText,
           registeredNames,
+          ignoredNames,
           aiConfig,
           5
         )
@@ -684,13 +685,14 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
         return
       }
 
-      const { proposals, usage } = await analyzeWithAI(
-        candidates,
-        plainText,
-        registeredNames,
-        { provider, apiKey, model: currentModel, localBaseUrl },
-        8 // Más candidatos en manual
-      )
+const { proposals, usage } = await analyzeWithAI(
+          candidates,
+          plainText,
+          registeredNames,
+          ignoredNames,
+          { provider, apiKey, model: currentModel, localBaseUrl },
+          8 // Más candidatos en manual
+        )
 
       logAIUsage(usage)
 

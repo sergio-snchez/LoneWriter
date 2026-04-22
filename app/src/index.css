@@ -57,6 +57,11 @@
   /* Transitions */
   --trans-fast: 150ms ease;
   --trans-mid: 250ms ease;
+  --trans-smooth: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --trans-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Cursor transition for smooth feel */
+  --cursor-transition: 120ms ease-out;
 
   /* ==========================================================================
      GLASSMORMHISM SETTINGS (Edit transparency here / Ajusta la transparencia aquí)
@@ -76,9 +81,129 @@
 
   /* Sidebar width */
   --sidebar-w: 260px;
+
+/* Typography */
+  --font-serif: 'Special Elite', 'Playfair Display', serif;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-editor: 'Special Elite', serif;
+  --font-editor-body: 'Special Elite', serif;
 }
 
-/* ─── Light Theme: Manuscrito Moderno ─── */
+/* ─── Sepia Memoir Theme ─── */
+:root[data-theme="sepia"] {
+  --bg-base: #F4ECD8;
+  --bg-surface: #EBE2CF;
+  --bg-elevated: #FAF6EE;
+  --bg-hover: #DED4C0;
+
+  /* Accent – warm sepia / antique gold */
+  --accent: #A67C52;
+  --accent-light: #8B6642;
+  --accent-dim: rgba(166, 124, 82, 0.15);
+
+  /* Text – dark brown */
+  --text-primary: #3D3229;
+  --text-secondary: #5C5045;
+  --text-muted: #8A7D6E;
+
+  /* Borders */
+  --border: rgba(60, 50, 41, 0.1);
+  --border-accent: rgba(166, 124, 82, 0.4);
+
+  /* Status colors */
+  --green: #6B8E6B;
+  --red: #B85454;
+  --gold: #B8954D;
+  --blue: #6B8AA6;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 6px rgba(60, 50, 41, 0.1);
+  --shadow-md: 0 4px 16px rgba(60, 50, 41, 0.15);
+  /* Glassmorphism Sepia */
+  --bg-glass: rgba(244, 236, 216, 0.4);
+  --bg-glass-strong: rgba(244, 236, 216, 0.25);
+  --bg-glass-editor: rgba(250, 246, 238, 0.2);
+  --bg-glass-ui: rgba(250, 246, 238, 0.3);
+  --bg-editor-view-glass: rgba(244, 236, 216, 0.25);
+  --backdrop-blur: blur(12px);
+
+  /* Typography */
+  --font-serif: 'Merriweather', 'Playfair Display', serif;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-editor: 'Merriweather', serif;
+  --font-editor-body: 'Merriweather', serif;
+}
+
+/* ─── Nordic Night Theme (Dark) ─── */
+:root[data-theme="nordic"] {
+  --bg-base: #1A1E2E;
+  --bg-surface: #232938;
+  --bg-elevated: #2D3347;
+  --bg-hover: #363D52;
+
+  /* Accent – icy blue / aurora */
+  --accent: #7EB8DA;
+  --accent-light: #A8D4F0;
+  --accent-dim: rgba(126, 184, 218, 0.2);
+
+  /* Text – soft gray-blue */
+  --text-primary: #E8ECF4;
+  --text-secondary: #9AA3B5;
+  --text-muted: #6B7280;
+
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.06);
+  --border-accent: rgba(126, 184, 218, 0.35);
+
+  /* Status colors */
+  --green: #68B5A2;
+  --red: #D47373;
+  --gold: #C9A86C;
+  --blue: #7EB8DA;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.45);
+  /* Glassmorphism Nordic */
+  --bg-glass: rgba(26, 30, 46, 0.4);
+  --bg-glass-strong: rgba(26, 30, 46, 0.25);
+  --bg-glass-editor: rgba(35, 41, 56, 0.3);
+  --bg-glass-ui: rgba(45, 51, 71, 0.5);
+  --bg-editor-view-glass: rgba(26, 30, 46, 0.55);
+  --backdrop-blur: blur(14px);
+
+  /* Typography */
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-editor: 'Inter', sans-serif;
+  --font-editor-body: 'Inter', sans-serif;
+}
+
+/* ─── Solid Fallback (When Dynamic Mesh is OFF) ─── */
+:root[data-mesh="off"] {
+  --bg-glass: var(--bg-surface);
+  --bg-glass-strong: var(--bg-surface);
+  --bg-glass-editor: var(--bg-elevated);
+  --bg-glass-ui: var(--bg-elevated);
+  --bg-editor-view-glass: var(--bg-base);
+  --backdrop-blur: none;
+}
+
+/* ─── Tags secundarias – beige rosado (ambos temas) ─── */
+:root {
+  --tag-bg: rgba(212, 163, 115, 0.1);
+  --tag-text: #B8956E;
+}
+
+:root[data-theme="light"] {
+  --tag-bg: rgba(180, 160, 140, 0.15);
+  --tag-text: #9A7B6A;
+}
+
+/* ─── Modern Light Theme (Claro) ─── */
 :root[data-theme="light"] {
   --bg-base: #FCF8F2;
   --bg-surface: #F5F0E6;
@@ -111,35 +236,17 @@
   /* Glassmorphism Light */
   --bg-glass: rgba(255, 255, 255, 0.35);
   --bg-glass-strong: rgba(255, 255, 255, 0.20);
-  /* Middle ground for light mode */
   --bg-glass-editor: rgba(255, 255, 255, 0.15);
-  /* Only for the central editor (Light) */
   --bg-glass-ui: rgba(255, 255, 255, 0.25);
-  /* Control for buttons, selects and badges in light mode */
   --bg-editor-view-glass: rgba(255, 255, 255, 0.15);
-  /* Control for the entire right column background in light mode */
   --backdrop-blur: blur(12px);
-}
 
-/* ─── Solid Fallback (When Dynamic Mesh is OFF) ─── */
-:root[data-mesh="off"] {
-  --bg-glass: var(--bg-surface);
-  --bg-glass-strong: var(--bg-surface);
-  --bg-glass-editor: var(--bg-elevated);
-  --bg-glass-ui: var(--bg-elevated);
-  --bg-editor-view-glass: var(--bg-base);
-  --backdrop-blur: none;
-}
-
-/* ─── Tags secundarias – beige rosado (ambos temas) ─── */
-:root {
-  --tag-bg: rgba(212, 163, 115, 0.1);
-  --tag-text: #B8956E;
-}
-
-:root[data-theme="light"] {
-  --tag-bg: rgba(180, 160, 140, 0.15);
-  --tag-text: #9A7B6A;
+  /* Typography */
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-editor: 'Playfair Display', serif;
+  --font-editor-body: 'Playfair Display', serif;
 }
 
 html,
@@ -436,4 +543,25 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+/* Font family overrides based on user selection */
+:root[data-font="sans"] {
+  --font-editor: 'Inter', sans-serif;
+  --font-editor-body: 'Inter', sans-serif;
+}
+
+:root[data-font="serif"] {
+  --font-editor: 'Playfair Display', serif;
+  --font-editor-body: 'Playfair Display', serif;
+}
+
+:root[data-font="mono"] {
+  --font-editor: 'JetBrains Mono', monospace;
+  --font-editor-body: 'JetBrains Mono', monospace;
+}
+
+:root[data-font="lora"] {
+  --font-editor: 'Special Elite', 'Courier New', monospace;
+  --font-editor-body: 'Special Elite', 'Courier New', monospace;
 }

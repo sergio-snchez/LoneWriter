@@ -75,4 +75,10 @@ db.version(12).stores({
   customStopwords: '++id, word, language, createdAt'
 });
 
+// v13: Preferencias del Editor
+// Almacena preferencias visuales como el tamaño de fuente
+db.version(13).stores({
+  editorPrefs: 'key, value'
+});
+
 export default db;

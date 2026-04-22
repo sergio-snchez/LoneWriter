@@ -61,6 +61,8 @@
     "cita": "Quote",
     "deshacer": "Undo",
     "rehacer": "Redo",
-    "limpiar_formato": "Clear formatting"
+    "limpiar_formato": "Clear formatting",
+    "disminuir_fuente": "Decrease font size",
+    "aumentar_fuente": "Increase font size"
   }
 }

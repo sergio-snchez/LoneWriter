@@ -61,6 +61,8 @@
     "cita": "Cita",
     "deshacer": "Deshacer",
     "rehacer": "Rehacer",
-    "limpiar_formato": "Limpiar formato"
+    "limpiar_formato": "Limpiar formato",
+    "disminuir_fuente": "Reducir tamaño de fuente",
+    "aumentar_fuente": "Aumentar tamaño de fuente"
   }
 }

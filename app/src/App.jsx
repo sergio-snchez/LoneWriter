@@ -30,22 +30,35 @@ export default function App() {
   const { t, i18n } = useTranslation('app')
   const { t: tc } = useTranslation('common')
   const [activeView, setActiveView] = useState('editor')
+  const [viewKey, setViewKey] = useState(0)
   const [pendingMpcProposal, setPendingMpcProposal] = useState(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
   const [aiPanelTab, setAiPanelTab] = useState('rewrite')
   const [theme, setTheme] = useState(() => localStorage.getItem('lw_theme') || 'dark')
+  const [editorFont, setEditorFont] = useState(() => localStorage.getItem('lw_editor_font') || 'serif')
   const [meshEnabled, setMeshEnabled] = useState(() => {
     const saved = localStorage.getItem('lw_mesh_enabled');
     return saved === null ? true : saved === 'true';
   })
+
+  // Handle view change with animation
+  const handleViewChange = (view) => {
+    setActiveView(view);
+    setViewKey(prev => prev + 1);
+  };
 
   // Apply theme to document and persist
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('lw_theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-font', editorFont);
+    localStorage.setItem('lw_editor_font', editorFont);
+  }, [editorFont]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-mesh', meshEnabled ? 'on' : 'off');
@@ -320,7 +333,7 @@ export default function App() {
       );
     }
     switch (activeView) {
-      case 'editor': return <EditorView menuOpen={menuOpen} onNavigate={setActiveView} />
+      case 'editor': return <EditorView menuOpen={menuOpen} onNavigate={handleViewChange} />
       case 'compendium': return <CompendiumView />
       case 'resources': return <ResourcesView />
       default: return <EditorView />
@@ -500,6 +513,8 @@ export default function App() {
         initialTab={settingsTab}
         theme={theme}
         setTheme={setTheme}
+        editorFont={editorFont}
+        setEditorFont={setEditorFont}
         meshEnabled={meshEnabled}
         setMeshEnabled={setMeshEnabled}
         openModal={openModal}
@@ -511,7 +526,7 @@ export default function App() {
         <div className="app-body__sidebar-desktop">
           <Sidebar
             active={activeView}
-            onNavigate={(view) => { setActiveView(view); setMobileDrawerOpen(false); }}
+            onNavigate={(view) => { handleViewChange(view); setMobileDrawerOpen(false); }}
             collapsed={sidebarCollapsed}
             onToggle={() => setSidebarCollapsed(c => !c)}
           />
@@ -538,7 +553,7 @@ export default function App() {
               </div>
               <Sidebar
                 active={activeView}
-                onNavigate={(view) => { setActiveView(view); setMobileDrawerOpen(false); }}
+                onNavigate={(view) => { handleViewChange(view); setMobileDrawerOpen(false); }}
                 collapsed={false}
                 onToggle={() => setMobileDrawerOpen(false)}
               />
@@ -546,7 +561,7 @@ export default function App() {
           </div>
         )}
 
-        <main className="app-main">
+        <main className={`app-main ${activeView !== 'welcome' ? 'view-enter' : ''}`} key={viewKey}>
           {renderView()}
         </main>
 

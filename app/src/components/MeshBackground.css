@@ -27,26 +27,62 @@
 
 /* Custom mesh colors for dark vs light mode */
 :root {
-  --mesh-1: #9f82ff;
-  --mesh-2: #004ba0;
-  --mesh-3: #836fc7;
+  --mesh-1: #035d91;
+  --mesh-2: #7088a3;
+  --mesh-3: #7e6bbb;
   --mesh-4: #0029af;
   --mesh-c: #675a8f;
+  --mesh-blend: screen;
+  --mesh-opacity: 0.15;
+  --mesh-blur: 140px;
 }
 
 :root[data-theme="light"] {
-  --mesh-1: #f7dfd7;
-  --mesh-2: #feffeb;
-  --mesh-3: #ffeed2;
+  --mesh-1: #f3cdc0;
+  --mesh-2: #fdffcf;
+  --mesh-3: #fde0b2;
   --mesh-4: #fff0f2;
   --mesh-c: #ffefe7;
+  --mesh-blend: multiply;
+  --mesh-opacity: 0.35;
+  --mesh-blur: 80px;
+}
+
+:root[data-theme="sepia"] {
+  --mesh-1: #d4c4a8;
+  --mesh-2: #e8dcc8;
+  --mesh-3: #c9b896;
+  --mesh-4: #dcd0bc;
+  --mesh-c: #ebe2d0;
+  --mesh-blend: multiply;
+  --mesh-opacity: 0.4;
+  --mesh-blur: 90px;
+}
+
+:root[data-theme="nordic"] {
+  --mesh-1: #4a6d8c;
+  --mesh-2: #5a7d9a;
+  --mesh-3: #3d5c7a;
+  --mesh-4: #6b8ba8;
+  --mesh-c: #4a6b85;
+  --mesh-blend: screen;
+  --mesh-opacity: 0.25;
+  --mesh-blur: 120px;
 }
 
 /* Light mode adjustments: higher opacity and warmer blending */
-[data-theme="light"] .mesh-blob {
+[data-theme="light"] .mesh-blob,
+[data-theme="sepia"] .mesh-blob {
   mix-blend-mode: multiply;
-  opacity: 0.35;
-  filter: blur(80px);
+  opacity: var(--mesh-opacity);
+  filter: blur(var(--mesh-blur));
+}
+
+[data-theme="dark"] .mesh-blob,
+[data-theme="nordic"] .mesh-blob {
+  mix-blend-mode: var(--mesh-blend);
+  opacity: var(--mesh-opacity);
+  filter: blur(var(--mesh-blur));
 }
 
 .mesh-blob--1 {

@@ -113,7 +113,7 @@ function buildCompendiumSummary(registeredNames) {
  * @param {number} maxProposals - Máximo de propuestas a devolver
  * @returns {Promise<{proposals: Object[], usage: Object}>} - Proposals and token usage
  */
-export async function analyzeWithAI(candidates, sceneText, registeredNames, aiConfig, maxProposals = 5) {
+export async function analyzeWithAI(candidates, sceneText, registeredNames, ignoredNames, aiConfig, maxProposals = 5) {
   if (!candidates || candidates.length === 0) return { proposals: [], usage: null };
   if (!aiConfig?.apiKey && aiConfig?.provider !== 'local') return { proposals: [], usage: null };
 
@@ -131,7 +131,7 @@ export async function analyzeWithAI(candidates, sceneText, registeredNames, aiCo
   try {
     const response = await AIService._callWithConfig(prompt, aiConfig);
     return { 
-      proposals: parseMpcResponse(response.text, maxProposals, registeredNames), 
+      proposals: parseMpcResponse(response.text, maxProposals, registeredNames, ignoredNames), 
       usage: response.usage 
     };
   } catch (error) {
@@ -147,7 +147,7 @@ export async function analyzeWithAI(candidates, sceneText, registeredNames, aiCo
  * @param {number} maxProposals - Máximo de propuestas a incluir
  * @returns {Object[]} - Array de propuestas con id único
  */
-export function parseMpcResponse(rawResponse, maxProposals = 5, registeredNames = new Set()) {
+export function parseMpcResponse(rawResponse, maxProposals = 5, registeredNames = new Set(), ignoredNames = new Set()) {
   if (!rawResponse) return [];
 
   try {
@@ -174,6 +174,9 @@ export function parseMpcResponse(rawResponse, maxProposals = 5, registeredNames 
           return regLower === itemLower || regLower.includes(itemLower) || itemLower.includes(regLower);
         });
         if (isAlreadyRegistered) return false;
+
+        // Filtrar entidades ya ignoradas
+        if (ignoredNames && ignoredNames.has(itemLower)) return false;
         
         return true;
       })

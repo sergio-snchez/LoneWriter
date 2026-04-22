@@ -98,26 +98,27 @@
   padding: 40px 20px;
   /* 20px de "aire" mantenido */
   outline: none;
-  font-family: 'Merriweather', serif;
-  font-size: 15px;
+  font-family: var(--font-editor-body);
+  font-size: var(--editor-font-size, 15px);
   line-height: 1.8;
   color: var(--text-secondary);
   min-height: 100%;
   background: transparent !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  transition: font-size 0.2s ease;
 }
 
 /* Text elements */
 .tiptap-editor h1 {
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-editor);
   font-size: 26px;
   margin-bottom: 24px;
   color: var(--text-primary);
 }
 
 .tiptap-editor h2 {
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-editor);
   font-size: 22px;
   margin-bottom: 16px;
   margin-top: 24px;
