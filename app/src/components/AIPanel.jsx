@@ -1,3 +1,4 @@
+/** LoneWriter AI Panel */
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/i18n'
@@ -187,33 +188,6 @@ function RewriteTab({ activeScene }) {
 
       console.log('[Rewrite] previousContext:', previousContext ? `${previousContext.substring(0, 80)}...` : 'null');
 
-      const resolvedCorefs = oracleStatus?.coreferences ?? [];
-      const COREF_CAP = 20;
-      const seenCorefKeys = new Set();
-      const dedupedCorefs = resolvedCorefs.filter(r => {
-        const key = `${r.pronoun}→${r.resolvedTo}`;
-        if (seenCorefKeys.has(key)) return false;
-        seenCorefKeys.add(key);
-        return true;
-      });
-
-      const groupedByPronoun = new Map();
-      dedupedCorefs.forEach(r => {
-        if (!groupedByPronoun.has(r.pronoun)) groupedByPronoun.set(r.pronoun, []);
-        groupedByPronoun.get(r.pronoun).push({ type: r.entityType, entity: r.resolvedTo });
-      });
-
-      const cappedEntries = Array.from(groupedByPronoun.entries()).slice(0, COREF_CAP);
-      const corefLines = cappedEntries.map(([pronoun, refs]) => {
-        const firstLine = t('oraculo.saliencia_oracle_line', { pronoun, type: refs[0].type, entity: refs[0].entity });
-        if (refs.length === 1) return firstLine;
-        const moreParts = refs.slice(1).map(r => t('oraculo.saliencia_oracle_line_more', { type: r.type, entity: r.entity })).join('');
-        return firstLine + moreParts;
-      });
-
-      const saliencyContext = corefLines.length > 0
-        ? `${t('oraculo.saliencia_oracle_header')}\n${corefLines.join('\n')}`
-        : null;
 
       const response = await AIService.rewrite(selection, activeGoal, prompts[activeGoal], {
         provider,
@@ -224,7 +198,6 @@ function RewriteTab({ activeScene }) {
         pov: activeScene?.pov,
         knowledgeBase,
         previousContext,
-        saliencyContext
       });
       logAIUsage(response.usage);
       saveLastRewrite(response.text, activeGoal, instruction, selection);
@@ -1131,50 +1104,7 @@ function OracleTab({ activeScene }) {
       const oracleText = isSpanish ? '--- TEXTO A ANALIZAR ---' : '--- TEXT TO ANALYZE ---';
       const oracleAnswer = isSpanish ? '--- TU RESPUESTA ---' : '--- YOUR ANSWER ---';
 
-      // ── Correferencias resueltas por el engine de saliencia ─────────────────
-      // Se agrupan por pronombre para que cada línea exprese toda la ambigüedad
-      // de forma compacta: «se» → Megan o a Silas. Reduce tokens y clarifica.
-      // Máximo COREF_CAP pronombres únicos inyectados.
-      const resolvedCorefs = oracleStatus.coreferences ?? [];
-      const COREF_CAP = 20;
 
-      // 1. Deduplicar pares pronombre+entidad
-      const seenCorefKeys = new Set();
-      const dedupedCorefs = resolvedCorefs.filter(r => {
-        const key = `${r.pronoun}→${r.resolvedTo}`;
-        if (seenCorefKeys.has(key)) return false;
-        seenCorefKeys.add(key);
-        return true;
-      });
-
-      // 2. Agrupar por pronombre: { pronoun → [{ entityType, resolvedTo }, ...] }
-      const groupedByPronoun = new Map();
-      dedupedCorefs.forEach(r => {
-        if (!groupedByPronoun.has(r.pronoun)) groupedByPronoun.set(r.pronoun, []);
-        groupedByPronoun.get(r.pronoun).push({ type: r.entityType, entity: r.resolvedTo });
-      });
-
-      // 3. Respetar el cap sobre pronombres únicos, no sobre pares
-      const cappedEntries = Array.from(groupedByPronoun.entries()).slice(0, COREF_CAP);
-
-      // 4. Construir líneas: primera entidad con la plantilla base, el resto con el conector
-      const corefLines = cappedEntries.map(([pronoun, refs]) => {
-        const firstLine = t('oraculo.saliencia_oracle_line', { pronoun, type: refs[0].type, entity: refs[0].entity });
-        if (refs.length === 1) return firstLine;
-        const moreParts = refs.slice(1).map(r => t('oraculo.saliencia_oracle_line_more', { type: r.type, entity: r.entity })).join('');
-        return firstLine + moreParts;
-      });
-
-      const corefBlock = corefLines.length > 0
-        ? `${t('oraculo.saliencia_oracle_header')}\n${corefLines.join('\n')}`
-        : '';
-      // ────────────────────────────────────────────────────────────────────
-
-      const totalUnique = cappedEntries.length;
-      console.log(
-        `[Oracle] Saliency Context Block: ${resolvedCorefs.length} raw → ${dedupedCorefs.length} deduped → ${totalUnique} pronouns (cap: ${COREF_CAP}):\n`,
-        corefBlock || '(Ninguna correferencia añadida al contexto)'
-      );
 
       const fullPrompt = `${oraclePrompt}
 
@@ -1182,8 +1112,7 @@ ${oracleCompendium}
 ${compendiumInfo || oracleNoComp}
 
 ${oraclePrevCtx}
-${ragContext || oracleNoPrev}${corefBlock ? `\n\n${corefBlock}` : ''
-        }
+${ragContext || oracleNoPrev}
 
 ${oracleText}
 ${plainText}
@@ -1310,66 +1239,6 @@ ${oracleAnswer}`
         </div>
       )}
 
-      {/* Chips de correferencia */}
-      {oracleStatus.coreferences?.length > 0 && (
-        <div className="oracle-coreference-section">
-          <button
-            className="oracle-coreference-section__header"
-            onClick={() => setIsSaliencyExpanded(!isSaliencyExpanded)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              cursor: 'pointer'
-            }}
-          >
-            <span className="oracle-coreference-section__label">{t('oraculo.saliencia_titulo')}</span>
-            <ChevronDown size={14} style={{ color: 'var(--text-muted)', transform: isSaliencyExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-          </button>
-
-          {isSaliencyExpanded && (
-            <>
-              <div className="oracle-coreference-chips">
-                {oracleStatus.coreferences.map((ref, i) => (
-                  <Tooltip
-                    key={`${ref.pronoun}-${ref.position?.start}-${i}`}
-                    content={
-                      <div>
-                        <strong>«{ref.pronoun}»</strong> {t('oraculo.saliencia_tooltip_refiere')} <strong>{ref.resolvedTo}</strong>
-                        <br />
-                        {t('oraculo.saliencia_tooltip_tipo')}: {ref.entityType} · {t('oraculo.saliencia_tooltip_confianza')}: {ref.confidence === 'high' ? t('oraculo.saliencia_confianza_alta') : t('oraculo.saliencia_confianza_baja')}
-                        <br />
-                        {t('oraculo.saliencia_tooltip_motor')}
-                      </div>
-                    }
-                  >
-                    <span
-                      className={`oracle-coreference-chip oracle-coreference-chip--${ref.confidence}`}
-                      style={{
-                        background: ref.entityColor + '18',
-                        borderColor: ref.entityColor + '55',
-                        color: ref.entityColor,
-                      }}
-                    >
-                      <span className="chip-pronoun">«{ref.pronoun}»</span>
-                      <span className="chip-arrow">→</span>
-                      <span className="chip-entity">{ref.resolvedTo}</span>
-                      <span className="chip-tag">{t('oraculo.saliencia_chip_tag')}</span>
-                    </span>
-                  </Tooltip>
-                ))}
-              </div>
-              <span className="oracle-coreference-count">
-                {oracleStatus.coreferences.length} {oracleStatus.coreferences.length === 1 ? 'correferencia' : 'correferencias'}
-              </span>
-            </>
-          )}
-        </div>
-      )}
       {activeScene && (
         <span className="oracle-tab__scene-tag">
           <Eye size={11} /> {t('oraculo.escena', { title: activeScene.title })}

@@ -569,17 +569,17 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                 <Zap size={14} />
                 {t('general.fondo_dinamico')}
               </span>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 6px 0', lineHeight: '1.4' }}>
                 {t('general.fondo_dinamico_hint')}
               </p>
-              <div style={{ padding: '12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{t('general.fondo_dinamico')}</span>
                 <input
                   type="checkbox"
                   className="form-toggle"
                   checked={meshEnabled}
                   onChange={(e) => setMeshEnabled(e.target.checked)}
-                  style={{ height: '20px', width: '20px', cursor: 'pointer', accentColor: 'var(--accent)' }}
+                  style={{ height: '18px', width: '18px', cursor: 'pointer', accentColor: 'var(--accent)' }}
                 />
               </div>
             </div>

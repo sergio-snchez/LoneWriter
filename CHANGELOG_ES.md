@@ -6,6 +6,19 @@
 
 </div>
 
+## [LoneWriter v1.8] - 2026-xx-xx
+
+### Added
+- **Efectos de Interfaz Glassmorphism**: Añadido efecto de cristal esmerilado (blur + transparencia) a modales, paneles y elementos flotantes. Implementado para temas claro y oscuro con niveles de opacidad específicos por tema.
+- **Fondo Dinámico (Anti-Fatiga)**: Añadidos blobs de colores animados que se mueven suavemente detrás de la interfaz. Movimiento sutil y relajante para reducir la fatiga visual durante sesiones largas de escritura. Interruptor disponible en Configuración > Interfaz.
+- **Motor de Razonamiento Combinado (Resolución de Anáforas)**: Sustituido el anterior Motor de Saliencia por un nuevo enfoque multi-componente:
+  - **RAG (Compendio)**: Enviamos todas las fichas relevantes que el sistema detecta en el párrafo actual.
+  - **Contexto Previo**: Enviamos los párrafos anteriores para que sepa de qué se está hablando y quién es quién.
+  - **POV (Punto de Vista)**: Le recordamos quién es el narrador.
+  - **Instrucciones de Continuidad**: El prompt del Oráculo está diseñado específicamente para usar esa información y detectar contradicciones (ej: si el RAG dice que Markus es un lobo y el texto dice que es un elfo, el Oráculo lo detectará gracias a esa conexión).
+
+---
+
 ## [LoneWriter v1.7-anáfora] - 2026-04-18
 
 ### Added

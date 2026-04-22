@@ -1731,109 +1731,39 @@
   position: relative;
 }
 
-/* ─── Coreference Chips (Motor de Saliencia) ─── */
+/* ─── Oracle Entity Sections (Compendio) ─── */
 .oracle-coreference-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 8px 12px;
-  background: var(--bg-elevated);
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg-glass-ui);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  animation: corefFadeIn 0.3s ease-out;
-}
-
-@keyframes corefFadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  transition: all var(--trans-fast);
 }
 
 .oracle-coreference-section__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
 }
 
 .oracle-coreference-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
-  align-items: flex-start;
-  max-height: 160px;
-  overflow-y: auto;
-  padding-right: 2px;
-}
-
-.oracle-coreference-chips::-webkit-scrollbar {
-  width: 4px;
-}
-.oracle-coreference-chips::-webkit-scrollbar-thumb {
-  background: var(--bg-hover);
-  border-radius: 99px;
-}
-
-.oracle-coreference-count {
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-top: 4px;
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.oracle-coreference-chip {
-  display: inline-flex;
+  gap: 6px;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px 3px 6px;
-  border-radius: 99px;
-  border: 1px solid;
-  font-size: 11px;
-  font-weight: 500;
-  cursor: default;
-  transition: all 0.15s ease;
-  white-space: nowrap;
 }
 
-.oracle-coreference-chip:hover {
-  filter: brightness(1.15);
-  transform: translateY(-1px);
-}
-
-/* Confianza baja: borde punteado */
-.oracle-coreference-chip--low {
-  border-style: dashed;
-  opacity: 0.8;
-}
-
-.chip-pronoun {
-  font-family: 'JetBrains Mono', 'Fira Code', 'Menlo', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  opacity: 0.9;
-}
-
-.chip-arrow {
-  opacity: 0.6;
-  font-size: 10px;
-}
-
-.chip-entity {
-  font-weight: 600;
-  font-size: 11px;
-}
-
-.chip-tag {
-  font-size: 9px;
-  font-weight: 400;
-  opacity: 0.6;
-  margin-left: 2px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-left: 1px solid currentColor;
-  padding-left: 5px;
-}
 .oracle-entity-tag--hoverable::after {
   content: '?';
   display: inline-flex;
