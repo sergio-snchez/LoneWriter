@@ -6,7 +6,6 @@ import { createDebouncedEntityDetector, parseOracleResponse } from '../services/
 import { addToIgnoredNames } from '../services/mpcService';
 import { AIService } from '../services/aiService';
 import { loadUserStopwords } from '../i18n/stopwords';
-import { runSaliencyEngine } from '../services/saliencyEngine';
 
 const AI_PROVIDERS = ['google', 'openai', 'anthropic', 'openrouter', 'local'];
 
@@ -188,7 +187,6 @@ export const AIProvider = ({ children }) => {
     status: 'idle',
     detectedEntities: [],
     lastContradiction: null,
-    coreferences: [],
   });
   const entityDetectorRef = useRef(createDebouncedEntityDetector(() => {}, 2000));
 
@@ -505,48 +503,24 @@ export const AIProvider = ({ children }) => {
         const criticalDetections = detections.filter(d => d.severity === 'critical');
         const doubtfulDetections = detections.filter(d => d.severity === 'doubtful');
 
-        // ── Motor de saliencia (síncrono, puro) ─────────────────────────────
-        // SCOPE SOLICITADO: El scoreboard lee la escena completa para recordar quién es quién,
-        // pero las correferencias (los chips) SOLO se emiten si el usuario ha seleccionado explícitamente
-        // texto, evitando ruido visual "pasivo".
-        let coreferences = [];
-        try {
-          if (selection && selection.trim().length > 0) {
-            const fullSceneText = activeScene?.content
-              ? activeScene.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-              : plainText;
-            const activeEntityNames = new Set(
-              (criticalDetections.length > 0 ? criticalDetections : doubtfulDetections)
-                .map(d => d.name)
-            );
-            const { coreferences: refs } = runSaliencyEngine(fullSceneText, selection, entityData, activeEntityNames, i18n.language);
-            coreferences = refs;
-          }
-        } catch (engineErr) {
-          console.warn('[SaliencyEngine] Error en el motor de correferencias:', engineErr);
-        }
-        // ─────────────────────────────────────────────────────────────────────
 
         if (criticalDetections.length > 0) {
           setOracleStatus(prev => ({
             ...prev,
             status: 'suspicious',
             detectedEntities: criticalDetections,
-            coreferences,
           }));
         } else if (doubtfulDetections.length >= 2) {
           setOracleStatus(prev => ({
             ...prev,
             status: 'suspicious',
             detectedEntities: doubtfulDetections,
-            coreferences,
           }));
         } else {
           setOracleStatus(prev => ({
             ...prev,
             status: 'idle',
             detectedEntities: [],
-            coreferences,
           }));
         }
       })
@@ -566,7 +540,7 @@ export const AIProvider = ({ children }) => {
   };
 
   const resetOracleStatus = () => {
-    setOracleStatus({ status: 'idle', detectedEntities: [], lastContradiction: null, coreferences: [] });
+    setOracleStatus({ status: 'idle', detectedEntities: [], lastContradiction: null });
   };
 
   const checkOracleResponse = (aiResponse) => {

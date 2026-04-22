@@ -59,8 +59,8 @@
 .settings-modal__nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 8px;
+  padding: 8px 12px;
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-secondary);
@@ -133,14 +133,14 @@
 .settings-tab {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 18px;
   animation: fadeIn 0.3s ease;
 }
 
 .settings-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .settings-section__title {
@@ -158,10 +158,10 @@
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 20px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .cloud-sync-card__header {
@@ -214,7 +214,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px;
+  padding: 8px 12px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);

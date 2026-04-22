@@ -28,28 +28,18 @@
 /* Custom mesh colors for dark vs light mode */
 :root {
   --mesh-1: #9f82ff;
-  /* Lavanda */
   --mesh-2: #004ba0;
-  /* Azul claro */
   --mesh-3: #836fc7;
-  /* Lavanda suave */
   --mesh-4: #0029af;
-  /* Azul más claro */
   --mesh-c: #675a8f;
-  /* Lavanda */
 }
 
 :root[data-theme="light"] {
-  --mesh-1: #fff4f0;
-  /* Tu color personalizado 1 */
+  --mesh-1: #f7dfd7;
   --mesh-2: #feffeb;
-  /* Tu color personalizado 2 */
   --mesh-3: #ffeed2;
-  /* Tu color personalizado 3 */
   --mesh-4: #fff0f2;
-  /* Tu color personalizado 4 */
   --mesh-c: #ffefe7;
-  /* Color del orbe central */
 }
 
 /* Light mode adjustments: higher opacity and warmer blending */
