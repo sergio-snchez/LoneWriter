@@ -509,7 +509,6 @@ function DebateTab({ activeScene }) {
     }
 
     const historyWithUser = [...debateHistory, userMsg]
-    console.log('[Debate] Iniciando debate — rondas:', rounds, '— agentes:', activeAgents.map(a => a.name).join(', '));
     for (let r = 0; r < rounds; r++) {
       for (const agent of activeAgents) {
         setLoadingAgents(prev => ({ ...prev, [agent.id]: true }))
@@ -1046,11 +1045,8 @@ function OracleTab({ activeScene }) {
     setError('')
 
     try {
-      console.log('[Oracle] Analizando escena', activeScene?.id, '—', activeScene.content.replace(/<[^>]*>/g, '').length, 'chars');
-      console.log('[Oracle] Starting check. detectedEntities:', JSON.stringify(oracleStatus.detectedEntities));
 
       const plainText = activeScene.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-      console.log('[Oracle] plainText length:', plainText.length);
 
       if (!plainText || plainText.length < 10) {
         setError(t('oraculo.error_corto'))
@@ -1063,7 +1059,6 @@ function OracleTab({ activeScene }) {
         setTimeout(() => resolve([]), 15000)
       )
 
-      console.log('[Oracle] oracleStatus:', oracleStatus.status, 'entities:', oracleStatus.detectedEntities?.length);
 
       const [compResult, ragResult] = await Promise.allSettled([
         // Compendium entity sheets
@@ -1127,7 +1122,6 @@ ${oracleAnswer}`
       })
 
       logAIUsage(response.usage)
-      console.log('[Oracle] response.text:', response.text);
 
       if (!response.text) {
         throw new Error('La IA no devolvió texto');

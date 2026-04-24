@@ -29,7 +29,6 @@ import { useModal } from '../context/ModalContext'
 import { ExportService } from '../services/exportService'
 import { Tooltip } from '../components/Tooltip'
 import RichEditor from '../components/RichEditor'
-import MpcProposalDrawer from '../components/MpcProposalDrawer'
 import {
   extractCandidates,
   analyzeWithAI,
@@ -37,7 +36,7 @@ import {
   loadIgnoredNames,
 } from '../services/mpcService'
 import debounce from 'lodash/debounce'
-import { upsertVector, deleteVectorsForScene } from '../services/ragService'
+import { upsertVector } from '../services/ragService'
 import './Editor.css'
 import './MpcBadge.css'
 
@@ -647,7 +646,6 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
           aiConfig,
           5
         )
-        console.log('[MPC] Respuesta recibida, proposals:', proposals);
 
         logAIUsage(usage)
 
@@ -685,7 +683,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
         return
       }
 
-const { proposals, usage } = await analyzeWithAI(
+      const { proposals, usage } = await analyzeWithAI(
           candidates,
           plainText,
           registeredNames,

@@ -24,19 +24,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Localization / i18n
     const translations = {
         en: {
+            page_title: "LoneWriter - The Intelligent App for Writers",
             nav_features: "Features",
             nav_engine: "MPC System",
             nav_openapp: "Open App",
-            badge_version: "v1.7 Anáfora is Live",
-            hero_title_1: "The Intelligent IDE<br/>for",
-            hero_title_2: "Novelists",
+            badge_version: "v1.7 Anaphora is Live",
+            hero_title_1: "The Intelligent App<br/>for",
+            hero_title_2: "Writers",
             hero_subtitle: "Compose, structure, and refine your masterwork in a distraction-free, privacy-first environment enhanced by local AI.",
-            hero_launch: "Launch Editor",
+            hero_launch: "Open App",
             hero_discover: "Discover Features",
-            mock_heading: "Chapter 1: The Golden Parrot",
-            mock_p: "Silas occupied his usual table, a shadowy corner at the back of The Golden Parrot, where the shadows seemed to adhere to the walls...",
+            mock_heading: "Prologue: The Obsidian Spire",
+            mock_p: "The storm howled against the jagged obsidian glass, but inside the Spire, Archmage Vaelen only smiled. He traced the glowing runes on the monolith; the convergence was finally at hand...",
             mock_mpc: "3 Entities Detected",
-            features_sectitle: "Built for the Architect and the Gardener",
+            back_title: "Detected Entities",
+            ent_1: "Archmage Vaelen (Character)",
+            ent_2: "The Obsidian Spire (Location)",
+            ent_3: "The Monolith (Object)",
+            features_sectitle: "Professional Tools for Writers",
             features_secsub: "A granular suite of tools to handle everything from scene drafting to entire world-building bibles.",
             feat_1_title: "Narrative Structure",
             feat_1_desc: "Organize your novel into Acts, Chapters, and Scenes. Reorder your manuscript with fluid drag-and-drop mechanics.",
@@ -50,8 +55,23 @@ document.addEventListener('DOMContentLoaded', () => {
             feat_5_desc: "Immerse yourself in a beautifully crafted responsive UI with customizable dynamic glassmorphism and an elegant dark mode.",
             feat_6_title: "Frictionless Export",
             feat_6_desc: "Compile your entire project into a standard Document (.docx) with one click, perfectly formatted for publishing.",
-            engine_badge: "MPC Coreference Engine",
-            engine_title: "Minimum Plausible Context",
+            mu_act1: "Act I: The Call",
+            mu_ch1: "Chapter 1",
+            mu_ch2: "Chapter 2",
+            mu_act2: "Act II: The Descent",
+            mu_streak: "12 Day Streak!",
+            mu_words: "24,500 / 50,000 words",
+            mu_chars: "Characters",
+            mu_locs: "Locations",
+            mu_magic: "Objects",
+            mu_synced: "Changes saved",
+            mu_synced_time: "Last synced: Just now",
+            mu_drive: "Google Drive",
+            mu_format: "Export to Local Drive (*.lwrt)",
+            mu_titlepage: "Export Complete Manuscript",
+            mu_exportbtn: "Export .DOCX",
+            engine_badge: "MPC Entity Management",
+            engine_title: "MPC Engine (Monitoring Proposals for Compendium)",
             engine_sub: "LoneWriter extracts and categorizes important elements dynamically as you type without consuming massive amounts of AI tokens.",
             eng_1_label: "Characters:",
             eng_1: "Tracks character traits and appearances dynamically.",
@@ -61,6 +81,16 @@ document.addEventListener('DOMContentLoaded', () => {
             eng_3: "Contextual awareness of your magical or sci-fi systems.",
             eng_4_label: "Saliency Scoring:",
             eng_4: "Injects only the most relevant lore into your AI prompts.",
+            rag_badge: "Local Semantic Intelligence",
+            rag_title: "Local RAG Engine",
+            rag_sub: "LoneWriter incorporates a Retrieval-Augmented Generation engine directly in your browser. It instantly retrieves fragments of your novel and relevant lore to provide perfect context for the AI, all without sending your data to the cloud.",
+            rag_manuscript: "Manuscript",
+            rag_vectordb: "Vector Database",
+            local_badge: "Absolute Privacy",
+            local_title: "100% Local Models",
+            local_sub: "Connect LoneWriter effortlessly with Ollama or LM Studio. Run Large Language Models (LLMs) directly on your own hardware. No subscriptions, no censorship, and absolute privacy: your manuscript never leaves your computer if you don't want it to.",
+            modal_close: "Close",
+            modal_placeholder: "App Screenshot Placeholder",
             comp_head: "Compendium",
             comp_char: "Characters",
             comp_loc: "Locations",
@@ -71,22 +101,29 @@ document.addEventListener('DOMContentLoaded', () => {
             footer_doc: "Documentation",
             footer_change: "Changelog (v1.7)",
             footer_auth: "Author",
-            footer_copy: "© 2026 Sergio Sánchez. Built for creators."
+            footer_copy: "Designed and developed with ♥ by Sergio Sánchez with Antigravity.",
+            link_doc: "https://github.com/sergio-snchez/LoneWriter/blob/main/README.md",
+            link_change: "https://github.com/sergio-snchez/LoneWriter/blob/main/CHANGELOG.md"
         },
         es: {
+            page_title: "LoneWriter - La App Inteligente para Escritores",
             nav_features: "Características",
             nav_engine: "Sistema MPC",
             nav_openapp: "Abrir App",
             badge_version: "v1.7 Anáfora ya disponible",
-            hero_title_1: "El IDE Inteligente<br/>para",
-            hero_title_2: "Novelistas",
-            hero_subtitle: "Compón, estructura y refina tu obra maestra en un entorno sin distracciones, enfocado en la privacidad y potenciado por IA local.",
-            hero_launch: "Iniciar Editor",
+            hero_title_1: "La App Inteligente<br/>para",
+            hero_title_2: "Escritores",
+            hero_subtitle: "Componer, estructurar y refinar tu obra maestra en un entorno sin distracciones, enfocado en la privacidad y potenciado por IA local.",
+            hero_launch: "Abrir App",
             hero_discover: "Descubrir Características",
-            mock_heading: "Capítulo 1: El Loro Dorado",
-            mock_p: "Silas ocupaba su mesa habitual, un rincón sombrío al fondo de El Loro Dorado, donde las sombras parecían adherirse a las paredes...",
+            mock_heading: "Prólogo: La Aguja de Obsidiana",
+            mock_p: "La tormenta aullaba contra el cristal dentado de obsidiana, pero dentro de la Aguja, el Archimago Vaelen solo sonreía. Trazó con el dedo las runas brillantes del monolito; la convergencia por fin había llegado...",
             mock_mpc: "3 Entidades Detectadas",
-            features_sectitle: "Creado para el Arquitecto y el Jardinero",
+            back_title: "Entidades Detectadas",
+            ent_1: "Archimago Vaelen (Personaje)",
+            ent_2: "La Aguja de Obsidiana (Ubicación)",
+            ent_3: "El Monolito (Objeto)",
+            features_sectitle: "Herramientas Profesionales para Escritores",
             features_secsub: "Una suite granular de herramientas para manejar desde el borrador de escenas hasta biblias enteras de world-building.",
             feat_1_title: "Estructura Narrativa",
             feat_1_desc: "Organiza tu novela en Actos, Capítulos y Escenas. Reordena tu manuscrito con mecánicas fluidas de arrastrar y soltar.",
@@ -100,8 +137,23 @@ document.addEventListener('DOMContentLoaded', () => {
             feat_5_desc: "Sumérgete en una interfaz bellamente diseñada con glassmorphism dinámico personalizable y un elegante modo oscuro.",
             feat_6_title: "Exportación sin Fricción",
             feat_6_desc: "Compila todo tu proyecto en un Documento estándar (.docx) con un solo clic, perfectamente formateado para publicar.",
-            engine_badge: "Motor de Correferencia MPC",
-            engine_title: "Contexto Mínimo Plausible",
+            mu_act1: "Acto I: La Llamada",
+            mu_ch1: "Capítulo 1",
+            mu_ch2: "Capítulo 2",
+            mu_act2: "Acto II: El Descenso",
+            mu_streak: "¡Racha de 12 días!",
+            mu_words: "24.500 / 50.000 palabras",
+            mu_chars: "Personajes",
+            mu_locs: "Ubicaciones",
+            mu_magic: "Objetos",
+            mu_synced: "Cambios guardados",
+            mu_synced_time: "Última sincronización: Ahora mismo",
+            mu_drive: "Google Drive",
+            mu_format: "Exportar al Disco Duro Local (*.lwrt)",
+            mu_titlepage: "Exportar Manuscrito Completo",
+            mu_exportbtn: "Exportar a .DOCX",
+            engine_badge: "Gestión de Entidades MPC",
+            engine_title: "Motor MPC (Monitoreo de Propuestas del Compendio)",
             engine_sub: "LoneWriter extrae y categoriza dinámicamente elementos importantes mientras escribes sin consumir cantidades masivas de tokens de IA.",
             eng_1_label: "Personajes:",
             eng_1: "Rastrea rasgos de los personajes y apariencias dinámicamente.",
@@ -111,6 +163,16 @@ document.addEventListener('DOMContentLoaded', () => {
             eng_3: "Conciencia contextual de tus sistemas mágicos o de ciencia ficción.",
             eng_4_label: "Puntuación de Saliencia:",
             eng_4: "Inyecta solo el lore más relevante en tus peticiones de IA.",
+            rag_badge: "Inteligencia Semántica Local",
+            rag_title: "Motor RAG en Local",
+            rag_sub: "LoneWriter incorpora un motor RAG (Generación Aumentada por Recuperación) directamente en tu navegador. Recupera fragmentos de tu novela y lore relevante al instante para un contexto perfecto en la IA, todo sin enviar tus datos a la nube.",
+            rag_manuscript: "Manuscrito",
+            rag_vectordb: "Base de Datos Vectorial",
+            local_badge: "Privacidad Absoluta",
+            local_title: "Modelos 100% Locales",
+            local_sub: "Conecta LoneWriter sin esfuerzo con Ollama o LM Studio. Ejecuta modelos de lenguaje grandes (LLMs) directamente en tu propio hardware. Sin suscripciones, sin censura y con privacidad absoluta: tu manuscrito nunca abandona tu ordenador si no quieres.",
+            modal_close: "Cerrar",
+            modal_placeholder: "Captura de pantalla de la App",
             comp_head: "Compendio",
             comp_char: "Personajes",
             comp_loc: "Localizaciones",
@@ -121,7 +183,9 @@ document.addEventListener('DOMContentLoaded', () => {
             footer_doc: "Documentación",
             footer_change: "Registro de cambios (v1.7)",
             footer_auth: "Autor",
-            footer_copy: "© 2026 Sergio Sánchez. Creado para creadores."
+            footer_copy: "Diseñado y desarrollado con ♥ por Sergio Sánchez con Antigravity.",
+            link_doc: "https://github.com/sergio-snchez/LoneWriter/blob/main/README_ES.md",
+            link_change: "https://github.com/sergio-snchez/LoneWriter/blob/main/CHANGELOG_ES.md"
         }
     };
 
@@ -136,6 +200,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.innerHTML = dictionary[key];
             }
         });
+        document.querySelectorAll('[data-i18n-href]').forEach(el => {
+            const key = el.getAttribute('data-i18n-href');
+            if (dictionary[key]) {
+                el.href = dictionary[key];
+            }
+        });
         document.documentElement.lang = lang;
         langToggleBtn.textContent = lang === 'en' ? 'ES' : 'EN';
     }
@@ -143,7 +213,168 @@ document.addEventListener('DOMContentLoaded', () => {
     langToggleBtn.addEventListener('click', () => {
         currentLang = currentLang === 'en' ? 'es' : 'en';
         applyTranslations(currentLang);
+        if (typeof window.runMPCTyping === 'function') window.runMPCTyping();
     });
 
-    // Removed automatic language detection to ensure English is default.
+    // Apply translations initially to ensure everything is in sync
+    applyTranslations(currentLang);
+
+    // Feature Cards Glow Effect
+    const featureCards = document.querySelectorAll('.feature-card');
+    featureCards.forEach(card => {
+        card.addEventListener('mousemove', e => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+        });
+    });
+
+    // Modal Interaction
+    const modal = document.getElementById('feature-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDesc = document.getElementById('modal-desc');
+    const closeModalBtn = document.getElementById('close-modal');
+
+    featureCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const titleEl = card.querySelector('h3');
+            const descEl = card.querySelector('p');
+            const featureId = card.getAttribute('data-feature-id');
+
+            if (titleEl && descEl) {
+                modalTitle.innerHTML = titleEl.innerHTML;
+                modalDesc.innerHTML = descEl.innerHTML;
+
+                // Hide all mockups
+                document.querySelectorAll('.mockup-ui').forEach(m => m.classList.remove('active'));
+
+                // Show specific mockup
+                if (featureId) {
+                    const activeMockup = document.getElementById(`mockup-${featureId}`);
+                    if (activeMockup) activeMockup.classList.add('active');
+                }
+
+                modal.classList.add('active');
+            }
+        });
+    });
+
+    const closeFeatureModal = () => {
+        modal.classList.remove('active');
+    };
+
+    closeModalBtn.addEventListener('click', closeFeatureModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeFeatureModal();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeFeatureModal();
+        }
+    });
+
+    // Mockup flip interaction
+    const heroMockup = document.getElementById('hero-mockup');
+    if (heroMockup) {
+        heroMockup.addEventListener('click', () => {
+            heroMockup.classList.toggle('flipped');
+        });
+    }
+
+    // MPC Typing Animation Logic
+    const mpcAnimData = {
+        en: [
+            { type: 'text', content: 'The storm howled against the ' },
+            { type: 'entity', content: 'Obsidian Spire', tab: 'loc' },
+            { type: 'text', content: ', but inside the Spire, ' },
+            { type: 'entity', content: 'Archmage Vaelen', tab: 'char' },
+            { type: 'text', content: ' only smiled. He traced the glowing runes of the ' },
+            { type: 'entity', content: 'Monolith', tab: 'obj' },
+            { type: 'text', content: '...' }
+        ],
+        es: [
+            { type: 'text', content: 'La tormenta aullaba contra la ' },
+            { type: 'entity', content: 'Aguja de Obsidiana', tab: 'loc' },
+            { type: 'text', content: ', pero dentro de la Aguja, el ' },
+            { type: 'entity', content: 'Archimago Vaelen', tab: 'char' },
+            { type: 'text', content: ' solo sonreía. Trazó las runas brillantes del ' },
+            { type: 'entity', content: 'Monolito', tab: 'obj' },
+            { type: 'text', content: '...' }
+        ]
+    };
+
+    const mpcTypingArea = document.getElementById('mpc-typing-area');
+    let typingSessionId = 0;
+
+    window.runMPCTyping = function () {
+        if (!mpcTypingArea) return;
+        typingSessionId++;
+        let currentSession = typingSessionId;
+        let lang = currentLang;
+        let data = mpcAnimData[lang];
+        mpcTypingArea.innerHTML = '';
+
+        let i = 0;
+        let charIndex = 0;
+        let currentSpan = null;
+        let isEntity = false;
+
+        const baseCounts = { char: 24, loc: 12, obj: 5, lore: 8 };
+        Object.keys(baseCounts).forEach(k => {
+            let el = document.getElementById(`c-count-${k}`);
+            if (el) el.textContent = baseCounts[k];
+        });
+
+        const typeChar = () => {
+            if (currentSession !== typingSessionId) return;
+
+            if (i >= data.length) {
+                setTimeout(() => {
+                    if (currentSession === typingSessionId) runMPCTyping();
+                }, 5000);
+                return;
+            }
+
+            let item = data[i];
+            isEntity = item.type === 'entity';
+
+            if (charIndex === 0) {
+                currentSpan = document.createElement('span');
+                if (isEntity) currentSpan.className = 'mpc-entity-highlight';
+                mpcTypingArea.appendChild(currentSpan);
+            }
+
+            currentSpan.textContent += item.content[charIndex];
+            charIndex++;
+
+            if (charIndex >= item.content.length) {
+                if (isEntity) {
+                    currentSpan.classList.add('extracted');
+                    const tab = document.getElementById(`c-tab-${item.tab}`);
+                    const countEl = document.getElementById(`c-count-${item.tab}`);
+                    if (tab && countEl) {
+                        tab.classList.add('pulse');
+                        countEl.textContent = parseInt(countEl.textContent) + 1;
+                        setTimeout(() => {
+                            if (tab) tab.classList.remove('pulse');
+                        }, 1000);
+                    }
+                }
+                i++;
+                charIndex = 0;
+                setTimeout(typeChar, isEntity ? 500 : 100);
+            } else {
+                setTimeout(typeChar, isEntity ? 60 : 30);
+            }
+        };
+
+        setTimeout(typeChar, 1000);
+    };
+
+    if (mpcTypingArea) window.runMPCTyping();
 });

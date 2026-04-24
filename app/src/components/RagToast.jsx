@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Cpu, CheckCircle2, X, AlertTriangle } from 'lucide-react';
 
 const SEEN_KEY = 'lw_rag_model_ready';
 
 export default function RagToast() {
+  const { t } = useTranslation('common');
   const [state, setState] = useState('idle'); // 'idle' | 'loading' | 'ready' | 'error'
   const [progress, setProgress] = useState(null); // e.g. { progress: 0.42, file: '...' }
   const [visible, setVisible] = useState(false);
@@ -107,18 +109,18 @@ export default function RagToast() {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: '13px', fontWeight: 600, color: '#f1f5f9', lineHeight: 1.3 }}>
-            {state === 'ready'
-              ? 'Modelo RAG listo'
+          {state === 'ready'
+              ? t('rag.listo_titulo')
               : state === 'error'
-              ? 'Error al cargar modelo'
-              : 'Descargando modelo local'}
+              ? t('rag.error_titulo')
+              : t('rag.descargando_titulo')}
           </div>
           <div style={{ fontSize: '11px', color: 'rgba(148,163,184,0.8)', marginTop: '2px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
             {state === 'ready'
-              ? 'El Oráculo ya usa contexto semántico ✨'
+              ? t('rag.listo_subtitulo')
               : state === 'error'
-              ? 'El Oráculo funcionará sin RAG'
-              : 'all-MiniLM-L6-v2 · ~23MB · solo esta vez'}
+              ? t('rag.error_subtitulo')
+              : t('rag.descargando_subtitulo')}
           </div>
         </div>
         <button

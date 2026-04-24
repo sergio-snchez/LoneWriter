@@ -15,15 +15,21 @@ export const ModalProvider = ({ children }) => {
   const { t } = useTranslation('common');
   const [modal, setModal] = useState({ type: null, data: null });
   const [modalInput, setModalInput] = useState('');
+  const [isClosing, setIsClosing] = useState(false);
 
   const openModal = (type, data = null) => {
+    setIsClosing(false);
     setModal({ type, data });
     setModalInput('');
   };
 
   const closeModal = () => {
-    setModal({ type: null, data: null });
-    setModalInput('');
+    setIsClosing(true);
+    setTimeout(() => {
+      setModal({ type: null, data: null });
+      setModalInput('');
+      setIsClosing(false);
+    }, 220);
   };
 
   const value = {
@@ -38,8 +44,8 @@ export const ModalProvider = ({ children }) => {
     <ModalContext.Provider value={value}>
       {children}
       {modal.type && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className={`modal-overlay${isClosing ? ' modal-overlay--closing' : ''}`} onClick={closeModal}>
+          <div className={`modal-content${isClosing ? ' modal-content--closing' : ''}`} onClick={e => e.stopPropagation()}>
             <h2 className="modal-title">
               {modal.type === 'project' && t('modales.titulo_nueva_novela')}
               {modal.type === 'prompt' && (modal.data.title || t('modales.titulo_entrada_requerida'))}

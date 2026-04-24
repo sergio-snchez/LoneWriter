@@ -148,14 +148,14 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
       setShowRevisions(true);
     } catch (error) {
       console.error('Error loading revisions:', error);
-      alert('Error al cargar el historial de versiones');
+      alert(t('nube.error_cargar_historial'));
     } finally {
       setIsSyncing(false);
     }
   };
 
   const handleRestoreRevision = async (revisionId, revisionDate) => {
-    if (!confirm(`¿Restaurar copia del ${new Date(revisionDate).toLocaleString()}? Esto sobrescribirá todos los datos actuales.`)) return;
+    if (!confirm(t('nube.confirmar_restaurar', { date: new Date(revisionDate).toLocaleString() }))) return;
 
     setIsSyncing(true);
     try {
@@ -168,7 +168,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
       }
     } catch (error) {
       console.error('Error restoring revision:', error);
-      alert('Error al restaurar la versión');
+      alert(t('nube.error_restaurar_version'));
     } finally {
       setIsSyncing(false);
     }
@@ -514,6 +514,25 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
             </div>
             <div className="settings-section">
               <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Zap size={14} />
+                {t('general.fondo_dinamico')}
+              </span>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 6px 0', lineHeight: '1.4' }}>
+                {t('general.fondo_dinamico_hint')}
+              </p>
+              <div style={{ padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{t('general.fondo_dinamico')}</span>
+                <input
+                  type="checkbox"
+                  className="form-toggle"
+                  checked={meshEnabled}
+                  onChange={(e) => setMeshEnabled(e.target.checked)}
+                  style={{ height: '18px', width: '18px', cursor: 'pointer', accentColor: 'var(--accent)' }}
+                />
+              </div>
+            </div>
+            <div className="settings-section">
+              <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Info size={14} />
                 {t('general.tema')}
               </span>
@@ -682,25 +701,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                 </button>
               </div>
             </div>
-            <div className="settings-section">
-              <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Zap size={14} />
-                {t('general.fondo_dinamico')}
-              </span>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 6px 0', lineHeight: '1.4' }}>
-                {t('general.fondo_dinamico_hint')}
-              </p>
-              <div style={{ padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{t('general.fondo_dinamico')}</span>
-                <input
-                  type="checkbox"
-                  className="form-toggle"
-                  checked={meshEnabled}
-                  onChange={(e) => setMeshEnabled(e.target.checked)}
-                  style={{ height: '18px', width: '18px', cursor: 'pointer', accentColor: 'var(--accent)' }}
-                />
-              </div>
-            </div>
+
           </div>
         );
       case 'general':

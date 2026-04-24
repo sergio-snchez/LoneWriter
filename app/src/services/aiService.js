@@ -53,7 +53,7 @@ export const AIService = {
    * @param {Object} config - { provider, apiKey, model, customInstructions, pov, previousContext }
    */
   rewrite: async (text, goal, promptTemplate, config) => {
-    const { provider, apiKey, model, customInstructions, pov, knowledgeBase, previousContext, saliencyContext } = config;
+    const { provider, apiKey, model, customInstructions, pov, knowledgeBase, previousContext } = config;
     const isSpanish = i18n.language === 'es';
 
     if (!apiKey && provider !== 'local') throw new Error(isSpanish ? 'Se requiere una clave API para usar la IA.' : 'An API key is required to use the AI.');
@@ -90,9 +90,6 @@ export const AIService = {
       fullPrompt += `\n\n${kbLabel}\n${knowledgeBase}\n---\n${kbNote}`;
     }
 
-    if (saliencyContext) {
-      fullPrompt += `\n\n${saliencyContext}`;
-    }
 
     const outputLabel = isSpanish ? 'RESCRITURA (Responde ÚNICAMENTE con el texto reescrito en formato HTML válido. Usa etiquetas <p>, <strong>, <em>, etc. NO uses Markdown. NO añadas introducciones ni explicaciones):' : 'REWRITE (Respond ONLY with the rewritten text in valid HTML format. Use tags like <p>, <strong>, <em>, etc. Do NOT use Markdown. Do NOT add introductions or explanations):';
     fullPrompt += `\n\n${outputLabel}`;
@@ -642,42 +639,26 @@ export const AIService = {
    * @returns {Promise<{success: boolean, latency: number, error?: string}>}
    */
   testConnection: async (config) => {
-    console.log('[testConnection] Input config:', JSON.stringify(config));
     const { provider, apiKey, model, localBaseUrl } = config;
     const startTime = Date.now();
 
     const isEmpty = (val) => !val || typeof val !== 'string' || val.trim().length === 0;
 
-    if (!provider) {
-      console.log('[testConnection] No provider selected');
-      return { success: false, error: 'Selecciona un proveedor', latency: 0 };
-    }
+    if (!provider) return { success: false, error: 'Selecciona un proveedor', latency: 0 };
 
     if (provider === 'local') {
-      if (isEmpty(localBaseUrl)) {
-        console.log('[testConnection] No localBaseUrl');
-        return { success: false, error: 'URL del servidor no configurada', latency: 0 };
-      }
+      if (isEmpty(localBaseUrl)) return { success: false, error: 'URL del servidor no configurada', latency: 0 };
     } else {
-      if (isEmpty(apiKey)) {
-        console.log('[testConnection] No apiKey');
-        return { success: false, error: 'API key no configurada', latency: 0 };
-      }
-      if (isEmpty(model)) {
-        console.log('[testConnection] No model');
-        return { success: false, error: 'Modelo no seleccionado', latency: 0 };
-      }
+      if (isEmpty(apiKey)) return { success: false, error: 'API key no configurada', latency: 0 };
+      if (isEmpty(model)) return { success: false, error: 'Modelo no seleccionado', latency: 0 };
     }
 
-    console.log('[testConnection] Validation passed, making API call...');
     try {
       if (provider === 'openai') {
-        console.log('[testConnection] Testing OpenAI API key...');
         const keyResponse = await fetch('https://api.openai.com/v1/models', {
           headers: { 'Authorization': `Bearer ${apiKey}` }
         });
         let latency = Date.now() - startTime;
-        console.log('[testConnection] OpenAI key response status:', keyResponse.status);
         
         if (!keyResponse.ok) {
           if (keyResponse.status === 401) return { success: false, error: 'API key inválida', latency };
@@ -686,10 +667,8 @@ export const AIService = {
           return { success: false, error: err.error?.message || `Error ${keyResponse.status}`, latency };
         }
         
-        const keyData = await keyResponse.json().catch(() => ({}));
-        console.log('[testConnection] OpenAI models count:', keyData.data?.length || 0);
+        await keyResponse.json().catch(() => ({}));
         
-        console.log('[testConnection] Testing OpenAI model:', model);
         const chatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -703,7 +682,6 @@ export const AIService = {
           })
         });
         latency = Date.now() - startTime;
-        console.log('[testConnection] OpenAI chat response status:', chatResponse.status);
         
         if (!chatResponse.ok) {
           if (chatResponse.status === 401) return { success: false, error: 'API key inválida', latency };
@@ -717,7 +695,6 @@ export const AIService = {
         }
         
         const chatData = await chatResponse.json().catch(() => ({}));
-        console.log('[testConnection] OpenAI chat response:', JSON.stringify(chatData));
         
         if (chatData.choices && chatData.choices.length > 0) {
           return { success: true, latency };
@@ -726,7 +703,6 @@ export const AIService = {
       }
 
       if (provider === 'google') {
-        console.log('[testConnection] Testing Google model:', model);
         const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
         const response = await fetch(url, {
           method: 'POST',
@@ -734,11 +710,9 @@ export const AIService = {
           body: JSON.stringify({ contents: [{ parts: [{ text: 'hi' }] }] })
         });
         const latency = Date.now() - startTime;
-        console.log('[testConnection] Google response status:', response.status);
         
         if (response.ok) {
           const data = await response.json().catch(() => ({}));
-          console.log('[testConnection] Google response:', JSON.stringify(data));
           if (data.error) {
             return { success: false, error: data.error.message || 'Error de Google API', latency };
           }
@@ -757,7 +731,6 @@ export const AIService = {
       }
 
       if (provider === 'anthropic') {
-        console.log('[testConnection] Testing Anthropic API key...');
         const keyResponse = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: {
@@ -772,7 +745,6 @@ export const AIService = {
           })
         });
         let latency = Date.now() - startTime;
-        console.log('[testConnection] Anthropic response status:', keyResponse.status);
         
         if (!keyResponse.ok) {
           if (keyResponse.status === 401) return { success: false, error: 'API key inválida', latency };
@@ -786,14 +758,12 @@ export const AIService = {
           return { success: false, error: err.error?.message || `Error ${keyResponse.status}`, latency };
         }
         
-        const data = await keyResponse.json().catch(() => ({}));
-        console.log('[testConnection] Anthropic response:', JSON.stringify(data));
+        await keyResponse.json().catch(() => ({}));
         
         return { success: true, latency };
       }
 
       if (provider === 'openrouter') {
-        console.log('[testConnection] Testing OpenRouter API key...');
         const keyResponse = await fetch('https://openrouter.ai/api/v1/models', {
           headers: {
             'Authorization': `Bearer ${apiKey}`,
@@ -802,7 +772,6 @@ export const AIService = {
           }
         });
         let latency = Date.now() - startTime;
-        console.log('[testConnection] OpenRouter key response status:', keyResponse.status);
         
         if (!keyResponse.ok) {
           const errText = await keyResponse.text();
@@ -816,10 +785,8 @@ export const AIService = {
           }
         }
         
-        const keyData = await keyResponse.json().catch(() => ({}));
-        console.log('[testConnection] OpenRouter models count:', keyData.data?.length || 0);
+        await keyResponse.json().catch(() => ({}));
         
-        console.log('[testConnection] Testing OpenRouter model:', model || 'openrouter/auto');
         const chatResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -835,7 +802,6 @@ export const AIService = {
           })
         });
         latency = Date.now() - startTime;
-        console.log('[testConnection] OpenRouter chat response status:', chatResponse.status);
         
         if (!chatResponse.ok) {
           const errText = await chatResponse.text();
@@ -858,7 +824,6 @@ export const AIService = {
         }
         
         const chatData = await chatResponse.json().catch(() => ({}));
-        console.log('[testConnection] OpenRouter chat response:', JSON.stringify(chatData));
         
         if (chatData.choices && chatData.choices.length > 0) {
           return { success: true, latency };
@@ -867,9 +832,7 @@ export const AIService = {
       }
 
       if (provider === 'local') {
-        console.log('[testConnection] Testing Local provider...');
         const url = `${(localBaseUrl || 'http://localhost:1234/v1').replace(/\/$/, '')}/models`;
-        console.log('[testConnection] Local URL:', url);
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 5000);
         
@@ -877,12 +840,9 @@ export const AIService = {
           const response = await fetch(url, { signal: controller.signal });
           clearTimeout(timeout);
           const latency = Date.now() - startTime;
-          console.log('[testConnection] Local response status:', response.status);
-          console.log('[testConnection] Local response ok:', response.ok);
           
           if (response.ok) {
             const data = await response.json().catch(() => ({}));
-            console.log('[testConnection] Local response data:', JSON.stringify(data));
             if (data.data && Array.isArray(data.data) && data.data.length > 0) {
               return { success: true, latency };
             }
@@ -893,7 +853,6 @@ export const AIService = {
         } catch (err) {
           clearTimeout(timeout);
           const latency = Date.now() - startTime;
-          console.log('[testConnection] Local error:', err.message);
           if (err.name === 'AbortError') {
             return { success: false, error: 'Sin respuesta (servidor caído)', latency };
           }

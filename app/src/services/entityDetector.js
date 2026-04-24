@@ -1,5 +1,5 @@
 import { db } from '../db/database';
-import { getEntityStopWords, getEntityStopWordsWithCustom, loadCustomStopwords } from '../i18n/stopwords';
+import { getEntityStopWords, getEntityStopWordsWithCustom } from '../i18n/stopwords';
 
 const ENTITY_TABLES = ['characters', 'locations', 'objects', 'lore', 'resources'];
 
