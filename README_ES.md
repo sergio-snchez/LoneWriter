@@ -10,7 +10,9 @@
 
 > **Tu "Sistema Operativo Narrativo": La IA que te escucha, organiza tu caos y vigila la coherencia de tu mundo mientras tú solo te preocupas de escribir.**
 >
-> 🌐 **Acceso Web:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
+> 🏠 **Web Oficial:** [getlonewriter.vercel.app](https://getlonewriter.vercel.app/)
+>
+> 🌐 **Web App:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
 >
 > ☕ **Apoya el proyecto:** [Invítame a un café](https://buymeacoffee.com/sergio.snchez)
 

@@ -10,7 +10,9 @@
 
 > **Your "Narrative Operating System": The AI that listens to you, organizes your chaos, and monitors your world's coherence while you only worry about writing.**
 >
-> 🌐 **Web Access:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
+> 🏠 **Official Website:** [getlonewriter.vercel.app](https://getlonewriter.vercel.app/)
+>
+> 🌐 **Web App:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
 >
 > ☕ **Support the project:** [Buy me a coffee](https://buymeacoffee.com/sergio.snchez)
 
