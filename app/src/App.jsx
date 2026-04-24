@@ -65,6 +65,10 @@ export default function App() {
   }, [meshEnabled]);
 
   useEffect(() => {
+    document.title = t('app_title');
+  }, [t, i18n.language]);
+
+  useEffect(() => {
     const handleOpenOracle = () => {
       setAiPanelTab('oracle');
       setAiPanelOpen(true);
