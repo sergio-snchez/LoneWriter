@@ -1,4 +1,5 @@
 {
+  "app_title": "LoneWriter – Escritura de Novelas",
   "restaurar_nube": {
     "titulo": "Versión en la nube disponible",
     "mensaje": "Se ha detectado una copia de seguridad en Google Drive más reciente ({{date}}). ¿Deseas restaurar tus proyectos ahora? Se sobrescribirá la base de datos local.",

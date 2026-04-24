@@ -1,4 +1,5 @@
 {
+  "app_title": "LoneWriter – Novel Writing",
   "restaurar_nube": {
     "titulo": "Cloud version available",
     "mensaje": "A more recent backup has been detected on Google Drive ({{date}}). Would you like to restore your projects now? This will overwrite the local database.",
