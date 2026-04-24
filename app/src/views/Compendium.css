@@ -277,14 +277,30 @@
 
 /* ---- Right Slide Panel ---- */
 .compendium-view__panel {
-  width: 380px;
+  width: 0;
+  min-width: 0;
   flex-shrink: 0;
-  border-left: 1px solid var(--border);
-  background: var(--bg-elevated);
+  border-left: 1px solid transparent;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: width var(--trans-fast), transform var(--trans-fast);
+  opacity: 0;
+  pointer-events: none;
+  transition: width 350ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              min-width 350ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              border-color 200ms ease,
+              opacity 200ms ease;
+}
+
+.compendium-view__panel--open {
+  width: 380px;
+  min-width: 340px;
+  border-left-color: var(--border);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .compendium-panel__header {
@@ -293,6 +309,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: linear-gradient(135deg, rgba(212,168,83,0.06) 0%, transparent 60%);
 }
 
 .compendium-panel__title {
@@ -318,7 +335,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  background: var(--bg-base);
+  background: transparent;
 }
 
 .compendium-form-group {
@@ -911,6 +928,15 @@
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+.compendium-mpc-overlay.compendium-mpc-overlay--closing {
+  animation: fadeOut 0.2s ease-in forwards;
+  pointer-events: none;
+}
+
+.compendium-mpc-overlay__panel.compendium-mpc-overlay__panel--closing {
+  animation: scaleOut 0.22s ease-in forwards;
+}
+
 .compendium-mpc-overlay__header {
   display: flex;
   align-items: center;
@@ -1201,9 +1227,4 @@
     padding: 10px 12px;
     font-size: 13px;
   }
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
 }

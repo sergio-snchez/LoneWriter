@@ -146,7 +146,6 @@ export const ExportService = {
     try {
       if (!novel) throw new Error('No hay una novela activa para exportar.');
 
-      console.log('Iniciando exportación de novela completa:', novel.title);
 
       let fullHtml = `
         <!DOCTYPE html>
@@ -196,7 +195,6 @@ export const ExportService = {
 
       fullHtml += `</body></html>`;
 
-      console.log('Generando DOCX con html-to-docx...');
 
       const output = await HTMLToDOCX(fullHtml, null, {
         table: { row: { cantSplit: true } },
@@ -204,7 +202,6 @@ export const ExportService = {
         pageNumber: true,
       });
 
-      console.log('DOCX generado con éxito, iniciando descarga.');
 
       const blob = new Blob([output], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
       const fileName = `${novel.title.replace(/[^a-z0-9]/gi, '_')}_Manuscrito.docx`;

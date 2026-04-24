@@ -78,8 +78,7 @@ export const NovelProvider = ({ children }) => {
         const localDate = localSync ? new Date(localSync) : new Date(0);
         
         if (cloudDate > localDate) {
-          console.log('[LoneWriter] Versión en la nube encontrada más reciente.');
-          // Pequeño delay para evitar race conditions con otros eventos
+          // Cloud version is newer — trigger UI notification
           await new Promise(resolve => setTimeout(resolve, 100));
           window.dispatchEvent(new CustomEvent('cloud-version-available', { 
             detail: { date: cloudFile.modifiedTime, id: cloudFile.id } 

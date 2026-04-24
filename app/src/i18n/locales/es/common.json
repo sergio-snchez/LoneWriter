@@ -64,5 +64,13 @@
     "limpiar_formato": "Limpiar formato",
     "disminuir_fuente": "Reducir tamaño de fuente",
     "aumentar_fuente": "Aumentar tamaño de fuente"
+  },
+  "rag": {
+    "descargando_titulo": "Descargando modelo local",
+    "listo_titulo": "Modelo RAG listo",
+    "error_titulo": "Error al cargar modelo",
+    "descargando_subtitulo": "all-MiniLM-L6-v2 · ~23MB · solo esta vez",
+    "listo_subtitulo": "El Oráculo ya usa contexto semántico ✨",
+    "error_subtitulo": "El Oráculo funcionará sin RAG"
   }
 }

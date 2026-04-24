@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import {
   FileText, Upload, Search, FolderOpen, Tag, Calendar, HardDrive,
@@ -17,12 +18,37 @@ const ALLOWED_EXTENSIONS = ['txt', 'md', 'json', 'csv']
 
 function StopwordsModal({ isOpen, onClose, customWords, onAdd, onDelete, t }) {
   const [newWord, setNewWord] = useState('')
+  const [isVisible, setIsVisible] = useState(false)
+  const [isClosing, setIsClosing] = useState(false)
 
-  if (!isOpen) return null
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true)
+      setIsClosing(false)
+    }
+  }, [isOpen])
 
-  return (
-    <div className="modal-overlay" onClick={onClose} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000 }}>
-      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 12, width: '90%', maxWidth: 500, padding: 20 }}>
+  const handleClose = () => {
+    setIsClosing(true)
+    setTimeout(() => {
+      setIsVisible(false)
+      onClose()
+    }, 220)
+  }
+
+  if (!isVisible) return null
+
+  return createPortal(
+    <div
+      className={`modal-overlay${isClosing ? ' modal-overlay--closing' : ''}`}
+      onClick={handleClose}
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000 }}
+    >
+      <div
+        className={`modal-content${isClosing ? ' modal-content--closing' : ''}`}
+        onClick={e => e.stopPropagation()}
+        style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 12, width: '90%', maxWidth: 500, padding: 20 }}
+      >
         <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>{t('stopwords_modal_titulo')}</h3>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>{t('stopwords_modal_texto')}</p>
         
@@ -56,12 +82,55 @@ function StopwordsModal({ isOpen, onClose, customWords, onAdd, onDelete, t }) {
         </div>
         
         <div style={{ marginTop: 20, textAlign: 'right' }}>
-          <button className="btn btn-ghost" onClick={onClose}>Cerrar</button>
+          <button className="btn btn-ghost" onClick={handleClose}>Cerrar</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
+
+
+function ViewerModal({ res, onClose, t }) {
+  const [isClosing, setIsClosing] = useState(false)
+
+  const handleClose = () => {
+    setIsClosing(true)
+    setTimeout(onClose, 220)
+  }
+
+  return createPortal(
+    <div
+      className={`modal-overlay${isClosing ? ' modal-overlay--closing' : ''}`}
+      onClick={handleClose}
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000 }}
+    >
+      <div
+        className={`modal-content${isClosing ? ' modal-content--closing' : ''}`}
+        onClick={e => e.stopPropagation()}
+        style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 12, width: '90%', maxWidth: 700, maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}
+      >
+        <div className="modal-header" style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ margin: 0, fontSize: 16 }}>{res.name}</h3>
+          <button className="btn btn-ghost btn-icon" onClick={handleClose}><X size={16} /></button>
+        </div>
+        <div className="modal-body" style={{ padding: 20, overflowY: 'auto', flex: 1 }}>
+          {res.content ? (
+            <div className="resource-viewer__content" dangerouslySetInnerHTML={{ __html: renderMarkdown(res.content) }}></div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+              <Eye size={32} style={{ opacity: 0.5, marginBottom: 12 }} />
+              <p style={{ margin: 0 }}>{t('vista_previa_no_disponible')}</p>
+              <p style={{ fontSize: 13, marginTop: 8 }}>{t('formato', { type: res.type })}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
+}
+
 
 function formatBytes(bytes, decimals = 2) {
   if (!+bytes) return '0 Bytes'
@@ -71,6 +140,7 @@ function formatBytes(bytes, decimals = 2) {
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
 }
+
 
 function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
   const { t } = useTranslation('resources')
@@ -417,25 +487,11 @@ export default function ResourcesView() {
 
       {/* Viewer Modal */}
       {viewingRes && (
-        <div className="modal-overlay" onClick={() => setViewingRes(null)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000 }}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 12, width: '90%', maxWidth: 700, maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}>
-            <div className="modal-header" style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ margin: 0, fontSize: 16 }}>{viewingRes.name}</h3>
-              <button className="btn btn-ghost btn-icon" onClick={() => setViewingRes(null)}><X size={16} /></button>
-            </div>
-            <div className="modal-body" style={{ padding: 20, overflowY: 'auto', flex: 1 }}>
-              {viewingRes.content ? (
-                <div className="resource-viewer__content" dangerouslySetInnerHTML={{ __html: renderMarkdown(viewingRes.content) }}></div>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                  <Eye size={32} style={{ opacity: 0.5, marginBottom: 12 }} />
-                  <p style={{ margin: 0 }}>{t('vista_previa_no_disponible')}</p>
-                  <p style={{ fontSize: 13, marginTop: 8 }}>{t('formato', { type: viewingRes.type })}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <ViewerModal
+          res={viewingRes}
+          onClose={() => setViewingRes(null)}
+          t={t}
+        />
       )}
 
       {/* Stopwords Modal */}

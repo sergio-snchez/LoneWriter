@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import {
   Users, MapPin, Package, BookOpen,
@@ -49,7 +50,7 @@ const CATEGORIES = [
   { id: 'lore', icon: BookOpen },
 ];
 
-function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel }) {
+function CompendiumPanel({ isOpen, type, item, characters, onClose, onSave, activeNovel }) {
   const { t } = useTranslation('compendium')
   const { acts } = useNovel()
   const { provider, apiKey, currentModel, localBaseUrl, logAIUsage } = useAI()
@@ -163,7 +164,6 @@ function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel 
           
           if (ragFragments && ragFragments.length > 0) {
             fullText = ragFragments.join('\n\n---\n');
-            console.log('[Compendium] RAG encontró', ragFragments.length, 'fragmentos relevantes');
           }
         } catch (ragErr) {
           console.warn('[Compendium] RAG falló, usando método tradicional:', ragErr.message);
@@ -200,7 +200,6 @@ function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel 
       }
       
       const config = { provider, apiKey, model: currentModel, localBaseUrl };
-      console.log('[Compendium] Generando', type, 'con IA:', formData.name || formData.title);
       const res = await AIService.autoCompleteCompendiumEntry(
         fullText,
         type,
@@ -233,7 +232,7 @@ function CompendiumPanel({ type, item, characters, onClose, onSave, activeNovel 
   };
 
   return (
-    <div className="compendium-view__panel">
+    <div className={`compendium-view__panel ${isOpen ? 'compendium-view__panel--open' : ''}`}>
       <div className="compendium-panel__header">
         <span className="compendium-panel__title">{titleText}</span>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -803,6 +802,15 @@ export default function CompendiumView() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState([]);
   const [isMpcOverlayOpen, setIsMpcOverlayOpen] = useState(false);
+  const [isMpcOverlayClosing, setIsMpcOverlayClosing] = useState(false);
+
+  const handleCloseMpcOverlay = () => {
+    setIsMpcOverlayClosing(true);
+    setTimeout(() => {
+      setIsMpcOverlayOpen(false);
+      setIsMpcOverlayClosing(false);
+    }, 220);
+  };
   const [acceptingMpcId, setAcceptingMpcId] = useState(null);
 
   // Limpiar filtros al cambiar de sección
@@ -972,24 +980,19 @@ export default function CompendiumView() {
 
   const handleMpcEdit = async (proposal) => {
     setAcceptingMpcId(proposal.id);
-    console.log('[MPC] handleMpcEdit iniciada, proposal:', proposal);
     
     try {
       const { type, data } = buildMpcCompendiumData(proposal);
-      console.log('[MPC] Datos parseados, type:', type, 'data:', data);
       
       const savedId = await addCompendiumEntry(type, data);
-      console.log('[MPC] Entrada guardada, id:', savedId);
       
       dismissMpcProposal(proposal.id);
-      console.log('[MPC] Proposal despachada');
       
       const savedItem = { 
         ...data, 
         id: savedId,
         _isNewlyCreated: true
       };
-      console.log('[MPC] Abriendo panel con item:', savedItem);
       
       setActiveSection(type);
       setEditingItem(savedItem);
@@ -1335,21 +1338,20 @@ export default function CompendiumView() {
       </div>
       
       {/* Right Slide Panel for Edit/Create */}
-      {isPanelOpen && (
-        <CompendiumPanel 
-          type={activeSection} 
-          item={editingItem} 
-          characters={characters}
-          activeNovel={activeNovel}
-          onClose={() => setIsPanelOpen(false)} 
-          onSave={handleSavePanel} 
-        />
-      )}
+      <CompendiumPanel 
+        isOpen={isPanelOpen}
+        type={activeSection} 
+        item={editingItem} 
+        characters={characters}
+        activeNovel={activeNovel}
+        onClose={() => setIsPanelOpen(false)} 
+        onSave={handleSavePanel} 
+      />
 
       {/* MPC Overlay Flotante */}
-      {isMpcOverlayOpen && (
-        <div className="compendium-mpc-overlay" onClick={() => setIsMpcOverlayOpen(false)}>
-          <div className="compendium-mpc-overlay__panel" onClick={(e) => e.stopPropagation()}>
+      {isMpcOverlayOpen && createPortal(
+        <div className={`compendium-mpc-overlay${isMpcOverlayClosing ? ' compendium-mpc-overlay--closing' : ''}`} onClick={handleCloseMpcOverlay}>
+          <div className={`compendium-mpc-overlay__panel${isMpcOverlayClosing ? ' compendium-mpc-overlay__panel--closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             <div className="compendium-mpc-overlay__header">
               <div className="compendium-mpc-overlay__title">
                 <Sparkles size={18} className="compendium-mpc-overlay__icon" />
@@ -1358,7 +1360,7 @@ export default function CompendiumView() {
                   <Loader2 size={14} className="spin" />
                 )}
               </div>
-              <button className="btn btn-ghost btn-icon" onClick={() => setIsMpcOverlayOpen(false)}>
+              <button className="btn btn-ghost btn-icon" onClick={handleCloseMpcOverlay}>
                 <X size={18} />
               </button>
             </div>
@@ -1429,7 +1431,8 @@ export default function CompendiumView() {
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
 

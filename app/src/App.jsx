@@ -31,7 +31,6 @@ export default function App() {
   const { t: tc } = useTranslation('common')
   const [activeView, setActiveView] = useState('editor')
   const [viewKey, setViewKey] = useState(0)
-  const [pendingMpcProposal, setPendingMpcProposal] = useState(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)

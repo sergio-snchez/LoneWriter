@@ -7,7 +7,6 @@ import { db } from '../db/database';
 // ── Worker singleton ──────────────────────────────────────────────────────────
 
 let _worker = null;
-let _workerReady = false;
 let _pendingResolvers = {}; // id => { resolve, reject }
 let _msgId = 0;
 let _modelLoading = false;
@@ -169,9 +168,6 @@ export async function upsertVector(sceneId, novelId, text) {
     } catch (err) {
       console.error('[RAG] Fallo procesando chunk de escena', sceneId, err);
     }
-  }
-  
-  if (chunksToProcess.length > 0 || idsToDelete.length > 0) {
   }
 }
 

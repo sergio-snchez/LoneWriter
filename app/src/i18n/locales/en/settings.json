@@ -34,7 +34,10 @@
     "restaurar": "Restore",
     "sincronizacion_automatica": "Automatic sync",
     "proteccion_cache": "Active real-time protection against cache clearing",
-    "seguridad_hint": "<strong>Security:</strong> LoneWriter only has access to its own backup files. Your private documents are not visible to the application."
+    "seguridad_hint": "<strong>Security:</strong> LoneWriter only has access to its own backup files. Your private documents are not visible to the application.",
+    "error_cargar_historial": "Error loading version history",
+    "error_restaurar_version": "Error restoring version",
+    "confirmar_restaurar": "Restore backup from {{date}}? This will overwrite all current data."
   },
   "ia": {
     "seccion_titulo": "Artificial Intelligence Settings",
@@ -86,8 +89,8 @@
     "plataforma_valor": "Vite + PWA",
     "tecnologia_rag": "RAG Engine",
     "tecnologia_rag_valor": "Transformers.js (all-MiniLM-L6-v2)",
-    "tecnologia_saliencia": "Anaphora Resolution",
-    "tecnologia_saliencia_valor": "Combined Reasoning (RAG + Context + Oracle)",
+    "tecnologia_saliencia": "Entity Detector",
+    "tecnologia_saliencia_valor": "Oracle (Semantic RAG + Compendium)",
     "recargar_app": "Clear Cache & Reload",
     "recargar_app_hint": "Clears LoneWriter cache and erases your preferences. Restarts the app.",
     "recargar_app_boton": "Clear Cache & Reload",

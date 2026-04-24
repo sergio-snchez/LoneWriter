@@ -869,6 +869,33 @@
   }
 }
 
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+}
+
+/* Closing state — higher specificity overrides entry animation */
+.modal-overlay.modal-overlay--closing {
+  animation: fadeOut 0.2s ease-in forwards;
+  pointer-events: none;
+}
+
+.modal-content.modal-content--closing {
+  animation: scaleOut 0.22s ease-in forwards;
+}
+
+
 /* ---- Mobile hamburger button ---- */
 .mobile-menu-btn {
   display: none;

@@ -64,5 +64,13 @@
     "limpiar_formato": "Clear formatting",
     "disminuir_fuente": "Decrease font size",
     "aumentar_fuente": "Increase font size"
+  },
+  "rag": {
+    "descargando_titulo": "Downloading local model",
+    "listo_titulo": "RAG model ready",
+    "error_titulo": "Error loading model",
+    "descargando_subtitulo": "all-MiniLM-L6-v2 · ~23MB · one-time download",
+    "listo_subtitulo": "Oracle now uses semantic context ✨",
+    "error_subtitulo": "Oracle will work without RAG"
   }
 }

@@ -45,7 +45,7 @@ export function extractKeywords(text) {
   const tokens = normalized.split(' ').filter(Boolean);
   const keywords = [];
   const seen = new Set();
-  const stopWords = getStopWords();
+  const stopWords = getSearchStopWords();
 
   for (const token of tokens) {
     if (token.length < 3) continue;
