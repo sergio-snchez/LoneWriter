@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next'
 import {
   Users, MapPin, Package, BookOpen,
   Search, Filter, ChevronRight, Plus, Tag, PenLine, Trash2, 
-  X, Zap, Sparkles, Loader2, CheckCircle2
+  X, Zap, Sparkles, Loader2, CheckCircle2, Combine
 } from 'lucide-react'
 import { useNovel } from '../context/NovelContext'
 import { useAI } from '../context/AIContext'
 import { useModal } from '../context/ModalContext'
 import { extractKeywords, TABLE_CONFIG } from '../services/compendiumSearch'
+import { findSimilarEntities } from '../services/entityDetector'
 import { Tooltip } from '../components/Tooltip'
 
 import { AIService } from '../services/aiService'
@@ -523,7 +524,9 @@ function CharacterCard({ char, onEdit, onDelete, onToggleIgnore }) {
     >
       <div className="char-card__top">
         <div className="char-card__avatar" style={{ background: char.color + '22', borderColor: char.color + '44' }}>
-          <span style={{ color: char.color }}>{char.initials}</span>
+          <span style={{ color: char.color }}>
+            {char.initials || (char.name || '').substring(0, 2).toUpperCase()}
+          </span>
         </div>
         <div className="char-card__info">
           <span className="char-card__name">{char.name}</span>
@@ -790,6 +793,7 @@ export default function CompendiumView() {
     mpcStatus,
     acceptMpcProposal, dismissMpcProposalPermanently, clearMpcProposals
   } = useAI()
+  const { provider, apiKey, currentModel, localBaseUrl, logAIUsage } = useAI()
   const { openModal } = useModal()
   const [activeSection, setActiveSection] = useState('characters')
   const [query, setQuery] = useState('')
@@ -803,6 +807,23 @@ export default function CompendiumView() {
   const [activeFilters, setActiveFilters] = useState([]);
   const [isMpcOverlayOpen, setIsMpcOverlayOpen] = useState(false);
   const [isMpcOverlayClosing, setIsMpcOverlayClosing] = useState(false);
+
+  // Merge/Unify State (Now from useNovel)
+  const {
+    mergeGroups, setMergeGroups,
+    selectedMerge, setSelectedMerge,
+    mergeResult, setMergeResult,
+    isMerging, setIsMerging,
+    isScanningMerge, setIsScanningMerge,
+    selectedMergeIdx, setSelectedMergeIdx,
+    showMergeOverlay, setShowMergeOverlay,
+    isMergeOverlayClosing, setIsMergeOverlayClosing,
+    scanForMergeDuplicates,
+    handleMergeSelection: globalHandleMergeSelection,
+    confirmMerge,
+    skipMerge,
+    closeMergeOverlay
+  } = useNovel()
 
   const handleCloseMpcOverlay = () => {
     setIsMpcOverlayClosing(true);
@@ -946,6 +967,47 @@ export default function CompendiumView() {
     const table = getTableForSection(activeSection);
     const newValue = item.ignoredForOracle === 1 ? 0 : 1;
     await updateCompendiumEntry(table, item.id, { ignoredForOracle: newValue });
+  };
+
+  // ---- Merge/Unify Functions ----
+  const handleScanMerge = async () => {
+    try {
+      await scanForMergeDuplicates(activeSection);
+    } catch (err) {
+      if (!apiKey && provider !== 'local') {
+        alert(t('unificar.sin_ia'));
+      } else {
+        alert(t('unificar.error_escaneo'));
+      }
+    }
+  };
+
+
+  const handleMergeSelection = async (entities) => {
+    if (!apiKey && provider !== 'local') {
+      alert(t('unificar.sin_ia'));
+      return;
+    }
+
+    try {
+      const aiConfig = { provider, apiKey, model: currentModel, localBaseUrl };
+      await globalHandleMergeSelection(entities, activeSection, aiConfig, logAIUsage);
+    } catch (err) {
+      alert(t('unificar.error_fusion', { error: err.message }));
+    }
+  };
+
+  const handleConfirmMerge = async (finalData = null) => {
+    try {
+      await confirmMerge(activeSection, finalData);
+    } catch (err) {
+      alert(t('unificar.error_confirmar', { error: err.message }));
+    }
+  };
+
+  const handleSkipMerge = () => {
+    setSelectedMerge(null);
+    setMergeResult(null);
   };
 
   // ---- MPC Accordion Functions ----
@@ -1281,6 +1343,35 @@ export default function CompendiumView() {
             )}
           </div>
           
+          <Tooltip content={t('unificar.boton_tooltip')}>
+            <button 
+              className={`btn ${isMerging || mergeResult ? 'btn-primary' : 'btn-ghost'}`} 
+              onClick={() => {
+                if (isMerging || mergeResult) setShowMergeOverlay(true);
+                else handleScanMerge();
+              }}
+              disabled={isScanningMerge || (characters.length + locations.length + objects.length + lore.length < 2 && !isMerging && !mergeResult)}
+              id="compendium-merge-btn"
+              style={{
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+            >
+              {isScanningMerge || isMerging ? (
+                <Loader2 size={13} className="spin" />
+              ) : mergeResult ? (
+                <CheckCircle2 size={13} />
+              ) : (
+                <Combine size={13} />
+              )}
+              {isMerging 
+                ? t('unificar.fusionando_cargando') 
+                : mergeResult 
+                  ? t('unificar.ver_resultado') 
+                  : t('unificar.boton')}
+            </button>
+          </Tooltip>
+          
           <button className="btn btn-primary" id="compendium-add-btn" onClick={handleAdd}>
             <Plus size={13} />
             {t('toolbar.añadir')}
@@ -1350,8 +1441,16 @@ export default function CompendiumView() {
 
       {/* MPC Overlay Flotante */}
       {isMpcOverlayOpen && createPortal(
-        <div className={`compendium-mpc-overlay${isMpcOverlayClosing ? ' compendium-mpc-overlay--closing' : ''}`} onClick={handleCloseMpcOverlay}>
-          <div className={`compendium-mpc-overlay__panel${isMpcOverlayClosing ? ' compendium-mpc-overlay__panel--closing' : ''}`} onClick={(e) => e.stopPropagation()}>
+        <div 
+          className={`compendium-mpc-overlay${isMpcOverlayClosing ? ' compendium-mpc-overlay--closing' : ''}`} 
+          onClick={handleCloseMpcOverlay}
+          style={{ background: 'transparent', backdropFilter: 'none', pointerEvents: 'none' }}
+        >
+          <div 
+            className={`compendium-mpc-overlay__panel${isMpcOverlayClosing ? ' compendium-mpc-overlay__panel--closing' : ''}`} 
+            onClick={(e) => e.stopPropagation()}
+            style={{ pointerEvents: 'auto' }}
+          >
             <div className="compendium-mpc-overlay__header">
               <div className="compendium-mpc-overlay__title">
                 <Sparkles size={18} className="compendium-mpc-overlay__icon" />
@@ -1434,7 +1533,6 @@ export default function CompendiumView() {
         </div>,
         document.body
       )}
-
 
     </div>
   )

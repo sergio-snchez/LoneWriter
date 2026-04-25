@@ -6,7 +6,7 @@
 
 </div>
 
-# LoneWriter v1.7-anáfora 🖋️
+# LoneWriter v1.8-glassmorphism 🖋️
 
 > **Tu "Sistema Operativo Narrativo": La IA que te escucha, organiza tu caos y vigila la coherencia de tu mundo mientras tú solo te preocupas de escribir.**
 >
@@ -96,7 +96,7 @@ Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
 
 ---
 
-*LoneWriter v1.7-anáfora - Tu espacio personal para dar vida a grandes historias.*
+*LoneWriter v1.8-glassmorphism - Tu espacio personal para dar vida a grandes historias.*
 
 ---
 
