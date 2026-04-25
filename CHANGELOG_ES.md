@@ -6,7 +6,7 @@
 
 </div>
 
-## [LoneWriter v1.8] - 2026-xx-xx
+## [LoneWriter v1.8-glassmorphism] - 2026-04-25
 
 ### Added
 - **Tipografía Premium**: Nuevo selector de fuentes curadas en Configuración > Interfaz:
@@ -32,6 +32,9 @@
   - **POV (Punto de Vista)**: Le recordamos quién es el narrador.
   - **Instrucciones de Continuidad**: El prompt del Oráculo está diseñado específicamente para usar esa información y detectar contradicciones (ej: si el RAG dice que Markus es un lobo y el texto dice que es un elfo, el Oráculo lo detectará gracias a esa conexión).
 - **Control de Tamaño de Fuente**: Nuevos botones +/- en la barra de herramientas del editor para ajustar el tamaño del texto (12-28px). La preferencia se guarda en la base de datos.
+- **Fusión de Entidades por IA**: Nueva función para detectar y unificar entidades duplicadas o similares en el Compendio.
+  - **Detección de Similitud**: Escanea entradas con nombres o descripciones parecidas.
+  - **Combinación Inteligente**: La IA combina automáticamente rasgos, descripciones y relaciones de varias fichas en una sola entrada coherente.
 
 ---
 

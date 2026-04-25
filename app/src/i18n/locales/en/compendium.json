@@ -16,9 +16,39 @@
     "seleccionar_nombre": "Select the final name:",
     "confirmar": "Confirm merge",
     "saltar": "Try another",
-    "grupo": "Detected group",
+    "grupo": "Select entities to merge",
     "elementos": "entities",
-    "ver_pares": "View only pairs"
+    "fusionando_cargando": "MERGING ENTITIES...",
+    "fusionando_subtitulo": "This may take a few moments while the AI analyzes and combines all information.",
+    "fusionar_seleccion": "Merge selected",
+    "fusionar_todo": "Merge entire group",
+    "ver_resultado": "View result",
+    "sin_descripcion_preview": "No description available for preview.",
+    "error_provider": "Unknown AI provider.",
+    "error_no_json": "The model did not return valid JSON.",
+    "prompts": {
+      "multi_merge": {
+        "intro": "Act as an expert literary assistant. You must merge MULTIPLE Compendium entries that represent the SAME entity.",
+        "header": "ENTRIES TO MERGE:",
+        "instruction_name": "1. Choose the most appropriate FINAL name. The \"{{field}}\" field MUST NOT be empty.",
+        "instruction_combine": "2. Combine the information from ALL entries COHERENTLY and fluidly.",
+        "instruction_rewrite": "3. Do NOT concatenate descriptions, REWRITE the content merging all relevant details.",
+        "instruction_golden_rule": "4. [GOLDEN RULE]: ONLY USE the information provided in the entries. Do NOT invent data, do NOT use information from other novels or external contexts.",
+        "instruction_json": "5. Return ONLY valid JSON with the requested structure.",
+        "structure_header": "MANDATORY STRUCTURE FOR {{type}}:"
+      },
+      "legacy_merge": {
+        "intro": "Act as an expert literary assistant. You must merge two Compendium entries that represent the SAME entity but with slightly different names.",
+        "header_1": "ENTRY 1:",
+        "header_2": "ENTRY 2:",
+        "instruction_name": "1. Choose the most appropriate FINAL name (prioritize \"{{name}}\" if correct). The \"{{field}}\" field MUST NOT be empty.",
+        "instruction_combine": "2. Combine the information from both entries COHERENTLY and fluidly.",
+        "instruction_rewrite": "3. Do NOT concatenate descriptions, REWRITE the content.",
+        "instruction_keep_info": "4. If important information is missing in one entry but present in the other, KEEP IT.",
+        "instruction_golden_rule": "5. [GOLDEN RULE]: ONLY USE the information provided in the entries. Do NOT invent data, do NOT use information from other novels or external contexts.",
+        "instruction_json": "6. Return ONLY valid JSON with the requested structure."
+      }
+    }
   },
   "tabs": {
     "personajes": "Characters",

@@ -12,17 +12,44 @@
     "error_fusion": "Error al fusionar: {{error}}",
     "error_confirmar": "Error al confirmar fusión: {{error}}",
     "similitud": "Similitud: {{percent}}%",
+    "similitud_short": "Similitud",
     "fusion_preview": "Vista previa de la fusión:",
     "seleccionar_nombre": "Selecciona el nombre final:",
     "confirmar": "Confirmar fusión",
     "saltar": "Probar otro",
-    "grupo": "Grupo detectado",
+    "grupo": "Seleccione las entidades para fusionar",
     "elementos": "entidades",
-    "ver_pares": "Ver solo pares",
-    "fusionando_cargando": "FUSIONANDO ENTIDADES...",
+    "fusionando_cargando": "FUSIONANDO...",
+    "fusionando_subtitulo": "Esto puede llevar unos instantes mientras la IA analiza y combina toda la información.",
     "fusionar_seleccion": "Fusionar seleccionados",
     "fusionar_todo": "Fusionar todo el grupo",
-    "sin_descripcion_preview": "Sin descripción disponible para previsualizar."
+    "ver_resultado": "Ver resultado",
+    "sin_descripcion_preview": "Sin descripción disponible para previsualizar.",
+    "error_provider": "Proveedor de IA desconocido.",
+    "error_no_json": "El modelo no devolvió un JSON válido.",
+    "prompts": {
+      "multi_merge": {
+        "intro": "Actúa como asistente literario experto. Debes fusionar VARIAS fichas del Compendio que representan la MISMA entidad.",
+        "header": "FICHAS A FUSIONAR:",
+        "instruction_name": "1. Elige el nombre FINAL más adecuado. El campo \"{{field}}\" NO puede estar vacío.",
+        "instruction_combine": "2. Combina la información de TODAS las fichas de forma COHERENTE y fluida.",
+        "instruction_rewrite": "3. NO concatenes descripciones, REESCRIBE el contenido mezclando todos los detalles relevantes.",
+        "instruction_golden_rule": "4. [REGLA DE ORO]: USA ÚNICAMENTE la información proporcionada en las fichas. NO inventes datos, NO uses información de otras novelas o contextos externos.",
+        "instruction_json": "5. Devuelve ÚNICAMENTE un JSON válido con la estructura solicitada.",
+        "structure_header": "ESTRUCTURA OBLIGATORIA PARA {{type}}:"
+      },
+      "legacy_merge": {
+        "intro": "Actúa como asistente literario experto. Debes fusionar dos fichas del Compendio que representan la MISMA entidad pero con nombres ligeramente diferentes.",
+        "header_1": "FICHA 1:",
+        "header_2": "FICHA 2:",
+        "instruction_name": "1. Elige el nombre FINAL más adecuado (prioriza \"{{name}}\" si es correcto). El campo \"{{field}}\" NO puede estar vacío.",
+        "instruction_combine": "2. Combina la información de ambas fichas de forma COHERENTE y fluida.",
+        "instruction_rewrite": "3. NO concatenes descripciones, REESCRIBE el contenido.",
+        "instruction_keep_info": "4. Si falta información importante en una ficha pero está en la otra, CONSÉRVALA.",
+        "instruction_golden_rule": "5. [REGLA DE ORO]: USA ÚNICAMENTE la información proporcionada en las fichas. NO inventes datos, NO uses información de otras novelas o contextos externos.",
+        "instruction_json": "6. Devuelve ÚNICAMENTE un JSON válido con la estructura solicitada."
+      }
+    }
   },
   "tabs": {
     "personajes": "Personajes",

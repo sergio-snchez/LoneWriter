@@ -642,53 +642,32 @@ export const AIService = {
    */
   fuseEntities: async (entity1, entity2, type, config) => {
     const { provider, apiKey, model, localBaseUrl } = config;
-    const isSpanish = i18n.language === 'es';
-
-    const errorAPI = isSpanish ? 'Se requiere una clave API para usar la IA.' : 'An API key is required to use the AI.';
-    const errorProvider = isSpanish ? 'Proveedor de IA desconocido.' : 'Unknown AI provider.';
+    const errorAPI = i18n.t('compendium:unificar.sin_ia');
+    const errorProvider = i18n.t('compendium:unificar.error_provider');
 
     if (!apiKey && provider !== 'local') throw new Error(errorAPI);
 
     const nameField = type === 'lore' ? 'title' : 'name';
     const fallbackName = entity1[nameField] || entity2[nameField] || '';
 
-    const promptTemplate = isSpanish
-      ? `Actúa como asistente literario experto. Debes fusionar dos fichas del Compendio que representan la MISMA entidad pero con nombres ligeramente diferentes.
+    const promptTemplate = i18n.t('compendium:unificar.prompts.legacy_merge.intro') + `
       
-FICHA 1: ${JSON.stringify(entity1, null, 2)}
-FICHA 2: ${JSON.stringify(entity2, null, 2)}
+${i18n.t('compendium:unificar.prompts.legacy_merge.header_1')} ${JSON.stringify(entity1, null, 2)}
+${i18n.t('compendium:unificar.prompts.legacy_merge.header_2')} ${JSON.stringify(entity2, null, 2)}
 
-INSTRUCCIONES CRÍTICAS:
-1. Elige el nombre FINAL más adecuado (prioriza "${fallbackName}" si es correcto). El campo "${nameField}" NO puede estar vacío.
-2. Combina la información de ambas fichas de forma COHERENTE y fluida.
-3. NO concatenes descripciones, REESCRIBE el contenido.
-4. Si falta información importante en una ficha pero está en la otra, CONSÉRVALA.
-5. [REGLA DE ORO]: USA ÚNICAMENTE la información proporcionada en las fichas. NO inventes datos, NO uses información de otras novelas o contextos externos.
-6. Devuelve ÚNICAMENTE un JSON válido con la estructura solicitada.
+INSTRUCTIONS:
+${i18n.t('compendium:unificar.prompts.legacy_merge.instruction_name', { name: fallbackName, field: nameField })}
+${i18n.t('compendium:unificar.prompts.legacy_merge.instruction_combine')}
+${i18n.t('compendium:unificar.prompts.legacy_merge.instruction_rewrite')}
+${i18n.t('compendium:unificar.prompts.legacy_merge.instruction_keep_info')}
+${i18n.t('compendium:unificar.prompts.legacy_merge.instruction_golden_rule')}
+${i18n.t('compendium:unificar.prompts.legacy_merge.instruction_json')}
 
-ESTRUCTURA OBLIGATORIA PARA ${type.toUpperCase()}:
-${type === 'characters' ? '- { "name": "Nombre", "description": "...", "role": "...", "occupation": "...", "traits": [], "relations": [] }' : ''}
-${type === 'locations' ? '- { "name": "Nombre", "description": "...", "type": "...", "climate": "...", "tags": [] }' : ''}
-${type === 'objects' ? '- { "name": "Nombre", "description": "...", "type": "...", "importance": "...", "origin": "...", "tags": [] }' : ''}
-${type === 'lore' ? '- { "title": "Título", "summary": "...", "category": "...", "tags": [] }' : ''}`
-      : `Act as an expert literary assistant. You must merge two Compendium entries that represent the SAME entity but with slightly different names.
-
-ENTRY 1: ${JSON.stringify(entity1, null, 2)}
-ENTRY 2: ${JSON.stringify(entity2, null, 2)}
-
-CRITICAL INSTRUCTIONS:
-1. Choose the most appropriate FINAL name (prioritize "${fallbackName}" if correct). The "${nameField}" field MUST NOT be empty.
-2. Combine the information from both entries COHERENTLY and fluidly.
-3. Do NOT concatenate descriptions, REWRITE the content.
-4. If important information is missing in one entry but present in the other, KEEP IT.
-5. [GOLDEN RULE]: ONLY USE the information provided in the entries. Do NOT invent data, do NOT use information from other novels or external contexts.
-6. Return ONLY valid JSON with the requested structure.
-
-MANDATORY STRUCTURE FOR ${type.toUpperCase()}:
-${type === 'characters' ? '- { "name": "Name", "description": "...", "role": "...", "occupation": "...", "traits": [], "relations": [] }' : ''}
-${type === 'locations' ? '- { "name": "Name", "description": "...", "type": "...", "climate": "...", "tags": [] }' : ''}
-${type === 'objects' ? '- { "name": "Name", "description": "...", "type": "...", "importance": "...", "origin": "...", "tags": [] }' : ''}
-${type === 'lore' ? '- { "title": "Title", "summary": "...", "category": "...", "tags": [] }' : ''}`;
+${i18n.t('compendium:unificar.prompts.multi_merge.structure_header', { type: type.toUpperCase() })}
+${type === 'characters' ? '- { "name": "...", "description": "...", "role": "...", "occupation": "...", "traits": [], "relations": [] }' : ''}
+${type === 'locations' ? '- { "name": "...", "description": "...", "type": "...", "climate": "...", "tags": [] }' : ''}
+${type === 'objects' ? '- { "name": "...", "description": "...", "type": "...", "importance": "...", "origin": "...", "tags": [] }' : ''}
+${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "tags": [] }' : ''}`;
 
     let response = null;
     if (provider === 'google') {
@@ -722,7 +701,7 @@ ${type === 'lore' ? '- { "title": "Title", "summary": "...", "category": "...", 
       return { data, usage: response.usage };
     } catch (e) {
       console.error("[AIService] JSON parse error in fuseEntities", e, response.text);
-      throw new Error(isSpanish ? 'El modelo no devolvió un JSON válido.' : 'The model did not return valid JSON.');
+      throw new Error(i18n.t('compendium:unificar.error_no_json'));
     }
   },
 
@@ -734,51 +713,31 @@ ${type === 'lore' ? '- { "title": "Title", "summary": "...", "category": "...", 
    */
   fuseMultipleEntities: async (entities, type, config) => {
     const { provider, apiKey, model, localBaseUrl } = config;
-    const isSpanish = i18n.language === 'es';
-
-    const errorAPI = isSpanish ? 'Se requiere una clave API para usar la IA.' : 'An API key is required to use the AI.';
-    const errorProvider = isSpanish ? 'Proveedor de IA desconocido.' : 'Unknown AI provider.';
+    const errorAPI = i18n.t('compendium:unificar.sin_ia');
+    const errorProvider = i18n.t('compendium:unificar.error_provider');
 
     if (!apiKey && provider !== 'local') throw new Error(errorAPI);
 
     const nameField = type === 'lore' ? 'title' : 'name';
     const fallbackName = entities[0][nameField] || '';
 
-    const promptTemplate = isSpanish
-      ? `Actúa como asistente literario experto. Debes fusionar VARIAS fichas del Compendio que representan la MISMA entidad.
+    const promptTemplate = i18n.t('compendium:unificar.prompts.multi_merge.intro') + `
       
-FICHAS A FUSIONAR:
-${entities.map((e, i) => `FICHA ${i+1}: ${JSON.stringify(e, null, 2)}`).join('\n\n')}
+${i18n.t('compendium:unificar.prompts.multi_merge.header')}
+${entities.map((e, i) => `ENTRY ${i + 1}: ${JSON.stringify(e, null, 2)}`).join('\n\n')}
 
-INSTRUCCIONES CRÍTICAS:
-1. Elige el nombre FINAL más adecuado. El campo "${nameField}" NO puede estar vacío.
-2. Combina la información de TODAS las fichas de forma COHERENTE y fluida.
-3. NO concatenes descripciones, REESCRIBE el contenido mezclando todos los detalles relevantes.
-4. [REGLA DE ORO]: USA ÚNICAMENTE la información proporcionada en las fichas. NO inventes datos, NO uses información de otras novelas o contextos externos.
-5. Devuelve ÚNICAMENTE un JSON válido con la estructura solicitada.
+INSTRUCTIONS:
+${i18n.t('compendium:unificar.prompts.multi_merge.instruction_name', { field: nameField })}
+${i18n.t('compendium:unificar.prompts.multi_merge.instruction_combine')}
+${i18n.t('compendium:unificar.prompts.multi_merge.instruction_rewrite')}
+${i18n.t('compendium:unificar.prompts.multi_merge.instruction_golden_rule')}
+${i18n.t('compendium:unificar.prompts.multi_merge.instruction_json')}
 
-ESTRUCTURA OBLIGATORIA PARA ${type.toUpperCase()}:
-${type === 'characters' ? '- { "name": "Nombre", "description": "...", "role": "...", "occupation": "...", "traits": [], "relations": [] }' : ''}
-${type === 'locations' ? '- { "name": "Nombre", "description": "...", "type": "...", "climate": "...", "tags": [] }' : ''}
-${type === 'objects' ? '- { "name": "Nombre", "description": "...", "type": "...", "importance": "...", "origin": "...", "tags": [] }' : ''}
-${type === 'lore' ? '- { "title": "Título", "summary": "...", "category": "...", "tags": [] }' : ''}`
-      : `Act as an expert literary assistant. You must merge MULTIPLE Compendium entries that represent the SAME entity.
-
-ENTRIES TO MERGE:
-${entities.map((e, i) => `ENTRY ${i+1}: ${JSON.stringify(e, null, 2)}`).join('\n\n')}
-
-CRITICAL INSTRUCTIONS:
-1. Choose the most appropriate FINAL name. The "${nameField}" field MUST NOT be empty.
-2. Combine the information from ALL entries COHERENTLY and fluidly.
-3. Do NOT concatenate descriptions, REWRITE the content merging all relevant details.
-4. [GOLDEN RULE]: ONLY USE the information provided in the entries. Do NOT invent data, do NOT use information from other novels or external contexts.
-5. Return ONLY valid JSON with the requested structure.
-
-MANDATORY STRUCTURE FOR ${type.toUpperCase()}:
-${type === 'characters' ? '- { "name": "Name", "description": "...", "role": "...", "occupation": "...", "traits": [], "relations": [] }' : ''}
-${type === 'locations' ? '- { "name": "Name", "description": "...", "type": "...", "climate": "...", "tags": [] }' : ''}
-${type === 'objects' ? '- { "name": "Name", "description": "...", "type": "...", "importance": "...", "origin": "...", "tags": [] }' : ''}
-${type === 'lore' ? '- { "title": "Title", "summary": "...", "category": "...", "tags": [] }' : ''}`;
+${i18n.t('compendium:unificar.prompts.multi_merge.structure_header', { type: type.toUpperCase() })}
+${type === 'characters' ? '- { "name": "...", "description": "...", "role": "...", "occupation": "...", "traits": [], "relations": [] }' : ''}
+${type === 'locations' ? '- { "name": "...", "description": "...", "type": "...", "climate": "...", "tags": [] }' : ''}
+${type === 'objects' ? '- { "name": "...", "description": "...", "type": "...", "importance": "...", "origin": "...", "tags": [] }' : ''}
+${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "tags": [] }' : ''}`;
 
     let response = null;
     if (provider === 'google') {
@@ -813,7 +772,7 @@ ${type === 'lore' ? '- { "title": "Title", "summary": "...", "category": "...", 
       return { data, usage: response.usage };
     } catch (e) {
       console.error("[AIService] JSON parse error in fuseMultipleEntities", e, response.text);
-      throw new Error(isSpanish ? 'El modelo no devolvió un JSON válido.' : 'The model did not return valid JSON.');
+      throw new Error(i18n.t('compendium:unificar.error_no_json'));
     }
   },
 

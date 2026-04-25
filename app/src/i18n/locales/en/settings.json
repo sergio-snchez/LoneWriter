@@ -82,7 +82,7 @@
   "general": {
     "seccion_titulo": "Application Information",
     "version": "Version",
-    "version_valor": "1.7-anaphora",
+    "version_valor": "1.8-glassmorphism",
     "base_datos": "Database",
     "base_datos_valor": "IndexedDB (Dexie.js)",
     "plataforma": "Platform",
