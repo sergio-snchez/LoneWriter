@@ -25,6 +25,8 @@ import { db } from './db/database'
 import './App.css'
 import RagToast from './components/RagToast'
 import MeshBackground from './components/MeshBackground'
+import PwaUpdateModal from './components/PwaUpdateModal'
+import { registerPWA, triggerUpdate } from './pwa'
 
 export default function App() {
   const { t, i18n } = useTranslation('app')
@@ -80,6 +82,11 @@ export default function App() {
   const [settingsTab, setSettingsTab] = useState('cloud')
   const [menuOpen, setMenuOpen] = useState(false)
   const [typingComplete, setTypingComplete] = useState(false)
+  const [pwaUpdateOpen, setPwaUpdateOpen] = useState(false)
+
+  useEffect(() => {
+    registerPWA(() => setPwaUpdateOpen(true));
+  }, []);
 
   // Reset typing when language changes
   useEffect(() => {
@@ -521,6 +528,12 @@ export default function App() {
         meshEnabled={meshEnabled}
         setMeshEnabled={setMeshEnabled}
         openModal={openModal}
+      />
+
+      <PwaUpdateModal
+        isOpen={pwaUpdateOpen}
+        onUpdate={triggerUpdate}
+        onDismiss={() => setPwaUpdateOpen(false)}
       />
 
       {/* Main layout */}

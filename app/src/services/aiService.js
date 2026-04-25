@@ -634,6 +634,89 @@ export const AIService = {
   },
 
   /**
+   * Fuses two entities into one coherent entry using AI
+   * @param {Object} entity1 - First entity object
+   * @param {Object} entity2 - Second entity object
+   * @param {string} type - Entity type (characters, locations, objects, lore)
+   * @param {Object} config - { provider, apiKey, model, localBaseUrl }
+   */
+  fuseEntities: async (entity1, entity2, type, config) => {
+    const { provider, apiKey, model, localBaseUrl } = config;
+    const isSpanish = i18n.language === 'es';
+
+    const errorAPI = isSpanish ? 'Se requiere una clave API para usar la IA.' : 'An API key is required to use the AI.';
+    const errorProvider = isSpanish ? 'Proveedor de IA desconocido.' : 'Unknown AI provider.';
+
+    if (!apiKey && provider !== 'local') throw new Error(errorAPI);
+
+    const nameField = type === 'lore' ? 'title' : 'name';
+    const finalName = entity1[nameField] || entity2[nameField] || '';
+
+    const promptTemplate = isSpanish
+      ? `Actúa como asistente literario experto. Debes fusionar dos fichas del Compendio que representan la MISMA entidad pero con nombres ligeramente diferentes.
+
+FICHA 1: ${JSON.stringify(entity1, null, 2)}
+FICHA 2: ${JSON.stringify(entity2, null, 2)}
+
+INSTRUCCIONES:
+1. Elige el nombre FINAL más adecuado (puede ser uno de los dos u otro mejorado)
+2. Combina la información de ambas fichas de forma COHERENTE y SIN CONTRADICCIONES
+3. Si hay información contradictoria, decide cuál es correcta o cómo reconciliarla
+4. NO concatenes descripciones ("desc1. desc2."), sino MEZCLA y REESCRIBE de forma fluida
+5. Devuelve UN JSON válido con la fusión
+
+FORMATOS POR TIPO:
+- characters: { "name": "", "initials": "", "color": "", "role": "", "occupation": "", "age": 0, "description": "", "traits": [], "relations": [] }
+- locations: { "name": "", "type": "", "climate": "", "description": "", "tags": [], "associatedCharacters": [] }
+- objects: { "name": "", "type": "", "importance": "", "description": "", "origin": "", "currentOwner": "", "tags": [] }
+- lore: { "title": "", "category": "", "summary": "", "tags": [] }`
+      : `Act as an expert literary assistant. You must merge two Compendium entries that represent the SAME entity but with slightly different names.
+
+ENTRY 1: ${JSON.stringify(entity1, null, 2)}
+ENTRY 2: ${JSON.stringify(entity2, null, 2)}
+
+INSTRUCTIONS:
+1. Choose the best FINAL name (can be one of the two or another improved one)
+2. Combine the information from both entries COHERENTLY and WITHOUT CONTRADICTIONS
+3. If there is contradictory information, decide which is correct or how to reconcile it
+4. Do NOT concatenate descriptions ("desc1. desc2."), but MERGE and REWRITE fluidly
+5. Return ONE valid JSON with the fusion
+
+TYPES:
+- characters: { "name": "", "initials": "", "color": "", "role": "", "occupation": "", "age": 0, "description": "", "traits": [], "relations": [] }
+- locations: { "name": "", "type": "", "climate": "", "description": "", "tags": [], "associatedCharacters": [] }
+- objects: { "name": "", "type": "", "importance": "", "description": "", "origin": "", "currentOwner": "", "tags": [] }
+- lore: { "title": "", "category": "", "summary": "", "tags": [] }`;
+
+    let response = null;
+    if (provider === 'google') {
+      response = await AIService._callGemini(promptTemplate, apiKey, model);
+    } else if (provider === 'openai') {
+      response = await AIService._callOpenAI(promptTemplate, apiKey, model);
+    } else if (provider === 'anthropic') {
+      response = await AIService._callClaude(promptTemplate, apiKey, model);
+    } else if (provider === 'openrouter') {
+      response = await AIService._callOpenRouter(promptTemplate, apiKey, model);
+    } else if (provider === 'local') {
+      response = await AIService._callLocal(promptTemplate, model, localBaseUrl);
+    } else {
+      throw new Error(errorProvider);
+    }
+
+    try {
+      const text = response.text;
+      const match = text.match(/\{[\s\S]*\}/);
+      if (match) {
+        return { data: JSON.parse(match[0]), usage: response.usage };
+      }
+      return { data: JSON.parse(text), usage: response.usage };
+    } catch (e) {
+      console.error("[AIService] JSON parse error in fuseEntities", e, response.text);
+      throw new Error(isSpanish ? 'El modelo no devolvió un JSON válido.' : 'The model did not return valid JSON.');
+    }
+  },
+
+  /**
    * Test de conexión con el proveedor
    * @param {Object} config - { provider, apiKey, model, localBaseUrl }
    * @returns {Promise<{success: boolean, latency: number, error?: string}>}

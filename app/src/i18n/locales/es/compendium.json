@@ -1,6 +1,25 @@
 {
   "titulo": "Compendio",
   "subtitulo": "Referencias de la novela",
+  "unificar": {
+    "boton": "Fusionar",
+    "boton_tooltip": "Detectar y fusionar entidades con nombres similares",
+    "titulo": "Fusionar entidades",
+    "sin_ia": "Se requiere IA configurada para usar esta función. Configura tu proveedor en Ajustes.",
+    "necesita_dos": "Necesitas al menos 2 entidades para buscar duplicados.",
+    "sin_candidatos": "No se encontraron entidades con nombres similares.",
+    "error_escaneo": "Error al buscar duplicados.",
+    "error_fusion": "Error al fusionar: {{error}}",
+    "error_confirmar": "Error al confirmar fusión: {{error}}",
+"similitud": "Similitud: {{percent}}%",
+    "fusion_preview": "Vista previa de la fusión:",
+    "seleccionar_nombre": "Selecciona el nombre final:",
+    "confirmar": "Confirmar fusión",
+    "saltar": "Probar otro",
+    "grupo": "Grupo detectado",
+    "elementos": "entidades",
+    "ver_pares": "Ver solo pares"
+  },
   "tabs": {
     "personajes": "Personajes",
     "localizaciones": "Localizaciones",

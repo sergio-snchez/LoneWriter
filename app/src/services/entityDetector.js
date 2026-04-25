@@ -257,4 +257,208 @@ export function parseOracleResponse(text) {
   };
 }
 
+function jaroWinklerSimilarity(s1, s2) {
+  if (!s1 || !s2) return 0;
+  if (s1 === s2) return 1;
+  
+  const clean = s => s.toLowerCase().replace(/[-]/g, ' ').replace(/[_-]/g, ' ').replace(/[,;.]/g, ' ').replace(/[()[\]{}]/g, ' ').replace(/['"]/g, '').trim();
+  const n1 = clean(s1);
+  const n2 = clean(s2);
+  
+  if (!n1 || !n2) return 0;
+  if (n1 === n2) return 1;
+  
+  const len1 = n1.length;
+  const len2 = n2.length;
+  
+  if (len1 === 0 || len2 === 0) return 0;
+  
+  const matchWindow = Math.floor(Math.max(len1, len2) / 2) - 1;
+  if (matchWindow < 0) matchWindow = 0;
+  
+  const matches1 = new Array(len1).fill(false);
+  const matches2 = new Array(len2).fill(false);
+  let matches = 0;
+  let transpositions = 0;
+  
+  for (let i = 0; i < len1; i++) {
+    const start = Math.max(0, i - matchWindow);
+    const end = Math.min(i + matchWindow + 1, len2);
+    
+    for (let j = start; j < end; j++) {
+      if (matches2[j] || n1[i] !== n2[j]) continue;
+      matches1[i] = true;
+      matches2[j] = true;
+      matches++;
+      break;
+    }
+  }
+  
+  if (matches === 0) return 0;
+  
+  let k = 0;
+  for (let i = 0; i < len1; i++) {
+    if (!matches1[i]) continue;
+    while (!matches2[k]) k++;
+    if (n1[i] !== n2[k]) transpositions++;
+    k++;
+  }
+  
+  const jaro = (
+    matches / len1 +
+    matches / len2 +
+    (matches - transpositions / 2) / matches
+  ) / 3;
+  
+  let prefix = 0;
+  const maxPrefix = Math.min(4, len1, len2);
+  for (let i = 0; i < maxPrefix; i++) {
+    if (n1[i] === n2[i]) prefix++;
+    else break;
+  }
+  
+  return jaro + prefix * 0.1 * (1 - jaro);
+}
+
+const STOPWORDS = new Set(['el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'de', 'del', 'al', 'a', 'en', 'por', 'para', 'con', 'sin', 'sobre', 'entre', 'y', 'o', 'u', 'que', 'es', 'son', 'de', 'se', 'lo', 'su', 'sus', 'mi', 'tu', 'ni', 'si', 'ya', 'yo', 'te', 'me', 'le', 'nos', 'os']);
+
+function tokenOverlapSimilarity(s1, s2) {
+  const clean = s => s.toLowerCase().replace(/[-]/g, ' ').replace(/[_-]/g, ' ').replace(/[,;:]/g, ' ').replace(/[()[\]{}]/g, ' ').replace(/['"]/g, '').trim();
+  const tokens1 = clean(s1).split(/\s+/).filter(t => t.length > 1 && !STOPWORDS.has(t));
+  const tokens2 = clean(s2).split(/\s+/).filter(t => t.length > 1 && !STOPWORDS.has(t));
+  
+  if (tokens1.length === 0 || tokens2.length === 0) return 0;
+  
+  const set1 = new Set(tokens1);
+  const set2 = new Set(tokens2);
+  
+  let common = 0;
+  for (const t of set1) {
+    if (set2.has(t)) {
+      common++;
+    } else {
+      for (const t2 of set2) {
+        if (t.includes(t2) || t2.includes(t)) {
+          common += 0.5;
+          break;
+        }
+      }
+    }
+  }
+  
+  const maxLen = Math.max(tokens1.length, tokens2.length);
+  return common / maxLen;
+}
+
+class UnionFind {
+  constructor(n) {
+    this.parent = Array.from({ length: n }, (_, i) => i);
+    this.rank = Array(n).fill(0);
+  }
+
+  find(x) {
+    if (this.parent[x] !== x) {
+      this.parent[x] = this.find(this.parent[x]);
+    }
+    return this.parent[x];
+  }
+
+  union(x, y) {
+    const rootX = this.find(x);
+    const rootY = this.find(y);
+    if (rootX === rootY) return;
+    
+    if (this.rank[rootX] < this.rank[rootY]) {
+      this.parent[rootX] = rootY;
+    } else if (this.rank[rootX] > this.rank[rootY]) {
+      this.parent[rootY] = rootX;
+    } else {
+      this.parent[rootY] = rootX;
+      this.rank[rootX]++;
+    }
+  }
+
+  getGroups() {
+    const groups = new Map();
+    for (let i = 0; i < this.parent.length; i++) {
+      const root = this.find(i);
+      if (!groups.has(root)) groups.set(root, []);
+      groups.get(root).push(i);
+    }
+    return [...groups.values()].filter(g => g.length > 1);
+  }
+}
+
+function buildSimilarityPairs(items, threshold = 0.70) {
+  const pairs = [];
+  const nameField = items[0].name !== undefined ? 'name' : 'title';
+  
+  for (let i = 0; i < items.length; i++) {
+    for (let j = i + 1; j < items.length; j++) {
+      const name1 = items[i][nameField] || '';
+      const name2 = items[j][nameField] || '';
+      
+      if (!name1 || !name2) continue;
+      
+      const jwSim = jaroWinklerSimilarity(name1, name2);
+      const tokenSim = tokenOverlapSimilarity(name1, name2);
+      
+      const similarity = Math.max(jwSim, tokenSim * 0.95);
+      
+      if (similarity >= threshold) {
+        pairs.push({
+          entity1: items[i],
+          entity2: items[j],
+          similarity: Math.round(similarity * 100) / 100,
+          name1,
+          name2,
+          idx1: i,
+          idx2: j,
+        });
+      }
+    }
+  }
+  
+  return pairs;
+}
+
+export async function findSimilarEntities(items, threshold = 0.70) {
+  if (!items || items.length < 2) return [];
+  
+  const pairs = buildSimilarityPairs(items, threshold);
+  
+  if (pairs.length === 0) return [];
+  
+  const uf = new UnionFind(items.length);
+  for (const pair of pairs) {
+    uf.union(pair.idx1, pair.idx2);
+  }
+  
+  const groups = uf.getGroups();
+  
+  const resultGroups = groups.map(groupIndices => {
+    const entities = groupIndices.map(idx => items[idx]);
+    const groupPairs = pairs.filter(p => 
+      groupIndices.includes(p.idx1) && groupIndices.includes(p.idx2)
+    );
+    const avgSimilarity = groupPairs.length > 0
+      ? groupPairs.reduce((sum, p) => sum + p.similarity, 0) / groupPairs.length
+      : 1;
+    
+    return {
+      type: 'group',
+      entities,
+      similarity: Math.round(avgSimilarity * 100) / 100,
+      size: entities.length,
+    };
+  });
+  
+  const resultPairs = pairs.map(({ idx1: _, idx2: __, ...rest }) => rest);
+  
+  return {
+    pairs: resultPairs.sort((a, b) => b.similarity - a.similarity),
+    groups: resultGroups.sort((a, b) => b.similarity - a.similarity),
+  };
+}
+
 export { ENTITY_TABLES, ENTITY_LABELS };
