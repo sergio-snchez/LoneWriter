@@ -634,6 +634,149 @@ export const AIService = {
   },
 
   /**
+   * Fuses two entities into one coherent entry using AI
+   * @param {Object} entity1 - First entity object
+   * @param {Object} entity2 - Second entity object
+   * @param {string} type - Entity type (characters, locations, objects, lore)
+   * @param {Object} config - { provider, apiKey, model, localBaseUrl }
+   */
+  fuseEntities: async (entity1, entity2, type, config) => {
+    const { provider, apiKey, model, localBaseUrl } = config;
+    const errorAPI = i18n.t('compendium:unificar.sin_ia');
+    const errorProvider = i18n.t('compendium:unificar.error_provider');
+
+    if (!apiKey && provider !== 'local') throw new Error(errorAPI);
+
+    const nameField = type === 'lore' ? 'title' : 'name';
+    const fallbackName = entity1[nameField] || entity2[nameField] || '';
+
+    const promptTemplate = i18n.t('compendium:unificar.prompts.legacy_merge.intro') + `
+      
+${i18n.t('compendium:unificar.prompts.legacy_merge.header_1')} ${JSON.stringify(entity1, null, 2)}
+${i18n.t('compendium:unificar.prompts.legacy_merge.header_2')} ${JSON.stringify(entity2, null, 2)}
+
+INSTRUCTIONS:
+${i18n.t('compendium:unificar.prompts.legacy_merge.instruction_name', { name: fallbackName, field: nameField })}
+${i18n.t('compendium:unificar.prompts.legacy_merge.instruction_combine')}
+${i18n.t('compendium:unificar.prompts.legacy_merge.instruction_rewrite')}
+${i18n.t('compendium:unificar.prompts.legacy_merge.instruction_keep_info')}
+${i18n.t('compendium:unificar.prompts.legacy_merge.instruction_golden_rule')}
+${i18n.t('compendium:unificar.prompts.legacy_merge.instruction_json')}
+
+${i18n.t('compendium:unificar.prompts.multi_merge.structure_header', { type: type.toUpperCase() })}
+${type === 'characters' ? '- { "name": "...", "description": "...", "role": "...", "occupation": "...", "traits": [], "relations": [] }' : ''}
+${type === 'locations' ? '- { "name": "...", "description": "...", "type": "...", "climate": "...", "tags": [] }' : ''}
+${type === 'objects' ? '- { "name": "...", "description": "...", "type": "...", "importance": "...", "origin": "...", "tags": [] }' : ''}
+${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "tags": [] }' : ''}`;
+
+    let response = null;
+    if (provider === 'google') {
+      response = await AIService._callGemini(promptTemplate, apiKey, model);
+    } else if (provider === 'openai') {
+      response = await AIService._callOpenAI(promptTemplate, apiKey, model);
+    } else if (provider === 'anthropic') {
+      response = await AIService._callClaude(promptTemplate, apiKey, model);
+    } else if (provider === 'openrouter') {
+      response = await AIService._callOpenRouter(promptTemplate, apiKey, model);
+    } else if (provider === 'local') {
+      response = await AIService._callLocal(promptTemplate, model, localBaseUrl);
+    } else {
+      throw new Error(errorProvider);
+    }
+
+    try {
+      const text = response.text;
+      const match = text.match(/\{[\s\S]*\}/);
+      let data = match ? JSON.parse(match[0]) : JSON.parse(text);
+      
+      if (!data[nameField] || data[nameField].trim() === '') {
+        data[nameField] = fallbackName;
+      }
+      
+      const descField = type === 'lore' ? 'summary' : 'description';
+      if (!data[descField] || data[descField].trim() === '') {
+        data[descField] = entity1[descField] || entity2[descField] || '';
+      }
+
+      return { data, usage: response.usage };
+    } catch (e) {
+      console.error("[AIService] JSON parse error in fuseEntities", e, response.text);
+      throw new Error(i18n.t('compendium:unificar.error_no_json'));
+    }
+  },
+
+  /**
+   * Fuses multiple entities into one coherent entry using AI
+   * @param {Array<Object>} entities - List of entity objects to merge
+   * @param {string} type - Entity type (characters, locations, objects, lore)
+   * @param {Object} config - { provider, apiKey, model, localBaseUrl }
+   */
+  fuseMultipleEntities: async (entities, type, config) => {
+    const { provider, apiKey, model, localBaseUrl } = config;
+    const errorAPI = i18n.t('compendium:unificar.sin_ia');
+    const errorProvider = i18n.t('compendium:unificar.error_provider');
+
+    if (!apiKey && provider !== 'local') throw new Error(errorAPI);
+
+    const nameField = type === 'lore' ? 'title' : 'name';
+    const fallbackName = entities[0][nameField] || '';
+
+    const promptTemplate = i18n.t('compendium:unificar.prompts.multi_merge.intro') + `
+      
+${i18n.t('compendium:unificar.prompts.multi_merge.header')}
+${entities.map((e, i) => `ENTRY ${i + 1}: ${JSON.stringify(e, null, 2)}`).join('\n\n')}
+
+INSTRUCTIONS:
+${i18n.t('compendium:unificar.prompts.multi_merge.instruction_name', { field: nameField })}
+${i18n.t('compendium:unificar.prompts.multi_merge.instruction_combine')}
+${i18n.t('compendium:unificar.prompts.multi_merge.instruction_rewrite')}
+${i18n.t('compendium:unificar.prompts.multi_merge.instruction_golden_rule')}
+${i18n.t('compendium:unificar.prompts.multi_merge.instruction_json')}
+
+${i18n.t('compendium:unificar.prompts.multi_merge.structure_header', { type: type.toUpperCase() })}
+${type === 'characters' ? '- { "name": "...", "description": "...", "role": "...", "occupation": "...", "traits": [], "relations": [] }' : ''}
+${type === 'locations' ? '- { "name": "...", "description": "...", "type": "...", "climate": "...", "tags": [] }' : ''}
+${type === 'objects' ? '- { "name": "...", "description": "...", "type": "...", "importance": "...", "origin": "...", "tags": [] }' : ''}
+${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "tags": [] }' : ''}`;
+
+    let response = null;
+    if (provider === 'google') {
+      response = await AIService._callGemini(promptTemplate, apiKey, model);
+    } else if (provider === 'openai') {
+      response = await AIService._callOpenAI(promptTemplate, apiKey, model);
+    } else if (provider === 'anthropic') {
+      response = await AIService._callClaude(promptTemplate, apiKey, model);
+    } else if (provider === 'openrouter') {
+      response = await AIService._callOpenRouter(promptTemplate, apiKey, model);
+    } else if (provider === 'local') {
+      response = await AIService._callLocal(promptTemplate, model, localBaseUrl);
+    } else {
+      throw new Error(errorProvider);
+    }
+
+    try {
+      const text = response.text;
+      const match = text.match(/\{[\s\S]*\}/);
+      let data = match ? JSON.parse(match[0]) : JSON.parse(text);
+      
+      if (!data[nameField] || data[nameField].trim() === '') {
+        data[nameField] = fallbackName;
+      }
+      
+      const descField = type === 'lore' ? 'summary' : 'description';
+      if (!data[descField] || data[descField].trim() === '') {
+        const anyDesc = entities.find(e => e[descField])?.[descField] || '';
+        data[descField] = anyDesc;
+      }
+
+      return { data, usage: response.usage };
+    } catch (e) {
+      console.error("[AIService] JSON parse error in fuseMultipleEntities", e, response.text);
+      throw new Error(i18n.t('compendium:unificar.error_no_json'));
+    }
+  },
+
+  /**
    * Test de conexión con el proveedor
    * @param {Object} config - { provider, apiKey, model, localBaseUrl }
    * @returns {Promise<{success: boolean, latency: number, error?: string}>}

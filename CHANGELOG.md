@@ -6,7 +6,7 @@
 
 </div>
 
-## [LoneWriter v1.8] - 2026-xx-xx
+## [LoneWriter v1.8-glassmorphism] - 2026-04-25
 
 ### Added
 - **Premium Typography**: New curated font selector in Settings > Interface:
@@ -32,6 +32,9 @@
   - **POV (Point of View)**: Reminds the AI who the narrator is.
   - **Continuity Instructions**: The Oracle prompt is specifically designed to use this information and detect contradictions (e.g., if RAG says "Markus is a wolf" but the text says "Markus is an elf", the Oracle will detect it thanks to this connection).
 - **Font Size Control**: New +/- buttons in the editor toolbar to adjust text size (12-28px). Preference persists in database.
+- **AI-Powered Entity Merging**: New feature to detect and unify duplicate or similar entities in the Compendium.
+  - **Similarity Detection**: Scans for entries with similar names or descriptions.
+  - **Intelligent Combination**: The AI automatically merges traits, descriptions, and relationships from multiple entries into a single cohesive one.
 
 ---
 

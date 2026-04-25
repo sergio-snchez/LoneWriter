@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     nodePolyfills(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.svg'],
       workbox: {
         maximumFileSizeToCacheInBytes: 30000000 // Aumentar límite a 30MB para el bundle de WASM

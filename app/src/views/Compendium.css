@@ -895,12 +895,13 @@
 .compendium-mpc-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(3px);
+  background: transparent;
+  backdrop-filter: none;
   z-index: 1100;
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
   animation: mpc-overlay-fade-in 0.2s ease;
 }
 
@@ -916,16 +917,22 @@
   background: var(--bg-panel, var(--bg-elevated));
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
   animation: mpc-overlay-panel-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
+  pointer-events: auto;
 }
 
 @keyframes mpc-overlay-panel-in {
   from { opacity: 0; transform: scale(0.95) translateY(10px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes mpc-pulse {
+  0%, 100% { background: rgba(212, 168, 83, 0.08); }
+  50% { background: rgba(212, 168, 83, 0.15); }
 }
 
 .compendium-mpc-overlay.compendium-mpc-overlay--closing {

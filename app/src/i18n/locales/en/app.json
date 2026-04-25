@@ -1,4 +1,5 @@
 {
+  "app_title": "LoneWriter – Novel Writing",
   "restaurar_nube": {
     "titulo": "Cloud version available",
     "mensaje": "A more recent backup has been detected on Google Drive ({{date}}). Would you like to restore your projects now? This will overwrite the local database.",
@@ -23,7 +24,7 @@
     "palabras": "words",
     "completado": "completed",
     "ver_todos": "View all projects",
-    "version": "LoneWriter v1.7-anaphora",
+    "version": "LoneWriter v1.8-glassmorphism",
     "creditos": "Designed and developed with ♥ by <0>Sergio Sánchez</0> with Antigravity.",
     "apoyar": "Support the project (Buy me a coffee)"
   },
@@ -55,5 +56,11 @@
   "autor_defecto": "Author",
   "landscape": {
     "mensaje": "Please rotate your device to portrait to continue writing"
+  },
+  "actualizacion": {
+    "titulo": "New version available",
+    "mensaje": "A new version of LoneWriter has been detected. Click accept to update and enjoy the latest improvements.",
+    "boton_aceptar": "Update now",
+    "boton_cancelar": "Later"
   }
 }
