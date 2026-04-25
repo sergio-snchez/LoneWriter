@@ -1,37 +1,30 @@
 import React from 'react';
-import { RefreshCw, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { RefreshCw } from 'lucide-react';
 import './PwaUpdateModal.css';
 
-const PwaUpdateModal = ({ isOpen, onUpdate, onDismiss }) => {
+const PwaUpdateModal = ({ isOpen, onUpdate }) => {
+  const { t } = useTranslation('app');
+  
   if (!isOpen) return null;
 
   const handleUpdate = () => {
     if (onUpdate) onUpdate();
   };
 
-  const handleDismiss = () => {
-    if (onDismiss) onDismiss();
-  };
-
   return (
-    <div className="pwa-update-overlay" onClick={handleDismiss}>
-      <div className="pwa-update-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="pwa-update-overlay">
+      <div className="pwa-update-modal">
         <div className="pwa-update-modal__header">
-          <RefreshCw size={24} className="pwa-update-modal__icon" />
-          <h2 className="pwa-update-modal__title">Nueva versión disponible</h2>
-          <button className="pwa-update-modal__close" onClick={handleDismiss}>
-            <X size={18} />
-          </button>
+          <RefreshCw size={20} className="pwa-update-modal__icon" />
+          <h2 className="pwa-update-modal__title">{t('actualizacion.titulo')}</h2>
         </div>
         <div className="pwa-update-modal__body">
-          <p>Detectada nueva versión de LoneWriter. Pulsa aceptar para actualizar.</p>
+          <p>{t('actualizacion.mensaje')}</p>
         </div>
-        <div className="pwa-update-modal__footer">
-          <button className="btn btn-ghost" onClick={handleDismiss}>
-            Más tarde
-          </button>
-          <button className="btn btn-primary" onClick={handleUpdate}>
-            Actualizar
+        <div className="pwa-update-modal__footer" style={{ justifyContent: 'center' }}>
+          <button className="btn btn-primary" onClick={handleUpdate} style={{ width: '100%' }}>
+            {t('actualizacion.boton_aceptar')}
           </button>
         </div>
       </div>

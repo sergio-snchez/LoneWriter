@@ -8,6 +8,7 @@ import {
 import './i18n/i18n'
 import Sidebar from './components/Sidebar'
 import AIPanel from './components/AIPanel'
+import { MergeOverlay } from './components/MergeOverlay'
 import SettingsModal from './components/SettingsModal'
 import { Tooltip } from './components/Tooltip'
 import LanguageSelector from './components/LanguageSelector'
@@ -533,8 +534,9 @@ export default function App() {
       <PwaUpdateModal
         isOpen={pwaUpdateOpen}
         onUpdate={triggerUpdate}
-        onDismiss={() => setPwaUpdateOpen(false)}
       />
+
+      <MergeOverlay />
 
       {/* Main layout */}
       <div className="app-body">
