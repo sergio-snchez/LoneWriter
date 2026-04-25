@@ -11,14 +11,18 @@
     "error_escaneo": "Error al buscar duplicados.",
     "error_fusion": "Error al fusionar: {{error}}",
     "error_confirmar": "Error al confirmar fusión: {{error}}",
-"similitud": "Similitud: {{percent}}%",
+    "similitud": "Similitud: {{percent}}%",
     "fusion_preview": "Vista previa de la fusión:",
     "seleccionar_nombre": "Selecciona el nombre final:",
     "confirmar": "Confirmar fusión",
     "saltar": "Probar otro",
     "grupo": "Grupo detectado",
     "elementos": "entidades",
-    "ver_pares": "Ver solo pares"
+    "ver_pares": "Ver solo pares",
+    "fusionando_cargando": "FUSIONANDO ENTIDADES...",
+    "fusionar_seleccion": "Fusionar seleccionados",
+    "fusionar_todo": "Fusionar todo el grupo",
+    "sin_descripcion_preview": "Sin descripción disponible para previsualizar."
   },
   "tabs": {
     "personajes": "Personajes",

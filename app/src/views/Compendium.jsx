@@ -1044,8 +1044,16 @@ export default function CompendiumView() {
 
     const entity1 = group.entities[entityIdx];
     const entity2 = group.entities[entityIdx + 1];
+    const nameField = activeSection === 'lore' ? 'title' : 'name';
     
-    const candidate = { entity1, entity2 };
+    const candidate = { 
+      entity1, 
+      entity2, 
+      _group: group,
+      name1: entity1[nameField] || '',
+      name2: entity2[nameField] || ''
+    };
+    
     setSelectedMerge(candidate);
     setIsMerging(true);
     setMergeResult(null);
@@ -1059,6 +1067,43 @@ export default function CompendiumView() {
     } catch (err) {
       console.error('[Merge] Group fuse error:', err);
       alert(t('unificar.error_fusion', { error: err.message }));
+      setSelectedMerge(null);
+    } finally {
+      setIsMerging(false);
+    }
+  };
+
+  const handleMergeSelection = async (entities) => {
+    if (!apiKey && provider !== 'local') {
+      alert(t('unificar.sin_ia'));
+      return;
+    }
+
+    if (entities.length < 2) return;
+
+    setIsMerging(true);
+    setMergeResult(null);
+
+    try {
+      const config = { provider, apiKey, model: currentModel, localBaseUrl };
+      const result = await AIService.fuseMultipleEntities(entities, activeSection, config);
+      
+      logAIUsage(result.usage);
+      
+      const nameField = activeSection === 'lore' ? 'title' : 'name';
+      const candidate = {
+        entity1: entities[0],
+        entity2: entities[1], // For UI compatibility
+        _allEntities: entities,
+        name1: entities[0][nameField],
+        name2: entities[1][nameField]
+      };
+      
+      setSelectedMerge(candidate);
+      setMergeResult(result.data);
+    } catch (err) {
+      console.error('[Merge] Multi-fuse error:', err);
+      alert(t('unificar.error_fusion', { error: err.message }));
     } finally {
       setIsMerging(false);
     }
@@ -1071,45 +1116,23 @@ export default function CompendiumView() {
       const table = getTableForSection(activeSection);
       const data = finalData || { ...mergeResult };
       
-      await deleteCompendiumEntry(table, selectedMerge.entity1.id);
-      await deleteCompendiumEntry(table, selectedMerge.entity2.id);
-      const newEntryId = await addCompendiumEntry(table, data);
-
-      const group = selectedMerge._group;
-      if (group && group.size > 2) {
-        const remaining = group.entities.filter(e => 
-          e.id !== selectedMerge.entity1.id && e.id !== selectedMerge.entity2.id
-        );
-        if (remaining.length > 0) {
-          setMergeGroups(prev => prev.map(g => {
-            if (g.entities[0].id === group.entities[0].id) {
-              return { 
-                ...g, 
-                entities: [data, ...remaining],
-                size: remaining.length + 1,
-              };
-            }
-            return g;
-          }));
-          setSelectedMerge({ 
-            entity1: data, 
-            entity2: remaining[0],
-            _group: group,
-          });
-          setMergeResult(null);
-          return;
+      // If it was a multi-merge
+      if (selectedMerge._allEntities) {
+        for (const e of selectedMerge._allEntities) {
+          await deleteCompendiumEntry(table, e.id);
         }
+      } else {
+        await deleteCompendiumEntry(table, selectedMerge.entity1.id);
+        await deleteCompendiumEntry(table, selectedMerge.entity2.id);
       }
 
-      setIsMergeOverlayClosing(true);
-      setTimeout(() => {
-        setShowMergeOverlay(false);
-        setIsMergeOverlayClosing(false);
-        setMergePairs([]);
-        setMergeGroups([]);
-        setSelectedMerge(null);
-        setMergeResult(null);
-      }, 220);
+      await addCompendiumEntry(table, data);
+      
+      setSelectedMerge(null);
+      setMergeResult(null);
+      
+      // Rescan after a successful merge to update lists
+      handleScanMerge();
     } catch (err) {
       console.error('[Merge] Confirm error:', err);
       alert(t('unificar.error_confirmar', { error: err.message }));
@@ -1628,14 +1651,31 @@ export default function CompendiumView() {
               <div className="compendium-mpc-overlay__title">
                 <Combine size={18} className="compendium-mpc-overlay__icon" />
                 <span>{t('unificar.titulo')}</span>
-                {isMerging && <Loader2 size={14} className="spin" />}
               </div>
-              <button className="btn btn-ghost btn-icon" onClick={handleCloseMergeOverlay}>
+              <button className="btn btn-ghost btn-icon" onClick={handleCloseMergeOverlay} disabled={isMerging}>
                 <X size={18} />
               </button>
             </div>
             
             <div className="compendium-mpc-overlay__body">
+              {isMerging && (
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(0,0,0,0.7)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 100,
+                  borderRadius: 12,
+                  backdropFilter: 'blur(4px)'
+                }}>
+                  <Loader2 size={32} className="spin" style={{ color: 'var(--accent)', marginBottom: 16 }} />
+                  <div style={{ fontWeight: 600, fontSize: 14, letterSpacing: 1 }}>{t('unificar.fusionando_cargando')}</div>
+                </div>
+              )}
+
               {(mergePairs.length === 0 && mergeGroups.length === 0) ? (
                 <div className="compendium-mpc-overlay__empty">
                   <CheckCircle2 size={32} style={{ color: '#5cb98a' }} />
@@ -1653,7 +1693,7 @@ export default function CompendiumView() {
                   pairs={mergePairs}
                   groups={mergeGroups}
                   onMergePair={handleMergeEntities}
-                  onMergeGroup={handleMergeGroup}
+                  onMergeGroup={handleMergeSelection}
                   isProcessing={!!selectedMerge}
                 />
               )}
@@ -1752,10 +1792,9 @@ function MergeCandidatesList({ candidates, onSelect, isProcessing }) {
 function MergeResultView({ candidate, result, onConfirm, onSkip }) {
   const { t } = useTranslation('compendium');
   const { activeSection } = useNovel();
-  const [selectedName, setSelectedName] = useState(result.name || result.title || '');
-  const [finalData, setFinalData] = useState(result);
-  
   const nameField = activeSection === 'lore' ? 'title' : 'name';
+  const [selectedName, setSelectedName] = useState(result[nameField] || candidate.name1 || candidate.name2 || '');
+  const [finalData, setFinalData] = useState(result);
   
   const handleNameSelect = (name) => {
     setSelectedName(name);
@@ -1849,6 +1888,12 @@ function MergeResultView({ candidate, result, onConfirm, onSkip }) {
           </div>
         )}
         
+        {!finalData.description && !finalData.summary && !finalData.traits?.length && (
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 8 }}>
+            {t('unificar.sin_descripcion_preview')}
+          </p>
+        )}
+        
         {finalData.tags && finalData.tags.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
             {finalData.tags.map((tag, i) => (
@@ -1875,9 +1920,16 @@ function MergeCandidatesView({ pairs, groups, onMergePair, onMergeGroup, isProce
   const { t } = useTranslation('compendium');
   const [viewMode, setViewMode] = useState('groups');
   const [selectedIdx, setSelectedIdx] = useState(0);
+  const [selectedIds, setSelectedIds] = useState([]);
   
   const allCandidates = viewMode === 'groups' ? groups : pairs;
   const current = allCandidates[selectedIdx];
+
+  useEffect(() => {
+    if (viewMode === 'groups' && current?.type === 'group') {
+      setSelectedIds(current.entities.map(e => e.id));
+    }
+  }, [current?.entities, viewMode]);
   
   const getPreviewText = (entity, maxLength = 60) => {
     const preview = entity.description || entity.summary || entity.traits?.join(', ') || entity.occupation || entity.role || '';
@@ -1885,6 +1937,12 @@ function MergeCandidatesView({ pairs, groups, onMergePair, onMergeGroup, isProce
     return preview.substring(0, maxLength) + '...';
   };
   
+  const toggleEntity = (id) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
   if (!current) {
     return (
       <div className="compendium-mpc-overlay__empty">
@@ -1895,6 +1953,8 @@ function MergeCandidatesView({ pairs, groups, onMergePair, onMergeGroup, isProce
   
   if (viewMode === 'groups' && current.type === 'group') {
     const group = current;
+    const selectedEntities = group.entities.filter(e => selectedIds.includes(e.id));
+
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1920,38 +1980,62 @@ function MergeCandidatesView({ pairs, groups, onMergePair, onMergeGroup, isProce
           padding: 10, 
           border: '1px solid var(--accent)', 
           borderRadius: 8, 
-          background: 'var(--accent-dim)' 
+          background: 'var(--accent-dim)',
+          maxHeight: 320,
+          overflowY: 'auto'
         }}>
-          {group.entities.map((entity, idx) => (
-            <div 
-              key={entity.id}
-              style={{ 
-                padding: 8, 
-                background: 'var(--bg-base)', 
-                borderRadius: 6,
-                border: '1px solid var(--border)',
-              }}
-            >
-              <div style={{ fontWeight: 600, fontSize: 13 }}>
-                {entity.name || entity.title}
+          {group.entities.map((entity) => {
+            const isSelected = selectedIds.includes(entity.id);
+            return (
+              <div 
+                key={entity.id}
+                onClick={() => toggleEntity(entity.id)}
+                style={{ 
+                  padding: '8px 12px', 
+                  background: isSelected ? 'var(--bg-base)' : 'transparent', 
+                  borderRadius: 6,
+                  border: isSelected ? '1px solid var(--accent)' : '1px solid transparent',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 12,
+                  transition: 'all 0.2s ease',
+                  opacity: isSelected ? 1 : 0.6
+                }}
+              >
+                <div style={{ marginTop: 2 }}>
+                  {isSelected ? (
+                    <CheckCircle2 size={16} style={{ color: 'var(--accent)' }} />
+                  ) : (
+                    <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid var(--text-muted)' }} />
+                  )}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13 }}>
+                    {entity.name || entity.title}
+                  </div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>
+                    "{getPreviewText(entity)}"
+                  </div>
+                </div>
               </div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>
-                "{getPreviewText(entity)}"
-              </div>
-              <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
-                {idx < group.entities.length - 1 && (
-                  <button 
-                    className="btn btn-ghost" 
-                    style={{ fontSize: 11, padding: '4px 8px' }}
-                    onClick={() => onMergeGroup(group, idx)}
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? <Loader2 size={12} /> : <>Fusionar con → {group.entities[idx + 1].name || group.entities[idx + 1].title}</>}
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
+        </div>
+
+        <div style={{ padding: '0 4px' }}>
+          <button 
+            className="btn btn-primary" 
+            style={{ width: '100%', justifyContent: 'center' }}
+            disabled={selectedEntities.length < 2 || isProcessing}
+            onClick={() => onMergeGroup(selectedEntities)}
+          >
+            <Combine size={14} />
+            {selectedEntities.length === group.entities.length 
+              ? t('unificar.fusionar_todo')
+              : t('unificar.fusionar_seleccion')}
+            ({selectedEntities.length})
+          </button>
         </div>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
@@ -1986,10 +2070,92 @@ function MergeCandidatesView({ pairs, groups, onMergePair, onMergeGroup, isProce
   }
   
   return (
-    <MergeCandidatesList 
-      candidates={allCandidates} 
-      onSelect={onMergePair} 
-      isProcessing={isProcessing} 
-    />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          {t('unificar.titulo')}
+        </span>
+        <div style={{ 
+          background: 'var(--accent)', 
+          color: 'white', 
+          fontWeight: 700, 
+          fontSize: 12, 
+          padding: '4px 10px', 
+          borderRadius: 12 
+        }}>
+          {Math.round(current.similarity * 100)}% {t('unificar.similitud_short') || 'similitud'}
+        </div>
+      </div>
+      
+      <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
+        <div style={{ 
+          flex: 1, 
+          padding: 10, 
+          border: '1px solid var(--border)', 
+          borderRadius: 8, 
+          background: 'var(--bg-base)',
+          textAlign: 'center'
+        }}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 6 }}>{current.name1}</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+            "{getPreviewText(current.entity1, 40)}"
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', color: 'var(--accent)' }}>
+          <Combine size={20} />
+        </div>
+        <div style={{ 
+          flex: 1, 
+          padding: 10, 
+          border: '1px solid var(--border)', 
+          borderRadius: 8, 
+          background: 'var(--bg-base)',
+          textAlign: 'center'
+        }}>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 6 }}>{current.name2}</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+            "{getPreviewText(current.entity2, 40)}"
+          </div>
+        </div>
+      </div>
+      
+      <button 
+        className="btn btn-primary" 
+        onClick={() => onMergePair(current)}
+        disabled={isProcessing}
+        style={{ justifyContent: 'center' }}
+      >
+        <Combine size={14} />
+        {t('unificar.boton')}
+      </button>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+        <button 
+          className="btn btn-ghost" 
+          disabled={selectedIdx === 0}
+          onClick={() => setSelectedIdx(i => i - 1)}
+        >
+          <ChevronRight size={14} style={{ transform: 'rotate(180deg)' }} />
+        </button>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+          {selectedIdx + 1} / {allCandidates.length}
+        </span>
+        <button 
+          className="btn btn-ghost" 
+          disabled={selectedIdx === allCandidates.length - 1}
+          onClick={() => setSelectedIdx(i => i + 1)}
+        >
+          <ChevronRight size={14} />
+        </button>
+      </div>
+
+      <button 
+        className="btn btn-ghost" 
+        onClick={() => setViewMode('groups')}
+        style={{ fontSize: 11 }}
+      >
+        {t('unificar.grupo')}
+      </button>
+    </div>
   );
 }
