@@ -1,6 +1,25 @@
 {
   "titulo": "Compendium",
   "subtitulo": "Novel references",
+  "unificar": {
+    "boton": "Merge",
+    "boton_tooltip": "Detect and merge entities with similar names",
+    "titulo": "Merge entities",
+    "sin_ia": "AI is required for this feature. Configure your provider in Settings.",
+    "necesita_dos": "You need at least 2 entities to search for duplicates.",
+    "sin_candidatos": "No entities with similar names found.",
+    "error_escaneo": "Error searching for duplicates.",
+    "error_fusion": "Error merging: {{error}}",
+    "error_confirmar": "Error confirming merge: {{error}}",
+"similitud": "Similarity: {{percent}}%",
+    "fusion_preview": "Merge preview:",
+    "seleccionar_nombre": "Select the final name:",
+    "confirmar": "Confirm merge",
+    "saltar": "Try another",
+    "grupo": "Detected group",
+    "elementos": "entities",
+    "ver_pares": "View only pairs"
+  },
   "tabs": {
     "personajes": "Characters",
     "localizaciones": "Locations",
