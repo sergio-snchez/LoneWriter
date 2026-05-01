@@ -19,6 +19,7 @@ export const NovelProvider = ({ children }) => {
   const [objects, setObjects] = useState([]);
   const [lore, setLore] = useState([]);
   const [resources, setResources] = useState([]);
+  const [nexusLinks, setNexusLinks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Cloud Sync State
@@ -203,6 +204,7 @@ export const NovelProvider = ({ children }) => {
     setObjects([]);
     setLore([]);
     setResources([]);
+    setNexusLinks([]);
   };
 
   const syncNovelWordCount = async (novelId) => {
@@ -252,6 +254,7 @@ export const NovelProvider = ({ children }) => {
     setObjects(objects);
     setLore(await db.lore.where('novelId').equals(novelId).toArray());
     setResources(await db.resources.where('novelId').equals(novelId).toArray());
+    setNexusLinks(await db.nexusLinks.where('novelId').equals(novelId).toArray());
     
     // Also update the novel object in state to ensure wordCount is fresh
     const updatedNovel = await db.novels.get(novelId);
@@ -379,6 +382,7 @@ export const NovelProvider = ({ children }) => {
       await db.lore.where('novelId').equals(id).delete();
       await db.resources.where('novelId').equals(id).delete();
       await db.dailyProgress.where('novelId').equals(id).delete();
+      await db.nexusLinks.where('novelId').equals(id).delete();
       // Delete AI debate data
       await db.debateAgents.where('novelId').equals(id).delete();
       await db.debateSessions.where('novelId').equals(id).delete();
@@ -447,7 +451,7 @@ export const NovelProvider = ({ children }) => {
     const ch = await db.chapters.get(chapterId);
     const act = await db.acts.get(ch.actId);
     const count = await db.scenes.where('chapterId').equals(chapterId).count();
-    const id = await db.scenes.add({ chapterId, title, order: count, number: count + 1, status: 'Borrador', pov: '', wordCount: 0, content: '' });
+    const id = await db.scenes.add({ chapterId, title, order: count, number: count + 1, status: 'Borrador', pov: '', inGameDate: '', wordCount: 0, content: '' });
     await reloadData(act.novelId);
     setPendingSync(true);
     return id;
@@ -722,6 +726,7 @@ export const NovelProvider = ({ children }) => {
     objects,
     lore,
     resources,
+    nexusLinks,
     loading,
     createNovel,
     switchNovel,

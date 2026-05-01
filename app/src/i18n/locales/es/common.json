@@ -48,7 +48,9 @@
       "compendium_label": "Compendio",
       "compendium_sublabel": "Personajes, lore y mundo",
       "resources_label": "Archivos de referencia",
-      "resources_sublabel": "Base de conocimiento"
+      "resources_sublabel": "Base de conocimiento",
+      "nexus_label": "Nexus",
+      "nexus_sublabel": "Grafo 3D y Línea de Tiempo"
     }
   },
   "editor_toolbar": {

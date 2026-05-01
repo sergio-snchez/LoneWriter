@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import i18n from 'i18next'
 import {
   BookOpen, ChevronDown, ChevronRight, Plus, Eye, Edit3,
   FileText, Clock, CheckCircle2, Circle,
   AlertCircle, BarChart2, Target, Flame, Save, Loader2, Trash2, FileDown,
-  GripVertical, ChevronsDownUp, ChevronsUpDown, Sparkles
+  GripVertical, ChevronsDownUp, ChevronsUpDown, Sparkles, Calendar
 } from 'lucide-react'
 import {
   DndContext,
@@ -28,6 +29,7 @@ import { useAI } from '../context/AIContext'
 import { useModal } from '../context/ModalContext'
 import { ExportService } from '../services/exportService'
 import { Tooltip } from '../components/Tooltip'
+import { CustomDatePicker } from '../components/CustomDatePicker'
 import RichEditor from '../components/RichEditor'
 import {
   extractCandidates,
@@ -35,6 +37,7 @@ import {
   loadRegisteredEntityNames,
   loadIgnoredNames,
 } from '../services/mpcService'
+import { AIService } from '../services/aiService'
 import debounce from 'lodash/debounce'
 import { upsertVector } from '../services/ragService'
 import './Editor.css'
@@ -429,6 +432,8 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
   };
 
   const [isSaving, setIsSaving] = useState(null)
+  const [generatingSynopsis, setGeneratingSynopsis] = useState(false)
+  const [isHeaderExpanded, setIsHeaderExpanded] = useState(false)
   const [streak, setStreak] = useState(0)
   const [showGoalEditor, setShowGoalEditor] = useState(false)
   const [isStatsExpanded, setIsStatsExpanded] = useState(false)
@@ -557,6 +562,43 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     window.addEventListener('mpc-manual-scan', handler)
     return () => window.removeEventListener('mpc-manual-scan', handler)
   }, [activeScene, activeNovel, mpcStatus])
+  // Navigation from timeline listener
+  useEffect(() => {
+    const handleNavigate = (e) => {
+      const { sceneId } = e.detail;
+      if (!sceneId) return;
+
+      // Find scene in acts to ensure we have the full object
+      const allS = acts.flatMap(a => (a.chapters || []).flatMap(c => c.scenes || []));
+      const targetScene = allS.find(s => s.id === sceneId);
+
+      if (targetScene) {
+        // Expand parents
+        let actId = null;
+        let chId = null;
+        for (const act of acts) {
+          for (const ch of act.chapters || []) {
+            if (ch.scenes?.some(s => s.id === sceneId)) {
+              actId = act.id;
+              chId = ch.id;
+              break;
+            }
+          }
+          if (actId) break;
+        }
+
+        if (actId && chId) {
+          setExpandedIds(prev => new Set([...prev, `act-${actId}`, `ch-${chId}`]));
+        }
+
+        setActiveScene(targetScene);
+      }
+    };
+
+    window.addEventListener('navigate-to-scene', handleNavigate);
+    return () => window.removeEventListener('navigate-to-scene', handleNavigate);
+  }, [acts, setActiveScene]);
+
   const debouncedRagUpsert = useCallback(
     debounce(async (sceneId, novelId, text) => {
       await upsertVector(sceneId, novelId, text)
@@ -684,13 +726,13 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       }
 
       const { proposals, usage } = await analyzeWithAI(
-          candidates,
-          plainText,
-          registeredNames,
-          ignoredNames,
-          { provider, apiKey, model: currentModel, localBaseUrl },
-          8 // Más candidatos en manual
-        )
+        candidates,
+        plainText,
+        registeredNames,
+        ignoredNames,
+        { provider, apiKey, model: currentModel, localBaseUrl },
+        8 // Más candidatos en manual
+      )
 
       logAIUsage(usage)
 
@@ -702,6 +744,23 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       setMpcStatus('idle')
     }
   }, [activeScene, activeNovel, apiKey, provider, currentModel, localBaseUrl, mpcStatus, setMpcStatus, addMpcProposals, logAIUsage])
+
+  const handleGenerateSynopsis = async () => {
+    if (!activeScene || !activeScene.content) return;
+    try {
+      const plainText = activeScene.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (plainText.length < 20) return;
+      setGeneratingSynopsis(true);
+      const aiConfig = { provider, apiKey, model: currentModel, localBaseUrl };
+      const { text, usage } = await AIService.summarizeScene(plainText, aiConfig);
+      logAIUsage(usage);
+      await handleMetaChange('synopsis', text);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setGeneratingSynopsis(false);
+    }
+  };
 
   // Limpiar timeout MPC al desmontar
   useEffect(() => {
@@ -1153,8 +1212,17 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                     <span>{activeScene.title}</span>
                   </div>
                   <div className="editor-header__title-row">
-                    <h2 className="editor-header__title">{activeScene.title}</h2>
-                    <div className="editor-header__metadata">
+                    <div className="editor-header__title-container">
+                      <h2 className="editor-header__title">{activeScene.title}</h2>
+                      <button
+                        className="header-toggle"
+                        onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+                      >
+                        {isHeaderExpanded ? <ChevronDown size={20} style={{ transform: 'rotate(180deg)' }} /> : <ChevronDown size={20} />}
+                      </button>
+                    </div>
+
+                    <div className={`editor-header__metadata ${!isHeaderExpanded ? 'header-collapsed' : ''}`}>
                       <div className="meta-field">
                         <Clock size={12} />
                         <select
@@ -1179,10 +1247,16 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                           {characters.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                         </select>
                       </div>
+                      <div className="meta-field">
+                        <CustomDatePicker
+                          value={activeScene.inGameDate || ''}
+                          onChange={(val) => handleMetaChange('inGameDate', val)}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="editor-header__status-row">
+                  </div>
+                <div className={`editor-header__status-row ${!isHeaderExpanded ? 'header-collapsed' : ''}`}>
                   <Tooltip content={t('editor.exportar_word')}>
                     <button className="btn btn-ghost btn-sm" onClick={handleExportScene}>
                       <FileDown size={14} />
@@ -1232,6 +1306,22 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                       </div>
                     </Tooltip>
                   )}
+                </div>
+                <div className={`editor-header__synopsis-container ${!isHeaderExpanded ? 'header-collapsed' : ''}`}>
+                  <Tooltip content={t('editor.generar_sinopsis')}>
+                    <button className="synopsis-ai-btn" onClick={handleGenerateSynopsis} disabled={generatingSynopsis}>
+                      {generatingSynopsis ? <Loader2 size={14} className="spin" /> : <Sparkles size={14} />}
+                    </button>
+                  </Tooltip>
+                  <div className="editor-header__synopsis-row">
+                    <input
+                      type="text"
+                      className="editor-header__synopsis-input"
+                      placeholder={t('editor.sinopsis_placeholder')}
+                      value={activeScene.synopsis || ''}
+                      onChange={(e) => handleMetaChange('synopsis', e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
 

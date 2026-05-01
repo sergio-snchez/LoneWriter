@@ -110,6 +110,42 @@ export const AIService = {
   },
 
   /**
+   * Generates a 1-2 sentence summary of a scene for the timeline.
+   * @param {string} sceneText - Full text of the scene
+   * @param {Object} config - { provider, apiKey, model, localBaseUrl }
+   */
+  summarizeScene: async (sceneText, config) => {
+    const { provider, apiKey, model, localBaseUrl } = config;
+    const isSpanish = i18n.language === 'es';
+
+    const errorAPI = isSpanish ? 'Se requiere una clave API para usar la IA.' : 'An API key is required to use the AI.';
+    const errorProvider = isSpanish ? 'Proveedor de IA desconocido.' : 'Unknown AI provider.';
+
+    if (!apiKey && provider !== 'local') throw new Error(errorAPI);
+
+    const promptTemplate = isSpanish
+      ? `Actúa como un asistente de logística editorial. Genera un resumen de la escena estilo "post-it" o "telegrama". Máximo 10 palabras. Describe ÚNICAMENTE el hecho físico o el giro de trama más importante. NO uses lenguaje poético, NO interpretes el significado y NO uses metáforas. Sé puramente fáctico y directo.\n\n[ESCENA]\n${sceneText}`
+      : `Act as an editorial logistics assistant. Generate a "post-it" or "telegram" style summary of the scene. Maximum 10 words. Describe ONLY the physical fact or the most important plot twist. Do NOT use poetic language, do NOT interpret meaning, and do NOT use metaphors. Be purely factual and direct.\n\n[SCENE]\n${sceneText}`;
+
+    let response = null;
+    if (provider === 'google') {
+      response = await AIService._callGemini(promptTemplate, apiKey, model);
+    } else if (provider === 'openai') {
+      response = await AIService._callOpenAI(promptTemplate, apiKey, model);
+    } else if (provider === 'anthropic') {
+      response = await AIService._callClaude(promptTemplate, apiKey, model);
+    } else if (provider === 'openrouter') {
+      response = await AIService._callOpenRouter(promptTemplate, apiKey, model);
+    } else if (provider === 'local') {
+      response = await AIService._callLocal(promptTemplate, model, localBaseUrl);
+    } else {
+      throw new Error(errorProvider);
+    }
+
+    return { text: response.text, usage: response.usage };
+  },
+
+  /**
    * Auto-completes a compendium entry based on the novel text.
    * @param {string} sceneText - Background text from the novel
    * @param {string} type - Compendium category (characters, locations, etc)
@@ -127,8 +163,8 @@ export const AIService = {
     if (!apiKey && provider !== 'local') throw new Error(errorAPI);
 
     const promptTemplate = isSpanish
-      ? `Actúa como un asistente literario experto. Vas a rellenar automáticamente la ficha de "${name}" (${type}) para el Compendio de la novela, infiriendo los datos ESTRICTAMENTE a partir del siguiente fragmento de la historia. No inventes absolutamente nada que no se deduzca de este texto.\n\n[CONTEXTO DE LA NOVELA]\n${sceneText}\n\n[DATOS EXISTENTES (Mantén estos o mejóralos si el texto lo justifica)]\n${JSON.stringify(currentData, null, 2)}\n\nINSTRUCCIONES DE FORMATO:\nDevuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json ni texto previo o posterior). Usa esta estructura según el tipo, omitiendo campos si no hay información en el texto:\n- characters: { "role": "", "occupation": "", "age": 0, "description": "", "traits": ["rasgo1", "rasgo2"], "relations": [{ "name": "NombreOtro", "type": "como lo veo", "reverseType": "como me ve" }] }\n- locations: { "type": "", "climate": "", "description": "", "tags": ["tag1"] }\n- objects: { "type": "", "description": "", "origin": "", "currentOwner": "", "tags": ["tag1"] }\n- lore: { "category": "", "summary": "", "tags": ["tag1"] }`
-      : `Act as an expert literary assistant. You will automatically fill in the entry for "${name}" (${type}) for the novel's Compendium, inferring the data STRICTLY from the following fragment of the story. Do not invent absolutely anything that cannot be deduced from this text.\n\n[NOVEL CONTEXT]\n${sceneText}\n\n[EXISTING DATA (Keep these or improve them if the text justifies)]\n${JSON.stringify(currentData, null, 2)}\n\nFORMAT INSTRUCTIONS:\nReturn ONLY valid JSON (without markdown formatting markers \`\`\`json or any preceding or following text). Use this structure according to the type, omitting fields if there is no information in the text:\n- characters: { "role": "", "occupation": "", "age": 0, "description": "", "traits": ["trait1", "trait2"], "relations": [{ "name": "OtherName", "type": "how I see them", "reverseType": "how they see me" }] }\n- locations: { "type": "", "climate": "", "description": "", "tags": ["tag1"] }\n- objects: { "type": "", "description": "", "origin": "", "currentOwner": "", "tags": ["tag1"] }\n- lore: { "category": "", "summary": "", "tags": ["tag1"] }`;
+      ? `Actúa como un asistente literario experto. Vas a rellenar automáticamente la ficha de "${name}" (${type}) para el Compendio de la novela, infiriendo los datos ESTRICTAMENTE a partir del siguiente fragmento de la historia. No inventes absolutamente nada que no se deduzca de este texto.\n\n[CONTEXTO DE LA NOVELA]\n${sceneText}\n\n[DATOS EXISTENTES (Mantén estos o mejóralos si el texto lo justifica)]\n${JSON.stringify(currentData, null, 2)}\n\nINSTRUCCIONES DE FORMATO:\nDevuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json ni texto previo o posterior). Usa esta estructura según el tipo, omitiendo campos si no hay información en el texto:\n- characters: { "role": "", "occupation": "", "age": 0, "description": "", "traits": ["rasgo1"], "associatedLocations": ["NombreLugar"], "associatedObjects": ["NombreObjeto"], "associatedLore": ["TituloLore"], "relations": [{ "name": "NombreOtro", "type": "como lo veo", "reverseType": "como me ve" }] }\n- locations: { "type": "", "climate": "", "description": "", "tags": ["tag1"], "associatedCharacters": ["NombreChar"], "associatedObjects": ["NombreObj"], "associatedLore": ["TituloLore"] }\n- objects: { "type": "", "description": "", "origin": "", "currentOwner": "", "tags": ["tag1"], "associatedCharacters": ["NombreChar"], "associatedLocations": ["NombreLugar"], "associatedLore": ["TituloLore"] }\n- lore: { "category": "", "summary": "", "tags": ["tag1"], "associatedCharacters": ["NombreChar"], "associatedLocations": ["NombreLugar"], "associatedObjects": ["NombreObj"] }`
+      : `Act as an expert literary assistant. You will automatically fill in the entry for "${name}" (${type}) for the novel's Compendium, inferring the data STRICTLY from the following fragment of the story. Do not invent absolutely anything that cannot be deduced from this text.\n\n[NOVEL CONTEXT]\n${sceneText}\n\n[EXISTING DATA (Keep these or improve them if the text justifies)]\n${JSON.stringify(currentData, null, 2)}\n\nFORMAT INSTRUCTIONS:\nReturn ONLY valid JSON (without markdown formatting markers \`\`\`json or any preceding or following text). Use this structure according to the type, omitting fields if there is no information in the text:\n- characters: { "role": "", "occupation": "", "age": 0, "description": "", "traits": ["trait1"], "associatedLocations": ["LocationName"], "associatedObjects": ["ObjectName"], "associatedLore": ["LoreTitle"], "relations": [{ "name": "OtherName", "type": "how I see them", "reverseType": "how they see me" }] }\n- locations: { "type": "", "climate": "", "description": "", "tags": ["tag1"], "associatedCharacters": ["CharName"], "associatedObjects": ["ObjectName"], "associatedLore": ["LoreTitle"] }\n- objects: { "type": "", "description": "", "origin": "", "currentOwner": "", "tags": ["tag1"], "associatedCharacters": ["CharName"], "associatedLocations": ["LocationName"], "associatedLore": ["LoreTitle"] }\n- lore: { "category": "", "summary": "", "tags": ["tag1"], "associatedCharacters": ["CharName"], "associatedLocations": ["LocationName"], "associatedObjects": ["ObjectName"] }`;
 
     let response = null;
     if (provider === 'google') {
