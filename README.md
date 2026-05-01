@@ -1,4 +1,4 @@
-![LoneWriter Banner](app/public/banner-lonewriter.png)
+![LoneWriter Banner](app/public/banner-en.png)
 
 <div align="center">
 
@@ -10,9 +10,11 @@
 
 > **Your "Narrative Operating System": The AI that listens to you, organizes your chaos, and monitors your world's coherence while you only worry about writing.**
 >
-> 🏠 **Official Website:** [getlonewriter.vercel.app](https://getlonewriter.vercel.app/)
+> 🏠 **Official Web:** [getlonewriter.vercel.app](https://getlonewriter.vercel.app/)
 >
 > 🌐 **Web App:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
+>
+> 🗺️ **Roadmap:** [View upcoming features](./ROADMAP.md)
 >
 > ☕ **Support the project:** [Buy me a coffee](https://buymeacoffee.com/sergio.snchez)
 
