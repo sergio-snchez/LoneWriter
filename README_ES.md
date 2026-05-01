@@ -1,4 +1,4 @@
-![LoneWriter Banner](app/public/banner-lonewriter.png)
+![LoneWriter Banner](app/public/banner-es.png)
 
 <div align="center">
 
@@ -13,6 +13,8 @@
 > 🏠 **Web Oficial:** [getlonewriter.vercel.app](https://getlonewriter.vercel.app/)
 >
 > 🌐 **Web App:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
+>
+> 🗺️ **Roadmap:** [Ver próximas funciones](./ROADMAP_ES.md)
 >
 > ☕ **Apoya el proyecto:** [Invítame a un café](https://buymeacoffee.com/sergio.snchez)
 
