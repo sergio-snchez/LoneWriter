@@ -37,6 +37,7 @@
       <div class="nav-links">
         <a href="#features" data-i18n="nav_features">Features</a>
         <a href="#engine" data-i18n="nav_engine">MPC System</a>
+        <a href="#roadmap" data-i18n="nav_roadmap">Roadmap</a>
         <button id="lang-toggle" class="btn btn-ghost" style="padding: 6px 10px; font-weight: 700;">ES</button>
         <a href="https://lonewriter.vercel.app" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
           <i data-lucide="pen-line"></i> <span data-i18n="nav_openapp">Open App</span>
@@ -62,6 +63,9 @@
             <i data-lucide="pen-line"></i> <span data-i18n="hero_launch">Open App</span>
           </a>
           <a href="#features" class="btn btn-ghost btn-lg" data-i18n="hero_discover">Discover Features</a>
+        </div>
+        <div class="hero-microcopy fade-in-up delay-2" style="margin-top: 16px; font-size: 13px; color: var(--text-muted);">
+          <i data-lucide="focus" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> <span data-i18n="hero_micro">Designed for Deep Work. Zero distractions.</span>
         </div>
       </div>
       <div class="hero-visual fade-in-up delay-1">
@@ -149,9 +153,8 @@
         </div>
         <div class="feature-card glass-panel fade-in-up delay-1" data-feature-id="feat-5">
           <div class="feature-icon"><i data-lucide="moon"></i></div>
-          <h3 data-i18n="feat_5_title">Dynamic Design</h3>
-          <p data-i18n="feat_5_desc">Immerse yourself in a beautifully crafted responsive UI with customizable dynamic
-            glassmorphism and an elegant dark mode.</p>
+          <h3 data-i18n="feat_5_title">Flow State Environment</h3>
+          <p data-i18n="feat_5_desc">A distraction-free, minimalist UI with dynamic glassmorphism and deep dark mode designed psychologically to anchor you in your flow state.</p>
         </div>
         <div class="feature-card glass-panel fade-in-up delay-2" data-feature-id="feat-6">
           <div class="feature-icon"><i data-lucide="file-down"></i></div>
@@ -168,9 +171,8 @@
           <div class="badge-pill mb-4"><i data-lucide="zap"></i> <span data-i18n="engine_badge">MPC Entity
               Management</span></div>
           <h2 class="section-title" data-i18n="engine_title">Monitoring Proposals for Compendium</h2>
-          <p class="section-subtitle" style="margin-left:0; text-align:left;" data-i18n="engine_sub">LoneWriter extracts
-            and categorizes important elements dynamically as you type without consuming massive amounts of AI tokens.
-          </p>
+          <p class="section-subtitle" style="margin-left:0; text-align:left; margin-bottom: 24px;" data-i18n="engine_sub">LoneWriter silently processes your world in the background. No annoying autocomplete. No unsolicited suggestions. The AI organizes your lore so you can focus solely on writing.</p>
+          <div class="badge-pill mb-4" style="margin: 0 auto 24px auto; width: fit-content; display: flex; background: rgba(91, 180, 196, 0.1); color: #5bb4c4; border-color: rgba(91, 180, 196, 0.2);"><i data-lucide="ghost"></i> <span data-i18n="engine_ghost">Invisible AI Assistance</span></div>
           <ul class="check-list">
             <li><i data-lucide="check-circle-2"></i>
               <div><strong data-i18n="eng_1_label">Characters:</strong> <span data-i18n="eng_1">Tracks character traits
@@ -272,11 +274,9 @@
       <div class="section-header fade-in">
         <div class="badge-pill mb-4"
           style="background: rgba(224,112,112,0.1); color: var(--error); border-color: rgba(224,112,112,0.2);"><i
-            data-lucide="shield-check"></i> <span data-i18n="local_badge">Absolute Privacy</span></div>
-        <h2 class="section-title" data-i18n="local_title">100% Local Models</h2>
-        <p class="section-subtitle" data-i18n="local_sub">Connect LoneWriter effortlessly with Ollama or LM Studio. Run
-          Large Language Models (LLMs) directly on your own hardware. No subscriptions, no censorship, and absolute
-          privacy: your manuscript never leaves your computer.</p>
+            data-lucide="shield-check"></i> <span data-i18n="local_badge">Local-First Sovereignty</span></div>
+        <h2 class="section-title" data-i18n="local_title">Your Work. Your Rules.</h2>
+        <p class="section-subtitle" data-i18n="local_sub">A privacy-first manifesto for writers. Connect LoneWriter with Ollama or LM Studio to run AI completely locally. No scraping, no corporate surveillance, and absolute IP protection. Your manuscript stays on your machine.</p>
       </div>
       <div class="local-ai-visual fade-in-up delay-1">
         <div class="hw-container glass-panel">
@@ -318,6 +318,82 @@
 
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Roadmap Section -->
+    <section id="roadmap" class="section">
+      <div class="section-header fade-in">
+        <h2 class="section-title" data-i18n="roadmap_sectitle">Future Vision & Roadmap</h2>
+        <p class="section-subtitle" data-i18n="roadmap_secsub">LoneWriter is evolving every day based on the needs of our community. Here is what we are working on next.</p>
+      </div>
+
+      <div class="roadmap-v4 fade-in-up">
+        <!-- High Priority Pane -->
+        <div class="roadmap-pane pane-high">
+          <div class="pane-header">
+            <h3 class="pane-title" data-i18n="roadmap_high">High Priority</h3>
+          </div>
+          <div class="pane-items">
+            <div class="roadmap-card-v4">
+              <div class="card-icon-v4"><i data-lucide="smartphone"></i></div>
+              <div class="card-content-v4">
+                <h5 data-i18n="rd_1_title">Mobile PWA Polish</h5>
+                <p data-i18n="rd_1_desc">Improved touch gestures and offline reliability.</p>
+              </div>
+            </div>
+            <div class="roadmap-card-v4">
+              <div class="card-icon-v4"><i data-lucide="calendar"></i></div>
+              <div class="card-content-v4">
+                <h5 data-i18n="rd_2_title">Interactive Timelines</h5>
+                <p data-i18n="rd_2_desc">Visual mapping for events and character arcs.</p>
+              </div>
+            </div>
+            <div class="roadmap-card-v4">
+              <div class="card-icon-v4"><i data-lucide="share-2"></i></div>
+              <div class="card-content-v4">
+                <h5 data-i18n="rd_3_title">Zettelkasten System</h5>
+                <p data-i18n="rd_3_desc">3D knowledge graph integrated into Compendium.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Low Priority Pane -->
+        <div class="roadmap-pane pane-low">
+          <div class="pane-header">
+            <h3 class="pane-title" data-i18n="roadmap_low">Low Priority</h3>
+          </div>
+          <div class="pane-items">
+            <div class="roadmap-card-v4">
+              <div class="card-icon-v4"><i data-lucide="file-plus"></i></div>
+              <div class="card-content-v4">
+                <h5 data-i18n="rd_5_title">Extended Import</h5>
+                <p data-i18n="rd_5_desc">Direct parsing for .pdf and .docx documents.</p>
+              </div>
+            </div>
+            <div class="roadmap-card-v4">
+              <div class="card-icon-v4"><i data-lucide="database"></i></div>
+              <div class="card-content-v4">
+                <h5 data-i18n="rd_6_title">MCP Integration</h5>
+                <p data-i18n="rd_6_desc">Auto-extract lore from reference files via MCP.</p>
+              </div>
+            </div>
+            <div class="roadmap-card-v4">
+              <div class="card-icon-v4"><i data-lucide="zap"></i></div>
+              <div class="card-content-v4">
+                <h5 data-i18n="rd_7_title">Smart Bootstrap</h5>
+                <p data-i18n="rd_7_desc">Map/import MD files into narrative tree.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-footer fade-in">
+        <a href="https://github.com/sergio-snchez/LoneWriter/blob/main/ROADMAP.md" target="_blank" rel="noopener noreferrer" class="btn btn-ghost" data-i18n-href="link_roadmap">
+          <i data-lucide="map"></i> <span data-i18n="roadmap_view_full">View Full Roadmap</span>
+        </a>
       </div>
     </section>
   </main>
@@ -468,7 +544,7 @@
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="script_v2.js"></script>
 </body>
 
 </html>
