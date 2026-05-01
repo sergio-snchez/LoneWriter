@@ -17,6 +17,7 @@ import './components/TypingEffect.css'
 import EditorView from './views/Editor'
 import CompendiumView from './views/Compendium'
 import ResourcesView from './views/Resources'
+import NexusView from './views/Nexus'
 import { useNovel } from './context/NovelContext'
 import { useAI } from './context/AIContext'
 import { useModal } from './context/ModalContext'
@@ -347,6 +348,7 @@ export default function App() {
       case 'editor': return <EditorView menuOpen={menuOpen} onNavigate={handleViewChange} />
       case 'compendium': return <CompendiumView />
       case 'resources': return <ResourcesView />
+      case 'nexus': return <NexusView onNavigate={handleViewChange} />
       default: return <EditorView />
     }
   }

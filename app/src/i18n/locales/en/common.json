@@ -48,7 +48,9 @@
       "compendium_label": "Compendium",
       "compendium_sublabel": "Characters, lore and world",
       "resources_label": "Reference files",
-      "resources_sublabel": "Knowledge base"
+      "resources_sublabel": "Knowledge base",
+      "nexus_label": "Nexus",
+      "nexus_sublabel": "3D Graph & Timeline"
     }
   },
   "editor_toolbar": {

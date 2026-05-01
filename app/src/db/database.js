@@ -81,4 +81,12 @@ db.version(13).stores({
   editorPrefs: 'key, value'
 });
 
+// v14: World Nexus
+// nexusLinks para las relaciones manuales del Grafo 3D
+// scenes añade inGameDate para la Línea de Tiempo
+db.version(14).stores({
+  nexusLinks: '++id, novelId, sourceId, targetId, label',
+  scenes: '++id, chapterId, title, order, status, pov, inGameDate'
+});
+
 export default db;

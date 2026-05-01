@@ -1,4 +1,4 @@
-import { BookOpen, BookMarked, FolderOpen, PenLine, ChevronLeft, ChevronRight } from 'lucide-react'
+import { BookOpen, BookMarked, FolderOpen, PenLine, ChevronLeft, ChevronRight, Network } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNovel } from '../context/NovelContext'
 import { Tooltip } from './Tooltip'
@@ -20,6 +20,12 @@ export default function Sidebar({ active, onNavigate, collapsed, onToggle }) {
       label: t('sidebar.nav.compendium_label'),
       sublabel: t('sidebar.nav.compendium_sublabel'),
       icon: BookMarked,
+    },
+    {
+      id: 'nexus',
+      label: t('sidebar.nav.nexus_label'),
+      sublabel: t('sidebar.nav.nexus_sublabel'),
+      icon: Network,
     },
     {
       id: 'resources',

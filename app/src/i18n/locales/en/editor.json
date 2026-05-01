@@ -11,6 +11,7 @@
   },
   "escena": {
     "sin_pov": "No POV",
+    "sin_fecha": "No Date / Day X",
     "añadir_escena": "Add scene"
   },
   "capitulo": {
@@ -64,13 +65,17 @@
     "exportar_word": "Export scene to Word",
     "word": "Word",
     "sin_pov": "No POV",
+    "sin_fecha": "No Date / Day X",
+    "mostrar_selector_fecha": "Show date picker",
     "tooltip_oraculo": "Click to let AI verify if this paragraph contradicts your Compendium",
     "sin_coincidencias": "No key elements",
     "coincidencias": "Compendium elements present",
     "contradiccion": "Contradiction in this paragraph",
     "palabras_escena": "{{count}} words in this scene",
     "meta_escena": "Goal: {{count}} words per scene",
-    "seleccionar_escena": "Select a scene to start writing"
+    "seleccionar_escena": "Select a scene to start writing",
+    "sinopsis_placeholder": "Brief synopsis for the Nexus timeline...",
+    "generar_sinopsis": "Generate synopsis with AI"
   },
   "estadisticas": {
     "titulo": "Project statistics",
