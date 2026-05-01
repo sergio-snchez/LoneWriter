@@ -59,3 +59,7 @@ app/test-mpc.js
 .vercel
 app/.vercel
 .kilo
+
+# Strategy Maps
+NotebookLM.md
+
