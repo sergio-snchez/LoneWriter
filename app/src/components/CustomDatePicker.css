@@ -38,7 +38,8 @@
 .custom-datepicker-popup {
   position: absolute;
   top: 100%;
-  left: 0;
+  right: 0;
+  left: auto;
   margin-top: 8px;
   background: rgba(30, 28, 36, 0.75); /* slightly more opaque to ensure readability */
   backdrop-filter: blur(40px) saturate(180%);

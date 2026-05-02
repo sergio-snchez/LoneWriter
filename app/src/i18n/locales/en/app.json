@@ -55,12 +55,18 @@
   },
   "autor_defecto": "Author",
   "nexus": {
-    "title": "World Nexus",
+    "title": "Nexus",
     "subtitle": "Explore your novel's connections and chronological events.",
-    "placeholder": "Nexus 3D Graph and Timeline will be rendered here in Phase 3.",
     "timeline_title": "Timeline",
-    "timeline_placeholder": "Interactive Chronological Timeline will be rendered here in Phase 4.",
-    "empty_graph": "Your compendium is empty. Add characters, locations, or objects to see the graph."
+    "timeline_empty": "No scenes with dates found. Add dates to your scenes in the Editor to see the timeline.",
+    "empty_graph": "Your compendium is empty. Add characters, locations, or objects to see the graph.",
+    "unlock_zoom": "Unlock zoom",
+    "lock_zoom": "Lock zoom",
+    "locked": "View Locked",
+    "unlocked": "Free View",
+    "no_synopsis": "No synopsis",
+    "view_graph": "3D Graph",
+    "view_timeline": "Timeline"
   },
   "landscape": {
     "mensaje": "Please rotate your device to portrait to continue writing"

@@ -168,8 +168,7 @@
     <!-- Local Models Section -->
     <section id="local-ai" class="section section-alt local-ai-section">
       <div class="section-header fade-in">
-        <div class="badge-pill mb-4"
-          style="background: rgba(224,112,112,0.1); color: var(--error); border-color: rgba(224,112,112,0.2);"><i
+        <div class="badge-pill mb-4"><i
             data-lucide="shield-check"></i> <span data-i18n="local_badge">Local-First Sovereignty</span></div>
         <h2 class="section-title" data-i18n="local_title">Your Work. Your Rules.</h2>
         <p class="section-subtitle" data-i18n="local_sub">A privacy-first manifesto for writers. Connect LoneWriter with Ollama or LM Studio to run AI completely locally. No scraping, no corporate surveillance, and absolute IP protection. Your manuscript stays on your machine.</p>
@@ -274,49 +273,14 @@
 
     <!-- Constellation Nexus Section -->
     <section id="nexus" class="section">
-      <div class="split-layout reverse">
-        <div class="split-visual fade-in-up">
-          <div class="nexus-container glass-panel">
-            <div class="nexus-header">
-              <div class="nexus-tabs">
-                <div class="nexus-tab active"><i data-lucide="share-2"></i> <span data-i18n="nex_1_label" style="font-weight:normal;">Zettelkasten</span></div>
-                <div class="nexus-tab"><i data-lucide="clock"></i> <span data-i18n="nex_2_label" style="font-weight:normal;">Timeline</span></div>
-              </div>
-            </div>
-            <div class="nexus-body">
-              <!-- 3D Node Mockup -->
-              <div class="nexus-node center-node">
-                <div class="node-core accent-glow"></div>
-                <span style="font-size: 11px; white-space: nowrap; margin-top: 4px; color: var(--text-primary);">The Obsidian Spire</span>
-              </div>
-              <div class="nexus-node n-1">
-                <div class="node-core green-glow"></div>
-                <span style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-secondary);">Vaelen</span>
-              </div>
-              <div class="nexus-node n-2">
-                <div class="node-core green-glow"></div>
-                <span style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-secondary);">Elara</span>
-              </div>
-              <div class="nexus-node n-3">
-                <div class="node-core purple-glow"></div>
-                <span style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-secondary);">Amulet of Kael</span>
-              </div>
-              <svg class="nexus-lines" xmlns="http://www.w3.org/2000/svg">
-                <line x1="50%" y1="50%" x2="20%" y2="20%" class="n-line" />
-                <line x1="50%" y1="50%" x2="80%" y2="30%" class="n-line" />
-                <line x1="50%" y1="50%" x2="50%" y2="80%" class="n-line" />
-                <line x1="20%" y1="20%" x2="80%" y2="30%" class="n-line faint" />
-              </svg>
-            </div>
-          </div>
-        </div>
-        <div class="split-content fade-in-up delay-1">
-          <div class="badge-pill mb-4"><i data-lucide="network"></i> <span data-i18n="nexus_badge">World Atlas</span></div>
+      <div class="split-layout">
+        <div class="split-content fade-in-up">
+          <div class="badge-pill mb-4"><i data-lucide="network"></i> <span data-i18n="nexus_badge">Nexus</span></div>
           <h2 class="section-title" data-i18n="nexus_title">Constellation Nexus</h2>
           <p class="section-subtitle" style="margin-left:0; text-align:left; margin-bottom: 24px;" data-i18n="nexus_sub">Transform your raw Compendium data into a living, breathing 3D knowledge graph and interactive timeline. Discover the hidden connections in your story.</p>
           <ul class="check-list">
             <li><i data-lucide="check-circle-2"></i>
-              <div><strong data-i18n="nex_1_label">Zettelkasten 3D Graph:</strong> <span data-i18n="nex_1">Visualize complex character relationships and locations in spatial 3D.</span></div>
+              <div><strong data-i18n="nex_1_label">3D Knowledge Graph:</strong> <span data-i18n="nex_1">Visualize complex relationships of characters and locations (Zettelkasten style).</span></div>
             </li>
             <li><i data-lucide="check-circle-2"></i>
               <div><strong data-i18n="nex_2_label">Interactive Timeline:</strong> <span data-i18n="nex_2">Map chronological events intuitively alongside your manuscript.</span></div>
@@ -325,6 +289,60 @@
               <div><strong data-i18n="nex_3_label">Interactive Codex Export:</strong> <span data-i18n="nex_3">Share a standalone HTML hyperlinked wiki of your world with beta readers.</span></div>
             </li>
           </ul>
+        </div>
+        <div class="split-visual fade-in-up delay-1">
+          <div class="nexus-container glass-panel">
+            <div class="nexus-header">
+              <div class="nexus-tabs">
+                <div class="nexus-tab active" data-view="graph"><i data-lucide="share-2"></i> <span data-i18n="nexus_menu_graph" style="font-weight:normal;">Grafo 3D</span></div>
+                <div class="nexus-tab" data-view="timeline"><i data-lucide="clock"></i> <span data-i18n="nexus_menu_timeline" style="font-weight:normal;">Linea de Tiempo</span></div>
+              </div>
+            </div>
+            <div class="nexus-body" id="nexus-body">
+              <!-- Graph View -->
+              <div class="nexus-view-graph active">
+                <div class="nexus-node center-node">
+                  <div class="node-core accent-glow"></div>
+                  <span style="font-size: 11px; white-space: nowrap; margin-top: 4px; color: var(--text-primary);">The Obsidian Spire</span>
+                </div>
+                <div class="nexus-node n-1">
+                  <div class="node-core green-glow"></div>
+                  <span style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-secondary);">Vaelen</span>
+                </div>
+                <div class="nexus-node n-2">
+                  <div class="node-core green-glow"></div>
+                  <span style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-secondary);">Elara</span>
+                </div>
+                <div class="nexus-node n-3">
+                  <div class="node-core purple-glow"></div>
+                  <span style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-secondary);">Amulet of Kael</span>
+                </div>
+                <svg class="nexus-lines" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="50%" y1="50%" x2="20%" y2="20%" class="n-line" />
+                  <line x1="50%" y1="50%" x2="80%" y2="30%" class="n-line" />
+                  <line x1="50%" y1="50%" x2="50%" y2="80%" class="n-line" />
+                  <line x1="20%" y1="20%" x2="80%" y2="30%" class="n-line faint" />
+                </svg>
+              </div>
+
+              <!-- Timeline View -->
+              <div class="nexus-view-timeline" style="display:none; height: 100%; width: 100%; position: absolute; top: 0; left: 0;">
+                <div style="position: absolute; top: 50%; left: 10%; right: 10%; height: 2px; background: rgba(255,255,255,0.1); transform: translateY(-50%);"></div>
+                <div class="nexus-node" style="top: 50%; left: 20%; transform: translate(-50%, -100%);">
+                  <div class="node-core accent-glow"></div>
+                  <span style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-primary);">The Gathering</span>
+                </div>
+                <div class="nexus-node" style="top: 50%; left: 50%; transform: translate(-50%, 0); margin-top: 20px;">
+                  <div class="node-core green-glow"></div>
+                  <span style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-secondary);">First Contact</span>
+                </div>
+                <div class="nexus-node" style="top: 50%; left: 80%; transform: translate(-50%, -100%);">
+                  <div class="node-core purple-glow"></div>
+                  <span style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-secondary);">The Fall</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
