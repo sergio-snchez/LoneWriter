@@ -61,7 +61,7 @@ function StatusBadge({ status }) {
 
 // ---- Editable Title ----
 function EditableTitle({ title, onSave, className, isPlayfair, isBold }) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation('editor')
   const [isEditing, setIsEditing] = useState(false);
   const [val, setVal] = useState(title);
 
@@ -372,7 +372,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     addAct, deleteAct, updateAct, addChapter, deleteChapter, updateChapter, addScene, deleteScene,
     updateActOrder, updateChapterOrder, updateSceneOrder, moveScene, moveChapter,
     updateNovelTarget, getStreak, activeScene, setActiveScene,
-    getNovelUIExpanded, updateNovelUIExpanded
+    getNovelUIExpanded, updateNovelUIExpanded, expandedIds, setExpandedIds
   } = useNovel()
   const { openModal } = useModal()
   const {
@@ -388,7 +388,6 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
   const mpcDebounceRef = useRef(null)
 
   const [mobileTreeOpen, setMobileTreeOpen] = useState(false);
-  const [expandedIds, setExpandedIds] = useState(new Set());
   const [activeDragId, setActiveDragId] = useState(null);
 
   // Tree resizing logic
@@ -439,6 +438,29 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
   const [isStatsExpanded, setIsStatsExpanded] = useState(false)
   const goalEditorRef = useRef(null)
   const hoverTimerRef = useRef(null)
+  const [localSynopsis, setLocalSynopsis] = useState('')
+
+  // Sync local state when activeScene changes
+  useEffect(() => {
+    setLocalSynopsis(activeScene?.synopsis || '')
+  }, [activeScene?.id])
+
+  // Debounced persistence for synopsis
+  const debouncedSynopsisSave = useCallback(
+    debounce((id, val) => {
+      updateScene(id, { synopsis: val })
+    }, 1000),
+    [updateScene]
+  )
+
+  const handleSynopsisChange = (e) => {
+    const val = e.target.value
+    setLocalSynopsis(val)
+    if (activeScene) {
+      debouncedSynopsisSave(activeScene.id, val)
+    }
+  }
+
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -478,13 +500,8 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     fetchStreak();
   }, [activeNovel, getStreak]);
 
-  useEffect(() => {
-    if (activeNovel?.id) {
-      getNovelUIExpanded(activeNovel.id).then(setExpandedIds);
-    } else {
-      setExpandedIds(new Set());
-    }
-  }, [activeNovel?.id, getNovelUIExpanded]);
+  // Expanded IDs are now managed in NovelContext
+
 
   const GOAL_TEMPLATES = [
     { label: t('objetivos.plantillas.micro_relato'), words: 1000, targetScenes: 2, scenesRange: '1-2', wps: '500-1000', chaptersRange: '—' },
@@ -503,13 +520,8 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     })
   }
 
-  useEffect(() => {
-    if (!activeNovel?.id) return;
-    const timeoutId = setTimeout(() => {
-      updateNovelUIExpanded(activeNovel.id, expandedIds);
-    }, 500);
-    return () => clearTimeout(timeoutId);
-  }, [expandedIds, activeNovel?.id, updateNovelUIExpanded]);
+  // Persistence is now managed in NovelContext
+
 
   const handleExpandAll = () => {
     const allIds = new Set();
@@ -562,42 +574,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     window.addEventListener('mpc-manual-scan', handler)
     return () => window.removeEventListener('mpc-manual-scan', handler)
   }, [activeScene, activeNovel, mpcStatus])
-  // Navigation from timeline listener
-  useEffect(() => {
-    const handleNavigate = (e) => {
-      const { sceneId } = e.detail;
-      if (!sceneId) return;
-
-      // Find scene in acts to ensure we have the full object
-      const allS = acts.flatMap(a => (a.chapters || []).flatMap(c => c.scenes || []));
-      const targetScene = allS.find(s => s.id === sceneId);
-
-      if (targetScene) {
-        // Expand parents
-        let actId = null;
-        let chId = null;
-        for (const act of acts) {
-          for (const ch of act.chapters || []) {
-            if (ch.scenes?.some(s => s.id === sceneId)) {
-              actId = act.id;
-              chId = ch.id;
-              break;
-            }
-          }
-          if (actId) break;
-        }
-
-        if (actId && chId) {
-          setExpandedIds(prev => new Set([...prev, `act-${actId}`, `ch-${chId}`]));
-        }
-
-        setActiveScene(targetScene);
-      }
-    };
-
-    window.addEventListener('navigate-to-scene', handleNavigate);
-    return () => window.removeEventListener('navigate-to-scene', handleNavigate);
-  }, [acts, setActiveScene]);
+  // Navigation listener is now managed in NovelContext
 
   const debouncedRagUpsert = useCallback(
     debounce(async (sceneId, novelId, text) => {
@@ -755,6 +732,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       const { text, usage } = await AIService.summarizeScene(plainText, aiConfig);
       logAIUsage(usage);
       await handleMetaChange('synopsis', text);
+      setLocalSynopsis(text);
     } catch (err) {
       console.error(err);
     } finally {
@@ -1318,8 +1296,8 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                       type="text"
                       className="editor-header__synopsis-input"
                       placeholder={t('editor.sinopsis_placeholder')}
-                      value={activeScene.synopsis || ''}
-                      onChange={(e) => handleMetaChange('synopsis', e.target.value)}
+                      value={localSynopsis}
+                      onChange={handleSynopsisChange}
                     />
                   </div>
                 </div>

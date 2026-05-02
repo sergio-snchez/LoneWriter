@@ -54,13 +54,20 @@
     "configuracion": "Configuración"
   },
   "autor_defecto": "Autor",
-    "nexus": {
-      "title": "Nexos de Mundo",
-      "subtitle": "Explora las conexiones de tu novela y eventos cronológicos.",
-      "timeline_title": "Línea de Tiempo",
-      "timeline_empty": "No hay escenas con fecha. Añade fechas a tus escenas en el Editor para ver la cronología.",
-      "empty_graph": "Tu compendio está vacío. Añade personajes, lugares u objetos para ver el grafo."
-    },
+  "nexus": {
+    "title": "Nexus",
+    "subtitle": "Explora las conexiones de tu novela y eventos cronológicos.",
+    "timeline_title": "Línea de Tiempo",
+    "timeline_empty": "No hay escenas con fecha. Añade fechas a tus escenas en el Editor para ver la cronología.",
+    "empty_graph": "Tu compendio está vacío. Añade personajes, lugares u objetos para ver el grafo.",
+    "unlock_zoom": "Desbloquear zoom",
+    "lock_zoom": "Bloquear zoom",
+    "locked": "Vista Bloqueada",
+    "unlocked": "Vista Libre",
+    "no_synopsis": "Sin sinopsis",
+    "view_graph": "Grafo 3D",
+    "view_timeline": "Cronología"
+  },
   "landscape": {
     "mensaje": "Por favor, gira tu dispositivo a vertical para seguir escribiendo"
   },

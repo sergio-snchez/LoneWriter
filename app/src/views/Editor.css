@@ -725,11 +725,11 @@
 
 /* ---- Editor Header Enhancements ---- */
 .editor-header {
-  padding: 16px 24px;
+  padding: 12px 20px;
   flex-direction: row;
   align-items: flex-start;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 10px;
 }
 
 .editor-header__info {
@@ -742,8 +742,8 @@
 .editor-header__title-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-top: 4px;
+  gap: 12px;
+  margin-top: 2px;
 }
 
 .editor-header__title-container {
@@ -794,7 +794,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 4px;
   width: 100%;
 }
 
@@ -802,33 +802,37 @@
   flex: 1;
   display: flex;
   align-items: center;
-  background: var(--bg-glass-ui);
+  background: rgba(255, 255, 255, 0.05); /* Lighter, no blur for performance */
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 0 10px;
   height: 26px;
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
   transition: all var(--trans-fast);
   min-width: 0;
 }
 
-.editor-header__synopsis-row:focus-within {
-  border-color: var(--border-accent);
-  background: var(--bg-hover);
-}
+
 
 .editor-header__synopsis-input {
   flex: 1;
   background: transparent;
-  border: none;
-  outline: none;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
   font-size: 11px;
   color: var(--text-secondary);
   font-weight: 500;
   min-width: 0;
   height: 100%;
   padding-left: 4px;
+}
+
+.editor-header__synopsis-row, 
+.editor-header__synopsis-row:focus, 
+.editor-header__synopsis-row:focus-within,
+.editor-header__synopsis-row:active {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .editor-header__synopsis-input::placeholder {
@@ -870,8 +874,8 @@
 .editor-header__metadata {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding-left: 12px;
+  gap: 10px;
+  padding-left: 10px;
   border-left: 1px solid var(--border);
 }
 
@@ -931,8 +935,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 16px;
-  margin-top: 8px;
+  gap: 12px;
+  margin-top: 4px;
   flex-wrap: wrap;
   width: 100%;
 }

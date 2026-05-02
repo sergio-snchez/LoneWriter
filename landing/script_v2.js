@@ -83,15 +83,17 @@ document.addEventListener('DOMContentLoaded', () => {
             eng_3: "Contextual awareness of your magical or sci-fi systems.",
             eng_4_label: "Saliency Scoring:",
             eng_4: "Injects only the most relevant lore into your AI prompts.",
-            nexus_badge: "World Atlas",
-            nexus_title: "World Nexus",
+            nexus_badge: "Nexus",
+            nexus_title: "Nexus",
             nexus_sub: "Transform your raw Compendium data into a living, breathing 3D knowledge graph and interactive timeline. Discover the hidden connections in your story.",
-            nex_1_label: "Zettelkasten 3D Graph:",
-            nex_1: "Visualize complex character relationships and locations in spatial 3D.",
+            nex_1_label: "3D Knowledge Graph:",
+            nex_1: "Visualize complex relationships of characters and locations (Based on the Zettelkasten system).",
             nex_2_label: "Interactive Timeline:",
             nex_2: "Map chronological events intuitively alongside your manuscript.",
             nex_3_label: "Interactive Codex Export:",
             nex_3: "Share a standalone HTML hyperlinked wiki of your world with beta readers.",
+            nexus_menu_graph: "3D Graph",
+            nexus_menu_timeline: "Timeline",
             rag_badge: "Local Semantic Intelligence",
             rag_title: "Local RAG Engine",
             rag_sub: "LoneWriter incorporates a Retrieval-Augmented Generation engine directly in your browser. It instantly retrieves fragments of your novel and relevant lore to provide perfect context for the AI, all without sending your data to the cloud.",
@@ -199,15 +201,17 @@ document.addEventListener('DOMContentLoaded', () => {
             eng_3: "Conciencia contextual de tus sistemas mágicos o de ciencia ficción.",
             eng_4_label: "Puntuación de Saliencia:",
             eng_4: "Inyecta solo el lore más relevante en tus peticiones de IA.",
-            nexus_badge: "Atlas del Mundo",
-            nexus_title: "Nexos de Mundo",
-            nexus_sub: "Transforma los datos de tu Compendio en un grafo 3D interactivo y una línea de tiempo viva. Descubre las conexiones ocultas de tu historia.",
-            nex_1_label: "Grafo Zettelkasten 3D:",
-            nex_1: "Visualiza relaciones complejas de personajes y lugares en el espacio 3D.",
+            nexus_badge: "Nexus",
+            nexus_title: "Nexus",
+            nexus_sub: "Transform los datos de tu Compendio en un grafo 3D interactivo y una línea de tiempo viva. Descubre las conexiones ocultas de tu historia.",
+            nex_1_label: "Grafo de conocimiento 3D:",
+            nex_1: "Visualiza relaciones complejas de personajes y lugares (Basado en el sistema Zettelkasten).",
             nex_2_label: "Línea de Tiempo Interactiva:",
             nex_2: "Mapea eventos cronológicos de forma intuitiva junto a tu manuscrito.",
             nex_3_label: "Exportación de Códice:",
             nex_3: "Comparte una wiki HTML interactiva e independiente con tus lectores beta.",
+            nexus_menu_graph: "Grafo 3D",
+            nexus_menu_timeline: "Línea de Tiempo",
             rag_badge: "Inteligencia Semántica Local",
             rag_title: "Motor RAG en Local",
             rag_sub: "LoneWriter incorpora un motor RAG (Generación Aumentada por Recuperación) directamente en tu navegador. Recupera fragmentos de tu novela y lore relevante al instante para un contexto perfecto en la IA, todo sin enviar tus datos a la nube.",
@@ -443,6 +447,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(typeChar, 1000);
     };
+
+    // Nexus View Toggling
+    const nexusTabs = document.querySelectorAll('.nexus-tab');
+    nexusTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const view = tab.getAttribute('data-view');
+            
+            // Update tabs
+            nexusTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Update views
+            document.querySelectorAll('.nexus-view-graph, .nexus-view-timeline').forEach(v => {
+                v.classList.remove('active');
+                v.style.display = 'none'; // Fallback for safety
+            });
+            
+            const activeView = document.querySelector(`.nexus-view-${view}`);
+            if (activeView) {
+                activeView.classList.add('active');
+                activeView.style.display = 'block';
+            }
+        });
+    });
 
     if (mpcTypingArea) window.runMPCTyping();
 });
