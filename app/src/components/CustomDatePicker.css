@@ -41,15 +41,15 @@
   right: 0;
   left: auto;
   margin-top: 8px;
-  background: rgba(30, 28, 36, 0.75); /* slightly more opaque to ensure readability */
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid var(--border-accent);
+  background: var(--bg-surface);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px;
   z-index: 100;
   width: 240px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   animation: slideInDown 0.2s ease-out;
 }
 

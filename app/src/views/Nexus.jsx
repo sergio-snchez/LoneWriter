@@ -2,22 +2,57 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNovel } from '../context/NovelContext';
 import ForceGraph3D from 'react-force-graph-3d';
+import ForceGraph2D from 'react-force-graph-2d';
 import { DataSet, Timeline } from 'vis-timeline/standalone';
-import { Lock, Unlock, Share2, Clock } from 'lucide-react';
+import { Lock, Unlock, Share2, Clock, Box, Square, AlertCircle } from 'lucide-react';
+import * as THREE from 'three';
 import 'vis-timeline/styles/vis-timeline-graph2d.css';
 import './Nexus.css';
 
 const ENTITY_COLORS = {
-  characters: '#5cb98a', // Green
-  locations: '#6b9fd4',  // Blue
-  objects: '#d4a853',    // Yellow
-  lore: '#d45353'        // Red
+  characters: '#00ff88', // Vibrant Green/Neon
+  locations: '#00aaff',  // Vibrant Blue/Cyan
+  objects: '#ffcc00',    // Vibrant Gold/Yellow
+  lore: '#ff4444'        // Vibrant Red/Coral
+};
+
+const hexToRgb = (hex) => {
+  if (!hex || typeof hex !== 'string') return '255, 255, 255';
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? 
+    `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : 
+    '255, 255, 255';
 };
 
 export default function Nexus({ onNavigate }) {
-  const { t } = useTranslation(['app', 'compendium']);
+  const { t, i18n } = useTranslation(['app', 'compendium']);
   const { activeNovel, acts, characters, locations, objects, lore, nexusLinks, setActiveScene, setExpandedIds } = useNovel();
   const graphRef = useRef();
+  
+  // Theme tracking for dynamic graph styling
+  const [currentTheme, setCurrentTheme] = useState(() => document.documentElement.getAttribute('data-theme') || 'dark');
+
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'data-theme') {
+          setCurrentTheme(document.documentElement.getAttribute('data-theme') || 'dark');
+        }
+      });
+    });
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
+
+  const themeCtx = useMemo(() => {
+    const isLight = currentTheme === 'light' || currentTheme === 'sepia';
+    return {
+      isLight,
+      textMain: isLight ? '#1a1a1f' : '#ffffff',
+      textMuted: isLight ? 'rgba(26, 26, 31, 0.65)' : 'rgba(255, 255, 255, 0.35)',
+      linkPrimary: isLight ? 'rgba(26, 26, 31, 0.25)' : 'rgba(255, 255, 255, 0.45)'
+    };
+  }, [currentTheme]);
   
   // Navigation from timeline listener
   // Global navigation is now managed in NovelContext
@@ -31,6 +66,10 @@ export default function Nexus({ onNavigate }) {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [activeView, setActiveView] = useState(() => {
     return localStorage.getItem('lw_nexus_active_view') || 'graph';
+  });
+  const [renderError, setRenderError] = useState(null);
+  const [graphMode, setGraphMode] = useState(() => {
+    return localStorage.getItem('lw_nexus_graph_mode') || '3D';
   });
   const [lockZoom, setLockZoom] = useState(() => {
     return localStorage.getItem('lw_nexus_lock_zoom') === 'true';
@@ -82,14 +121,20 @@ export default function Nexus({ onNavigate }) {
     return items;
   }, [acts, t]);
 
-  // Use a ref for the DataSet to maintain a single reactive instance
-  const timelineDataSetRef = useRef(new DataSet());
+  // Persistent dataset for timeline to avoid re-renders
+  const timelineDataSetRef = useRef(null);
+  if (!timelineDataSetRef.current && DataSet) {
+    timelineDataSetRef.current = new DataSet();
+  }
 
   // Update DataSet whenever timelineData changes
   useEffect(() => {
-    timelineDataSetRef.current.clear();
-    if (timelineData.length > 0) {
-      timelineDataSetRef.current.add(timelineData);
+    if (!timelineDataSetRef.current) return;
+    try {
+      timelineDataSetRef.current.clear();
+      if (timelineData.length > 0) {
+        timelineDataSetRef.current.add(timelineData);
+      }
       
       // Handle auto-fit or restoration
       if (timelineRef.current) {
@@ -111,98 +156,116 @@ export default function Nexus({ onNavigate }) {
         // Force a redraw to handle visibility changes after navigation
         timelineRef.current.redraw();
       }
+    } catch (err) {
+      console.error('[Nexus] Error updating timeline dataset:', err);
+      setRenderError(err.message);
     }
   }, [timelineData, lockZoom]);
 
   // Initialize Timeline (only once)
   useEffect(() => {
-    if (!timelineContainerRef.current) return;
-
-    const options = {
-      width: '100%',
-      height: '100%',
-      zoomMin: 1000 * 60 * 60 * 24, // One day
-      zoomMax: 1000 * 60 * 60 * 24 * 365 * 100, // 100 years
-      stack: true,
-      showCurrentTime: false,
-      orientation: 'top',
-      editable: false,
-      margin: {
-        item: 15,
-        axis: 10
-      },
-      timeAxis: { scale: 'day', step: 1 }
-    };
+    if (activeView !== 'timeline' || !timelineContainerRef.current) return;
 
     try {
+      const options = {
+        stack: true,
+        selectable: true,
+        showCurrentTime: true,
+        zoomMin: 1000 * 60 * 60 * 24 * 2, // 2 days minimum zoom
+        zoomMax: 1000 * 60 * 60 * 24 * 365 * 1000, // 1000 years
+        editable: false,
+        margin: { item: 10, axis: 5 },
+        orientation: 'top',
+        timeAxis: { scale: 'day', step: 1 },
+        template: (item) => item.content,
+        format: {
+          minorLabels: {
+            millisecond: 'D MMM',
+            second: 'D MMM',
+            minute: 'D MMM',
+            hour: 'D MMM',
+            weekday: 'ddd D MMM',
+            day: 'D MMM',
+            month: 'MMM YYYY',
+            year: 'YYYY'
+          },
+          majorLabels: {
+            millisecond: 'YYYY',
+            second: 'YYYY',
+            minute: 'YYYY',
+            hour: 'YYYY',
+            weekday: 'MMMM YYYY',
+            day: 'MMMM YYYY',
+            month: 'YYYY',
+            year: ''
+          }
+        },
+        // Localization
+        locale: i18n.language,
+        locales: {
+          [i18n.language]: {
+            current: t('nexus.current') || 'Actual',
+            time: t('nexus.time') || 'Tiempo',
+          }
+        }
+      };
+
       if (!timelineRef.current) {
         timelineRef.current = new Timeline(timelineContainerRef.current, timelineDataSetRef.current, options);
       } else {
         timelineRef.current.setOptions(options);
       }
 
-      // Aggressive redraw sequence for stable rendering
-      const forceRedraw = () => {
-        if (timelineRef.current) {
-          timelineRef.current.redraw();
-          window.dispatchEvent(new Event('resize'));
+      // Restore zoom if available
+      const savedRange = localStorage.getItem('lw_nexus_timeline_range');
+      if (savedRange && !lockZoom) {
+        try {
+          const { start, end } = JSON.parse(savedRange);
+          timelineRef.current.setWindow(start, end, { animation: false });
+        } catch (e) {
+          console.warn('Could not restore timeline range', e);
         }
-      };
-
-      forceRedraw();
-      setTimeout(forceRedraw, 100);
-      setTimeout(forceRedraw, 500);
-
-      // Restore saved range if locked and available
-      if (lockZoom) {
-        const savedRange = localStorage.getItem('lw_nexus_timeline_range');
-        if (savedRange) {
-          try {
-            const { start, end } = JSON.parse(savedRange);
-            if (start && end) {
-              setTimeout(() => {
-                if (timelineRef.current) {
-                  timelineRef.current.setWindow(start, end, { animation: false });
-                }
-              }, 150);
-            }
-          } catch (err) {}
-        }
-      } else {
-        setTimeout(() => {
-          if (timelineRef.current) timelineRef.current.fit();
-        }, 150);
       }
+
+      // Cleanup old listeners to prevent duplicates
+      timelineRef.current.off('select');
+      timelineRef.current.off('rangechanged');
 
       timelineRef.current.on('select', (properties) => {
         if (properties.items && properties.items.length > 0) {
-          const sceneId = properties.items[0];
-          if (onNavigate) onNavigate('editor');
-          window.dispatchEvent(new CustomEvent('navigate-to-scene', { 
-            detail: { sceneId: sceneId }
-          }));
+          const itemId = String(properties.items[0]);
+          const sceneId = itemId.replace('scene-', '');
+          
+          window.dispatchEvent(new CustomEvent('navigate-to-scene', { detail: { sceneId } }));
+          onNavigate('editor');
         }
       });
 
       timelineRef.current.on('rangechanged', (properties) => {
-        if (properties.byUser) {
+        if (!lockZoom) {
           localStorage.setItem('lw_nexus_timeline_range', JSON.stringify({
             start: properties.start,
             end: properties.end
           }));
         }
       });
+
     } catch (err) {
-      console.error("Timeline initialization error:", err);
+      console.error('[Nexus] Error initializing timeline:', err);
+      setRenderError(err.message);
     }
 
     return () => {
       if (timelineRef.current) {
-        timelineRef.current.destroy();
-        timelineRef.current = null;
+        try {
+          timelineRef.current.destroy();
+          timelineRef.current = null;
+        } catch (e) {
+          console.warn('Error destroying timeline', e);
+        }
       }
     };
-  }, [activeView, onNavigate]); // Re-init when view changes to ensure container ref is valid
+  }, [activeView, onNavigate, i18n.language, t, lockZoom]);
 
   const graphData = useMemo(() => {
     const nodes = [];
@@ -211,6 +274,7 @@ export default function Nexus({ onNavigate }) {
     const addNode = (item, group, defaultColor) => {
       nodes.push({
         id: `${group}_${item.id}`,
+        rawId: item.id,
         name: item.name || item.title,
         group,
         color: defaultColor,
@@ -328,20 +392,110 @@ export default function Nexus({ onNavigate }) {
       }
     });
 
-    nexusLinks.forEach(link => {
-      links.push({
-        source: link.sourceId,
-        target: link.targetId,
-        label: link.label || '',
-        color: 'rgba(255,255,255,0.4)',
-        isManual: true
-      });
+    // 1. Generate unique links only (deduplicate)
+    const uniqueLinksMap = new Map();
+    links.forEach(l => {
+      // Create a sorted key to be direction-agnostic for deduplication
+      const nodesArr = [l.source, l.target].sort();
+      const key = `${nodesArr[0]}_${nodesArr[1]}`;
+      
+      if (!uniqueLinksMap.has(key)) {
+        uniqueLinksMap.set(key, l);
+      }
+    });
+    const dedupedLinks = Array.from(uniqueLinksMap.values());
+
+    // 2. Calculate degree based on unique neighbors
+    const counts = {};
+    dedupedLinks.forEach(l => {
+      counts[l.source] = (counts[l.source] || 0) + 1;
+      counts[l.target] = (counts[l.target] || 0) + 1;
     });
 
-    return { nodes, links };
+    nodes.forEach(n => {
+      n.degree = counts[n.id] || 0;
+      n.isImportant = n.degree > 2;
+    });
+
+    // 3. Create BI-DIRECTIONAL links for particles (A->B and B->A)
+    const biLinks = [];
+    dedupedLinks.forEach(l => {
+      const s = nodes.find(n => n.id === l.source);
+      const t = nodes.find(n => n.id === l.target);
+
+      if (s && t) {
+        // Link A -> B
+        biLinks.push({
+          ...l,
+          id: `${l.source}_${l.target}_fwd`,
+          emitColor: s.color,
+          // Half speed and high randomness to desync particles organically
+          emitSpeed: Math.min(0.0075, (0.0015 + (s.degree * 0.00075)) * (0.4 + Math.random() * 1.2)),
+          pulseOffset: Math.random() * 10,
+          isPrimary: true
+        });
+        // Link B -> A
+        biLinks.push({
+          ...l,
+          id: `${l.source}_${l.target}_rev`,
+          source: l.target,
+          target: l.source,
+          emitColor: t.color,
+          emitSpeed: Math.min(0.0075, (0.0015 + (t.degree * 0.00075)) * (0.4 + Math.random() * 1.2)),
+          pulseOffset: Math.random() * 10,
+          isPrimary: false
+        });
+      }
+    });
+
+    return { nodes, links: biLinks };
   }, [characters, locations, objects, lore, nexusLinks]);
 
   if (!activeNovel) return null;
+
+  if (renderError) {
+    return (
+      <div className="nexus-view nexus-view--error">
+        <div className="nexus-error-card glass-panel">
+          <AlertCircle size={48} className="text-danger" />
+          <h2>{t('nexus.crash_title') || 'Error en Nexus'}</h2>
+          <p>{t('nexus.crash_message') || 'Se ha producido un error al cargar la visualización.'}</p>
+          <pre>{renderError}</pre>
+          <button className="btn btn-primary" onClick={() => window.location.reload()}>
+            {t('nexus.reload') || 'Recargar Aplicación'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const clickTracker = useRef({ time: 0, id: null });
+
+  const handleNodeClick = (node) => {
+    const now = Date.now();
+    if (clickTracker.current.id === node.id && now - clickTracker.current.time < 350) {
+      // Double click
+      onNavigate('compendium');
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('navigate-to-compendium-item', { detail: { id: node.rawId, group: node.group } }));
+      }, 100);
+    } else {
+      // Single click
+      if (graphMode === '3D' && graphRef.current) {
+        const distance = 100;
+        const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
+        graphRef.current.cameraPosition(
+          { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
+          node,
+          1500
+        );
+      } else if (graphMode === '2D' && graphRef.current) {
+        graphRef.current.centerAt(node.x, node.y, 1000);
+        graphRef.current.zoom(2, 1000);
+      }
+    }
+    clickTracker.current = { time: now, id: node.id };
+  };
 
   return (
     <div className="nexus-view fade-in">
@@ -353,7 +507,7 @@ export default function Nexus({ onNavigate }) {
         <div className="nexus-header__actions">
           {activeView === 'timeline' && (
             <button 
-              className={`btn btn-ghost nexus-lock-btn ${lockZoom ? 'active' : ''}`}
+              className={`btn btn-ghost nexus-lock-btn ${!lockZoom ? 'active' : ''}`}
               onClick={() => {
                 const next = !lockZoom;
                 setLockZoom(next);
@@ -366,10 +520,27 @@ export default function Nexus({ onNavigate }) {
                   }));
                 }
               }}
-              title={lockZoom ? t('nexus.unlock_zoom') : t('nexus.lock_zoom')}
+              title={lockZoom ? t('nexus.lock_zoom') : t('nexus.unlock_zoom')}
             >
-              {lockZoom ? <Lock size={16} /> : <Unlock size={16} />}
-              <span className="btn-label">{lockZoom ? t('nexus.locked') : t('nexus.unlocked')}</span>
+              {lockZoom ? <Unlock size={16} /> : <Lock size={16} />}
+              <span className="btn-label">{lockZoom ? t('nexus.unlocked') : t('nexus.locked')}</span>
+            </button>
+          )}
+
+          {activeView === 'graph' && (
+            <button 
+              className={`btn btn-ghost nexus-lock-btn ${graphMode === '3D' ? 'active' : ''}`}
+              onClick={() => {
+                const next = graphMode === '3D' ? '2D' : '3D';
+                setGraphMode(next);
+                localStorage.setItem('lw_nexus_graph_mode', next);
+              }}
+              title={graphMode === '3D' ? t('nexus.view_2d') : t('nexus.view_3d')}
+            >
+              {graphMode === '3D' ? <Box size={16} /> : <Square size={16} />}
+              <span className="btn-label">
+                {graphMode === '3D' ? t('nexus.view_3d') : t('nexus.view_2d')}
+              </span>
             </button>
           )}
 
@@ -418,30 +589,175 @@ export default function Nexus({ onNavigate }) {
               <div className="nexus-placeholder-text">
                 <p>{t('nexus.empty_graph')}</p>
               </div>
-            ) : (
+            ) : graphMode === '3D' ? (
               <ForceGraph3D
+                key={`3d-${currentTheme}`}
                 ref={graphRef}
                 width={dimensions.width}
                 height={dimensions.height}
                 graphData={graphData}
-                nodeLabel="name"
-                nodeColor="color"
-                nodeVal="val"
-                linkColor="color"
-                linkWidth={link => link.isManual ? 1.5 : 0.5}
+                nodeLabel={node => `
+                  <div class="nexus-tooltip">
+                    <div class="nexus-tooltip-title">${node.name}</div>
+                    <div class="nexus-tooltip-sub">${t(`compendium:tabs.${node.group}`)}</div>
+                    <div class="nexus-tooltip-meta">${node.degree} ${t('nexus.connections')}</div>
+                  </div>
+                `}
+                nodeThreeObject={node => {
+                  const group = new THREE.Group();
+
+                  // 1. Core Sphere (Standardized radius corresponding to 2D's base radius)
+                  const sphere = new THREE.Mesh(
+                    new THREE.SphereGeometry(2.8),
+                    new THREE.MeshLambertMaterial({ 
+                      color: node.color,
+                      transparent: true,
+                      opacity: 1.0
+                    })
+                  );
+                  group.add(sphere);
+
+                  // 2. Halo (Subtle radiance matching 2D 'destination-over' exact gradient)
+                  if (node.isImportant) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 128;
+                    canvas.height = 128;
+                    const ctx = canvas.getContext('2d');
+                    
+                    const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+                    const rgb = hexToRgb(node.color);
+                    gradient.addColorStop(0, `rgba(${rgb}, 0.25)`);
+                    gradient.addColorStop(1, `rgba(${rgb}, 0)`);
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, 128, 128);
+
+                    const texture = new THREE.CanvasTexture(canvas);
+                    const glowMaterial = new THREE.SpriteMaterial({ 
+                      map: texture, 
+                      transparent: true,
+                      depthWrite: false, // Ensures it renders behind the node itself visually
+                      opacity: 1.0 // Alpha handled by gradient
+                    });
+                    const glowSprite = new THREE.Sprite(glowMaterial);
+                    
+                    // Match the 3.5 multiplier from 2D
+                    const glowSize = 2.8 * 3.5 * 2; 
+                    glowSprite.scale.set(glowSize, glowSize, 1);
+                    group.add(glowSprite);
+                  }
+
+                  // 3. Label
+                  const canvas = document.createElement('canvas');
+                  const context = canvas.getContext('2d');
+                  const fontSize = node.isImportant ? 24 : 15;
+                  context.font = `${node.isImportant ? 'bold' : 'normal'} ${fontSize}px Inter, sans-serif`;
+                  const textWidth = context.measureText(node.name).width;
+
+                  canvas.width = textWidth + 20;
+                  canvas.height = fontSize + 10;
+
+                  context.fillStyle = node.isImportant ? themeCtx.textMain : themeCtx.textMuted;
+                  context.font = `${node.isImportant ? 'bold' : 'normal'} ${fontSize}px Inter, sans-serif`;
+                  context.textAlign = 'center';
+                  context.textBaseline = 'middle';
+                  context.fillText(node.name, canvas.width / 2, canvas.height / 2);
+
+                  const texture = new THREE.CanvasTexture(canvas);
+                  const spriteMaterial = new THREE.SpriteMaterial({ 
+                    map: texture, 
+                    transparent: true,
+                    opacity: 1.0 // handled by canvas fillStyle now, but ensure visibility
+                  });
+                  const sprite = new THREE.Sprite(spriteMaterial);
+                  sprite.position.set(0, node.isImportant ? 8 : 5, 0);
+                  sprite.scale.set(canvas.width / 10, canvas.height / 10, 1);
+                  group.add(sprite);
+
+                  return group;
+                }}
+                nodeThreeObjectExtend={false}
+                linkColor={link => link.isPrimary ? themeCtx.linkPrimary : 'rgba(0,0,0,0)'}
+                linkWidth={link => link.isPrimary ? (link.isManual ? 1.5 : 0.8) : 0}
+                linkDirectionalParticles={1}
+                linkDirectionalParticleWidth={0.65} // Proportionally matches 1.4 in 2D
+                linkDirectionalParticleSpeed={link => link.emitSpeed}
+                linkDirectionalParticleColor={link => link.emitColor}
                 backgroundColor="rgba(0,0,0,0)"
                 showNavInfo={false}
-                onNodeClick={node => {
-                  const distance = 100;
-                  const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
-                  if (graphRef.current) {
-                    graphRef.current.cameraPosition(
-                      { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
-                      node,
-                      2000
-                    );
+                enableNodeDrag={true}
+                onNodeClick={handleNodeClick}
+              />
+            ) : (
+              <ForceGraph2D
+                key={`2d-${currentTheme}`}
+                ref={graphRef}
+                width={dimensions.width}
+                height={dimensions.height}
+                graphData={graphData}
+                nodeLabel={node => `
+                  <div class="nexus-tooltip">
+                    <div class="nexus-tooltip-title">${node.name}</div>
+                    <div class="nexus-tooltip-sub">${t(`compendium:tabs.${node.group}`)}</div>
+                    <div class="nexus-tooltip-meta">${node.degree} ${t('nexus.connections')}</div>
+                  </div>
+                `}
+                nodeCanvasObject={(node, ctx, globalScale) => {
+                  if (!node || typeof node.x !== 'number' || typeof node.y !== 'number') return;
+                  if (!isFinite(node.x) || !isFinite(node.y)) return;
+                  
+                  const label = node.name;
+                  const safeScale = globalScale || 1;
+                  // Standardized radius for all nodes in 2D
+                  const radius = 6 / safeScale;
+
+                  const fontSize = (node.isImportant ? 14 : 11) / safeScale;
+                  ctx.font = `${node.isImportant ? 'bold' : 'normal'} ${fontSize}px Inter, sans-serif`;
+                  
+                  // 1. Core Circle (already calculated radius)
+                  
+                  // 2. Halo (Subtle radiance) - Use 'destination-over' to render BEHIND lines and nodes
+                  if (node.isImportant && isFinite(radius)) {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'destination-over';
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, radius * 3.5, 0, 2 * Math.PI, false);
+                    const grad = ctx.createRadialGradient(node.x, node.y, radius, node.x, node.y, radius * 3.5);
+                    const rgb = hexToRgb(node.color);
+                    grad.addColorStop(0, `rgba(${rgb}, 0.25)`);
+                    grad.addColorStop(1, `rgba(${rgb}, 0)`);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                    ctx.restore();
                   }
+
+                  // 3. Main Node
+                  ctx.beginPath();
+                  ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false);
+                  ctx.fillStyle = node.color;
+                  ctx.fill();
+                  
+                  // 4. Label
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  // Use theme-aware colors for nodes
+                  ctx.fillStyle = node.isImportant ? themeCtx.textMain : themeCtx.textMuted;
+                  ctx.fillText(label, node.x, node.y + radius + fontSize);
                 }}
+                nodeCanvasObjectMode={() => 'replace'}
+                linkColor={link => link.isPrimary ? themeCtx.linkPrimary : 'rgba(0,0,0,0)'}
+                linkWidth={link => link.isPrimary ? (link.isManual ? 1.5 : 0.8) : 0}
+                linkDirectionalParticles={1}
+                linkDirectionalParticleWidth={1.4}
+                linkDirectionalParticleSpeed={link => link.emitSpeed}
+                linkDirectionalParticleColor={link => {
+                  const rgb = hexToRgb(link.emitColor);
+                  const pulse = 0.6 + Math.sin(Date.now() / 450 + (link.pulseOffset || 0)) * 0.4;
+                  return `rgba(${rgb}, ${pulse})`;
+                }}
+                backgroundColor="rgba(0,0,0,0)"
+                showNavInfo={false}
+                onNodeClick={handleNodeClick}
               />
             )}
           </div>

@@ -1270,6 +1270,31 @@ export default function CompendiumView() {
     return () => window.removeEventListener('mpc-edit-proposal', handler);
   }, [dismissMpcProposal]);
 
+  // Listener for navigating to a specific compendium item (from Nexus double click)
+  useEffect(() => {
+    const handler = (e) => {
+      const { id, group } = e.detail || {};
+      if (!id || !group) return;
+      
+      // Set correct tab
+      setActiveSection(group);
+      
+      // Find the entity
+      let item = null;
+      if (group === 'characters') item = characters.find(c => c.id === id);
+      else if (group === 'locations') item = locations.find(l => l.id === id);
+      else if (group === 'objects') item = objects.find(o => o.id === id);
+      else if (group === 'lore') item = lore.find(l => l.id === id);
+      
+      if (item) {
+        setEditingItem(item);
+        setIsPanelOpen(true);
+      }
+    };
+    window.addEventListener('navigate-to-compendium-item', handler);
+    return () => window.removeEventListener('navigate-to-compendium-item', handler);
+  }, [characters, locations, objects, lore]);
+
   const getAvailableFilters = () => {
     const list = new Set();
     const ensureArr = (val) => Array.isArray(val) ? val : (typeof val === 'string' ? val.split(',').map(s=>s.trim()).filter(Boolean) : []);
