@@ -102,6 +102,18 @@ function buildCompendiumSummary(registeredNames) {
   return names.join(', ');
 }
 
+// ─── Construye el bloque de entidades existentes por tipo (para relaciones) ──
+function buildCompendiumByTypeBlock(compendiumByType, isSpanish) {
+  if (!compendiumByType) return '';
+  const { characters = [], locations = [], objects = [], lore = [] } = compendiumByType;
+  const lines = [];
+  if (characters.length > 0) lines.push((isSpanish ? 'Personajes existentes' : 'Existing characters') + ': ' + characters.slice(0, 30).join(', '));
+  if (locations.length > 0)  lines.push((isSpanish ? 'Lugares existentes' : 'Existing locations') + ': ' + locations.slice(0, 30).join(', '));
+  if (objects.length > 0)    lines.push((isSpanish ? 'Objetos existentes' : 'Existing objects') + ': ' + objects.slice(0, 30).join(', '));
+  if (lore.length > 0)       lines.push((isSpanish ? 'Lore existente' : 'Existing lore') + ': ' + lore.slice(0, 30).join(', '));
+  return lines.length > 0 ? lines.join('\n') : '';
+}
+
 // ─── Paso 2: Análisis IA profundo ───────────────────────────────────────────
 /**
  * Llama a la IA para analizar candidatos y generar fichas prellenadas.
@@ -113,20 +125,25 @@ function buildCompendiumSummary(registeredNames) {
  * @param {number} maxProposals - Máximo de propuestas a devolver
  * @returns {Promise<{proposals: Object[], usage: Object}>} - Proposals and token usage
  */
-export async function analyzeWithAI(candidates, sceneText, registeredNames, ignoredNames, aiConfig, maxProposals = 5) {
+export async function analyzeWithAI(candidates, sceneText, registeredNames, ignoredNames, aiConfig, maxProposals = 5, compendiumByType = null) {
   if (!candidates || candidates.length === 0) return { proposals: [], usage: null };
   if (!aiConfig?.apiKey && aiConfig?.provider !== 'local') return { proposals: [], usage: null };
 
   const isSpanish = i18n.language === 'es';
   const compendiumSummary = buildCompendiumSummary(registeredNames);
+  const compendiumByTypeBlock = buildCompendiumByTypeBlock(compendiumByType, isSpanish);
   
   const truncatedText = sceneText.length > 12000
     ? '...' + sceneText.slice(-12000)
     : sceneText;
 
+  const compendiumByTypeSection = compendiumByTypeBlock
+    ? (isSpanish ? `\n\nENTIDADES YA REGISTRADAS POR TIPO (usa estos nombres EXACTOS al rellenar los campos de vínculos):\n${compendiumByTypeBlock}` : `\n\nEXISTING ENTITIES BY TYPE (use these EXACT names when filling in relationship fields):\n${compendiumByTypeBlock}`)
+    : '';
+
   const prompt = isSpanish
-    ? `Eres un asistente experto en worldbuilding y construcción de universos narrativos.\n\nTu tarea es analizar el fragmento literario que te proporciono e identificar si los CANDIDATOS DETECTADOS son entidades narrativas relevantes (personajes, lugares, objetos importantes, o conceptos de lore) que merezcan tener una ficha en el compendio de la novela.\n\nCOMPENDIO ACTUAL (estos nombres ya están registrados, NO los propongas):\n${compendiumSummary}\n\nCANDIDATOS DETECTADOS (evalúa si merecen una ficha):\n${candidates.join(', ')}\n\nFRAGMENTO DE LA OBRA:\n"""\n${truncatedText}\n"""\n\nINSTRUCCIONES:\n- Analiza SOLO los candidatos listados. No inventes entidades nuevas.\n- NO propongas candidatos que sean variaciones, apodos o partes de los nombres del COMPENDIO ACTUAL (ej. si está 'El Loro de Oro', no propongas 'El Loro').\n- Para cada candidato que SÍ merezca una ficha (personaje, lugar, objeto clave, o concepto de lore), genera una entrada JSON.\n- Asigna confidence: "high" si aparece claramente como nombre propio de entidad narrativa, "medium" si es probable pero hay algo de ambigüedad, "low" si es dudoso.\n- Infiere los campos a partir del contexto del texto. Si no puedes inferirlo, deja el campo vacío "".\n- Propón un máximo de ${maxProposals} entidades. Prioriza las de mayor confianza.\n- Si ningún candidato merece una ficha, devuelve un array vacío [].\n\nResponde en el mismo idioma que usa el autor en su texto.\n\nESQUEMA DE RESPUESTA (devuelve ÚNICAMENTE el JSON, sin texto adicional, sin markdown):\n[\n  {\n    "type": "characters" | "locations" | "objects" | "lore",\n    "confidence": "high" | "medium" | "low",\n    "name": "Nombre exacto tal como aparece en el texto (o 'title' para lore)",\n    "title": "Solo si type es lore, el título de la entrada",\n    "role": "Si es personaje: su rol narrativo (protagonista, antagonista, secundario...)",\n    "occupation": "Si es personaje: su ocupación o profesión",\n    "description": "Descripción breve inferida del contexto (máx. 150 caracteres)",\n    "type_detail": "Para locations: tipo de lugar. Para objects: tipo de objeto. Para lore: categoría",\n    "tags": ["tag1", "tag2"],\n    "reason": "Por qué propones añadirlo al compendio (una frase breve)"\n  }\n]`
-    : `You are an expert in worldbuilding and narrative universe construction.\n\nYour task is to analyze the literary fragment I provide and identify whether the DETECTED CANDIDATES are relevant narrative entities (characters, important places, objects, or lore concepts) that deserve to have an entry in the novel's compendium.\n\nCURRENT COMPENDIUM (these names are already registered, do NOT propose them):\n${compendiumSummary}\n\nDETECTED CANDIDATES (evaluate if they deserve an entry):\n${candidates.join(', ')}\n\nWORK FRAGMENT:\n"""\n${truncatedText}\n"""\n\nINSTRUCTIONS:\n- Analyze ONLY the listed candidates. Do not invent new entities.\n- Do NOT propose candidates that are variations, nicknames, or parts of names from the CURRENT COMPENDIUM (e.g., if 'The Golden Parrot' is registered, do not propose 'The Parrot').\n- For each candidate that DOES deserve an entry (character, key place, key object, or lore concept), generate a JSON entry.\n- Assign confidence: "high" if it clearly appears as a proper name of a narrative entity, "medium" if it's probable but there's some ambiguity, "low" if it's doubtful.\n- Infer fields from the text context. If you cannot infer it, leave the field empty "".\n- Propose a maximum of ${maxProposals} entities. Prioritize those with highest confidence.\n- If no candidate deserves an entry, return an empty array [].\n\nRespond in the same language as the author uses in their text.\n\nRESPONSE SCHEMA (return ONLY the JSON, without additional text, without markdown):\n[\n  {\n    "type": "characters" | "locations" | "objects" | "lore",\n    "confidence": "high" | "medium" | "low",\n    "name": "Exact name as it appears in the text (or 'title' for lore)",\n    "title": "Only if type is lore, the entry title",\n    "role": "If character: their narrative role (protagonist, antagonist, secondary...)",\n    "occupation": "If character: their occupation or profession",\n    "description": "Brief description inferred from context (max 150 characters)",\n    "type_detail": "For locations: type of place. For objects: type of object. For lore: category",\n    "tags": ["tag1", "tag2"],\n    "reason": "Why you propose adding it to the compendium (brief sentence)"\n  }\n]`;
+    ? `Eres un asistente experto en worldbuilding y construcción de universos narrativos.\n\nTu tarea es analizar el fragmento literario que te proporciono e identificar si los CANDIDATOS DETECTADOS son entidades narrativas relevantes (personajes, lugares, objetos importantes, o conceptos de lore) que merezcan tener una ficha en el compendio de la novela.\n\nCOMPENDIO ACTUAL (estos nombres ya están registrados, NO los propongas como nuevos):\n${compendiumSummary}${compendiumByTypeSection}\n\nCANDIDATOS DETECTADOS (evalúa si merecen una ficha):\n${candidates.join(', ')}\n\nFRAGMENTO DE LA OBRA:\n"""\n${truncatedText}\n"""\n\nINSTRUCCIONES:\n- Analiza SOLO los candidatos listados. No inventes entidades nuevas.\n- NO propongas candidatos que sean variaciones, apodos o partes de los nombres del COMPENDIO ACTUAL.\n- Para cada candidato que SÍ merezca una ficha, genera una entrada JSON.\n- Asigna confidence: "high" si aparece claramente como entidad narrativa, "medium" si es probable, "low" si es dudoso.\n- Infiere TODOS los campos a partir del contexto del texto. Si no puedes inferirlo, deja el campo vacío "".\n- Para los campos de vínculos (associatedCharacters, associatedLocations, etc.), usa ÚNICAMENTE nombres que aparezcan en la lista "ENTIDADES YA REGISTRADAS POR TIPO". No inventes nombres.\n- Propón un máximo de ${maxProposals} entidades. Prioriza las de mayor confianza.\n- Si ningún candidato merece una ficha, devuelve un array vacío [].\n\nResponde en el mismo idioma que usa el autor en su texto.\n\nESQUEMA DE RESPUESTA (devuelve ÚNICAMENTE el JSON, sin texto adicional, sin markdown):\n[\n  {\n    "type": "characters" | "locations" | "objects" | "lore",\n    "confidence": "high" | "medium" | "low",\n    "name": "Nombre exacto tal como aparece en el texto (para type != lore)",\n    "title": "Solo si type es lore, el título de la entrada",\n    "role": "Si es personaje: su rol narrativo (protagonista, antagonista, secundario...)",\n    "occupation": "Si es personaje: su ocupación o profesión",\n    "description": "Descripción breve inferida del contexto (máx. 150 caracteres)",\n    "type_detail": "Para locations: tipo de lugar. Para objects: tipo de objeto. Para lore: categoría",\n    "tags": ["tag1", "tag2"],\n    "relations": [{ "name": "NombrePersonaje", "type": "cómo lo ve esta entidad", "reverseType": "cómo le ve aquél" }],\n    "associatedCharacters": ["NombrePersonaje"],\n    "associatedLocations": ["NombreLugar"],\n    "associatedObjects": ["NombreObjeto"],\n    "associatedLore": ["TítuloLore"],\n    "currentOwner": "NombrePersonaje si es un objeto y su portador se puede inferir, si no vacío",\n    "reason": "Por qué propones añadirlo al compendio (una frase breve)"\n  }\n]`
+    : `You are an expert in worldbuilding and narrative universe construction.\n\nYour task is to analyze the literary fragment I provide and identify whether the DETECTED CANDIDATES are relevant narrative entities (characters, important places, objects, or lore concepts) that deserve to have an entry in the novel's compendium.\n\nCURRENT COMPENDIUM (these names are already registered, do NOT propose them as new):\n${compendiumSummary}${compendiumByTypeSection}\n\nDETECTED CANDIDATES (evaluate if they deserve an entry):\n${candidates.join(', ')}\n\nWORK FRAGMENT:\n"""\n${truncatedText}\n"""\n\nINSTRUCTIONS:\n- Analyze ONLY the listed candidates. Do not invent new entities.\n- Do NOT propose candidates that are variations, nicknames, or parts of names from the CURRENT COMPENDIUM.\n- For each candidate that DOES deserve an entry, generate a JSON entry.\n- Assign confidence: "high" if it clearly appears as a narrative entity, "medium" if probable, "low" if doubtful.\n- Infer ALL fields from the text context. If you cannot infer it, leave the field empty "".\n- For relationship fields (associatedCharacters, associatedLocations, etc.), use ONLY names that appear in the "EXISTING ENTITIES BY TYPE" list. Do not invent names.\n- Propose a maximum of ${maxProposals} entities. Prioritize those with highest confidence.\n- If no candidate deserves an entry, return an empty array [].\n\nRespond in the same language as the author uses in their text.\n\nRESPONSE SCHEMA (return ONLY the JSON, without additional text, without markdown):\n[\n  {\n    "type": "characters" | "locations" | "objects" | "lore",\n    "confidence": "high" | "medium" | "low",\n    "name": "Exact name as it appears in the text (for type != lore)",\n    "title": "Only if type is lore, the entry title",\n    "role": "If character: their narrative role (protagonist, antagonist, secondary...)",\n    "occupation": "If character: their occupation or profession",\n    "description": "Brief description inferred from context (max 150 characters)",\n    "type_detail": "For locations: type of place. For objects: type of object. For lore: category",\n    "tags": ["tag1", "tag2"],\n    "relations": [{ "name": "CharacterName", "type": "how this entity sees them", "reverseType": "how they see this entity" }],\n    "associatedCharacters": ["CharacterName"],\n    "associatedLocations": ["LocationName"],\n    "associatedObjects": ["ObjectName"],\n    "associatedLore": ["LoreTitle"],\n    "currentOwner": "CharacterName if it's an object and the owner can be inferred, else empty",\n    "reason": "Why you propose adding it to the compendium (brief sentence)"\n  }\n]`;
 
   try {
     const response = await AIService._callWithConfig(prompt, aiConfig);
@@ -188,7 +205,7 @@ export function parseMpcResponse(rawResponse, maxProposals = 5, registeredNames 
         confidence: item.confidence,
         reason: item.reason || '',
 
-        // Campos del compendio (prellenados para ser pasados al CompendiumPanel)
+        // Campos básicos del compendio
         name: item.type !== 'lore' ? (item.name || '') : undefined,
         title: item.type === 'lore' ? (item.title || item.name || '') : undefined,
         role: item.role || '',
@@ -200,6 +217,32 @@ export function parseMpcResponse(rawResponse, maxProposals = 5, registeredNames 
         ...(item.type === 'objects' && { entityType: item.type_detail || '' }),
         ...(item.type === 'lore' && { category: item.type_detail || '' }),
         tags: Array.isArray(item.tags) ? item.tags.filter(t => typeof t === 'string') : [],
+
+        // ── Campos relacionales (inferidos por la IA desde el texto) ──────────
+        // Relaciones entre personajes (solo para characters)
+        ...(item.type === 'characters' && {
+          relations: Array.isArray(item.relations)
+            ? item.relations.filter(r => r && typeof r.name === 'string' && r.name.trim())
+                           .map(r => ({ name: r.name.trim(), type: r.type || '', reverseType: r.reverseType || '' }))
+            : [],
+        }),
+        // Vínculos cruzados entre entidades
+        ...(Array.isArray(item.associatedCharacters) && item.associatedCharacters.length > 0 && {
+          associatedCharacters: item.associatedCharacters.filter(n => typeof n === 'string' && n.trim()),
+        }),
+        ...(Array.isArray(item.associatedLocations) && item.associatedLocations.length > 0 && {
+          associatedLocations: item.associatedLocations.filter(n => typeof n === 'string' && n.trim()),
+        }),
+        ...(Array.isArray(item.associatedObjects) && item.associatedObjects.length > 0 && {
+          associatedObjects: item.associatedObjects.filter(n => typeof n === 'string' && n.trim()),
+        }),
+        ...(Array.isArray(item.associatedLore) && item.associatedLore.length > 0 && {
+          associatedLore: item.associatedLore.filter(n => typeof n === 'string' && n.trim()),
+        }),
+        // Portador actual (solo para objects)
+        ...(item.type === 'objects' && item.currentOwner && typeof item.currentOwner === 'string' && item.currentOwner.trim() && {
+          currentOwner: item.currentOwner.trim(),
+        }),
       }));
   } catch (error) {
     return [];
