@@ -39,6 +39,7 @@ function CompendiumPanel({ isOpen, type, item, characters, locations, objects, l
   const { t } = useTranslation('compendium')
   const { acts } = useNovel()
   const { provider, apiKey, currentModel, localBaseUrl, logAIUsage } = useAI()
+  const { openModal } = useModal()
   const [formData, setFormData] = useState(item || {});
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(type);
@@ -127,7 +128,7 @@ function CompendiumPanel({ isOpen, type, item, characters, locations, objects, l
 
   const handleAIAutoFill = async () => {
     if (!formData.name && type !== 'lore' && !formData.title) {
-      alert(t('formulario.completar_ia_error'));
+      openModal('alert', { message: t('formulario.completar_ia_error') });
       return;
     }
     
@@ -177,7 +178,7 @@ function CompendiumPanel({ isOpen, type, item, characters, locations, objects, l
       }
       
       if (!fullText.trim()) {
-        alert(t('formulario.completar_ia_fallo', { error: 'No se encontró contexto relevante en la novela' }));
+        openModal('alert', { message: t('formulario.completar_ia_fallo', { error: 'No se encontró contexto relevante en la novela' }) });
         setIsAiLoading(false);
         return;
       }
@@ -208,7 +209,7 @@ function CompendiumPanel({ isOpen, type, item, characters, locations, objects, l
       
     } catch (err) {
       console.error(err);
-      alert(t('formulario.completar_ia_fallo', { error: err.message }));
+      openModal('alert', { message: t('formulario.completar_ia_fallo', { error: err.message }) });
     } finally {
       setIsAiLoading(false);
     }
@@ -1410,9 +1411,9 @@ export default function CompendiumView() {
       await scanForMergeDuplicates(activeSection);
     } catch (err) {
       if (!apiKey && provider !== 'local') {
-        alert(t('unificar.sin_ia'));
+        openModal('alert', { message: t('unificar.sin_ia') });
       } else {
-        alert(t('unificar.error_escaneo'));
+        openModal('alert', { message: t('unificar.error_escaneo') });
       }
     }
   };
@@ -1420,7 +1421,7 @@ export default function CompendiumView() {
 
   const handleMergeSelection = async (entities) => {
     if (!apiKey && provider !== 'local') {
-      alert(t('unificar.sin_ia'));
+      openModal('alert', { message: t('unificar.sin_ia') });
       return;
     }
 
@@ -1428,7 +1429,7 @@ export default function CompendiumView() {
       const aiConfig = { provider, apiKey, model: currentModel, localBaseUrl };
       await globalHandleMergeSelection(entities, activeSection, aiConfig, logAIUsage);
     } catch (err) {
-      alert(t('unificar.error_fusion', { error: err.message }));
+      openModal('alert', { message: t('unificar.error_fusion', { error: err.message }) });
     }
   };
 
@@ -1436,7 +1437,7 @@ export default function CompendiumView() {
     try {
       await confirmMerge(activeSection, finalData);
     } catch (err) {
-      alert(t('unificar.error_confirmar', { error: err.message }));
+      openModal('alert', { message: t('unificar.error_confirmar', { error: err.message }) });
     }
   };
 

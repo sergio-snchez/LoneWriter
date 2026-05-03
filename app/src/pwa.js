@@ -16,10 +16,6 @@ export const registerPWA = (onNeedRefresh) => {
 export const triggerUpdate = () => {
   if (updateSW) {
     updateSW(true);
-    // Hard reload as safety fallback
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
   } else {
     window.location.reload();
   }

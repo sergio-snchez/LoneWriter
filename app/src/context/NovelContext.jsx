@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import i18n from '../i18n/i18n';
 import { db } from '../db/database';
 import { ExportService } from '../services/exportService';

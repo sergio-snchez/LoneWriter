@@ -44,9 +44,13 @@ function getWorker() {
   _worker.onerror = (e) => {
     console.error('[RAG] Worker error:', e);
     _modelLoading = false;
+    _modelReady = false;
     window.dispatchEvent(new CustomEvent('rag-model-error', { detail: e.message }));
+    // Reject all pending promises so callers don't hang
     Object.values(_pendingResolvers).forEach(r => r.reject(e));
     _pendingResolvers = {};
+    // Reset singleton so the next call recreates the worker cleanly
+    _worker = null;
   };
   return _worker;
 }

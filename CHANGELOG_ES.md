@@ -6,6 +6,47 @@
 
 </div>
 
+## [LoneWriter v1.9-nexus] - 2026-05-03
+
+### Added
+- **Nexus — Grafo de Conocimiento 3D/2D**: Nueva vista principal (`Nexus`) con un grafo interactivo en modo dual de todas las entidades del Compendio. Impulsado por `react-force-graph-3d` / `react-force-graph-2d` y Three.js.
+  - **Flujos de energía animados**: Partículas que recorren las conexiones con animación de opacidad pulsante, representando visualmente la intensidad y la dirección de cada relación.
+  - **Etiquetas permanentes en nodos**: Nombres de entidades siempre visibles, con tamaño y color según importancia y tema.
+  - **Radiance ambiental (halo)**: Los nodos importantes emiten un sutil destello de color renderizado detrás de los enlaces del grafo.
+  - **Caché de texturas 3D** (`nodeObjectCache`): Las texturas de canvas y los objetos `Group` de Three.js se cachean por nodo para evitar recrearlos en cada tick de renderizado, mejorando notablemente el rendimiento en 3D.
+- **Nexus — Línea de Tiempo Cronológica**: Cronología completa escena a escena de los eventos del universo de tu historia usando `vis-timeline`.
+  - Escala fijada en granularidad `día` — las horas nunca se muestran, y las fechas son siempre visibles incluso en el zoom máximo.
+  - Hacer clic en un ítem dispara `navigate-to-scene` para abrir la escena correspondiente en el Editor.
+  - Toggle Vista Libre / Bloqueada: "Vista Libre" (gris, zoom libre persistente) vs "Vista Bloqueada" (dorado, ajuste automático al navegar). Estado guardado en `localStorage`.
+- **Nexus → Compendio**: Doble clic en cualquier nodo del grafo (2D o 3D) emite el evento `navigate-to-compendium-item`. El `CompendiumView` escucha el evento y abre automáticamente el panel de edición de la entidad correspondiente.
+- **UI de Nexus adaptada a temas**: Todos los elementos flotantes (tooltip del grafo, cuadrículas del timeline, botones del selector de vista, tarjeta de error) ahora usan tokens de variables CSS, adaptándose a los 4 temas (Oscuro, Claro/Moderno, Sepia, Nórdico).
+- **Exportación `.lwrt` cifrada**: Protección opcional con contraseña al exportar proyectos. Diálogo con opción de "dejar en blanco para exportar sin cifrado". El flujo de importación con contraseña incorrecta muestra un modal de reintento dedicado.
+- **Versión dinámica de la app** mediante `__APP_VERSION__`: `vite.config.js` lee `package.json` en tiempo de compilación y expone la versión globalmente; `App.jsx` la muestra desde `utils/version.js` en lugar de una clave i18n fija.
+- **i18n — nuevas claves**: Añadidos los bloques `exportar`, `importar`, `error_titulo` (EN/ES) para los flujos de exportación/importación cifrada. Las etiquetas de relación en Nexus (`rel_relacion`, `rel_asociado`, `rel_portador`, `rel_contiene`, `rel_menciona`) ahora están completamente traducidas.
+
+### Changed
+- **Clic en nodo del grafo**: El clic simple ahora hace zoom x4 y centra en el nodo (2D); el doble clic navega al Compendio.
+- **`selectable: true` en timeline**: Reactivada la selección con limpieza `.off('select')` para prevenir listeners duplicados.
+- **Pulso 3D de partículas**: `linkDirectionalParticleColor` usa ahora un cálculo `Math.sin(Date.now())` en vivo dentro del propio bucle de renderizado de ForceGraph, logrando un pulso suave por enlace sin rerenderizados de React.
+- **Fondo 2D en temas claros**: El canvas del grafo recibe un sutil tinte oscuro (`bgGraph: rgba(0,0,0,0.22)`) en temas claros para garantizar contraste suficiente en partículas y etiquetas.
+- **Detección del propietario de objetos** en los enlaces de Nexus: Reemplazada la comparación con cadenas específicas del locale (`'Desconocido'`) por una comprobación null/vacío para evitar falsos positivos entre idiomas.
+- **CSS — botones del selector de vista de Nexus**: Usan `var(--bg-elevated)` y `var(--bg-hover)` en lugar de rgba fijos; el texto del tab activo cambia de `white` a `#1a1710` para mejor legibilidad sobre el acento dorado.
+- **CSS — tooltip del grafo Nexus**: La clase renombrada de `.graph-tooltip` (colisiona con el contenedor por defecto de la librería) a `.nexus-tooltip`. El contenedor de la librería se resetea a transparente mediante el selector `:has(> .nexus-tooltip)`, eliminando el bloque oscuro.
+- **CSS — líneas de cuadrícula del vis-timeline**: Ahora usan `var(--border)` / `var(--border-accent)` en lugar de rgba blanco fijo.
+- **CSS — popup del CustomDatePicker**: Fondo cambiado de rgba oscuro fijo a `var(--bg-surface)`; sombra suavizada a `0 10px 40px rgba(0,0,0,0.15)` para compatibilidad con temas claros.
+- **Modales de error de la App**: Sustituidas las llamadas a `alert()` en los flujos de restauración cloud / error de importación por el patrón correcto `openModal('alert', ...)`.
+- **`showCurrentTime: false`** en la cronología para evitar que la línea roja del "ahora" aparezca en fechas incorrectas en cronologías de ficción.
+- **`cooldownTicks: 80`** añadido al ForceGraph 2D para que la simulación física converja más rápido.
+
+### Fixed
+- **Bug de horas en la cronología**: La cronología revertía a mostrar la cuadrícula por horas tras la refactorización. Corregido fijando `timeAxis: { scale: 'day', step: 1 }` y proporcionando `format.minorLabels/majorLabels` explícitos para todas las escalas inferiores al día.
+- **Bloque oscuro del tooltip del grafo**: El contenedor `.graph-tooltip` por defecto de la librería pintaba un fondo negro encima de nuestro panel estilizado. Corregido con un reset CSS agresivo usando el selector `:has()`.
+- **Etiquetas 3D obsoletas al cambiar de tema**: El `nodeObjectCache` se limpia ahora al cambiar `currentTheme`, forzando la regeneración de texturas de etiquetas con los colores correctos.
+- **Orden del ref `clickTracker`**: Movida la declaración `useRef` al inicio del componente (antes de los returns tempranos) para cumplir con las Rules of Hooks de React.
+- **Error `WRONG_PASSWORD` en importación**: Añadida una rama de modal de reintento dedicada para contraseña incorrecta en la importación `.lwrt`, en lugar de silenciar el error.
+
+---
+
 ## [LoneWriter v1.8-glassmorphism] - 2026-04-25
 
 ### Added

@@ -6,6 +6,7 @@
     "boton": "Restaurar ahora"
   },
   "error_restaurar": "Error al restaurar: ",
+  "error_titulo": "Error",
   "eliminar_proyecto": {
     "titulo": "Borrar proyecto",
     "mensaje": "¿Seguro que quieres borrar \"{{title}}\" permanentemente?",
@@ -24,7 +25,7 @@
     "palabras": "palabras",
     "completado": "completado",
     "ver_todos": "Ver todos los proyectos",
-    "version": "LoneWriter v1.8-glassmorphism",
+    "version": "",
     "creditos": "Diseñado y desarrollado con ♥ por <0>Sergio Sánchez</0> con Antigravity.",
     "apoyar": "Apoyar el proyecto (Invítame a un café)"
   },
@@ -69,7 +70,17 @@
     "view_timeline": "Cronología",
     "view_2d": "Vista 2D",
     "view_3d": "Vista 3D",
-    "connections": "conexiones"
+    "connections": "conexiones",
+    "rel_relacion": "Relación",
+    "rel_asociado": "Asociado",
+    "rel_portador": "Portador",
+    "rel_contiene": "Contiene",
+    "rel_menciona": "Menciona",
+    "crash_title": "Error en Nexus",
+    "crash_message": "Se ha producido un error al cargar la visualización.",
+    "reload": "Recargar Aplicación",
+    "current": "Actual",
+    "time": "Tiempo"
   },
   "landscape": {
     "mensaje": "Por favor, gira tu dispositivo a vertical para seguir escribiendo"
@@ -77,7 +88,26 @@
   "actualizacion": {
     "titulo": "Nueva versión disponible",
     "mensaje": "Se ha detectado una nueva versión de LoneWriter. Pulsa aceptar para actualizar y disfrutar de las últimas mejoras.",
-    "boton_aceptar": "Actualizar ahora",
-    "boton_cancelar": "Más tarde"
+    "boton_aceptar": "Actualizar ahora"
+  },
+  "exportar": {
+    "titulo_password": "Exportar .lwrt",
+    "mensaje_password": "Protege esta copia de seguridad con una contraseña (opcional). Déjala en blanco para exportar sin cifrado.",
+    "placeholder_password": "Contraseña (opcional)",
+    "boton_exportar": "Exportar",
+    "autor_desconocido": "Autor desconocido",
+    "capitulo": "Capítulo",
+    "escena": "Escena",
+    "escena_vacia": "<i>Escena vacía</i>",
+    "escena_vacia_word": "La escena está vacía. Escribe algo antes de exportar.",
+    "generado_por": "Manuscrito generado por LoneWriter"
+  },
+  "importar": {
+    "titulo_password": "Archivo cifrado",
+    "mensaje_password": "Este archivo .lwrt está cifrado. Introduce la contraseña que usaste al exportarlo.",
+    "titulo_password_incorrecta": "Contraseña incorrecta",
+    "mensaje_password_incorrecta": "La contraseña introducida no es correcta. Inténtalo de nuevo.",
+    "titulo_error": "Error al importar",
+    "boton_desencriptar": "Descifrar e importar"
   }
 }

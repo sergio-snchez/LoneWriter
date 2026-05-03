@@ -2,10 +2,12 @@
 
 This roadmap outlines the future of LoneWriter. We prioritize features based on user impact, technical feasibility, and our absolute privacy philosophy.
 
+## ✅ Completed in v1.9-nexus
+- **[x] Interactive Timelines**: Chronological timeline of in-universe scene events, with direct navigation to the Editor on click.
+- **[x] 3D Knowledge Graph**: Immersive 3D/2D dual-mode graph (Nexus) integrated in the app to visualize all connections between Compendium entities (characters, locations, objects, lore).
+
 ## 🟢 High Priority
 - **[ ] Mobile PWA Polish**: Improving touch gestures and offline reliability for writing on the go.
-- **[ ] Interactive Timelines**: A visual way to map out events, character arcs, and world history chronologically.
-- **[ ] Zettelkasten System**: Integrated 3D knowledge graph in the Compendium to visualize connections between entities.
 
 ## 🟡 Low Priority
 - **[ ] Extended Import**: Support for direct parsing of .pdf and .docx documents into the application.

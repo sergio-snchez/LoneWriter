@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useNovel } from '../context/NovelContext'
 import { useAI } from '../context/AIContext'
+import { useModal } from '../context/ModalContext'
 import { Tooltip } from '../components/Tooltip';
 import { renderMarkdown } from '../utils/renderMarkdown';
 import { getEntityStopWords, getAllCustomStopwords, addCustomStopword, deleteCustomStopword } from '../i18n/stopwords';
@@ -20,6 +21,7 @@ function StopwordsModal({ isOpen, onClose, customWords, onAdd, onDelete, t }) {
   const [newWord, setNewWord] = useState('')
   const [isVisible, setIsVisible] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
+  const { t: tc } = useTranslation('common')
 
   useEffect(() => {
     if (isOpen) {
@@ -82,7 +84,7 @@ function StopwordsModal({ isOpen, onClose, customWords, onAdd, onDelete, t }) {
         </div>
         
         <div style={{ marginTop: 20, textAlign: 'right' }}>
-          <button className="btn btn-ghost" onClick={handleClose}>Cerrar</button>
+          <button className="btn btn-ghost" onClick={handleClose}>{tc('botones.cerrar')}</button>
         </div>
       </div>
     </div>,
@@ -144,7 +146,7 @@ function formatBytes(bytes, decimals = 2) {
 
 function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
   const { t } = useTranslation('resources')
-  const dateStr = res.dateAdded ? new Date(res.dateAdded).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '--'
+  const dateStr = res.dateAdded ? new Date(res.dateAdded).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '--'
 
   return (
     <div className="res-row" id={`resource-${res.id}`}>
@@ -210,6 +212,7 @@ export default function ResourcesView() {
   const { t } = useTranslation('resources')
   const { resources, addCompendiumEntry, deleteCompendiumEntry, updateCompendiumEntry } = useNovel()
   const { forceEntityRecheck } = useAI()
+  const { openModal } = useModal()
   const [query, setQuery] = useState('')
   const [activeTag, setActiveTag] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
@@ -276,7 +279,7 @@ export default function ResourcesView() {
 
     const ext = file.name.split('.').pop().toLowerCase()
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
-      alert(t('formato_no_soportado', { ext }))
+      openModal('alert', { message: t('formato_no_soportado', { ext }) });
       if (fileInputRef.current) fileInputRef.current.value = ''
       return
     }

@@ -28,6 +28,8 @@ export default function Nexus({ onNavigate }) {
   const { t, i18n } = useTranslation(['app', 'compendium']);
   const { activeNovel, acts, characters, locations, objects, lore, nexusLinks, setActiveScene, setExpandedIds } = useNovel();
   const graphRef = useRef();
+  // Cache for 3D node objects — avoids creating new Canvas/Texture on every render tick
+  const nodeObjectCache = useRef(new Map());
   
   // Theme tracking for dynamic graph styling
   const [currentTheme, setCurrentTheme] = useState(() => document.documentElement.getAttribute('data-theme') || 'dark');
@@ -41,17 +43,30 @@ export default function Nexus({ onNavigate }) {
       });
     });
     observer.observe(document.documentElement, { attributes: true });
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      // Clear texture cache on theme change to prevent stale colors
+      nodeObjectCache.current.clear();
+    };
   }, []);
 
   const themeCtx = useMemo(() => {
     const isLight = currentTheme === 'light' || currentTheme === 'sepia';
     return {
       isLight,
+      // Label colors — dark text on light bg, light text on dark bg
       textMain: isLight ? '#1a1a1f' : '#ffffff',
-      textMuted: isLight ? 'rgba(26, 26, 31, 0.65)' : 'rgba(255, 255, 255, 0.35)',
-      linkPrimary: isLight ? 'rgba(26, 26, 31, 0.25)' : 'rgba(255, 255, 255, 0.45)'
+      textMuted: isLight ? 'rgba(26, 26, 31, 0.75)' : 'rgba(255, 255, 255, 0.35)',
+      // Link lines — significantly stronger in light themes for visibility
+      linkPrimary: isLight ? 'rgba(26, 26, 31, 0.55)' : 'rgba(255, 255, 255, 0.45)',
+      // Canvas background — dark tint in light themes so nodes/particles contrast
+      bgGraph: isLight ? 'rgba(0, 0, 0, 0.22)' : 'rgba(0, 0, 0, 0)'
     };
+  }, [currentTheme]);
+
+  // Clear 3D texture cache when theme changes to force label color regeneration
+  useEffect(() => {
+    nodeObjectCache.current.clear();
   }, [currentTheme]);
   
   // Navigation from timeline listener
@@ -74,6 +89,10 @@ export default function Nexus({ onNavigate }) {
   const [lockZoom, setLockZoom] = useState(() => {
     return localStorage.getItem('lw_nexus_lock_zoom') === 'true';
   });
+
+  // Click tracker for single/double click on graph nodes — must be declared
+  // here (top of component), before any conditional early-returns.
+  const clickTracker = useRef({ time: 0, id: null });
 
   // Resize handling for the 3D graph container
   useEffect(() => {
@@ -170,7 +189,7 @@ export default function Nexus({ onNavigate }) {
       const options = {
         stack: true,
         selectable: true,
-        showCurrentTime: true,
+        showCurrentTime: false,
         zoomMin: 1000 * 60 * 60 * 24 * 2, // 2 days minimum zoom
         zoomMax: 1000 * 60 * 60 * 24 * 365 * 1000, // 1000 years
         editable: false,
@@ -296,7 +315,7 @@ export default function Nexus({ onNavigate }) {
             links.push({
               source: `characters_${c.id}`,
               target: `characters_${targetChar.id}`,
-              label: rel.type || 'Relación',
+              label: rel.type || t('nexus.rel_relacion'),
               color: 'rgba(255,255,255,0.2)'
             });
           }
@@ -312,7 +331,7 @@ export default function Nexus({ onNavigate }) {
             links.push({
               source: `locations_${loc.id}`,
               target: `characters_${targetChar.id}`,
-              label: 'Asociado',
+              label: t('nexus.rel_asociado'),
               color: 'rgba(92, 185, 138, 0.4)'
             });
           }
@@ -321,13 +340,14 @@ export default function Nexus({ onNavigate }) {
     });
 
     objects.forEach(obj => {
-      if (obj.currentOwner && obj.currentOwner !== 'Desconocido' && obj.currentOwner !== 'Desconocido / Ninguno' && obj.currentOwner !== 'Unknown / None') {
+      // Use null/empty check instead of locale-specific strings to avoid false positives
+      if (obj.currentOwner && obj.currentOwner.trim() !== '') {
         const targetChar = characters.find(tc => tc.name === obj.currentOwner);
         if (targetChar) {
           links.push({
             source: `objects_${obj.id}`,
             target: `characters_${targetChar.id}`,
-            label: 'Portador',
+            label: t('nexus.rel_portador'),
             color: 'rgba(212, 168, 83, 0.4)'
           });
         }
@@ -342,7 +362,7 @@ export default function Nexus({ onNavigate }) {
             links.push({
               source: `locations_${loc.id}`,
               target: `objects_${targetObj.id}`,
-              label: 'Contiene',
+              label: t('nexus.rel_contiene'),
               color: 'rgba(92, 185, 138, 0.4)'
             });
           }
@@ -358,7 +378,7 @@ export default function Nexus({ onNavigate }) {
             links.push({
               source: `lore_${l.id}`,
               target: `characters_${targetChar.id}`,
-              label: 'Menciona',
+              label: t('nexus.rel_menciona'),
               color: 'rgba(155, 114, 207, 0.4)'
             });
           }
@@ -371,7 +391,7 @@ export default function Nexus({ onNavigate }) {
             links.push({
               source: `lore_${l.id}`,
               target: `locations_${targetLoc.id}`,
-              label: 'Menciona',
+              label: t('nexus.rel_menciona'),
               color: 'rgba(155, 114, 207, 0.4)'
             });
           }
@@ -384,7 +404,7 @@ export default function Nexus({ onNavigate }) {
             links.push({
               source: `lore_${l.id}`,
               target: `objects_${targetObj.id}`,
-              label: 'Menciona',
+              label: t('nexus.rel_menciona'),
               color: 'rgba(155, 114, 207, 0.4)'
             });
           }
@@ -458,18 +478,16 @@ export default function Nexus({ onNavigate }) {
       <div className="nexus-view nexus-view--error">
         <div className="nexus-error-card glass-panel">
           <AlertCircle size={48} className="text-danger" />
-          <h2>{t('nexus.crash_title') || 'Error en Nexus'}</h2>
-          <p>{t('nexus.crash_message') || 'Se ha producido un error al cargar la visualización.'}</p>
+          <h2>{t('nexus.crash_title', 'Error en Nexus')}</h2>
+          <p>{t('nexus.crash_message', 'Se ha producido un error al cargar la visualización.')}</p>
           <pre>{renderError}</pre>
           <button className="btn btn-primary" onClick={() => window.location.reload()}>
-            {t('nexus.reload') || 'Recargar Aplicación'}
+            {t('nexus.reload', 'Recargar')}
           </button>
         </div>
       </div>
     );
   }
-
-  const clickTracker = useRef({ time: 0, id: null });
 
   const handleNodeClick = (node) => {
     const now = Date.now();
@@ -490,8 +508,9 @@ export default function Nexus({ onNavigate }) {
           1500
         );
       } else if (graphMode === '2D' && graphRef.current) {
-        graphRef.current.centerAt(node.x, node.y, 1000);
-        graphRef.current.zoom(2, 1000);
+        // Zoom IN to the node — same feel as 3D camera focus
+        graphRef.current.zoom(4, 800);
+        graphRef.current.centerAt(node.x, node.y, 800);
       }
     }
     clickTracker.current = { time: now, id: node.id };
@@ -604,6 +623,11 @@ export default function Nexus({ onNavigate }) {
                   </div>
                 `}
                 nodeThreeObject={node => {
+                  // Return cached object if it exists for this node
+                  if (nodeObjectCache.current.has(node.id)) {
+                    return nodeObjectCache.current.get(node.id);
+                  }
+
                   const group = new THREE.Group();
 
                   // 1. Core Sphere (Standardized radius corresponding to 2D's base radius)
@@ -674,6 +698,8 @@ export default function Nexus({ onNavigate }) {
                   sprite.scale.set(canvas.width / 10, canvas.height / 10, 1);
                   group.add(sprite);
 
+                  // Cache and return
+                  nodeObjectCache.current.set(node.id, group);
                   return group;
                 }}
                 nodeThreeObjectExtend={false}
@@ -682,8 +708,13 @@ export default function Nexus({ onNavigate }) {
                 linkDirectionalParticles={1}
                 linkDirectionalParticleWidth={0.65} // Proportionally matches 1.4 in 2D
                 linkDirectionalParticleSpeed={link => link.emitSpeed}
-                linkDirectionalParticleColor={link => link.emitColor}
-                backgroundColor="rgba(0,0,0,0)"
+                linkDirectionalParticleColor={link => {
+                  // Pulse runs inside ForceGraph's own WebGL loop — not a React re-render
+                  const rgb = hexToRgb(link.emitColor);
+                  const pulse = 0.55 + Math.sin(Date.now() / 450 + (link.pulseOffset || 0)) * 0.45;
+                  return `rgba(${rgb}, ${pulse})`;
+                }}
+                backgroundColor={themeCtx.bgGraph}
                 showNavInfo={false}
                 enableNodeDrag={true}
                 onNodeClick={handleNodeClick}
@@ -737,12 +768,17 @@ export default function Nexus({ onNavigate }) {
                   ctx.fillStyle = node.color;
                   ctx.fill();
                   
-                  // 4. Label
+                  // 4. Label — with pill background in light themes for legibility
                   ctx.textAlign = 'center';
                   ctx.textBaseline = 'middle';
-                  // Use theme-aware colors for nodes
+                  const labelColor = node.isImportant ? themeCtx.textMain : themeCtx.textMuted;
+                  const labelY = node.y + radius + fontSize * 1.2;
+
+                  // 4. Label — Direct text (reverted from pill background)
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
                   ctx.fillStyle = node.isImportant ? themeCtx.textMain : themeCtx.textMuted;
-                  ctx.fillText(label, node.x, node.y + radius + fontSize);
+                  ctx.fillText(label, node.x, node.y + radius + fontSize * 1.2);
                 }}
                 nodeCanvasObjectMode={() => 'replace'}
                 linkColor={link => link.isPrimary ? themeCtx.linkPrimary : 'rgba(0,0,0,0)'}
@@ -751,12 +787,14 @@ export default function Nexus({ onNavigate }) {
                 linkDirectionalParticleWidth={1.4}
                 linkDirectionalParticleSpeed={link => link.emitSpeed}
                 linkDirectionalParticleColor={link => {
+                  // Same pulse as 3D — driven by ForceGraph's canvas loop, not React
                   const rgb = hexToRgb(link.emitColor);
-                  const pulse = 0.6 + Math.sin(Date.now() / 450 + (link.pulseOffset || 0)) * 0.4;
+                  const pulse = 0.55 + Math.sin(Date.now() / 450 + (link.pulseOffset || 0)) * 0.45;
                   return `rgba(${rgb}, ${pulse})`;
                 }}
-                backgroundColor="rgba(0,0,0,0)"
+                backgroundColor={themeCtx.bgGraph}
                 showNavInfo={false}
+                cooldownTicks={80}
                 onNodeClick={handleNodeClick}
               />
             )}

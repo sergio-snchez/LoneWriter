@@ -103,5 +103,11 @@
     "plantilla_meta": "{{scenes}} escenas · {{wps}} pal/escena",
     "plantilla_capitulos": "{{count}} cap."
   },
-  "acto_inicial": "Acto I: Inicio"
+  "acto_inicial": "Acto I: Inicio",
+  "fecha_placeholder": "AAAA-MM-DD",
+  "fecha_solo_año": "¿Solo año?",
+  "fecha_ok": "OK",
+  "exportar": {
+    "escena_vacia_word": "La escena está vacía. Escribe algo antes de exportar."
+  }
 }

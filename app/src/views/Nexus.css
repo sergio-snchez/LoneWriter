@@ -11,7 +11,9 @@
 
 .nexus-header {
   padding: 24px 32px 16px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), transparent);
+  background: linear-gradient(to bottom, var(--bg-glass), transparent);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
   z-index: 10;
   display: flex;
   align-items: baseline;
@@ -107,11 +109,10 @@
 
 .nexus-view-selector {
   display: flex;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-elevated);
   padding: 4px;
   border-radius: 24px;
   border: 1px solid var(--border);
-  backdrop-filter: blur(10px);
 }
 
 .nexus-view-btn {
@@ -131,12 +132,12 @@
 
 .nexus-view-btn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-hover);
 }
 
 .nexus-view-btn.active {
   background: var(--accent);
-  color: white;
+  color: #1a1710;
   box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.3);
 }
 
@@ -248,11 +249,11 @@
 }
 
 .vis-time-axis .vis-grid.vis-minor {
-  border-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: var(--border) !important;
 }
 
 .vis-time-axis .vis-grid.vis-major {
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: var(--border-accent) !important;
 }
 
 .nexus-graph-container {
@@ -370,7 +371,8 @@ div:has(> .nexus-tooltip) {
 
   .nexus-header__actions {
     justify-content: center;
-    gap: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
   .nexus-view-selector {
@@ -419,11 +421,12 @@ div:has(> .nexus-tooltip) {
 }
 
 .nexus-error-card pre {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-base);
+  border: 1px solid var(--border);
   padding: 16px;
   border-radius: 8px;
   font-size: 12px;
-  color: #ff4444;
+  color: var(--red);
   width: 100%;
   overflow-x: auto;
   text-align: left;
