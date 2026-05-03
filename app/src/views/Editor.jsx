@@ -28,6 +28,7 @@ import { useNovel } from '../context/NovelContext'
 import { useAI } from '../context/AIContext'
 import { useModal } from '../context/ModalContext'
 import { ExportService } from '../services/exportService'
+import { db } from '../db/database'
 import { Tooltip } from '../components/Tooltip'
 import { CustomDatePicker } from '../components/CustomDatePicker'
 import RichEditor from '../components/RichEditor'
@@ -657,13 +658,29 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
           model: currentModel,
           localBaseUrl,
         }
+
+        // Cargar compendio por tipo para enriquecer las propuestas con vínculos
+        const [chars, locs, objs, loreEntries] = await Promise.all([
+          db.characters.where('novelId').equals(activeNovel.id).toArray(),
+          db.locations.where('novelId').equals(activeNovel.id).toArray(),
+          db.objects.where('novelId').equals(activeNovel.id).toArray(),
+          db.lore.where('novelId').equals(activeNovel.id).toArray(),
+        ])
+        const compendiumByType = {
+          characters: chars.map(c => c.name).filter(Boolean),
+          locations: locs.map(l => l.name).filter(Boolean),
+          objects: objs.map(o => o.name).filter(Boolean),
+          lore: loreEntries.map(l => l.title).filter(Boolean),
+        }
+
         const { proposals, usage } = await analyzeWithAI(
           candidates,
           plainText,
           registeredNames,
           ignoredNames,
           aiConfig,
-          5
+          5,
+          compendiumByType
         )
 
         logAIUsage(usage)
@@ -702,13 +719,28 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
         return
       }
 
+      // Cargar compendio por tipo para enriquecer las propuestas con vínculos
+      const [chars, locs, objs, loreEntries] = await Promise.all([
+        db.characters.where('novelId').equals(activeNovel.id).toArray(),
+        db.locations.where('novelId').equals(activeNovel.id).toArray(),
+        db.objects.where('novelId').equals(activeNovel.id).toArray(),
+        db.lore.where('novelId').equals(activeNovel.id).toArray(),
+      ])
+      const compendiumByType = {
+        characters: chars.map(c => c.name).filter(Boolean),
+        locations: locs.map(l => l.name).filter(Boolean),
+        objects: objs.map(o => o.name).filter(Boolean),
+        lore: loreEntries.map(l => l.title).filter(Boolean),
+      }
+
       const { proposals, usage } = await analyzeWithAI(
         candidates,
         plainText,
         registeredNames,
         ignoredNames,
         { provider, apiKey, model: currentModel, localBaseUrl },
-        8 // Más candidatos en manual
+        8, // Más candidatos en manual
+        compendiumByType
       )
 
       logAIUsage(usage)
