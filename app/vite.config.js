@@ -15,7 +15,7 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 30000000 // Aumentar límite a 30MB para el bundle de WASM
       },
       devOptions: {
-        enabled: true
+        enabled: false
       },
       manifest: {
         name: 'LoneWriter',
