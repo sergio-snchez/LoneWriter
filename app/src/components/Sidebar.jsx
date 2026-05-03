@@ -2,6 +2,7 @@ import { BookOpen, BookMarked, FolderOpen, PenLine, ChevronLeft, ChevronRight, N
 import { useTranslation } from 'react-i18next'
 import { useNovel } from '../context/NovelContext'
 import { Tooltip } from './Tooltip'
+import { APP_VERSION } from '../utils/version'
 import './Sidebar.css'
 
 export default function Sidebar({ active, onNavigate, collapsed, onToggle }) {
@@ -88,7 +89,7 @@ export default function Sidebar({ active, onNavigate, collapsed, onToggle }) {
       {/* Bottom spacer / version */}
       {!collapsed && (
         <div className="sidebar__footer">
-          <span className="sidebar__version">{t('sidebar.version')}</span>
+          <span className="sidebar__version">LoneWriter v{APP_VERSION}</span>
         </div>
       )}
     </aside>

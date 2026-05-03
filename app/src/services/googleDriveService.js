@@ -12,9 +12,46 @@ const BACKUP_FILENAME = 'lonewriter_backup.lwrt';
 let accessToken = localStorage.getItem('lw_google_access_token') || null;
 let tokenExpiry = localStorage.getItem('lw_google_token_expiry') || 0;
 
+/** Clear cached token (called on 401 or sign-out) */
+function _clearToken() {
+  accessToken = null;
+  tokenExpiry = 0;
+  localStorage.removeItem('lw_google_access_token');
+  localStorage.removeItem('lw_google_token_expiry');
+}
+
+/**
+ * Wrapper around fetch that auto-retries once on 401 by re-authenticating.
+ */
+async function _driveRequest(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (response.status === 401) {
+    // Token expired mid-session — clear and re-authenticate
+    _clearToken();
+    await GoogleDriveService.authenticate();
+    // Retry once with the fresh token
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...(options.headers || {}),
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+  }
+
+  return response;
+}
+
 export const GoogleDriveService = {
   /**
-   * Check if we have a valid token
+   * Check if we have a valid token (local expiry check only)
    */
   isAuthenticated: () => {
     return accessToken && Date.now() < parseInt(tokenExpiry);
@@ -22,18 +59,16 @@ export const GoogleDriveService = {
 
   /**
    * Initialize OAuth2 flow
-   * Returns a promise that resolves with the access token
    */
   authenticate: () => {
     return new Promise((resolve, reject) => {
       try {
         if (!CLIENT_ID) {
-          throw new Error('Configuración de Google Drive no encontrada (falta Client ID)');
+          throw new Error('Google Drive configuration not found (missing Client ID)');
         }
 
-        // --- FLUJO ESTÁNDAR PARA WEB ---
         if (!window.google || !window.google.accounts) {
-          throw new Error('No se pudo cargar la librería de Google Identity Services.');
+          throw new Error('Could not load Google Identity Services library');
         }
 
         const client = window.google.accounts.oauth2.initTokenClient({
@@ -66,10 +101,7 @@ export const GoogleDriveService = {
    * Sign out
    */
   signOut: () => {
-    accessToken = null;
-    tokenExpiry = 0;
-    localStorage.removeItem('lw_google_access_token');
-    localStorage.removeItem('lw_google_token_expiry');
+    _clearToken();
   },
 
   /**
@@ -78,9 +110,8 @@ export const GoogleDriveService = {
   findBackupFile: async () => {
     if (!GoogleDriveService.isAuthenticated()) await GoogleDriveService.authenticate();
 
-    const response = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILENAME}' and trashed=false&fields=files(id,name,modifiedTime)`,
-      { headers: { 'Authorization': `Bearer ${accessToken}` } }
+    const response = await _driveRequest(
+      `https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILENAME}' and trashed=false&fields=files(id,name,modifiedTime)`
     );
 
     const data = await response.json();
@@ -114,16 +145,11 @@ export const GoogleDriveService = {
         method = 'PATCH';
       }
 
-      const response = await fetch(url, {
-        method: method,
-        headers: { 'Authorization': `Bearer ${accessToken}` },
-        body: form
-      });
+      const response = await _driveRequest(url, { method, body: form });
 
-      if (!response.ok) throw new Error('Error al subir a Google Drive');
+      if (!response.ok) throw new Error('Failed to upload backup to Google Drive');
 
-      const result = await response.json();
-      return result;
+      return await response.json();
     } catch (error) {
       console.error('[GoogleDrive] Save error:', error);
       throw error;
@@ -140,11 +166,11 @@ export const GoogleDriveService = {
       const existingFile = await GoogleDriveService.findBackupFile();
       if (!existingFile) return null;
 
-      const response = await fetch(`https://www.googleapis.com/drive/v3/files/${existingFile.id}?alt=media`, {
-        headers: { 'Authorization': `Bearer ${accessToken}` }
-      });
+      const response = await _driveRequest(
+        `https://www.googleapis.com/drive/v3/files/${existingFile.id}?alt=media`
+      );
 
-      if (!response.ok) throw new Error('Error al descargar de Google Drive');
+      if (!response.ok) throw new Error('Failed to download backup from Google Drive');
 
       const text = await response.text();
       return await decodeFromLwrt(text);
@@ -164,12 +190,11 @@ export const GoogleDriveService = {
       const existingFile = await GoogleDriveService.findBackupFile();
       if (!existingFile) return null;
 
-      const response = await fetch(
-        `https://www.googleapis.com/drive/v3/files/${existingFile.id}/revisions?fields=revisions(id,modifiedTime,size)`,
-        { headers: { 'Authorization': `Bearer ${accessToken}` } }
+      const response = await _driveRequest(
+        `https://www.googleapis.com/drive/v3/files/${existingFile.id}/revisions?fields=revisions(id,modifiedTime,size)`
       );
 
-      if (!response.ok) throw new Error('Error al obtener revisiones');
+      if (!response.ok) throw new Error('Failed to retrieve Drive revisions');
 
       const data = await response.json();
       return data.revisions || [];
@@ -189,12 +214,11 @@ export const GoogleDriveService = {
       const existingFile = await GoogleDriveService.findBackupFile();
       if (!existingFile) return null;
 
-      const response = await fetch(
-        `https://www.googleapis.com/drive/v3/files/${existingFile.id}/revisions/${revisionId}?alt=media`,
-        { headers: { 'Authorization': `Bearer ${accessToken}` } }
+      const response = await _driveRequest(
+        `https://www.googleapis.com/drive/v3/files/${existingFile.id}/revisions/${revisionId}?alt=media`
       );
 
-      if (!response.ok) throw new Error('Error al descargar revisión');
+      if (!response.ok) throw new Error('Failed to download Drive revision');
 
       const text = await response.text();
       return await decodeFromLwrt(text);

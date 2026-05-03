@@ -1,4 +1,3 @@
-import React from 'react';
 import './MeshBackground.css';
 
 const MeshBackground = ({ animate = true }) => {

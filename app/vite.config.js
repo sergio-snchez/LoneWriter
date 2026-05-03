@@ -2,12 +2,18 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import { VitePWA } from 'vite-plugin-pwa'
+import { readFileSync } from 'fs'
+
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url)));
 
 export default defineConfig({
   base: '/',
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   plugins: [
     react(),
-    nodePolyfills(),
+    nodePolyfills({ include: ['buffer', 'stream', 'zlib', 'crypto', 'path', 'http', 'https', 'fs', 'os', 'util', 'assert', 'events', 'process', 'url'] }),
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['favicon.svg'],
@@ -20,7 +26,7 @@ export default defineConfig({
       manifest: {
         name: 'LoneWriter',
         short_name: 'LoneWriter',
-        description: 'Tu compañero inteligente para escribir novelas',
+        description: 'Your intelligent companion for writing novels',
         theme_color: '#1a1a1f',
         background_color: '#1a1a1f',
         display: 'standalone',

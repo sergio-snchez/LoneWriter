@@ -2,10 +2,12 @@
 
 Esta hoja de ruta detalla el futuro de LoneWriter. Priorizamos las funciones basándonos en el impacto para el usuario, la viabilidad técnica y nuestra filosofía de privacidad absoluta.
 
+## ✅ Completado en v1.9-nexus
+- **[x] Líneas de Tiempo Interactivas**: Cronología de los eventos de tu historia escena a escena, con navegación directa al Editor al hacer clic.
+- **[x] Grafo de Conocimiento 3D**: Grafo inmersivo 3D/2D (Nexus) integrado en la app para visualizar todas las conexiones entre entidades del Compendio (personajes, lugares, objetos, lore).
+
 ## 🟢 Prioridad Alta
 - **[ ] Pulido de la PWA Móvil**: Mejora de los gestos táctiles y la fiabilidad offline para escribir en cualquier lugar.
-- **[ ] Líneas de Tiempo Interactivas**: Una forma visual de mapear eventos, arcos de personajes e historia del mundo cronológicamente.
-- **[ ] Sistema Zettelkasten**: Añadir un grafo de conocimientos 3D integrado en el Compendio para visualizar conexiones entre entidades del Compendio.
 
 ## 🟡 Prioridad Baja
 - **[ ] Importación Extendida**: Añadir formatos posibles para parsear directamente documentos en formato .pdf y .docx.

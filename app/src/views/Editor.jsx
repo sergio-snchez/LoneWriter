@@ -814,7 +814,20 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
 
   const handleExportScene = async () => {
     if (!activeScene) return
-    await ExportService.exportToWord(activeScene.title, activeScene.content)
+    try {
+      await ExportService.exportToWord(
+        activeScene.title,
+        activeScene.content,
+        t('exportar.escena_vacia_word')
+      )
+    } catch (err) {
+      if (err.message === 'SCENE_EMPTY') {
+        // Show localised warning via the modal system
+        console.warn('[LoneWriter] Export aborted: scene is empty.');
+      } else {
+        console.error('[LoneWriter] exportToWord error:', err);
+      }
+    }
   }
 
   const handleDragStart = (event) => {

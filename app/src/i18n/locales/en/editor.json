@@ -103,5 +103,11 @@
     "plantilla_meta": "{{scenes}} scenes · {{wps}} wds/scene",
     "plantilla_capitulos": "{{count}} ch."
   },
-  "acto_inicial": "Act I: Beginning"
+  "acto_inicial": "Act I: Beginning",
+  "fecha_placeholder": "YYYY-MM-DD",
+  "fecha_solo_año": "Year only?",
+  "fecha_ok": "OK",
+  "exportar": {
+    "escena_vacia_word": "The scene is empty. Write something before exporting."
+  }
 }
