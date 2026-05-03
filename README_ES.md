@@ -18,9 +18,19 @@
 >
 > ☕ **Apoya el proyecto:** [Invítame a un café](https://buymeacoffee.com/sergio.snchez)
 
-LoneWriter es una aplicación minimalista y potente diseñada para escritores que buscan un entorno zen pero con capacidades de **IA Invisible** de última generación. Gestiona tu estructura narrativa, crea un compendio detallado de tu mundo y recibe ayuda de asistentes literarios expertos, todo desde tu navegador o instalado como una aplicación nativa gracias a su tecnología PWA.
+LoneWriter es una aplicación de escritura **100% local y con privacidad absoluta**. Tus manuscritos, personajes e ideas nunca salen de tu dispositivo — sin cuentas, sin servidores, sin rastreo. Si quieres superpoderes de IA, tú aportas tu propia clave y va directamente al proveedor. Todo lo demás funciona íntegramente en tu navegador.
 
-## ✨ Características Principales
+## 🔒 Privacidad Primero — 100% Local por Defecto
+
+> **Tu escritura te pertenece solo a ti.**
+
+- **Cero recopilación de datos**: No enviamos nada a nuestros servidores. Tu novela vive exclusivamente en el IndexedDB de tu navegador.
+- **Motor de IA local (RAG)**: La búsqueda semántica y la detección de entidades se ejecutan por completo en tu navegador mediante Transformers.js — ningún servicio externo procesa el contexto de tu historia.
+- **Tú pones la clave, tú mandas**: Cuando conectas un proveedor de IA (Gemini, GPT-4o, Claude…), tu clave API va directamente a ese proveedor. LoneWriter nunca actua de intermediario, ni guarda ni lee tus prompts.
+- **Nube opcional, tu propio espacio**: La sincronización con Google Drive es completamente opcional y se conecta únicamente a *tu propia* cuenta de Google — no a nuestros servidores. Tú eres el único dueño de tus copias de seguridad.
+- **Funciona sin conexión**: Una vez instalada como PWA, LoneWriter funciona sin internet. Sin suscripción, sin cuenta obligatoria.
+
+## ✨ Más Características
 
 ### 🕸️ Nexus — Grafo de Conocimiento Interactivo
 - **Modo 3D/2D Dual**: Visualiza todas las entidades de tu novela (personajes, lugares, objetos, lore) como una constelación viva de nodos e interconexiones. Cambia entre el modo 3D inmersivo y el 2D analítico con un clic.

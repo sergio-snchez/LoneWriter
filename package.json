@@ -1,6 +1,6 @@
 {
   "name": "lonewriter-monorepo",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "private": true,
   "description": "LoneWriter Project Monorepo (App + Landing)",
   "scripts": {

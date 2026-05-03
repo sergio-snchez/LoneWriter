@@ -5,6 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { readFileSync } from 'fs'
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url)));
+// Force Vite restart to pick up version 1.9.0
 
 export default defineConfig({
   base: '/',
