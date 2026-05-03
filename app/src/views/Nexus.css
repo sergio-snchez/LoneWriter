@@ -68,6 +68,25 @@
   flex-direction: column;
 }
 
+/* Subtle background pulse for the graph */
+.nexus-main-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, rgba(var(--accent-rgb), 0.03) 0%, transparent 70%);
+  animation: nexus-ambient-pulse 15s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes nexus-ambient-pulse {
+  0% { transform: scale(1) translate(0, 0); opacity: 0.3; }
+  100% { transform: scale(1.2) translate(5%, 5%); opacity: 0.7; }
+}
+
 
 /* Obsolete resizing styles removed */
 
@@ -269,32 +288,143 @@
   opacity: 0.7;
 }
 
+/* Reset library's default tooltip container (Nuclear reset) */
+.graph-tooltip, 
+.scene-tooltip,
+.force-graph-container div:has(> .nexus-tooltip),
+div:has(> .nexus-tooltip) {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  outline: none !important;
+  visibility: visible !important;
+}
+
+/* Ensure our content remains visible and has the correct design */
+.nexus-tooltip {
+  background: var(--bg-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--text-primary);
+  pointer-events: none;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  font-family: 'Inter', sans-serif;
+  min-width: 160px;
+  z-index: 1000;
+}
+
+.nexus-tooltip-title {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+  color: var(--accent);
+}
+
+.nexus-tooltip-sub {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  opacity: 0.8;
+}
+
+.nexus-tooltip-meta {
+  font-size: 11px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+.nexus-tooltip-meta::before {
+  content: '●';
+  font-size: 8px;
+  color: var(--accent);
+}
+
+/* Mobile Optimizations */
 @media (max-width: 768px) {
   .nexus-header {
-    padding: 16px 20px 12px;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
   }
 
   .nexus-header__main {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
+    align-items: center;
+    text-align: center;
   }
 
   .nexus-title {
-    font-size: 22px;
+    font-size: 24px;
   }
 
-  .nexus-content {
-    padding: 0 12px 16px;
-    /* Added bottom padding for mobile */
+  .nexus-header__actions {
+    justify-content: center;
     gap: 12px;
   }
 
-  .nexus-timeline-container {
-    --nexus-timeline-syn-size: 10px;
-    height: 140px;
+  .nexus-view-selector {
+    width: 100%;
   }
+
+  .nexus-view-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .nexus-content {
+    padding: 0 12px 12px;
+  }
+
+  .nexus-main-container {
+    border-radius: 16px;
+  }
+}
+
+/* Error State */
+.nexus-view--error {
+  justify-content: center;
+  align-items: center;
+}
+
+.nexus-error-card {
+  max-width: 500px;
+  padding: 40px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.nexus-error-card h2 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.nexus-error-card p {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.nexus-error-card pre {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #ff4444;
+  width: 100%;
+  overflow-x: auto;
+  text-align: left;
 }
