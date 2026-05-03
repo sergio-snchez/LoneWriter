@@ -412,7 +412,7 @@ export const NovelProvider = ({ children }) => {
       db.novels, db.acts, db.chapters, db.scenes,
       db.characters, db.locations, db.objects, db.lore,
       db.resources, db.dailyProgress, db.debateAgents, db.debateSessions,
-      db.oracleEntries, db.lastRewrite, db.mpcIgnored
+      db.oracleEntries, db.lastRewrite, db.mpcIgnored, db.nexusLinks
     ], async () => {
       // Delete narrative structure
       const actsToDelete = await db.acts.where('novelId').equals(id).toArray();
