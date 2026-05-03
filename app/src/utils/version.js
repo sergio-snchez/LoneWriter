@@ -4,4 +4,4 @@
  * The fallback string is only used if the build define is unavailable (e.g. in tests).
  */
 // eslint-disable-next-line no-undef
-export const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.8.0';
+export const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.9.0';

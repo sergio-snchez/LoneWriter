@@ -18,9 +18,19 @@
 >
 > ☕ **Support the project:** [Buy me a coffee](https://buymeacoffee.com/sergio.snchez)
 
-LoneWriter is a minimalist and powerful application designed for writers seeking a zen environment with cutting-edge **Invisible AI** capabilities. Manage your narrative structure, create a detailed compendium of your world, and receive help from expert literary assistants, all from your browser or installed as a native application thanks to its PWA technology.
+LoneWriter is a **100% local, privacy-first** writing application. Your manuscripts, characters, and ideas never leave your device — no accounts, no servers, no tracking. When you want AI superpowers, you bring your own key and it goes straight to the provider. Everything else runs entirely in your browser.
 
-## ✨ Main Features
+## 🔒 Privacy First — 100% Local by Default
+
+> **Your writing belongs to you, and only you.**
+
+- **Zero data collection**: Nothing is ever sent to our servers. Your novel lives exclusively in your browser's IndexedDB.
+- **Local AI engine (RAG)**: Semantic search and entity detection run fully in your browser via Transformers.js — no cloud API call is made to understand your story's context.
+- **Bring your own key**: When you connect an AI provider (Gemini, GPT-4o, Claude…), your API key goes directly to that provider. LoneWriter never proxies, stores, or reads your prompts.
+- **Optional cloud, your own space**: Google Drive sync is fully optional and connects only to *your own* Google account — not our servers. You are the sole owner of your backups.
+- **Works fully offline**: Once installed as a PWA, LoneWriter works without an internet connection. No subscription, no account required.
+
+## ✨ More Features
 
 ### 🕸️ Nexus — Interactive Knowledge Graph
 - **3D/2D Dual Mode**: Visualize all entities (characters, locations, objects, lore) as a living constellation of nodes. Switch between immersive 3D and analytical 2D with one click.
