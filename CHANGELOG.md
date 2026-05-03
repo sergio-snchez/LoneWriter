@@ -6,6 +6,47 @@
 
 </div>
 
+## [LoneWriter v1.9-nexus] - 2026-05-03
+
+### Added
+- **Nexus — 3D/2D Knowledge Graph**: New top-level view (`Nexus`) with a dual-mode interactive graph of all Compendium entities. Powered by `react-force-graph-3d` / `react-force-graph-2d` and Three.js.
+  - **Animated energy flows**: Particles travel along connections with a pulsing opacity animation, visually representing relationship strength and direction.
+  - **Permanent node labels**: Entity names displayed at all times, sized and colored by importance and theme.
+  - **Ambient radiance (halo)**: Important nodes emit a subtle color glow rendered behind the graph links.
+  - **3D node texture cache** (`nodeObjectCache`): Canvas textures and Three.js `Group` objects cached per node to avoid re-creation on every render tick, greatly improving 3D performance.
+- **Nexus — Chronological Timeline**: Full scene-by-scene timeline of in-universe events using `vis-timeline`.
+  - Timeline scale locked to `day` granularity — hours are never shown, dates always visible even at max zoom-in.
+  - Clicking a timeline item dispatches `navigate-to-scene` to open the corresponding scene in the Editor.
+  - Free/Locked view toggle: "Vista Libre" (grey, free zoom persists) vs "Vista Bloqueada" (gold, auto-fits on navigation). State saved in `localStorage`.
+- **Nexus → Compendium navigation**: Double-clicking any graph node (2D or 3D) fires a `navigate-to-compendium-item` event. `CompendiumView` listens and opens the entity's edit panel automatically.
+- **Theme-adaptive Nexus UI**: All floating elements (graph tooltip, timeline grids, view-selector buttons, error card) now use CSS variable tokens, adapting to all 4 themes (Dark, Light/Modern, Sepia, Nordic).
+- **Encrypted `.lwrt` export**: Optional password protection when exporting projects. Password prompt with "leave blank for no encryption" UX. Wrong-password import flow shows a dedicated re-prompt modal.
+- **Dynamic app version** via `__APP_VERSION__`: `vite.config.js` reads `package.json` at build time and exposes the version globally; `App.jsx` renders it from `utils/version.js` instead of a hardcoded i18n key.
+- **i18n — new keys**: Added `exportar`, `importar`, `error_titulo` blocks (EN/ES) for encrypted export/import flows. Relation labels in Nexus (`rel_relacion`, `rel_asociado`, `rel_portador`, `rel_contiene`, `rel_menciona`) are now fully translated.
+
+### Changed
+- **Graph node click**: Single click now zooms to x4 and centers on the node (2D); double-click navigates to Compendium.
+- **Timeline `selectable: true`**: Re-enabled selection on the timeline with proper `.off('select')` cleanup to prevent duplicate listeners.
+- **3D particle pulse**: `linkDirectionalParticleColor` now uses a live `Math.sin(Date.now())` calculation inside ForceGraph's own render loop for smooth, per-link pulsing without React re-renders.
+- **2D background in light themes**: Graph canvas receives a subtle dark tint (`bgGraph: rgba(0,0,0,0.22)`) in light themes so node particles and labels have sufficient contrast.
+- **Object owner detection** in Nexus links: Replaced locale-specific string comparison (`'Desconocido'`) with a null/empty check to avoid false positives across languages.
+- **CSS — Nexus selector buttons**: Use `var(--bg-elevated)` and `var(--bg-hover)` instead of hardcoded rgba values; active tab text changed from `white` to `#1a1710` for legibility on gold accent.
+- **CSS — Nexus graph tooltip**: Class renamed from `.graph-tooltip` (conflicts with library default) to `.nexus-tooltip`. Library container reset to `transparent` via `:has(> .nexus-tooltip)` selector, eliminating the dark block artifact.
+- **CSS — vis-timeline grid lines**: Now use `var(--border)` / `var(--border-accent)` instead of hardcoded rgba white values.
+- **CSS — CustomDatePicker popup**: Background changed from hardcoded dark rgba to `var(--bg-surface)`; shadow softened to `0 10px 40px rgba(0,0,0,0.15)` for light theme compatibility.
+- **App error modals**: Replaced `alert()` calls in cloud restore / import error paths with the proper `openModal('alert', ...)` pattern.
+- **`showCurrentTime: false`** on timeline to avoid the red "now" line appearing at wrong dates for fictional timelines.
+- **`cooldownTicks: 80`** added to 2D ForceGraph to let the physics simulation settle faster.
+
+### Fixed
+- **Timeline hours bug**: Timeline was reverting to show hourly grid after refactoring. Fixed by setting `timeAxis: { scale: 'day', step: 1 }` and providing explicit `format.minorLabels/majorLabels` for all sub-day scales.
+- **Graph tooltip dark block**: Library's default `.graph-tooltip` container was painting a black background on top of our styled panel. Fixed with a CSS nuclear reset using the `:has()` selector.
+- **Stale 3D node labels after theme change**: `nodeObjectCache` is now cleared on `currentTheme` change, forcing label texture regeneration with the correct colors.
+- **`clickTracker` ref order**: Moved `useRef` declaration to the top of the component (before early returns) to comply with React's Rules of Hooks.
+- **`WRONG_PASSWORD` import error**: Added dedicated re-prompt modal branch for wrong password on `.lwrt` import, instead of silently swallowing the error.
+
+---
+
 ## [LoneWriter v1.8-glassmorphism] - 2026-04-25
 
 ### Added

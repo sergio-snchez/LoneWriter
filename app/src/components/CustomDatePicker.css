@@ -1,0 +1,202 @@
+.custom-datepicker-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.custom-datepicker-trigger {
+  display: flex;
+  align-items: center;
+  background: var(--bg-glass-ui);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 12px;
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  transition: all var(--trans-fast);
+  cursor: pointer;
+  min-width: 85px;
+  justify-content: center;
+  height: 25px; /* Matches meta-select height */
+  box-sizing: border-box;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
+.custom-datepicker-trigger:hover {
+  background-color: var(--bg-hover);
+  border-color: rgba(255,255,255,0.12);
+}
+
+.custom-datepicker-display {
+  font-size: 11px;
+  color: var(--text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.custom-datepicker-popup {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: auto;
+  margin-top: 8px;
+  background: var(--bg-surface);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  z-index: 100;
+  width: 240px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  animation: slideInDown 0.2s ease-out;
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cdp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.cdp-nav-btn {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--trans-fast);
+}
+
+.cdp-nav-btn:hover {
+  background: var(--accent);
+  color: #1a1a1a;
+}
+
+.cdp-current-month {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: capitalize;
+}
+
+.cdp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.cdp-day-name {
+  font-size: 10px;
+  text-align: center;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.cdp-day, .cdp-day-empty {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  border-radius: 4px;
+}
+
+.cdp-day {
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all var(--trans-fast);
+}
+
+.cdp-day:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.cdp-day-selected {
+  background: var(--accent);
+  color: #1a1a1a;
+  font-weight: bold;
+}
+
+.cdp-day-selected:hover {
+  background: var(--accent-light);
+  color: #1a1a1a;
+}
+
+.cdp-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.cdp-year-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cdp-year-input {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--text-primary);
+  width: 80px;
+  outline: none;
+}
+
+.cdp-year-input:focus {
+  border-color: var(--accent);
+}
+
+.cdp-btn-small {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.cdp-btn-small:hover {
+  background: var(--accent);
+  color: #1a1a1a;
+}
+
+.cdp-btn-clear {
+  background: rgba(224, 112, 112, 0.15);
+  border: 1px solid rgba(224, 112, 112, 0.3);
+  color: var(--red);
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--trans-fast);
+}
+
+.cdp-btn-clear:hover {
+  background: rgba(224, 112, 112, 0.3);
+  color: #fff;
+}

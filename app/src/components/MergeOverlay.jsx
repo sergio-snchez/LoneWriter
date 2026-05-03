@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -6,10 +6,12 @@ import {
 } from 'lucide-react';
 import { useNovel } from '../context/NovelContext';
 import { useAI } from '../context/AIContext';
+import { useModal } from '../context/ModalContext';
 
 export function MergeOverlay() {
   const { t } = useTranslation('compendium');
   const { provider, apiKey, currentModel, localBaseUrl, logAIUsage } = useAI();
+  const { openModal } = useModal();
   const {
     mergeGroups,
     selectedMerge,
@@ -30,19 +32,14 @@ export function MergeOverlay() {
 
   const handleMergeSelection = async (entities) => {
     if (!apiKey && provider !== 'local') {
-      alert(t('unificar.sin_ia'));
+      openModal('alert', { message: t('unificar.sin_ia') });
       return;
-    }
-    // Safety check: if apiKey is missing but provider is not local, it might still be loading
-    if (provider !== 'local' && !apiKey) {
-       alert(t('unificar.error_provider'));
-       return;
     }
     try {
       const aiConfig = { provider, apiKey, model: currentModel, localBaseUrl };
       await globalHandleMergeSelection(entities, mergeSection, aiConfig, logAIUsage);
     } catch (err) {
-      alert(t('unificar.error_fusion', { error: err.message }));
+      openModal('alert', { message: t('unificar.error_fusion', { error: err.message }) });
     }
   };
 
@@ -50,7 +47,7 @@ export function MergeOverlay() {
     try {
       await confirmMerge(mergeSection, finalData);
     } catch (err) {
-      alert(t('unificar.error_confirmar', { error: err.message }));
+      openModal('alert', { message: t('unificar.error_confirmar', { error: err.message }) });
     }
   };
 

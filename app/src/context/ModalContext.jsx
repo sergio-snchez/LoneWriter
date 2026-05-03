@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const ModalContext = createContext();
@@ -50,12 +50,14 @@ export const ModalProvider = ({ children }) => {
               {modal.type === 'project' && t('modales.titulo_nueva_novela')}
               {modal.type === 'prompt' && (modal.data.title || t('modales.titulo_entrada_requerida'))}
               {modal.type === 'confirm' && (modal.data.title || t('modales.titulo_confirmar'))}
+              {modal.type === 'alert' && (modal.data.title || t('modales.titulo_confirmar'))}
             </h2>
             
             <p className="modal-text">
               {modal.type === 'project' && t('modales.texto_nueva_novela')}
               {modal.type === 'prompt' && modal.data.message}
               {modal.type === 'confirm' && modal.data.message}
+              {modal.type === 'alert' && modal.data.message}
             </p>
 
             {(modal.type === 'project' || modal.type === 'prompt') && (
@@ -67,7 +69,8 @@ export const ModalProvider = ({ children }) => {
                 onChange={e => setModalInput(e.target.value)}
                 onKeyDown={e => {
                   if (e.key === 'Enter') {
-                    if (modalInput.trim()) {
+                    const canSubmit = modal.data?.allowEmpty ? true : !!modalInput.trim();
+                    if (canSubmit) {
                       modal.data?.onConfirm?.(modalInput.trim()) || modal.onConfirm?.(modalInput.trim());
                       closeModal();
                     }
@@ -78,9 +81,15 @@ export const ModalProvider = ({ children }) => {
             )}
 
             <div className="modal-actions">
-              <button className="btn btn-ghost" onClick={closeModal}>{t('botones.cancelar')}</button>
+              {modal.type !== 'alert' && (
+                <button className="btn btn-ghost" onClick={closeModal}>{t('botones.cancelar')}</button>
+              )}
               
-              {modal.type === 'confirm' ? (
+              {modal.type === 'alert' ? (
+                <button className="btn btn-primary" onClick={closeModal}>
+                  {t('botones.aceptar')}
+                </button>
+              ) : modal.type === 'confirm' ? (
                 <button 
                   className={`btn ${modal.data.isDanger ? 'btn-danger' : 'btn-primary'}`} 
                   onClick={() => {
@@ -94,12 +103,13 @@ export const ModalProvider = ({ children }) => {
                 <button 
                   className="btn btn-primary" 
                   onClick={() => {
-                    if (modalInput.trim()) {
+                    const canSubmit = modal.data?.allowEmpty ? true : !!modalInput.trim();
+                    if (canSubmit) {
                       modal.data.onConfirm(modalInput.trim());
                       closeModal();
                     }
                   }}
-                  disabled={!modalInput.trim()}
+                  disabled={!modal.data?.allowEmpty && !modalInput.trim()}
                 >
                   {modal.data?.confirmLabel || t('botones.aceptar')}
                 </button>

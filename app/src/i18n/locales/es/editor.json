@@ -11,6 +11,7 @@
   },
   "escena": {
     "sin_pov": "Sin POV",
+    "sin_fecha": "Sin fecha / Día X",
     "añadir_escena": "Añadir escena"
   },
   "capitulo": {
@@ -64,13 +65,17 @@
     "exportar_word": "Exportar escena a Word",
     "word": "Word",
     "sin_pov": "Sin POV",
+    "sin_fecha": "Sin fecha / Día X",
+    "mostrar_selector_fecha": "Mostrar selector de fecha",
     "tooltip_oraculo": "Haz clic para que la IA verifique si este párrafo contradice alguna ficha del Compendio",
     "sin_coincidencias": "Sin elementos clave",
     "coincidencias": "Elementos del Compendio presentes",
     "contradiccion": "Contradicción en este párrafo",
     "palabras_escena": "{{count}} palabras en esta escena",
     "meta_escena": "Meta: {{count}} palabras por escena",
-    "seleccionar_escena": "Selecciona una escena para comenzar a escribir"
+    "seleccionar_escena": "Selecciona una escena para comenzar a escribir",
+    "sinopsis_placeholder": "Breve sinopsis para la línea de tiempo del Nexus...",
+    "generar_sinopsis": "Generar sinopsis con IA"
   },
   "estadisticas": {
     "titulo": "Estadísticas del proyecto",
@@ -98,5 +103,11 @@
     "plantilla_meta": "{{scenes}} escenas · {{wps}} pal/escena",
     "plantilla_capitulos": "{{count}} cap."
   },
-  "acto_inicial": "Acto I: Inicio"
+  "acto_inicial": "Acto I: Inicio",
+  "fecha_placeholder": "AAAA-MM-DD",
+  "fecha_solo_año": "¿Solo año?",
+  "fecha_ok": "OK",
+  "exportar": {
+    "escena_vacia_word": "La escena está vacía. Escribe algo antes de exportar."
+  }
 }

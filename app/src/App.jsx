@@ -17,6 +17,7 @@ import './components/TypingEffect.css'
 import EditorView from './views/Editor'
 import CompendiumView from './views/Compendium'
 import ResourcesView from './views/Resources'
+import NexusView from './views/Nexus'
 import { useNovel } from './context/NovelContext'
 import { useAI } from './context/AIContext'
 import { useModal } from './context/ModalContext'
@@ -28,6 +29,7 @@ import RagToast from './components/RagToast'
 import MeshBackground from './components/MeshBackground'
 import PwaUpdateModal from './components/PwaUpdateModal'
 import { registerPWA, triggerUpdate } from './pwa'
+import { APP_VERSION } from './utils/version'
 
 export default function App() {
   const { t, i18n } = useTranslation('app')
@@ -133,7 +135,8 @@ export default function App() {
               await refreshAfterRestore();
             }
           } catch (err) {
-            alert(t('error_restaurar') + err.message);
+            console.error('[LoneWriter] Cloud restore error:', err);
+            openModal('alert', { title: t('error_titulo'), message: t('error_restaurar') + err.message });
           } finally {
             isRestoring = false;
           }
@@ -158,7 +161,8 @@ export default function App() {
         localStorage.setItem('lw_last_cloud_sync', date);
         await refreshAfterRestore();
       } catch (err) {
-        alert(t('error_restaurar') + err.message);
+        console.error('[LoneWriter] Revision restore error:', err);
+        openModal('alert', { title: t('error_titulo'), message: t('error_restaurar') + err.message });
       } finally {
         isRestoring = false;
       }
@@ -321,7 +325,7 @@ export default function App() {
 
             <footer style={{ marginTop: 'auto', paddingTop: '60px', paddingBottom: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
               <p style={{ margin: 0, fontSize: '13px' }}>
-                {t('bienvenida.version')}
+                {`LoneWriter v${APP_VERSION}`}
               </p>
               <p style={{ margin: '4px 0 0 0', fontSize: '12px', opacity: 0.7 }}>
                 <Trans i18nKey="bienvenida.creditos" ns="app" components={[<strong />]} />
@@ -347,23 +351,42 @@ export default function App() {
       case 'editor': return <EditorView menuOpen={menuOpen} onNavigate={handleViewChange} />
       case 'compendium': return <CompendiumView />
       case 'resources': return <ResourcesView />
+      case 'nexus': return <NexusView onNavigate={handleViewChange} />
       default: return <EditorView />
     }
   }
 
-  const handleExportProject = async () => {
-    try {
-      await ExportService.exportProject();
-    } catch (error) {
-      console.error('Error exporting project:', error);
-      alert(t('error_exportar') + error.message);
-    }
+  const handleExportProject = () => {
+    // Ask for optional encryption password
+    openModal('prompt', {
+      title: t('exportar.titulo_password'),
+      message: t('exportar.mensaje_password'),
+      placeholder: t('exportar.placeholder_password'),
+      confirmLabel: t('exportar.boton_exportar'),
+      allowEmpty: true, // blank = no encryption
+      onConfirm: async (password) => {
+        try {
+          await ExportService.exportProject(password || null);
+        } catch (error) {
+          console.error('Error exporting project:', error);
+        }
+      }
+    });
     setMenuOpen(false);
   }
 
   const handleExportFullWord = () => {
     if (activeNovel && acts) {
-      ExportService.exportFullNovel(activeNovel, acts);
+      const strings = {
+        unknownAuthor: t('exportar.autor_desconocido'),
+        chapterLabel: t('exportar.capitulo'),
+        sceneLabel: t('exportar.escena'),
+        emptyScene: t('exportar.escena_vacia'),
+        generatedBy: t('exportar.generado_por'),
+      };
+      ExportService.exportFullNovel(activeNovel, acts, strings).catch(err => {
+        console.error('[LoneWriter] exportFullNovel error:', err);
+      });
     }
     setMenuOpen(false);
   }
@@ -382,9 +405,38 @@ export default function App() {
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      ExportService.importProject(file);
-    }
+    if (!file) return;
+    // Reset input so the same file can be re-selected
+    e.target.value = '';
+
+    const tryImport = (password = null) => {
+      ExportService.importProject(file, password).catch(err => {
+        if (err.message === 'ENCRYPTED') {
+          // File is encrypted — ask for password
+          openModal('prompt', {
+            title: t('importar.titulo_password'),
+            message: t('importar.mensaje_password'),
+            placeholder: t('exportar.placeholder_password'),
+            confirmLabel: t('importar.boton_desencriptar'),
+            onConfirm: (pw) => tryImport(pw)
+          });
+        } else if (err.message === 'WRONG_PASSWORD') {
+          // Wrong password — re-prompt with error message
+          openModal('prompt', {
+            title: t('importar.titulo_password_incorrecta'),
+            message: t('importar.mensaje_password_incorrecta'),
+            placeholder: t('exportar.placeholder_password'),
+            confirmLabel: t('importar.boton_desencriptar'),
+            onConfirm: (pw) => tryImport(pw)
+          });
+        } else {
+          console.error('[LoneWriter] Import error:', err);
+          openModal('alert', { title: t('importar.titulo_error'), message: err.message });
+        }
+      });
+    };
+
+    tryImport();
   }
 
   if (loading) {

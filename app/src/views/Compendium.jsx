@@ -18,30 +18,14 @@ import { ProposalCard } from '../components/MpcProposalDrawer'
 import { retrieveRelevantFragments } from '../services/ragService'
 import './Compendium.css'
 
-/* ---- Curated Color Palette ---- */
-const COLOR_PALETTE = [
-  '#6b9fd4', '#5cb98a', '#d4a853', '#e07070',
-  '#9b72cf', '#5bb4c4', '#d4845a', '#d4688a',
-  '#b0b0b0', '#c4b090', '#a07850', '#7ab87a',
-  '#7a72d4', '#d4a07a', '#8899aa', '#e8c47a',
-];
+/* ---- Entity Type Colors ---- */
+const ENTITY_COLORS = {
+  characters: '#5cb98a', // Green
+  locations: '#6b9fd4',  // Blue
+  objects: '#d4a853',    // Yellow
+  lore: '#d45353'        // Red
+};
 
-function ColorPicker({ value, onChange }) {
-  return (
-    <div className="color-picker">
-      {COLOR_PALETTE.map(color => (
-        <Tooltip key={color} content={color}>
-          <button
-            type="button"
-            className={`color-swatch ${value === color ? 'color-swatch--active' : ''}`}
-            style={{ background: color }}
-            onClick={() => onChange(color)}
-          />
-        </Tooltip>
-      ))}
-    </div>
-  );
-}
 
 /* ---- Panel de Formulario Lateral ---- */
 const CATEGORIES = [
@@ -51,10 +35,11 @@ const CATEGORIES = [
   { id: 'lore', icon: BookOpen },
 ];
 
-function CompendiumPanel({ isOpen, type, item, characters, onClose, onSave, activeNovel }) {
+function CompendiumPanel({ isOpen, type, item, characters, locations, objects, lore, onClose, onSave, activeNovel }) {
   const { t } = useTranslation('compendium')
   const { acts } = useNovel()
   const { provider, apiKey, currentModel, localBaseUrl, logAIUsage } = useAI()
+  const { openModal } = useModal()
   const [formData, setFormData] = useState(item || {});
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(type);
@@ -112,10 +97,8 @@ function CompendiumPanel({ isOpen, type, item, characters, onClose, onSave, acti
     if (cat === 'characters') {
       data.name = data.name || 'Nuevo personaje';
       data.initials = data.initials || (data.name || '').substring(0,2).toUpperCase();
-      data.color = data.color || '#6b9fd4';
     } else if (cat === 'locations') {
       data.name = data.name || 'Nueva localización';
-      data.color = data.color || '#6b9fd4';
     } else if (cat === 'objects') {
       data.name = data.name || 'Nuevo objeto';
     } else if (cat === 'lore') {
@@ -145,7 +128,7 @@ function CompendiumPanel({ isOpen, type, item, characters, onClose, onSave, acti
 
   const handleAIAutoFill = async () => {
     if (!formData.name && type !== 'lore' && !formData.title) {
-      alert(t('formulario.completar_ia_error'));
+      openModal('alert', { message: t('formulario.completar_ia_error') });
       return;
     }
     
@@ -195,7 +178,7 @@ function CompendiumPanel({ isOpen, type, item, characters, onClose, onSave, acti
       }
       
       if (!fullText.trim()) {
-        alert(t('formulario.completar_ia_fallo', { error: 'No se encontró contexto relevante en la novela' }));
+        openModal('alert', { message: t('formulario.completar_ia_fallo', { error: 'No se encontró contexto relevante en la novela' }) });
         setIsAiLoading(false);
         return;
       }
@@ -226,7 +209,7 @@ function CompendiumPanel({ isOpen, type, item, characters, onClose, onSave, acti
       
     } catch (err) {
       console.error(err);
-      alert(t('formulario.completar_ia_fallo', { error: err.message }));
+      openModal('alert', { message: t('formulario.completar_ia_fallo', { error: err.message }) });
     } finally {
       setIsAiLoading(false);
     }
@@ -301,6 +284,15 @@ function CompendiumPanel({ isOpen, type, item, characters, onClose, onSave, acti
               <label>{t('formulario.personajes.rol')}</label>
               <input name="role" value={formData.role || ''} onChange={handleChange} placeholder={t('formulario.personajes.rol_placeholder')} />
             </div>
+            <div className="compendium-form-group" style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ flex: 1 }}>
+                <label>{t('formulario.personajes.estado_vital')}</label>
+                <select name="isAlive" value={formData.isAlive || 'Vivo'} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
+                  <option value="Vivo">{t('formulario.personajes.estado_vivo')}</option>
+                  <option value="Muerto">{t('formulario.personajes.estado_muerto')}</option>
+                </select>
+              </div>
+            </div>
             <div className="compendium-form-group">
               <label>{t('formulario.personajes.ocupacion')}</label>
               <input name="occupation" value={formData.occupation || ''} onChange={handleChange} placeholder={t('formulario.personajes.ocupacion_placeholder')} />
@@ -364,13 +356,93 @@ function CompendiumPanel({ isOpen, type, item, characters, onClose, onSave, acti
                 </>
               )}
             </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.personajes.color')}</label>
-              <ColorPicker
-                value={formData.color || '#6b9fd4'}
-                onChange={(c) => setFormData(prev => ({ ...prev, color: c }))}
-              />
-            </div>
+            {locations && locations.length > 0 && (
+              <div className="compendium-form-group">
+                <label>{t('formulario.personajes.lugares_vinculados')}</label>
+                <div className="relation-chars-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {locations.map(loc => {
+                    const assoc = Array.isArray(formData.associatedLocations) ? formData.associatedLocations : (typeof formData.associatedLocations === 'string' ? formData.associatedLocations.split(',').map(s=>s.trim()).filter(Boolean) : []);
+                    const isChecked = assoc.includes(loc.name);
+                    return (
+                      <button 
+                        key={loc.id}
+                        type="button"
+                        className={`tag ${isChecked ? 'tag--active' : ''}`}
+                        style={{ cursor: 'pointer', opacity: isChecked ? 1 : 0.5, border: isChecked ? `1px solid ${ENTITY_COLORS.locations}` : '1px solid var(--border)', background: isChecked ? 'var(--accent-dim)' : 'transparent', color: isChecked ? 'var(--accent)' : 'var(--text-primary)' }}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            associatedLocations: isChecked
+                              ? assoc.filter(n => n !== loc.name)
+                              : [...assoc, loc.name]
+                          }));
+                        }}
+                      >
+                        {loc.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {objects && objects.length > 0 && (
+              <div className="compendium-form-group">
+                <label>{t('formulario.personajes.objetos_vinculados')}</label>
+                <div className="relation-chars-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {objects.map(o => {
+                    const assoc = Array.isArray(formData.associatedObjects) ? formData.associatedObjects : (typeof formData.associatedObjects === 'string' ? formData.associatedObjects.split(',').map(s=>s.trim()).filter(Boolean) : []);
+                    const isChecked = assoc.includes(o.name);
+                    return (
+                      <button 
+                        key={o.id}
+                        type="button"
+                        className={`tag ${isChecked ? 'tag--active' : ''}`}
+                        style={{ cursor: 'pointer', opacity: isChecked ? 1 : 0.5, border: isChecked ? `1px solid ${ENTITY_COLORS.objects}` : '1px solid var(--border)', background: isChecked ? 'var(--accent-dim)' : 'transparent', color: isChecked ? 'var(--accent)' : 'var(--text-primary)' }}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            associatedObjects: isChecked
+                              ? assoc.filter(n => n !== o.name)
+                              : [...assoc, o.name]
+                          }));
+                        }}
+                      >
+                        {o.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {lore && lore.length > 0 && (
+              <div className="compendium-form-group">
+                <label>{t('formulario.personajes.lore_vinculado')}</label>
+                <div className="relation-chars-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {lore.map(l => {
+                    const assoc = Array.isArray(formData.associatedLore) ? formData.associatedLore : (typeof formData.associatedLore === 'string' ? formData.associatedLore.split(',').map(s=>s.trim()).filter(Boolean) : []);
+                    const isChecked = assoc.includes(l.title);
+                    return (
+                      <button 
+                        key={l.id}
+                        type="button"
+                        className={`tag ${isChecked ? 'tag--active' : ''}`}
+                        style={{ cursor: 'pointer', opacity: isChecked ? 1 : 0.5, border: isChecked ? `1px solid ${ENTITY_COLORS.lore}` : '1px solid var(--border)', background: isChecked ? 'var(--accent-dim)' : 'transparent', color: isChecked ? 'var(--accent)' : 'var(--text-primary)' }}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            associatedLore: isChecked
+                              ? assoc.filter(n => n !== l.title)
+                              : [...assoc, l.title]
+                          }));
+                        }}
+                      >
+                        {l.title}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </>
         )}
 
@@ -399,38 +471,90 @@ function CompendiumPanel({ isOpen, type, item, characters, onClose, onSave, acti
             {characters && characters.length > 0 && (
               <div className="compendium-form-group">
                 <label>{t('formulario.localizaciones.personajes_asociados')}</label>
-                <div className="relation-chars-grid">
+                <div className="relation-chars-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {characters.map(c => {
-                    const assoc = formData.associatedCharacters || [];
+                    const assoc = Array.isArray(formData.associatedCharacters) ? formData.associatedCharacters : (typeof formData.associatedCharacters === 'string' ? formData.associatedCharacters.split(',').map(s=>s.trim()).filter(Boolean) : []);
                     const isChecked = assoc.includes(c.name);
                     return (
-                      <label key={c.id} className="relation-char-check">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => {
-                            setFormData(prev => ({
-                              ...prev,
-                              associatedCharacters: isChecked
-                                ? (prev.associatedCharacters || []).filter(n => n !== c.name)
-                                : [...(prev.associatedCharacters || []), c.name]
-                            }));
-                          }}
-                        />
-                        <span style={{ color: c.color || 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }}>{c.name}</span>
-                      </label>
+                      <button 
+                        key={c.id}
+                        type="button"
+                        className={`tag ${isChecked ? 'tag--active' : ''}`}
+                        style={{ cursor: 'pointer', opacity: isChecked ? 1 : 0.5, border: isChecked ? `1px solid ${ENTITY_COLORS.characters}` : '1px solid var(--border)', background: isChecked ? 'var(--accent-dim)' : 'transparent', color: isChecked ? 'var(--accent)' : 'var(--text-primary)' }}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            associatedCharacters: isChecked
+                              ? assoc.filter(n => n !== c.name)
+                              : [...assoc, c.name]
+                          }));
+                        }}
+                      >
+                        {c.name}
+                      </button>
                     );
                   })}
                 </div>
               </div>
             )}
-            <div className="compendium-form-group">
-              <label>{t('formulario.localizaciones.color')}</label>
-              <ColorPicker
-                value={formData.color || '#5cb98a'}
-                onChange={(c) => setFormData(prev => ({ ...prev, color: c }))}
-              />
-            </div>
+            {objects && objects.length > 0 && (
+              <div className="compendium-form-group">
+                <label>{t('formulario.localizaciones.objetos_asociados')}</label>
+                <div className="relation-chars-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {objects.map(o => {
+                    const assoc = Array.isArray(formData.associatedObjects) ? formData.associatedObjects : (typeof formData.associatedObjects === 'string' ? formData.associatedObjects.split(',').map(s=>s.trim()).filter(Boolean) : []);
+                    const isChecked = assoc.includes(o.name);
+                    return (
+                      <button 
+                        key={o.id}
+                        type="button"
+                        className={`tag ${isChecked ? 'tag--active' : ''}`}
+                        style={{ cursor: 'pointer', opacity: isChecked ? 1 : 0.5, border: isChecked ? `1px solid ${ENTITY_COLORS.objects}` : '1px solid var(--border)', background: isChecked ? 'var(--accent-dim)' : 'transparent', color: isChecked ? 'var(--accent)' : 'var(--text-primary)' }}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            associatedObjects: isChecked
+                              ? assoc.filter(n => n !== o.name)
+                              : [...assoc, o.name]
+                          }));
+                        }}
+                      >
+                        {o.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {lore && lore.length > 0 && (
+              <div className="compendium-form-group">
+                <label>{t('formulario.localizaciones.lore_vinculado')}</label>
+                <div className="relation-chars-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {lore.map(l => {
+                    const assoc = Array.isArray(formData.associatedLore) ? formData.associatedLore : (typeof formData.associatedLore === 'string' ? formData.associatedLore.split(',').map(s=>s.trim()).filter(Boolean) : []);
+                    const isChecked = assoc.includes(l.title);
+                    return (
+                      <button 
+                        key={l.id}
+                        type="button"
+                        className={`tag ${isChecked ? 'tag--active' : ''}`}
+                        style={{ cursor: 'pointer', opacity: isChecked ? 1 : 0.5, border: isChecked ? `1px solid ${ENTITY_COLORS.lore}` : '1px solid var(--border)', background: isChecked ? 'var(--accent-dim)' : 'transparent', color: isChecked ? 'var(--accent)' : 'var(--text-primary)' }}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            associatedLore: isChecked
+                              ? assoc.filter(n => n !== l.title)
+                              : [...assoc, l.title]
+                          }));
+                        }}
+                      >
+                        {l.title}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </>
         )}
 
@@ -467,10 +591,6 @@ function CompendiumPanel({ isOpen, type, item, characters, onClose, onSave, acti
               </select>
             </div>
             <div className="compendium-form-group">
-              <label>{t('formulario.objetos.origen')}</label>
-              <input name="origin" value={formData.origin || ''} onChange={handleChange} />
-            </div>
-            <div className="compendium-form-group">
               <label>{t('formulario.objetos.descripcion')}</label>
               <textarea name="description" value={formData.description || ''} onChange={handleChange} />
             </div>
@@ -478,6 +598,93 @@ function CompendiumPanel({ isOpen, type, item, characters, onClose, onSave, acti
               <label>{t('formulario.objetos.etiquetas')}</label>
               <input name="_rawTags" value={formData._rawTags || ''} onChange={handleChange} />
             </div>
+            {characters && characters.length > 0 && (
+              <div className="compendium-form-group">
+                <label>{t('formulario.objetos.personajes_vinculados')}</label>
+                <div className="relation-chars-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {characters.map(c => {
+                    const assoc = Array.isArray(formData.associatedCharacters) ? formData.associatedCharacters : (typeof formData.associatedCharacters === 'string' ? formData.associatedCharacters.split(',').map(s=>s.trim()).filter(Boolean) : []);
+                    const isChecked = assoc.includes(c.name);
+                    return (
+                      <button 
+                        key={c.id}
+                        type="button"
+                        className={`tag ${isChecked ? 'tag--active' : ''}`}
+                        style={{ cursor: 'pointer', opacity: isChecked ? 1 : 0.5, border: isChecked ? `1px solid ${ENTITY_COLORS.characters}` : '1px solid var(--border)', background: isChecked ? 'var(--accent-dim)' : 'transparent', color: isChecked ? 'var(--accent)' : 'var(--text-primary)' }}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            associatedCharacters: isChecked
+                              ? assoc.filter(n => n !== c.name)
+                              : [...assoc, c.name]
+                          }));
+                        }}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {locations && locations.length > 0 && (
+              <div className="compendium-form-group">
+                <label>{t('formulario.objetos.lugares_vinculados')}</label>
+                <div className="relation-chars-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {locations.map(loc => {
+                    const assoc = Array.isArray(formData.associatedLocations) ? formData.associatedLocations : (typeof formData.associatedLocations === 'string' ? formData.associatedLocations.split(',').map(s=>s.trim()).filter(Boolean) : []);
+                    const isChecked = assoc.includes(loc.name);
+                    return (
+                      <button 
+                        key={loc.id}
+                        type="button"
+                        className={`tag ${isChecked ? 'tag--active' : ''}`}
+                        style={{ cursor: 'pointer', opacity: isChecked ? 1 : 0.5, border: isChecked ? `1px solid ${ENTITY_COLORS.locations}` : '1px solid var(--border)', background: isChecked ? 'var(--accent-dim)' : 'transparent', color: isChecked ? 'var(--accent)' : 'var(--text-primary)' }}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            associatedLocations: isChecked
+                              ? assoc.filter(n => n !== loc.name)
+                              : [...assoc, loc.name]
+                          }));
+                        }}
+                      >
+                        {loc.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {lore && lore.length > 0 && (
+              <div className="compendium-form-group">
+                <label>{t('formulario.objetos.lore_vinculado')}</label>
+                <div className="relation-chars-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {lore.map(l => {
+                    const assoc = Array.isArray(formData.associatedLore) ? formData.associatedLore : (typeof formData.associatedLore === 'string' ? formData.associatedLore.split(',').map(s=>s.trim()).filter(Boolean) : []);
+                    const isChecked = assoc.includes(l.title);
+                    return (
+                      <button 
+                        key={l.id}
+                        type="button"
+                        className={`tag ${isChecked ? 'tag--active' : ''}`}
+                        style={{ cursor: 'pointer', opacity: isChecked ? 1 : 0.5, border: isChecked ? `1px solid ${ENTITY_COLORS.lore}` : '1px solid var(--border)', background: isChecked ? 'var(--accent-dim)' : 'transparent', color: isChecked ? 'var(--accent)' : 'var(--text-primary)' }}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            associatedLore: isChecked
+                              ? assoc.filter(n => n !== l.title)
+                              : [...assoc, l.title]
+                          }));
+                        }}
+                      >
+                        {l.title}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </>
         )}
 
@@ -499,6 +706,93 @@ function CompendiumPanel({ isOpen, type, item, characters, onClose, onSave, acti
               <label>{t('formulario.lore.etiquetas')}</label>
               <input name="_rawTags" value={formData._rawTags || ''} onChange={handleChange} />
             </div>
+            {characters && characters.length > 0 && (
+              <div className="compendium-form-group">
+                <label>{t('formulario.lore.personajes_vinculados')}</label>
+                <div className="relation-chars-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {characters.map(c => {
+                    const assoc = Array.isArray(formData.associatedCharacters) ? formData.associatedCharacters : (typeof formData.associatedCharacters === 'string' ? formData.associatedCharacters.split(',').map(s=>s.trim()).filter(Boolean) : []);
+                    const isChecked = assoc.includes(c.name);
+                    return (
+                      <button 
+                        key={c.id}
+                        type="button"
+                        className={`tag ${isChecked ? 'tag--active' : ''}`}
+                        style={{ cursor: 'pointer', opacity: isChecked ? 1 : 0.5, border: isChecked ? `1px solid ${ENTITY_COLORS.characters}` : '1px solid var(--border)', background: isChecked ? 'var(--accent-dim)' : 'transparent', color: isChecked ? 'var(--accent)' : 'var(--text-primary)' }}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            associatedCharacters: isChecked
+                              ? assoc.filter(n => n !== c.name)
+                              : [...assoc, c.name]
+                          }));
+                        }}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {objects && objects.length > 0 && (
+              <div className="compendium-form-group">
+                <label>{t('formulario.lore.objetos_vinculados')}</label>
+                <div className="relation-chars-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {objects.map(o => {
+                    const assoc = Array.isArray(formData.associatedObjects) ? formData.associatedObjects : (typeof formData.associatedObjects === 'string' ? formData.associatedObjects.split(',').map(s=>s.trim()).filter(Boolean) : []);
+                    const isChecked = assoc.includes(o.name);
+                    return (
+                      <button 
+                        key={o.id}
+                        type="button"
+                        className={`tag ${isChecked ? 'tag--active' : ''}`}
+                        style={{ cursor: 'pointer', opacity: isChecked ? 1 : 0.5, border: isChecked ? `1px solid ${ENTITY_COLORS.objects}` : '1px solid var(--border)', background: isChecked ? 'var(--accent-dim)' : 'transparent', color: isChecked ? 'var(--accent)' : 'var(--text-primary)' }}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            associatedObjects: isChecked
+                              ? assoc.filter(n => n !== o.name)
+                              : [...assoc, o.name]
+                          }));
+                        }}
+                      >
+                        {o.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {locations && locations.length > 0 && (
+              <div className="compendium-form-group">
+                <label>{t('formulario.lore.lugares_vinculados')}</label>
+                <div className="relation-chars-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {locations.map(loc => {
+                    const assoc = Array.isArray(formData.associatedLocations) ? formData.associatedLocations : (typeof formData.associatedLocations === 'string' ? formData.associatedLocations.split(',').map(s=>s.trim()).filter(Boolean) : []);
+                    const isChecked = assoc.includes(loc.name);
+                    return (
+                      <button 
+                        key={loc.id}
+                        type="button"
+                        className={`tag ${isChecked ? 'tag--active' : ''}`}
+                        style={{ cursor: 'pointer', opacity: isChecked ? 1 : 0.5, border: isChecked ? `1px solid ${ENTITY_COLORS.locations}` : '1px solid var(--border)', background: isChecked ? 'var(--accent-dim)' : 'transparent', color: isChecked ? 'var(--accent)' : 'var(--text-primary)' }}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            associatedLocations: isChecked
+                              ? assoc.filter(n => n !== loc.name)
+                              : [...assoc, loc.name]
+                          }));
+                        }}
+                      >
+                        {loc.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -520,11 +814,11 @@ function CharacterCard({ char, onEdit, onDelete, onToggleIgnore }) {
       className={`char-card card ${expanded ? 'char-card--expanded' : ''} ${char.ignoredForOracle ? 'card--ignored' : ''}`}
       id={`char-card-${char.id}`}
       onClick={() => setExpanded(e => !e)}
-      style={{ borderLeft: `3px solid ${char.color || '#6b9fd4'}` }}
+      style={{ borderLeft: `3px solid ${ENTITY_COLORS.characters}` }}
     >
       <div className="char-card__top">
-        <div className="char-card__avatar" style={{ background: char.color + '22', borderColor: char.color + '44' }}>
-          <span style={{ color: char.color }}>
+        <div className="char-card__avatar" style={{ background: ENTITY_COLORS.characters + '22', borderColor: ENTITY_COLORS.characters + '44' }}>
+          <span style={{ color: ENTITY_COLORS.characters }}>
             {char.initials || (char.name || '').substring(0, 2).toUpperCase()}
           </span>
         </div>
@@ -565,11 +859,11 @@ function CharacterCard({ char, onEdit, onDelete, onToggleIgnore }) {
       {expanded && (
         <div className="char-card__body">
           <p className="char-card__desc">{char.description}</p>
-          {char.traits && char.traits.length > 0 && (
+          {char.traits && (Array.isArray(char.traits) ? char.traits : char.traits.split(',').map(s=>s.trim()).filter(Boolean)).length > 0 && (
             <>
               <div className="char-card__section-label">{t('tarjetas.rasgos')}</div>
               <div className="char-card__traits">
-                {char.traits.map(t => <span key={t} className="tag">{t}</span>)}
+                {(Array.isArray(char.traits) ? char.traits : char.traits.split(',').map(s=>s.trim()).filter(Boolean)).map(t => <span key={t} className="tag">{t}</span>)}
               </div>
             </>
           )}
@@ -583,6 +877,36 @@ function CharacterCard({ char, onEdit, onDelete, onToggleIgnore }) {
                 </div>
               ))}
             </>
+          )}
+          {char.associatedObjects && (Array.isArray(char.associatedObjects) ? char.associatedObjects : char.associatedObjects.split(',').map(s=>s.trim()).filter(Boolean)).length > 0 && (
+            <div>
+              <span className="char-card__section-label">{t('tarjetas.objetos')}</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: 4 }}>
+                {(Array.isArray(char.associatedObjects) ? char.associatedObjects : char.associatedObjects.split(',').map(s=>s.trim()).filter(Boolean)).map(name => (
+                  <span key={name} className="tag">{name}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {char.associatedLore && (Array.isArray(char.associatedLore) ? char.associatedLore : char.associatedLore.split(',').map(s=>s.trim()).filter(Boolean)).length > 0 && (
+            <div>
+              <span className="char-card__section-label">{t('tarjetas.lore')}</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: 4 }}>
+                {(Array.isArray(char.associatedLore) ? char.associatedLore : char.associatedLore.split(',').map(s=>s.trim()).filter(Boolean)).map(title => (
+                  <span key={title} className="tag">{title}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {char.associatedLocations && (Array.isArray(char.associatedLocations) ? char.associatedLocations : char.associatedLocations.split(',').map(s=>s.trim()).filter(Boolean)).length > 0 && (
+            <div>
+              <span className="char-card__section-label">{t('tarjetas.localizaciones')}</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: 4 }}>
+                {(Array.isArray(char.associatedLocations) ? char.associatedLocations : char.associatedLocations.split(',').map(s=>s.trim()).filter(Boolean)).map(name => (
+                  <span key={name} className="tag">{name}</span>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -599,9 +923,10 @@ function LocationCard({ loc, onEdit, onDelete, onToggleIgnore }) {
       className={`loc-card card ${expanded ? 'loc-card--expanded' : ''} ${loc.ignoredForOracle ? 'card--ignored' : ''}`}
       id={`loc-card-${loc.id}`}
       onClick={() => setExpanded(e => !e)}
+      style={{ borderLeft: `3px solid ${ENTITY_COLORS.locations}` }}
     >
       <div className="loc-card__top">
-        <div className="loc-card__dot" style={{ background: loc.color || '#5cb98a' }} />
+        <div className="loc-card__dot" style={{ background: ENTITY_COLORS.locations }} />
         <div className="loc-card__info">
           <span className="loc-card__name">{loc.name}</span>
           {loc.ignoredForOracle !== 1 && (
@@ -641,18 +966,38 @@ function LocationCard({ loc, onEdit, onDelete, onToggleIgnore }) {
             <span className="char-card__section-label">{t('tarjetas.clima')}</span>
             <span className="loc-card__climate-val">{loc.climate}</span>
           </div>
-          {loc.associatedCharacters && loc.associatedCharacters.length > 0 && (
+          {loc.associatedCharacters && (Array.isArray(loc.associatedCharacters) ? loc.associatedCharacters : loc.associatedCharacters.split(',').map(s=>s.trim()).filter(Boolean)).length > 0 && (
             <div>
-              <span className="char-card__section-label">{t('tarjetas.personajes_asociados')}</span>
+              <span className="char-card__section-label">{t('tarjetas.personajes')}</span>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: 4 }}>
-                {loc.associatedCharacters.map(name => (
+                {(Array.isArray(loc.associatedCharacters) ? loc.associatedCharacters : loc.associatedCharacters.split(',').map(s=>s.trim()).filter(Boolean)).map(name => (
                   <span key={name} className="tag">{name}</span>
                 ))}
               </div>
             </div>
           )}
+          {loc.associatedObjects && (Array.isArray(loc.associatedObjects) ? loc.associatedObjects : loc.associatedObjects.split(',').map(s=>s.trim()).filter(Boolean)).length > 0 && (
+            <div>
+              <span className="char-card__section-label">{t('tarjetas.objetos')}</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: 4 }}>
+                {(Array.isArray(loc.associatedObjects) ? loc.associatedObjects : loc.associatedObjects.split(',').map(s=>s.trim()).filter(Boolean)).map(name => (
+                  <span key={name} className="tag">{name}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {loc.associatedLore && (Array.isArray(loc.associatedLore) ? loc.associatedLore : loc.associatedLore.split(',').map(s=>s.trim()).filter(Boolean)).length > 0 && (
+            <div>
+              <span className="char-card__section-label">{t('tarjetas.lore')}</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: 4 }}>
+                {(Array.isArray(loc.associatedLore) ? loc.associatedLore : loc.associatedLore.split(',').map(s=>s.trim()).filter(Boolean)).map(title => (
+                  <span key={title} className="tag">{title}</span>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="loc-card__all-tags">
-            {loc.tags?.map(t => <span key={t} className="tag">{t}</span>)}
+            {(Array.isArray(loc.tags) ? loc.tags : (typeof loc.tags === 'string' ? loc.tags.split(',').map(s=>s.trim()).filter(Boolean) : [])).map(t => <span key={t} className="tag">{t}</span>)}
           </div>
         </div>
       )}
@@ -669,9 +1014,10 @@ function ObjectCard({ obj, onEdit, onDelete, onToggleIgnore }) {
       className={`obj-card card ${obj.ignoredForOracle ? 'card--ignored' : ''}`}
       id={`obj-card-${obj.id}`}
       onClick={() => setExpanded(e => !e)}
+      style={{ borderLeft: `3px solid ${ENTITY_COLORS.objects}` }}
     >
       <div className="obj-card__top">
-        <Package size={16} className="obj-card__icon" />
+        <Package size={16} className="obj-card__icon" style={{ color: ENTITY_COLORS.objects }} />
         <div className="obj-card__info">
           <span className="obj-card__name">{obj.name}</span>
           {obj.ignoredForOracle !== 1 && (
@@ -708,6 +1054,9 @@ function ObjectCard({ obj, onEdit, onDelete, onToggleIgnore }) {
       {expanded && (
         <div className="obj-card__body">
           <p className="obj-card__desc">{obj.description}</p>
+          <div className="obj-card__tags" style={{ marginBottom: 12 }}>
+            {(Array.isArray(obj.tags) ? obj.tags : (typeof obj.tags === 'string' ? obj.tags.split(',').map(s=>s.trim()).filter(Boolean) : [])).map(t => <span key={t} className="tag">{t}</span>)}
+          </div>
           {obj.importance && obj.importance !== 'Secundario' && (
             <div style={{ marginBottom: 8 }}>
               <span className={`badge ${obj.importance === 'MacGuffin' ? 'badge-gold' : 'badge-blue'}`}>
@@ -719,9 +1068,36 @@ function ObjectCard({ obj, onEdit, onDelete, onToggleIgnore }) {
             <span className="char-card__section-label">{t('tarjetas.origen')}</span>
             <span className="obj-card__origin">{obj.origin}</span>
           </div>
-          <div className="obj-card__tags">
-            {obj.tags?.map(t => <span key={t} className="tag">{t}</span>)}
-          </div>
+          {obj.associatedCharacters && (Array.isArray(obj.associatedCharacters) ? obj.associatedCharacters : obj.associatedCharacters.split(',').map(s=>s.trim()).filter(Boolean)).length > 0 && (
+            <div>
+              <span className="char-card__section-label">{t('tarjetas.personajes')}</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: 4 }}>
+                {(Array.isArray(obj.associatedCharacters) ? obj.associatedCharacters : obj.associatedCharacters.split(',').map(s=>s.trim()).filter(Boolean)).map(name => (
+                  <span key={name} className="tag">{name}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {obj.associatedLore && (Array.isArray(obj.associatedLore) ? obj.associatedLore : obj.associatedLore.split(',').map(s=>s.trim()).filter(Boolean)).length > 0 && (
+            <div>
+              <span className="char-card__section-label">{t('tarjetas.lore')}</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: 4 }}>
+                {(Array.isArray(obj.associatedLore) ? obj.associatedLore : obj.associatedLore.split(',').map(s=>s.trim()).filter(Boolean)).map(title => (
+                  <span key={title} className="tag">{title}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {obj.associatedLocations && (Array.isArray(obj.associatedLocations) ? obj.associatedLocations : obj.associatedLocations.split(',').map(s=>s.trim()).filter(Boolean)).length > 0 && (
+            <div>
+              <span className="char-card__section-label">{t('tarjetas.localizaciones')}</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: 4 }}>
+                {(Array.isArray(obj.associatedLocations) ? obj.associatedLocations : obj.associatedLocations.split(',').map(s=>s.trim()).filter(Boolean)).map(name => (
+                  <span key={name} className="tag">{name}</span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -737,9 +1113,10 @@ function LoreCard({ entry, onEdit, onDelete, onToggleIgnore }) {
       className={`lore-card card ${entry.ignoredForOracle ? 'card--ignored' : ''}`}
       id={`lore-card-${entry.id}`}
       onClick={() => setExpanded(e => !e)}
+      style={{ borderLeft: `3px solid ${ENTITY_COLORS.lore}` }}
     >
       <div className="lore-card__top">
-        <div className="lore-card__cat-dot" />
+        <div className="lore-card__cat-dot" style={{ background: ENTITY_COLORS.lore }} />
         <div className="lore-card__info">
           <span className="lore-card__title">{entry.title}</span>
           {entry.ignoredForOracle !== 1 && (
@@ -775,8 +1152,38 @@ function LoreCard({ entry, onEdit, onDelete, onToggleIgnore }) {
       {expanded && (
         <div className="lore-card__body">
           <p className="lore-card__summary">{entry.summary}</p>
-          <div className="lore-card__all-tags">
-            {entry.tags?.map(t => <span key={t} className="tag">{t}</span>)}
+          {entry.associatedCharacters && (Array.isArray(entry.associatedCharacters) ? entry.associatedCharacters : entry.associatedCharacters.split(',').map(s=>s.trim()).filter(Boolean)).length > 0 && (
+            <div>
+              <span className="char-card__section-label">{t('tarjetas.personajes')}</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: 4 }}>
+                {(Array.isArray(entry.associatedCharacters) ? entry.associatedCharacters : entry.associatedCharacters.split(',').map(s=>s.trim()).filter(Boolean)).map(name => (
+                  <span key={name} className="tag">{name}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {entry.associatedLocations && (Array.isArray(entry.associatedLocations) ? entry.associatedLocations : entry.associatedLocations.split(',').map(s=>s.trim()).filter(Boolean)).length > 0 && (
+            <div>
+              <span className="char-card__section-label">{t('tarjetas.localizaciones')}</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: 4 }}>
+                {(Array.isArray(entry.associatedLocations) ? entry.associatedLocations : entry.associatedLocations.split(',').map(s=>s.trim()).filter(Boolean)).map(name => (
+                  <span key={name} className="tag">{name}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {entry.associatedObjects && (Array.isArray(entry.associatedObjects) ? entry.associatedObjects : entry.associatedObjects.split(',').map(s=>s.trim()).filter(Boolean)).length > 0 && (
+            <div>
+              <span className="char-card__section-label">{t('tarjetas.objetos')}</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: 4 }}>
+                {(Array.isArray(entry.associatedObjects) ? entry.associatedObjects : entry.associatedObjects.split(',').map(s=>s.trim()).filter(Boolean)).map(name => (
+                  <span key={name} className="tag">{name}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="lore-card__all-tags" style={{ marginTop: 8 }}>
+            {(Array.isArray(entry.tags) ? entry.tags : (typeof entry.tags === 'string' ? entry.tags.split(',').map(s=>s.trim()).filter(Boolean) : [])).map(t => <span key={t} className="tag">{t}</span>)}
           </div>
         </div>
       )}
@@ -864,28 +1271,55 @@ export default function CompendiumView() {
     return () => window.removeEventListener('mpc-edit-proposal', handler);
   }, [dismissMpcProposal]);
 
+  // Listener for navigating to a specific compendium item (from Nexus double click)
+  useEffect(() => {
+    const handler = (e) => {
+      const { id, group } = e.detail || {};
+      if (!id || !group) return;
+      
+      // Set correct tab
+      setActiveSection(group);
+      
+      // Find the entity
+      let item = null;
+      if (group === 'characters') item = characters.find(c => c.id === id);
+      else if (group === 'locations') item = locations.find(l => l.id === id);
+      else if (group === 'objects') item = objects.find(o => o.id === id);
+      else if (group === 'lore') item = lore.find(l => l.id === id);
+      
+      if (item) {
+        setEditingItem(item);
+        setIsPanelOpen(true);
+      }
+    };
+    window.addEventListener('navigate-to-compendium-item', handler);
+    return () => window.removeEventListener('navigate-to-compendium-item', handler);
+  }, [characters, locations, objects, lore]);
+
   const getAvailableFilters = () => {
     const list = new Set();
+    const ensureArr = (val) => Array.isArray(val) ? val : (typeof val === 'string' ? val.split(',').map(s=>s.trim()).filter(Boolean) : []);
+    
     if (activeSection === 'characters') {
       characters.forEach(c => {
         if (c.role) list.add(c.role);
-        if (c.tags) c.tags.forEach(t => list.add(t));
-        if (c.traits) c.traits.forEach(t => list.add(t));
+        ensureArr(c.tags).forEach(t => list.add(t));
+        ensureArr(c.traits).forEach(t => list.add(t));
       });
     } else if (activeSection === 'locations') {
       locations.forEach(l => {
         if (l.type) list.add(l.type);
-        if (l.tags) l.tags.forEach(t => list.add(t));
+        ensureArr(l.tags).forEach(t => list.add(t));
       });
     } else if (activeSection === 'objects') {
       objects.forEach(o => {
         if (o.type) list.add(o.type);
-        if (o.tags) o.tags.forEach(t => list.add(t));
+        ensureArr(o.tags).forEach(t => list.add(t));
       });
     } else if (activeSection === 'lore') {
       lore.forEach(e => {
         if (e.category) list.add(e.category);
-        if (e.tags) e.tags.forEach(t => list.add(t));
+        ensureArr(e.tags).forEach(t => list.add(t));
       });
     }
     return Array.from(list).sort();
@@ -900,14 +1334,16 @@ export default function CompendiumView() {
   const matchesFilters = (item) => {
     if (activeFilters.length === 0) return true;
     let itemTags = [];
+    const ensureArr = (val) => Array.isArray(val) ? val : (typeof val === 'string' ? val.split(',').map(s=>s.trim()).filter(Boolean) : []);
+    
     if (activeSection === 'characters') {
-      itemTags = [item.role, ...(item.tags || []), ...(item.traits || [])];
+      itemTags = [item.role, ...ensureArr(item.tags), ...ensureArr(item.traits)];
     } else if (activeSection === 'locations') {
-      itemTags = [item.type, ...(item.tags || [])];
+      itemTags = [item.type, ...ensureArr(item.tags)];
     } else if (activeSection === 'objects') {
-      itemTags = [item.type, ...(item.tags || [])];
+      itemTags = [item.type, ...ensureArr(item.tags)];
     } else if (activeSection === 'lore') {
-      itemTags = [item.category, ...(item.tags || [])];
+      itemTags = [item.category, ...ensureArr(item.tags)];
     }
     return activeFilters.some(f => itemTags.includes(f));
   };
@@ -975,9 +1411,9 @@ export default function CompendiumView() {
       await scanForMergeDuplicates(activeSection);
     } catch (err) {
       if (!apiKey && provider !== 'local') {
-        alert(t('unificar.sin_ia'));
+        openModal('alert', { message: t('unificar.sin_ia') });
       } else {
-        alert(t('unificar.error_escaneo'));
+        openModal('alert', { message: t('unificar.error_escaneo') });
       }
     }
   };
@@ -985,7 +1421,7 @@ export default function CompendiumView() {
 
   const handleMergeSelection = async (entities) => {
     if (!apiKey && provider !== 'local') {
-      alert(t('unificar.sin_ia'));
+      openModal('alert', { message: t('unificar.sin_ia') });
       return;
     }
 
@@ -993,7 +1429,7 @@ export default function CompendiumView() {
       const aiConfig = { provider, apiKey, model: currentModel, localBaseUrl };
       await globalHandleMergeSelection(entities, activeSection, aiConfig, logAIUsage);
     } catch (err) {
-      alert(t('unificar.error_fusion', { error: err.message }));
+      openModal('alert', { message: t('unificar.error_fusion', { error: err.message }) });
     }
   };
 
@@ -1001,7 +1437,7 @@ export default function CompendiumView() {
     try {
       await confirmMerge(activeSection, finalData);
     } catch (err) {
-      alert(t('unificar.error_confirmar', { error: err.message }));
+      openModal('alert', { message: t('unificar.error_confirmar', { error: err.message }) });
     }
   };
 
@@ -1075,6 +1511,72 @@ export default function CompendiumView() {
     dismissMpcProposalPermanently(proposal);
   };
 
+  const syncCompendiumRelationships = async (data, category, isUpdate, oldItem) => {
+    const promises = [];
+    
+    // Generic bilateral sync
+    const syncBilateral = (entityA, oldEntityA, catA, catB, fieldA, fieldB, arrayB) => {
+      const newNamesB = entityA[fieldA] || [];
+      const oldNamesB = isUpdate ? (oldEntityA[fieldA] || []) : [];
+      const allNamesB = new Set([...newNamesB, ...oldNamesB]);
+      
+      const myNameA = entityA.name || entityA.title;
+      const oldNameA = isUpdate ? (oldEntityA.name || oldEntityA.title) : myNameA;
+      
+      allNamesB.forEach(nameB => {
+        const entityB = arrayB.find(x => (x.name || x.title) === nameB);
+        if (!entityB) return;
+        
+        let assocListAInB = [...(entityB[fieldB] || [])];
+        const isNowAssociated = newNamesB.includes(nameB);
+        
+        let changed = false;
+        if (isNowAssociated) {
+          if (oldNameA && oldNameA !== myNameA && assocListAInB.includes(oldNameA)) {
+            assocListAInB = assocListAInB.filter(n => n !== oldNameA);
+            changed = true;
+          }
+          if (!assocListAInB.includes(myNameA)) {
+            assocListAInB.push(myNameA);
+            changed = true;
+          }
+        } else {
+          if (assocListAInB.includes(oldNameA)) {
+            assocListAInB = assocListAInB.filter(n => n !== oldNameA);
+            changed = true;
+          }
+          if (assocListAInB.includes(myNameA)) {
+            assocListAInB = assocListAInB.filter(n => n !== myNameA);
+            changed = true;
+          }
+        }
+        if (changed) {
+          promises.push(updateCompendiumEntry(catB, entityB.id, { [fieldB]: assocListAInB }));
+        }
+      });
+    };
+
+    if (category === 'characters') {
+      syncBilateral(data, oldItem, 'characters', 'lore', 'associatedLore', 'associatedCharacters', lore);
+      syncBilateral(data, oldItem, 'characters', 'locations', 'associatedLocations', 'associatedCharacters', locations);
+      syncBilateral(data, oldItem, 'characters', 'objects', 'associatedObjects', 'associatedCharacters', objects);
+    } else if (category === 'locations') {
+      syncBilateral(data, oldItem, 'locations', 'lore', 'associatedLore', 'associatedLocations', lore);
+      syncBilateral(data, oldItem, 'locations', 'objects', 'associatedObjects', 'associatedLocations', objects);
+      syncBilateral(data, oldItem, 'locations', 'characters', 'associatedCharacters', 'associatedLocations', characters);
+    } else if (category === 'objects') {
+      syncBilateral(data, oldItem, 'objects', 'lore', 'associatedLore', 'associatedObjects', lore);
+      syncBilateral(data, oldItem, 'objects', 'locations', 'associatedLocations', 'associatedObjects', locations);
+      syncBilateral(data, oldItem, 'objects', 'characters', 'associatedCharacters', 'associatedObjects', characters);
+    } else if (category === 'lore') {
+      syncBilateral(data, oldItem, 'lore', 'characters', 'associatedCharacters', 'associatedLore', characters);
+      syncBilateral(data, oldItem, 'lore', 'locations', 'associatedLocations', 'associatedLore', locations);
+      syncBilateral(data, oldItem, 'lore', 'objects', 'associatedObjects', 'associatedLore', objects);
+    }
+    
+    await Promise.all(promises);
+  };
+
   const handleSavePanel = async (data, newCategory) => {
     const targetCategory = newCategory || activeSection;
     const isFreshlyCreated = data._isNewlyCreated;
@@ -1130,10 +1632,14 @@ export default function CompendiumView() {
         promises.push(updateCompendiumEntry('characters', otherChar.id, { relations: existingRels }));
       }
 
-      if (isUpdate) promises.push(updateCompendiumEntry(targetCategory, editingItem.id, data));
-      else promises.push(addCompendiumEntry(targetCategory, data));
+      if (isUpdate) {
+        await updateCompendiumEntry(targetCategory, editingItem.id, data);
+      } else {
+        await addCompendiumEntry(targetCategory, data);
+      }
 
       await Promise.all(promises);
+      await syncLoreBidirectional(data, targetCategory, isUpdate, editingItem);
       
       if (isMpcProposal && mpcId) {
         dismissMpcProposal(mpcId);
@@ -1149,6 +1655,7 @@ export default function CompendiumView() {
       if (isMpcProposal && mpcId) {
         dismissMpcProposal(mpcId);
       }
+      await syncCompendiumRelationships(data, targetCategory, false, null);
     } else if (isUpdate) {
       if (categoryChanged) {
         await deleteCompendiumEntry(originalCategory, editingItem.id);
@@ -1156,8 +1663,10 @@ export default function CompendiumView() {
       } else {
         await updateCompendiumEntry(targetCategory, editingItem.id, data);
       }
+      await syncCompendiumRelationships(data, targetCategory, true, editingItem);
     } else {
       await addCompendiumEntry(targetCategory, data);
+      await syncCompendiumRelationships(data, targetCategory, false, null);
       
       if (isMpcProposal && mpcId) {
         dismissMpcProposal(mpcId);
@@ -1434,6 +1943,9 @@ export default function CompendiumView() {
         type={activeSection} 
         item={editingItem} 
         characters={characters}
+        locations={locations}
+        objects={objects}
+        lore={lore}
         activeNovel={activeNovel}
         onClose={() => setIsPanelOpen(false)} 
         onSave={handleSavePanel} 

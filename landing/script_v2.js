@@ -28,12 +28,13 @@ document.addEventListener('DOMContentLoaded', () => {
             nav_features: "Features",
             nav_engine: "MPC Engine",
             nav_openapp: "Open App",
-            badge_version: "v1.8-glassmorphism is Live",
+            badge_version: "v1.9-nexus is Live",
             hero_title_1: "The Intelligent App<br/>for",
             hero_title_2: "Writers",
             hero_subtitle: "Compose, structure, and refine your masterwork in a distraction-free, privacy-first environment enhanced by local AI.",
             hero_launch: "Open App",
             hero_discover: "Discover Features",
+            hero_micro: "Designed for Deep Work. Zero distractions.",
             mock_heading: "Prologue: The Obsidian Spire",
             mock_p: "The storm howled against the jagged obsidian glass, but inside the Spire, Archmage Vaelen only smiled. He traced the glowing runes on the monolith; the convergence was finally at hand...",
             mock_mpc: "3 Entities Detected",
@@ -51,8 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
             feat_3_desc: "Upload your world-building lore, specific chapter notes, and context files. Toggle them instantly for the Oracle to review.",
             feat_4_title: "Cloud Sync",
             feat_4_desc: "Local-first storage with optional Google Drive syncing and continuous backups to ensure your manuscript is never lost.",
-            feat_5_title: "Dynamic Design",
-            feat_5_desc: "Immerse yourself in a beautifully crafted responsive UI with customizable dynamic glassmorphism and an elegant dark mode.",
+            feat_5_title: "Flow State Environment",
+            feat_5_desc: "A distraction-free, minimalist UI with dynamic glassmorphism and deep dark mode designed psychologically to anchor you in your flow state.",
             feat_6_title: "Frictionless Export",
             feat_6_desc: "Compile your entire project into a standard Document (.docx) with one click, perfectly formatted for publishing.",
             mu_act1: "Act I: The Call",
@@ -72,7 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
             mu_exportbtn: "Export .DOCX",
             engine_badge: "MPC Entity Management",
             engine_title: "MPC Engine (Monitoring Proposals for Compendium)",
-            engine_sub: "LoneWriter extracts and categorizes important elements dynamically as you type without consuming massive amounts of AI tokens.",
+            engine_sub: "LoneWriter silently processes your world in the background. No annoying autocomplete. No unsolicited suggestions. The AI organizes your lore so you can focus solely on writing.",
+            engine_ghost: "Invisible AI Assistance",
             eng_1_label: "Characters:",
             eng_1: "Tracks character traits and appearances dynamically.",
             eng_2_label: "Locations:",
@@ -81,6 +83,17 @@ document.addEventListener('DOMContentLoaded', () => {
             eng_3: "Contextual awareness of your magical or sci-fi systems.",
             eng_4_label: "Saliency Scoring:",
             eng_4: "Injects only the most relevant lore into your AI prompts.",
+            nexus_badge: "Nexus",
+            nexus_title: "Nexus",
+            nexus_sub: "Transform your raw Compendium data into a living, breathing 3D knowledge graph and interactive timeline. Discover the hidden connections in your story.",
+            nex_1_label: "3D Knowledge Graph:",
+            nex_1: "Visualize complex relationships of characters and locations interactively.",
+            nex_2_label: "Interactive Timeline:",
+            nex_2: "Map chronological events intuitively alongside your manuscript.",
+            nex_3_label: "Interactive Codex Export:",
+            nex_3: "Share a standalone HTML hyperlinked wiki of your world with beta readers.",
+            nexus_menu_graph: "3D Graph",
+            nexus_menu_timeline: "Timeline",
             rag_badge: "Local Semantic Intelligence",
             rag_title: "Local RAG Engine",
             rag_sub: "LoneWriter incorporates a Retrieval-Augmented Generation engine directly in your browser. It instantly retrieves fragments of your novel and relevant lore to provide perfect context for the AI, all without sending your data to the cloud.",
@@ -104,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
             footer_copy: "Designed and developed with ♥ by Sergio Sánchez with Antigravity.",
             link_doc: "https://github.com/sergio-snchez/LoneWriter/blob/main/README.md",
             link_change: "https://github.com/sergio-snchez/LoneWriter/blob/main/CHANGELOG.md",
+            link_roadmap: "https://github.com/sergio-snchez/LoneWriter/blob/main/ROADMAP.md",
             nav_roadmap: "Roadmap",
             roadmap_sectitle: "Future Vision & Roadmap",
             roadmap_secsub: "LoneWriter is evolving every day based on the needs of the community. Here is what is being worked on next.",
@@ -115,8 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
             rd_1_desc: "Improved touch gestures and offline reliability.",
             rd_2_title: "Interactive Timelines",
             rd_2_desc: "Visual mapping for events and character arcs.",
-            rd_3_title: "Zettelkasten System",
-            rd_3_desc: "3D knowledge graph integrated into Compendium.",
+            rd_3_title: "3D Knowledge Graph",
+            rd_3_desc: "Immersive 3D/2D dual-mode graph integrated in the app.",
             rd_4_title: "Anaphora Optimization",
             rd_4_desc: "Refined coherence for long narrative texts.",
             rd_5_title: "Extended Import",
@@ -125,6 +139,9 @@ document.addEventListener('DOMContentLoaded', () => {
             rd_6_desc: "Auto-extract lore from reference files via MCP.",
             rd_7_title: "Smart Bootstrap",
             rd_7_desc: "Map/import MD files into narrative tree.",
+            rd_8_title: "Enhanced RAG Memory",
+            rd_8_desc: "Support for larger local models and better indexing.",
+            roadmap_completed: "Completed in v1.9-nexus",
             roadmap_view_full: "View Full Roadmap"
         },
         es: {
@@ -132,12 +149,13 @@ document.addEventListener('DOMContentLoaded', () => {
             nav_features: "Características",
             nav_engine: "Motor MPC",
             nav_openapp: "Abrir App",
-            badge_version: "v1.8-glassmorphism ya disponible",
+            badge_version: "v1.9-nexus ya disponible",
             hero_title_1: "La App Inteligente<br/>para",
             hero_title_2: "Escritores",
             hero_subtitle: "Componer, estructurar y refinar tu obra maestra en un entorno sin distracciones, enfocado en la privacidad y potenciado por IA local.",
             hero_launch: "Abrir App",
             hero_discover: "Descubrir Características",
+            hero_micro: "Diseñado para el Trabajo Profundo. Cero distracciones.",
             mock_heading: "Prólogo: La Aguja de Obsidiana",
             mock_p: "La tormenta aullaba contra el cristal dentado de obsidiana, pero dentro de la Aguja, el Archimago Vaelen solo sonreía. Trazó con el dedo las runas brillantes del monolito; la convergencia por fin había llegado...",
             mock_mpc: "3 Entidades Detectadas",
@@ -155,8 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
             feat_3_desc: "Sube tu lore de world-building, notas específicas por capítulo y archivos de contexto. Actívalos al instante para que el Oráculo los revise.",
             feat_4_title: "Sincronización en la Nube",
             feat_4_desc: "Almacenamiento local con sincronización opcional a Google Drive y copias de seguridad continuas para asegurar que tu manuscrito nunca se pierda.",
-            feat_5_title: "Diseño Dinámico",
-            feat_5_desc: "Sumérgete en una interfaz bellamente diseñada con glassmorphism dinámico personalizable y un elegante modo oscuro.",
+            feat_5_title: "Entorno de Estado de Flujo",
+            feat_5_desc: "Una interfaz minimalista y sin distracciones, con glassmorphism dinámico y un modo oscuro profundo, diseñada psicológicamente para anclarte en tu estado de flujo.",
             feat_6_title: "Exportación sin Fricción",
             feat_6_desc: "Compila todo tu proyecto en un Documento estándar (.docx) con un solo clic, perfectamente formateado para publicar.",
             mu_act1: "Acto I: La Llamada",
@@ -176,7 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
             mu_exportbtn: "Exportar a .DOCX",
             engine_badge: "Gestión de Entidades MPC",
             engine_title: "Motor MPC (Monitoreo de Propuestas del Compendio)",
-            engine_sub: "LoneWriter extrae y categoriza dinámicamente elementos importantes mientras escribes sin consumir cantidades masivas de tokens de IA.",
+            engine_sub: "LoneWriter procesa tu mundo en silencio. Sin autocompletados molestos. Sin sugerencias no solicitadas. La IA organiza tu lore para que tú solo te preocupes de una cosa: escribir.",
+            engine_ghost: "Asistencia de IA Invisible",
             eng_1_label: "Personajes:",
             eng_1: "Rastrea rasgos de los personajes y apariencias dinámicamente.",
             eng_2_label: "Localizaciones:",
@@ -185,6 +204,17 @@ document.addEventListener('DOMContentLoaded', () => {
             eng_3: "Conciencia contextual de tus sistemas mágicos o de ciencia ficción.",
             eng_4_label: "Puntuación de Saliencia:",
             eng_4: "Inyecta solo el lore más relevante en tus peticiones de IA.",
+            nexus_badge: "Nexus",
+            nexus_title: "Nexus",
+            nexus_sub: "Transform los datos de tu Compendio en un grafo 3D interactivo y una línea de tiempo viva. Descubre las conexiones ocultas de tu historia.",
+            nex_1_label: "Grafo de conocimiento 3D:",
+            nex_1: "Visualiza relaciones complejas de personajes y lugares de forma interactiva.",
+            nex_2_label: "Línea de Tiempo Interactiva:",
+            nex_2: "Mapea eventos cronológicos de forma intuitiva junto a tu manuscrito.",
+            nex_3_label: "Exportación de Códice:",
+            nex_3: "Comparte una wiki HTML interactiva e independiente con tus lectores beta.",
+            nexus_menu_graph: "Grafo 3D",
+            nexus_menu_timeline: "Línea de Tiempo",
             rag_badge: "Inteligencia Semántica Local",
             rag_title: "Motor RAG en Local",
             rag_sub: "LoneWriter incorpora un motor RAG (Generación Aumentada por Recuperación) directamente en tu navegador. Recupera fragmentos de tu novela y lore relevante al instante para un contexto perfecto en la IA, todo sin enviar tus datos a la nube.",
@@ -208,6 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
             footer_copy: "Diseñado y desarrollado con ♥ por Sergio Sánchez con Antigravity.",
             link_doc: "https://github.com/sergio-snchez/LoneWriter/blob/main/README_ES.md",
             link_change: "https://github.com/sergio-snchez/LoneWriter/blob/main/CHANGELOG_ES.md",
+            link_roadmap: "https://github.com/sergio-snchez/LoneWriter/blob/main/ROADMAP_ES.md",
             nav_roadmap: "Roadmap",
             roadmap_sectitle: "Visión de Futuro y Roadmap",
             roadmap_secsub: "LoneWriter evoluciona cada día basándose en las necesidades de la comunidad. Esto es en lo que se está trabajando.",
@@ -219,8 +250,8 @@ document.addEventListener('DOMContentLoaded', () => {
             rd_1_desc: "Mejora de gestos táctiles y fiabilidad offline.",
             rd_2_title: "Líneas de Tiempo",
             rd_2_desc: "Mapeo visual de eventos y arcos cronológicos.",
-            rd_3_title: "Sistema Zettelkasten",
-            rd_3_desc: "Grafo 3D integrado en el Compendio.",
+            rd_3_title: "Grafo de Conocimiento 3D",
+            rd_3_desc: "Grafo inmersivo 3D/2D integrado en la app.",
             rd_4_title: "Optimización Anáforas",
             rd_4_desc: "Mejor coherencia narrativa en textos largos.",
             rd_5_title: "Importación Extendida",
@@ -229,6 +260,9 @@ document.addEventListener('DOMContentLoaded', () => {
             rd_6_desc: "Extraer lore de referencias vía MCP.",
             rd_7_title: "Smart Bootstrap",
             rd_7_desc: "Mapear archivos MD en el árbol narrativo.",
+            rd_8_title: "Memoria RAG Mejorada",
+            rd_8_desc: "Soporte para modelos locales mayores y mejor indexación.",
+            roadmap_completed: "Completado en v1.9-nexus",
             roadmap_view_full: "Ver Roadmap Completo"
         }
     };
@@ -419,6 +453,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(typeChar, 1000);
     };
+
+    // Nexus View Toggling
+    const nexusTabs = document.querySelectorAll('.nexus-tab');
+    nexusTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const view = tab.getAttribute('data-view');
+            
+            // Update tabs
+            nexusTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Update views
+            document.querySelectorAll('.nexus-view-graph, .nexus-view-timeline').forEach(v => {
+                v.classList.remove('active');
+                v.style.display = 'none'; // Fallback for safety
+            });
+            
+            const activeView = document.querySelector(`.nexus-view-${view}`);
+            if (activeView) {
+                activeView.classList.add('active');
+                activeView.style.display = 'block';
+            }
+        });
+    });
 
     if (mpcTypingArea) window.runMPCTyping();
 });

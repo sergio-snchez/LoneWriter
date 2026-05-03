@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import i18n from 'i18next'
 import {
   BookOpen, ChevronDown, ChevronRight, Plus, Eye, Edit3,
   FileText, Clock, CheckCircle2, Circle,
   AlertCircle, BarChart2, Target, Flame, Save, Loader2, Trash2, FileDown,
-  GripVertical, ChevronsDownUp, ChevronsUpDown, Sparkles
+  GripVertical, ChevronsDownUp, ChevronsUpDown, Sparkles, Calendar
 } from 'lucide-react'
 import {
   DndContext,
@@ -28,6 +29,7 @@ import { useAI } from '../context/AIContext'
 import { useModal } from '../context/ModalContext'
 import { ExportService } from '../services/exportService'
 import { Tooltip } from '../components/Tooltip'
+import { CustomDatePicker } from '../components/CustomDatePicker'
 import RichEditor from '../components/RichEditor'
 import {
   extractCandidates,
@@ -35,6 +37,7 @@ import {
   loadRegisteredEntityNames,
   loadIgnoredNames,
 } from '../services/mpcService'
+import { AIService } from '../services/aiService'
 import debounce from 'lodash/debounce'
 import { upsertVector } from '../services/ragService'
 import './Editor.css'
@@ -58,7 +61,7 @@ function StatusBadge({ status }) {
 
 // ---- Editable Title ----
 function EditableTitle({ title, onSave, className, isPlayfair, isBold }) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation('editor')
   const [isEditing, setIsEditing] = useState(false);
   const [val, setVal] = useState(title);
 
@@ -369,7 +372,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     addAct, deleteAct, updateAct, addChapter, deleteChapter, updateChapter, addScene, deleteScene,
     updateActOrder, updateChapterOrder, updateSceneOrder, moveScene, moveChapter,
     updateNovelTarget, getStreak, activeScene, setActiveScene,
-    getNovelUIExpanded, updateNovelUIExpanded
+    getNovelUIExpanded, updateNovelUIExpanded, expandedIds, setExpandedIds
   } = useNovel()
   const { openModal } = useModal()
   const {
@@ -385,7 +388,6 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
   const mpcDebounceRef = useRef(null)
 
   const [mobileTreeOpen, setMobileTreeOpen] = useState(false);
-  const [expandedIds, setExpandedIds] = useState(new Set());
   const [activeDragId, setActiveDragId] = useState(null);
 
   // Tree resizing logic
@@ -429,11 +431,36 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
   };
 
   const [isSaving, setIsSaving] = useState(null)
+  const [generatingSynopsis, setGeneratingSynopsis] = useState(false)
+  const [isHeaderExpanded, setIsHeaderExpanded] = useState(false)
   const [streak, setStreak] = useState(0)
   const [showGoalEditor, setShowGoalEditor] = useState(false)
   const [isStatsExpanded, setIsStatsExpanded] = useState(false)
   const goalEditorRef = useRef(null)
   const hoverTimerRef = useRef(null)
+  const [localSynopsis, setLocalSynopsis] = useState('')
+
+  // Sync local state when activeScene changes
+  useEffect(() => {
+    setLocalSynopsis(activeScene?.synopsis || '')
+  }, [activeScene?.id])
+
+  // Debounced persistence for synopsis
+  const debouncedSynopsisSave = useCallback(
+    debounce((id, val) => {
+      updateScene(id, { synopsis: val })
+    }, 1000),
+    [updateScene]
+  )
+
+  const handleSynopsisChange = (e) => {
+    const val = e.target.value
+    setLocalSynopsis(val)
+    if (activeScene) {
+      debouncedSynopsisSave(activeScene.id, val)
+    }
+  }
+
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -473,13 +500,8 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     fetchStreak();
   }, [activeNovel, getStreak]);
 
-  useEffect(() => {
-    if (activeNovel?.id) {
-      getNovelUIExpanded(activeNovel.id).then(setExpandedIds);
-    } else {
-      setExpandedIds(new Set());
-    }
-  }, [activeNovel?.id, getNovelUIExpanded]);
+  // Expanded IDs are now managed in NovelContext
+
 
   const GOAL_TEMPLATES = [
     { label: t('objetivos.plantillas.micro_relato'), words: 1000, targetScenes: 2, scenesRange: '1-2', wps: '500-1000', chaptersRange: '—' },
@@ -498,13 +520,8 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     })
   }
 
-  useEffect(() => {
-    if (!activeNovel?.id) return;
-    const timeoutId = setTimeout(() => {
-      updateNovelUIExpanded(activeNovel.id, expandedIds);
-    }, 500);
-    return () => clearTimeout(timeoutId);
-  }, [expandedIds, activeNovel?.id, updateNovelUIExpanded]);
+  // Persistence is now managed in NovelContext
+
 
   const handleExpandAll = () => {
     const allIds = new Set();
@@ -557,6 +574,8 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     window.addEventListener('mpc-manual-scan', handler)
     return () => window.removeEventListener('mpc-manual-scan', handler)
   }, [activeScene, activeNovel, mpcStatus])
+  // Navigation listener is now managed in NovelContext
+
   const debouncedRagUpsert = useCallback(
     debounce(async (sceneId, novelId, text) => {
       await upsertVector(sceneId, novelId, text)
@@ -684,13 +703,13 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       }
 
       const { proposals, usage } = await analyzeWithAI(
-          candidates,
-          plainText,
-          registeredNames,
-          ignoredNames,
-          { provider, apiKey, model: currentModel, localBaseUrl },
-          8 // Más candidatos en manual
-        )
+        candidates,
+        plainText,
+        registeredNames,
+        ignoredNames,
+        { provider, apiKey, model: currentModel, localBaseUrl },
+        8 // Más candidatos en manual
+      )
 
       logAIUsage(usage)
 
@@ -702,6 +721,24 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       setMpcStatus('idle')
     }
   }, [activeScene, activeNovel, apiKey, provider, currentModel, localBaseUrl, mpcStatus, setMpcStatus, addMpcProposals, logAIUsage])
+
+  const handleGenerateSynopsis = async () => {
+    if (!activeScene || !activeScene.content) return;
+    try {
+      const plainText = activeScene.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (plainText.length < 20) return;
+      setGeneratingSynopsis(true);
+      const aiConfig = { provider, apiKey, model: currentModel, localBaseUrl };
+      const { text, usage } = await AIService.summarizeScene(plainText, aiConfig);
+      logAIUsage(usage);
+      await handleMetaChange('synopsis', text);
+      setLocalSynopsis(text);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setGeneratingSynopsis(false);
+    }
+  };
 
   // Limpiar timeout MPC al desmontar
   useEffect(() => {
@@ -777,7 +814,20 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
 
   const handleExportScene = async () => {
     if (!activeScene) return
-    await ExportService.exportToWord(activeScene.title, activeScene.content)
+    try {
+      await ExportService.exportToWord(
+        activeScene.title,
+        activeScene.content,
+        t('exportar.escena_vacia_word')
+      )
+    } catch (err) {
+      if (err.message === 'SCENE_EMPTY') {
+        // Show localised warning via the modal system
+        console.warn('[LoneWriter] Export aborted: scene is empty.');
+      } else {
+        console.error('[LoneWriter] exportToWord error:', err);
+      }
+    }
   }
 
   const handleDragStart = (event) => {
@@ -1153,8 +1203,17 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                     <span>{activeScene.title}</span>
                   </div>
                   <div className="editor-header__title-row">
-                    <h2 className="editor-header__title">{activeScene.title}</h2>
-                    <div className="editor-header__metadata">
+                    <div className="editor-header__title-container">
+                      <h2 className="editor-header__title">{activeScene.title}</h2>
+                      <button
+                        className="header-toggle"
+                        onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+                      >
+                        {isHeaderExpanded ? <ChevronDown size={20} style={{ transform: 'rotate(180deg)' }} /> : <ChevronDown size={20} />}
+                      </button>
+                    </div>
+
+                    <div className={`editor-header__metadata ${!isHeaderExpanded ? 'header-collapsed' : ''}`}>
                       <div className="meta-field">
                         <Clock size={12} />
                         <select
@@ -1179,10 +1238,16 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                           {characters.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                         </select>
                       </div>
+                      <div className="meta-field">
+                        <CustomDatePicker
+                          value={activeScene.inGameDate || ''}
+                          onChange={(val) => handleMetaChange('inGameDate', val)}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="editor-header__status-row">
+                  </div>
+                <div className={`editor-header__status-row ${!isHeaderExpanded ? 'header-collapsed' : ''}`}>
                   <Tooltip content={t('editor.exportar_word')}>
                     <button className="btn btn-ghost btn-sm" onClick={handleExportScene}>
                       <FileDown size={14} />
@@ -1232,6 +1297,22 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                       </div>
                     </Tooltip>
                   )}
+                </div>
+                <div className={`editor-header__synopsis-container ${!isHeaderExpanded ? 'header-collapsed' : ''}`}>
+                  <Tooltip content={t('editor.generar_sinopsis')}>
+                    <button className="synopsis-ai-btn" onClick={handleGenerateSynopsis} disabled={generatingSynopsis}>
+                      {generatingSynopsis ? <Loader2 size={14} className="spin" /> : <Sparkles size={14} />}
+                    </button>
+                  </Tooltip>
+                  <div className="editor-header__synopsis-row">
+                    <input
+                      type="text"
+                      className="editor-header__synopsis-input"
+                      placeholder={t('editor.sinopsis_placeholder')}
+                      value={localSynopsis}
+                      onChange={handleSynopsisChange}
+                    />
+                  </div>
                 </div>
               </div>
 
