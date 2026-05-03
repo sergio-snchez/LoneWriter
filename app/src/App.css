@@ -733,7 +733,7 @@
 
 .progress-bg {
   height: 6px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-elevated);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -803,7 +803,7 @@
   font-family: 'Playfair Display', serif;
   font-size: 24px;
   font-weight: 700;
-  color: var(--accent-light);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -1023,8 +1023,10 @@
   }
 
   .topbar-settings-btn {
-    width: 28px !important;
-    height: 28px !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px;
+    min-height: 36px;
   }
 
   .mobile-menu-btn {
@@ -1086,8 +1088,9 @@
   .modal-content {
     width: calc(100vw - 32px);
     max-width: none;
-    margin: 16px;
+    margin: 16px auto;
     padding: 24px 20px;
+    border-radius: var(--radius-md);
   }
 
   .modal-title {

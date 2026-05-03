@@ -1,7 +1,8 @@
 {
   "settings": {
     "general": {
-      "clear_cache_confirm": "¿Eliminar caché y recargar la app? Esto borrará tus preferencias (tema, idioma, configuración de IA. ¡Asegúrate de sincronizar con Google Drive o de exportar tus proyectos!",
+      "clear_cache_title": "Limpiar caché",
+      "clear_cache_confirm": "¿Eliminar caché y recargar la app? Esto borrará tus preferencias (tema, idioma, configuración de IA). ¡Asegúrate de sincronizar con Google Drive o de exportar tus proyectos!",
       "clear_cache_error": "Error al limpiar la caché. Intenta recargar manualmente."
     }
   },
@@ -41,14 +42,16 @@
     "expandir": "Expandir menú",
     "colapsar": "Colapsar menú",
     "novela_activa": "Novela activa",
-    "version": "LoneWriter v1.8-glassmorphism",
+    "version": "LoneWriter",
     "nav": {
       "editor_label": "Estructura narrativa",
       "editor_sublabel": "Actos, capítulos y escenas",
       "compendium_label": "Compendio",
       "compendium_sublabel": "Personajes, lore y mundo",
       "resources_label": "Archivos de referencia",
-      "resources_sublabel": "Base de conocimiento"
+      "resources_sublabel": "Base de conocimiento",
+      "nexus_label": "Nexus",
+      "nexus_sublabel": "Grafo 3D y Línea de Tiempo"
     }
   },
   "editor_toolbar": {
@@ -72,5 +75,6 @@
     "descargando_subtitulo": "all-MiniLM-L6-v2 · ~23MB · solo esta vez",
     "listo_subtitulo": "El Oráculo ya usa contexto semántico ✨",
     "error_subtitulo": "El Oráculo funcionará sin RAG"
-  }
+  },
+  "selector_idioma": "Seleccionar idioma"
 }

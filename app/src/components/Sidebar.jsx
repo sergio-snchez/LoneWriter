@@ -1,7 +1,8 @@
-import { BookOpen, BookMarked, FolderOpen, PenLine, ChevronLeft, ChevronRight } from 'lucide-react'
+import { BookOpen, BookMarked, FolderOpen, PenLine, ChevronLeft, ChevronRight, Network } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNovel } from '../context/NovelContext'
 import { Tooltip } from './Tooltip'
+import { APP_VERSION } from '../utils/version'
 import './Sidebar.css'
 
 export default function Sidebar({ active, onNavigate, collapsed, onToggle }) {
@@ -20,6 +21,12 @@ export default function Sidebar({ active, onNavigate, collapsed, onToggle }) {
       label: t('sidebar.nav.compendium_label'),
       sublabel: t('sidebar.nav.compendium_sublabel'),
       icon: BookMarked,
+    },
+    {
+      id: 'nexus',
+      label: t('sidebar.nav.nexus_label'),
+      sublabel: t('sidebar.nav.nexus_sublabel'),
+      icon: Network,
     },
     {
       id: 'resources',
@@ -82,7 +89,7 @@ export default function Sidebar({ active, onNavigate, collapsed, onToggle }) {
       {/* Bottom spacer / version */}
       {!collapsed && (
         <div className="sidebar__footer">
-          <span className="sidebar__version">{t('sidebar.version')}</span>
+          <span className="sidebar__version">LoneWriter v{APP_VERSION}</span>
         </div>
       )}
     </aside>

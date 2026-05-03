@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   X, Cloud, RefreshCw, LogIn, LogOut,
@@ -51,7 +51,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
   };
 
   // Update activeTab when initialTab changes (e.g. when opening from different places)
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) setActiveTab(initialTab);
   }, [isOpen, initialTab]);
 
@@ -84,21 +84,26 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
     }
   };
 
-  const handleClearCache = async () => {
-    const confirmMessage = tc('settings.general.clear_cache_confirm');
-    if (!window.confirm(confirmMessage)) return;
-
-    try {
-      if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)));
+  const handleClearCache = () => {
+    openModal('confirm', {
+      title: tc('settings.general.clear_cache_title'),
+      message: tc('settings.general.clear_cache_confirm'),
+      confirmLabel: tc('botones.confirmar'),
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)));
+          }
+          localStorage.clear();
+          window.location.reload();
+        } catch (err) {
+          console.error('Error clearing cache:', err);
+          openModal('alert', { message: tc('settings.general.clear_cache_error') });
+        }
       }
-      localStorage.clear();
-      window.location.reload();
-    } catch (err) {
-      console.error('Error clearing cache:', err);
-      alert(tc('settings.general.clear_cache_error'));
-    }
+    });
   };
 
   if (!isOpen) return null;
@@ -122,7 +127,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
       const msg = !import.meta.env.VITE_GOOGLE_CLIENT_ID
         ? t('errores.client_id_no_configurado')
         : t('errores.error_conexion_google');
-      alert(msg);
+      openModal('alert', { message: msg });
     } finally {
       setIsSyncing(false);
     }
@@ -148,30 +153,35 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
       setShowRevisions(true);
     } catch (error) {
       console.error('Error loading revisions:', error);
-      alert(t('nube.error_cargar_historial'));
+      openModal('alert', { message: t('nube.error_cargar_historial') });
     } finally {
       setIsSyncing(false);
     }
   };
 
-  const handleRestoreRevision = async (revisionId, revisionDate) => {
-    if (!confirm(t('nube.confirmar_restaurar', { date: new Date(revisionDate).toLocaleString() }))) return;
-
-    setIsSyncing(true);
-    try {
-      const cloudData = await GoogleDriveService.downloadRevision(revisionId);
-      if (cloudData) {
-        window.dispatchEvent(new CustomEvent('restore-from-revision', {
-          detail: { data: cloudData, date: revisionDate }
-        }));
-        setShowRevisions(false);
+  const handleRestoreRevision = (revisionId, revisionDate) => {
+    openModal('confirm', {
+      title: t('nube.restaurar'),
+      message: t('nube.confirmar_restaurar', { date: new Date(revisionDate).toLocaleString() }),
+      confirmLabel: tc('botones.restaurar'),
+      onConfirm: async () => {
+        setIsSyncing(true);
+        try {
+          const cloudData = await GoogleDriveService.downloadRevision(revisionId);
+          if (cloudData) {
+            window.dispatchEvent(new CustomEvent('restore-from-revision', {
+              detail: { data: cloudData, date: revisionDate }
+            }));
+            setShowRevisions(false);
+          }
+        } catch (error) {
+          console.error('Error restoring revision:', error);
+          openModal('alert', { message: t('nube.error_restaurar_version') });
+        } finally {
+          setIsSyncing(false);
+        }
       }
-    } catch (error) {
-      console.error('Error restoring revision:', error);
-      alert(t('nube.error_restaurar_version'));
-    } finally {
-      setIsSyncing(false);
-    }
+    });
   };
 
   const AI_PROVIDER_LINKS = {

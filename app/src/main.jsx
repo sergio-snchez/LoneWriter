@@ -1,4 +1,4 @@
-import React from 'react'
+import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import { NovelProvider } from './context/NovelContext'
@@ -7,7 +7,7 @@ import { ModalProvider } from './context/ModalContext'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+  <StrictMode>
     <ModalProvider>
       <NovelProvider>
         <AIProvider>
@@ -15,5 +15,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </AIProvider>
       </NovelProvider>
     </ModalProvider>
-  </React.StrictMode>,
+  </StrictMode>,
 )

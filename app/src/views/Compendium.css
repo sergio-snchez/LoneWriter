@@ -1151,6 +1151,13 @@
     animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     padding-top: var(--safe-top);
     padding-bottom: var(--safe-bottom);
+    /* Override glassmorphism — fully opaque when open on mobile */
+    background: var(--bg-base);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    /* NOTE: opacity is intentionally NOT set here.
+       The base class has opacity:0 for closed state.
+       .compendium-view__panel--open sets opacity:1. Both still apply. */
   }
 
   .compendium-panel__body {

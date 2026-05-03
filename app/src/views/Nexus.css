@@ -1,0 +1,433 @@
+.nexus-view {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg-main);
+}
+
+.nexus-header {
+  padding: 24px 32px 16px;
+  background: linear-gradient(to bottom, var(--bg-glass), transparent);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  z-index: 10;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.nexus-header__main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nexus-header__actions {
+  display: flex;
+  align-items: center;
+}
+
+.nexus-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 0;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.nexus-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.nexus-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 24px 24px;
+  gap: 0;
+  /* Removed gap since views are exclusive */
+  overflow: hidden;
+}
+
+.nexus-main-container {
+  --nexus-timeline-syn-size: 12px;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Subtle background pulse for the graph */
+.nexus-main-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, rgba(var(--accent-rgb), 0.03) 0%, transparent 70%);
+  animation: nexus-ambient-pulse 15s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes nexus-ambient-pulse {
+  0% { transform: scale(1) translate(0, 0); opacity: 0.3; }
+  100% { transform: scale(1.2) translate(5%, 5%); opacity: 0.7; }
+}
+
+
+/* Obsolete resizing styles removed */
+
+
+/* Header Actions & Lock Button */
+.nexus-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nexus-header-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  opacity: 0.5;
+}
+
+.nexus-view-selector {
+  display: flex;
+  background: var(--bg-elevated);
+  padding: 4px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+}
+
+.nexus-view-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nexus-view-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.nexus-view-btn.active {
+  background: var(--accent);
+  color: #1a1710;
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.3);
+}
+
+.nexus-view-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nexus-lock-btn {
+  gap: 8px;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  color: var(--text-muted);
+}
+
+
+.nexus-lock-btn:hover {
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent);
+}
+
+.nexus-lock-btn.active {
+  background: rgba(var(--accent-rgb), 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+}
+
+.nexus-lock-btn .btn-label {
+  font-weight: 500;
+}
+
+@media (max-width: 1000px) {
+  .nexus-lock-btn .btn-label {
+    display: none;
+  }
+
+  .nexus-lock-btn {
+    padding: 8px;
+    border-radius: 50%;
+  }
+}
+
+.vis-timeline-wrapper {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+}
+
+/* Custom Vis Timeline Styling */
+.vis-timeline {
+  border: none !important;
+  background: transparent !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+.vis-item {
+  background: var(--bg-glass-strong) !important;
+  border: 1px solid var(--border-accent) !important;
+  border-radius: 6px !important;
+  color: var(--text-primary) !important;
+  box-shadow: var(--shadow-sm) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.vis-item:hover {
+  border-color: var(--accent) !important;
+  background: var(--accent-dim) !important;
+}
+
+.vis-item.vis-selected {
+  background: var(--accent-dim) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 10px var(--accent-dim) !important;
+}
+
+.timeline-item-inner {
+  padding: 6px 10px;
+  max-width: 350px;
+  text-align: left;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* The most aggressive selector possible to force font-size */
+.vis-timeline .vis-item .vis-item-content,
+.vis-timeline .vis-item .vis-item-content * {
+  font-size: var(--nexus-timeline-syn-size) !important;
+  color: var(--text-primary) !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+}
+
+.timeline-item-inner {
+  padding: 6px 10px;
+  max-width: 400px;
+  text-align: left;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.vis-time-axis .vis-text {
+  color: var(--text-secondary) !important;
+  font-size: 10px !important;
+}
+
+.vis-time-axis .vis-grid.vis-minor {
+  border-color: var(--border) !important;
+}
+
+.vis-time-axis .vis-grid.vis-major {
+  border-color: var(--border-accent) !important;
+}
+
+.nexus-graph-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.nexus-placeholder-text {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.nexus-placeholder-text h3 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+}
+
+.nexus-placeholder-text p {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Reset library's default tooltip container (Nuclear reset) */
+.graph-tooltip, 
+.scene-tooltip,
+.force-graph-container div:has(> .nexus-tooltip),
+div:has(> .nexus-tooltip) {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  outline: none !important;
+  visibility: visible !important;
+}
+
+/* Ensure our content remains visible and has the correct design */
+.nexus-tooltip {
+  background: var(--bg-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--text-primary);
+  pointer-events: none;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  font-family: 'Inter', sans-serif;
+  min-width: 160px;
+  z-index: 1000;
+}
+
+.nexus-tooltip-title {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+  color: var(--accent);
+}
+
+.nexus-tooltip-sub {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  opacity: 0.8;
+}
+
+.nexus-tooltip-meta {
+  font-size: 11px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+.nexus-tooltip-meta::before {
+  content: '●';
+  font-size: 8px;
+  color: var(--accent);
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .nexus-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .nexus-header__main {
+    align-items: center;
+    text-align: center;
+  }
+
+  .nexus-title {
+    font-size: 24px;
+  }
+
+  .nexus-header__actions {
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .nexus-view-selector {
+    width: 100%;
+  }
+
+  .nexus-view-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .nexus-content {
+    padding: 0 12px 12px;
+  }
+
+  .nexus-main-container {
+    border-radius: 16px;
+  }
+}
+
+/* Error State */
+.nexus-view--error {
+  justify-content: center;
+  align-items: center;
+}
+
+.nexus-error-card {
+  max-width: 500px;
+  padding: 40px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.nexus-error-card h2 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.nexus-error-card p {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.nexus-error-card pre {
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--red);
+  width: 100%;
+  overflow-x: auto;
+  text-align: left;
+}

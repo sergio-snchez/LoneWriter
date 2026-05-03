@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import i18n from '../i18n/i18n';
 import { db } from '../db/database';
 import { ExportService } from '../services/exportService';
@@ -19,6 +19,7 @@ export const NovelProvider = ({ children }) => {
   const [objects, setObjects] = useState([]);
   const [lore, setLore] = useState([]);
   const [resources, setResources] = useState([]);
+  const [nexusLinks, setNexusLinks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Cloud Sync State
@@ -39,6 +40,7 @@ export const NovelProvider = ({ children }) => {
   const [showMergeOverlay, setShowMergeOverlay] = useState(false);
   const [isMergeOverlayClosing, setIsMergeOverlayClosing] = useState(false);
   const [mergeSection, setMergeSection] = useState('characters');
+  const [expandedIds, setExpandedIds] = useState(new Set());
 
   // Initial seeding and loading
   useEffect(() => {
@@ -203,6 +205,7 @@ export const NovelProvider = ({ children }) => {
     setObjects([]);
     setLore([]);
     setResources([]);
+    setNexusLinks([]);
   };
 
   const syncNovelWordCount = async (novelId) => {
@@ -252,11 +255,60 @@ export const NovelProvider = ({ children }) => {
     setObjects(objects);
     setLore(await db.lore.where('novelId').equals(novelId).toArray());
     setResources(await db.resources.where('novelId').equals(novelId).toArray());
+    setNexusLinks(await db.nexusLinks.where('novelId').equals(novelId).toArray());
+    
+    // Load UI state
+    const savedExpanded = await getNovelUIExpanded(novelId);
+    setExpandedIds(savedExpanded);
     
     // Also update the novel object in state to ensure wordCount is fresh
     const updatedNovel = await db.novels.get(novelId);
     setActiveNovel(updatedNovel);
   };
+
+  // Global navigation listener
+  useEffect(() => {
+    const handleGlobalNavigate = (e) => {
+      const { sceneId } = e.detail;
+      if (!sceneId || acts.length === 0) return;
+
+      const allS = acts.flatMap(a => (a.chapters || []).flatMap(c => c.scenes || []));
+      const targetScene = allS.find(s => String(s.id) === String(sceneId));
+
+      if (targetScene) {
+        let actId = null;
+        let chId = null;
+        for (const act of acts) {
+          for (const ch of act.chapters || []) {
+            if (ch.scenes?.some(s => String(s.id) === String(sceneId))) {
+              actId = act.id;
+              chId = ch.id;
+              break;
+            }
+          }
+          if (actId) break;
+        }
+
+        if (actId && chId) {
+          setExpandedIds(prev => new Set([...prev, `act-${actId}`, `ch-${chId}`]));
+        }
+        
+        setActiveScene(targetScene);
+      }
+    };
+
+    window.addEventListener('navigate-to-scene', handleGlobalNavigate);
+    return () => window.removeEventListener('navigate-to-scene', handleGlobalNavigate);
+  }, [acts]);
+
+  // Persist expanded IDs when they change
+  useEffect(() => {
+    if (!activeNovel?.id) return;
+    const timer = setTimeout(() => {
+      updateNovelUIExpanded(activeNovel.id, expandedIds);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [expandedIds, activeNovel?.id]);
 
   const updateNovelTarget = async (novelId, targetWords, targetScenes) => {
     const data = {};
@@ -379,6 +431,7 @@ export const NovelProvider = ({ children }) => {
       await db.lore.where('novelId').equals(id).delete();
       await db.resources.where('novelId').equals(id).delete();
       await db.dailyProgress.where('novelId').equals(id).delete();
+      await db.nexusLinks.where('novelId').equals(id).delete();
       // Delete AI debate data
       await db.debateAgents.where('novelId').equals(id).delete();
       await db.debateSessions.where('novelId').equals(id).delete();
@@ -447,7 +500,7 @@ export const NovelProvider = ({ children }) => {
     const ch = await db.chapters.get(chapterId);
     const act = await db.acts.get(ch.actId);
     const count = await db.scenes.where('chapterId').equals(chapterId).count();
-    const id = await db.scenes.add({ chapterId, title, order: count, number: count + 1, status: 'Borrador', pov: '', wordCount: 0, content: '' });
+    const id = await db.scenes.add({ chapterId, title, order: count, number: count + 1, status: 'Borrador', pov: '', inGameDate: '', wordCount: 0, content: '' });
     await reloadData(act.novelId);
     setPendingSync(true);
     return id;
@@ -722,6 +775,7 @@ export const NovelProvider = ({ children }) => {
     objects,
     lore,
     resources,
+    nexusLinks,
     loading,
     createNovel,
     switchNovel,
@@ -768,7 +822,9 @@ export const NovelProvider = ({ children }) => {
     handleMergeSelection,
     confirmMerge,
     skipMerge,
-    closeMergeOverlay
+    closeMergeOverlay,
+    expandedIds,
+    setExpandedIds
   };
 
   return <NovelContext.Provider value={value}>{children}</NovelContext.Provider>;

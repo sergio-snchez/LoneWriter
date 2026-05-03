@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import './LanguageSelector.css';
 
@@ -8,7 +7,7 @@ const LANGUAGES = [
 ];
 
 export default function LanguageSelector() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation('common');
 
   const currentLang = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
 
@@ -23,7 +22,7 @@ export default function LanguageSelector() {
         className="language-selector__select"
         value={currentLang.code}
         onChange={handleChange}
-        aria-label="Select language"
+        aria-label={t('selector_idioma', 'Select language')}
       >
         {LANGUAGES.map(lang => (
           <option key={lang.code} value={lang.code}>

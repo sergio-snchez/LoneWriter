@@ -6,7 +6,7 @@
 
 </div>
 
-# LoneWriter v1.8-glassmorphism 🖋️
+# LoneWriter v1.9-nexus 🖋️
 
 > **Tu "Sistema Operativo Narrativo": La IA que te escucha, organiza tu caos y vigila la coherencia de tu mundo mientras tú solo te preocupas de escribir.**
 >
@@ -18,9 +18,27 @@
 >
 > ☕ **Apoya el proyecto:** [Invítame a un café](https://buymeacoffee.com/sergio.snchez)
 
-LoneWriter es una aplicación minimalista y potente diseñada para escritores que buscan un entorno zen pero con capacidades de **IA Invisible** de última generación. Gestiona tu estructura narrativa, crea un compendio detallado de tu mundo y recibe ayuda de asistentes literarios expertos, todo desde tu navegador o instalado como una aplicación nativa gracias a su tecnología PWA.
+LoneWriter es una aplicación de escritura **100% local y con privacidad absoluta**. Tus manuscritos, personajes e ideas nunca salen de tu dispositivo — sin cuentas, sin servidores, sin rastreo. Si quieres superpoderes de IA, tú aportas tu propia clave y va directamente al proveedor. Todo lo demás funciona íntegramente en tu navegador.
 
-## ✨ Características Principales
+## 🔒 Privacidad Primero — 100% Local por Defecto
+
+> **Tu escritura te pertenece solo a ti.**
+
+- **Cero recopilación de datos**: No enviamos nada a nuestros servidores. Tu novela vive exclusivamente en el IndexedDB de tu navegador.
+- **Motor de IA local (RAG)**: La búsqueda semántica y la detección de entidades se ejecutan por completo en tu navegador mediante Transformers.js — ningún servicio externo procesa el contexto de tu historia.
+- **Tú pones la clave, tú mandas**: Cuando conectas un proveedor de IA (Gemini, GPT-4o, Claude…), tu clave API va directamente a ese proveedor. LoneWriter nunca actua de intermediario, ni guarda ni lee tus prompts.
+- **Nube opcional, tu propio espacio**: La sincronización con Google Drive es completamente opcional y se conecta únicamente a *tu propia* cuenta de Google — no a nuestros servidores. Tú eres el único dueño de tus copias de seguridad.
+- **Funciona sin conexión**: Una vez instalada como PWA, LoneWriter funciona sin internet. Sin suscripción, sin cuenta obligatoria.
+
+## ✨ Más Características
+
+### 🕸️ Nexus — Grafo de Conocimiento Interactivo
+- **Modo 3D/2D Dual**: Visualiza todas las entidades de tu novela (personajes, lugares, objetos, lore) como una constelación viva de nodos e interconexiones. Cambia entre el modo 3D inmersivo y el 2D analítico con un clic.
+- **Flujos de Energía Animados**: Partículas que viajan a lo largo de las conexiones entre nodos, representando visualmente la intensidad y el tipo de cada relación de tu mundo.
+- **Navegación Inteligente**: Haz doble clic en cualquier nodo para saltar directamente a su ficha del Compendio. Un clic simple enfoca la cámara en él.
+- **Línea de Tiempo Cronológica**: Una cronología escena a escena de los eventos en el universo de tu historia. Haz clic en cualquier escena para abrirla al instante en el Editor.
+- **Vista Libre / Bloqueada**: Alterna entre un zoom persistente libre y una vista bloqueada que se ajusta automáticamente al navegar.
+- **UI Adaptada a Temas**: Todos los paneles de Nexus (tooltips, cronología, grafo) se adaptan visualmente a los 4 temas (Oscuro, Claro, Sepia, Nórdico).
 
 ### 🌍 Multilenguaje (i18n)
 - **Español e Inglés:** Interfaz completamente traducida con selector de idioma en Configuración > General.
@@ -60,7 +78,7 @@ LoneWriter es una aplicación minimalista y potente diseñada para escritores qu
 ### 💾 Portabilidad y Sincronización
 - **Cloud Sync:** Conexión nativa con **Google Drive** para respaldos automáticos y persistencia total.
 - **Privacidad Primero:** Tus datos se guardan localmente (IndexedDB) y opcionalmente en tu propio espacio personal de Google.
-- **Exportación Comprimida:** Descarga tu proyecto completo en formato `.lwrt` comprimido con gzip (ilegible en texto plano) o genera un documento de Word (`.docx`).
+- **Exportación Cifrada:** Descarga tu proyecto completo en formato `.lwrt` comprimido con cifrado opcional por contraseña, o genera un documento de Word (`.docx`).
 - **Compatibilidad hacia atrás:** El importador detecta automáticamente archivos `.lwrt` antiguos (JSON plano) y nuevos (comprimidos).
 - **Gestión de Ajustes:** Interfaz organizada con pestañas dedicadas para ajustes de Nube, IA, Interfaz y General. Limpia la caché y restablece preferencias fácilmente.
 
@@ -69,6 +87,8 @@ LoneWriter es una aplicación minimalista y potente diseñada para escritores qu
 - **Core:** React + Vite
 - **Base de Datos:** Dexie.js (IndexedDB)
 - **Motor RAG:** Transformers.js (all-MiniLM-L6-v2) — embeddings locales en navegador
+- **Grafo de Conocimiento:** react-force-graph-2d / react-force-graph-3d + Three.js
+- **Cronología:** vis-timeline
 - **i18n:** i18next + react-i18next
 - **Compresión:** pako (gzip)
 - **PWA:** Vite PWA Plugin (Service Workers, Offline support)
@@ -98,7 +118,7 @@ Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
 
 ---
 
-*LoneWriter v1.8-glassmorphism - Tu espacio personal para dar vida a grandes historias.*
+*LoneWriter v1.9-nexus - Tu espacio personal para dar vida a grandes historias.*
 
 ---
 

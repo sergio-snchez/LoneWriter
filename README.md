@@ -6,7 +6,7 @@
 
 </div>
 
-# LoneWriter v1.8-glassmorphism 🖋️
+# LoneWriter v1.9-nexus 🖋️
 
 > **Your "Narrative Operating System": The AI that listens to you, organizes your chaos, and monitors your world's coherence while you only worry about writing.**
 >
@@ -18,9 +18,27 @@
 >
 > ☕ **Support the project:** [Buy me a coffee](https://buymeacoffee.com/sergio.snchez)
 
-LoneWriter is a minimalist and powerful application designed for writers seeking a zen environment with cutting-edge **Invisible AI** capabilities. Manage your narrative structure, create a detailed compendium of your world, and receive help from expert literary assistants, all from your browser or installed as a native application thanks to its PWA technology.
+LoneWriter is a **100% local, privacy-first** writing application. Your manuscripts, characters, and ideas never leave your device — no accounts, no servers, no tracking. When you want AI superpowers, you bring your own key and it goes straight to the provider. Everything else runs entirely in your browser.
 
-## ✨ Main Features
+## 🔒 Privacy First — 100% Local by Default
+
+> **Your writing belongs to you, and only you.**
+
+- **Zero data collection**: Nothing is ever sent to our servers. Your novel lives exclusively in your browser's IndexedDB.
+- **Local AI engine (RAG)**: Semantic search and entity detection run fully in your browser via Transformers.js — no cloud API call is made to understand your story's context.
+- **Bring your own key**: When you connect an AI provider (Gemini, GPT-4o, Claude…), your API key goes directly to that provider. LoneWriter never proxies, stores, or reads your prompts.
+- **Optional cloud, your own space**: Google Drive sync is fully optional and connects only to *your own* Google account — not our servers. You are the sole owner of your backups.
+- **Works fully offline**: Once installed as a PWA, LoneWriter works without an internet connection. No subscription, no account required.
+
+## ✨ More Features
+
+### 🕸️ Nexus — Interactive Knowledge Graph
+- **3D/2D Dual Mode**: Visualize all entities (characters, locations, objects, lore) as a living constellation of nodes. Switch between immersive 3D and analytical 2D with one click.
+- **Animated Energy Flows**: Particles travel along connections, visually representing the strength and type of each relationship.
+- **Intelligent Navigation**: Double-click any node to jump directly to its Compendium entry. Single-click focuses the camera.
+- **Chronological Timeline**: A scene-by-scene timeline of your story's in-universe events. Click any scene to open it instantly in the Editor.
+- **Free/Locked View**: Toggle between free persistent zoom and a locked view that auto-fits when navigating.
+- **Theme-Adaptive UI**: All Nexus panels (tooltips, timeline, graph) adapt visually to all 4 themes.
 
 ### 🌍 Multilingual (i18n)
 - **Spanish and English:** Fully translated interface with language selector in Settings > General.
@@ -60,7 +78,7 @@ LoneWriter is a minimalist and powerful application designed for writers seeking
 ### 💾 Portability and Synchronization
 - **Cloud Sync:** Native connection with **Google Drive** for automatic backups and total persistence.
 - **Privacy First:** Your data is saved locally (IndexedDB) and optionally in your own Google personal space.
-- **Compressed Export:** Download your complete project in compressed `.lwrt` format (unreadable as plain text) or generate a Word document (`.docx`).
+- **Encrypted Export:** Download your complete project in compressed `.lwrt` format with optional password encryption, or generate a Word document (`.docx`).
 - **Backward Compatibility:** The importer automatically detects old (plain JSON) and new (compressed) `.lwrt` files.
 - **Settings Management:** Organized interface with dedicated tabs for Cloud, AI, Interface, and General settings. Easily clear cache and reset preferences.
 
@@ -69,6 +87,8 @@ LoneWriter is a minimalist and powerful application designed for writers seeking
 - **Core:** React + Vite
 - **Database:** Dexie.js (IndexedDB)
 - **RAG Engine:** Transformers.js (all-MiniLM-L6-v2) — local embeddings in browser
+- **Knowledge Graph:** react-force-graph-2d / react-force-graph-3d + Three.js
+- **Timeline:** vis-timeline
 - **i18n:** i18next + react-i18next
 - **Compression:** pako (gzip)
 - **PWA:** Vite PWA Plugin (Service Workers, Offline support)
@@ -98,7 +118,7 @@ Designed and developed with ♥ by **Sergio Sánchez** with Antigravity.
 
 ---
 
-*LoneWriter v1.8-glassmorphism - Your personal space to bring great stories to life.*
+*LoneWriter v1.9-nexus - Your personal space to bring great stories to life.*
 
 ---
 
