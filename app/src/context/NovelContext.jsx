@@ -233,6 +233,7 @@ export const NovelProvider = ({ children }) => {
       const realWords = await syncNovelWordCount(id);
       await reloadData(id);
       setActiveNovel({ ...novel, wordCount: realWords });
+      setActiveScene(null);
       localStorage.setItem('activeNovelId', id);
       
       // Auto-index scenes that don't have RAG vectors yet (e.g. from older sessions)
@@ -311,15 +312,20 @@ export const NovelProvider = ({ children }) => {
   }, [expandedIds, activeNovel?.id]);
 
   const updateNovelTarget = async (novelId, targetWords, targetScenes) => {
-    const data = {};
-    if (targetWords !== undefined) data.targetWords = targetWords;
-    if (targetScenes !== undefined) data.targetScenes = targetScenes;
-    
-    await db.novels.update(novelId, data);
+    await updateNovel(novelId, { targetWords, targetScenes });
+  };
+
+  const updateNovel = async (novelId, data) => {
+    // Filter out undefined values
+    const cleanData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+    if (Object.keys(cleanData).length === 0) return;
+
+    await db.novels.update(novelId, cleanData);
     await refreshAllNovels();
     if (activeNovel?.id === novelId) {
-      setActiveNovel(prev => ({ ...prev, ...data }));
+      setActiveNovel(prev => ({ ...prev, ...cleanData }));
     }
+    setPendingSync(true);
   };
 
   const getNovelUIExpanded = useCallback(async (novelId) => {
@@ -445,7 +451,10 @@ export const NovelProvider = ({ children }) => {
     // ── RAG: remove all embeddings for this novel ──
     await deleteVectorsForNovel(id);
     setAllNovels(prev => prev.filter(n => n.id !== id));
-    if (activeNovel?.id === id) setActiveNovel(null);
+    if (activeNovel?.id === id) {
+      setActiveNovel(null);
+      setActiveScene(null);
+    }
     setPendingSync(true);
   };
 
@@ -795,6 +804,7 @@ export const NovelProvider = ({ children }) => {
     moveScene,
     moveChapter,
     updateNovelTarget,
+    updateNovel,
     getNovelUIExpanded,
     updateNovelUIExpanded,
     getStreak,

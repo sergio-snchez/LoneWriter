@@ -247,13 +247,13 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                   {!isCloudLinked ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <button className="btn btn-primary btn-sm" onClick={handleCloudLink} disabled={isSyncing}>
-                        {isSyncing ? <RefreshCw size={12} className="spinner" /> : <LogIn size={12} />}
+                        {isSyncing ? <RefreshCw size={14} className="spinner" /> : <LogIn size={14} />}
                         {t('nube.vincular_cuenta')}
                       </button>
                     </div>
                   ) : (
                     <button className="btn btn-ghost btn-sm" onClick={handleSignOut} style={{ color: 'var(--red)' }}>
-                      <LogOut size={12} />
+                      <LogOut size={14} />
                       {t('nube.desconectar')}
                     </button>
                   )}
@@ -268,13 +268,14 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                     </span>
                     <Tooltip content={t('nube.ver_historial')}>
                       <button className="btn btn-ghost btn-sm" onClick={handleShowRevisions} disabled={isSyncing}>
-                        <History size={12} />
+                        <History size={14} />
+                        {t('nube.versiones')}
                       </button>
                     </Tooltip>
                     <Tooltip content={t('nube.sincronizar_ahora')}>
                       <button className="btn btn-ghost btn-sm" onClick={handleManualSync} disabled={isSyncing || cloudSyncStatus === 'syncing'}>
-                        <RefreshCw size={12} className={isSyncing || cloudSyncStatus === 'syncing' ? 'spinner' : ''} />
-                        {t('nube.sincronizar_ahora')}
+                        <RefreshCw size={14} className={isSyncing || cloudSyncStatus === 'syncing' ? 'spinner' : ''} />
+                        {t('nube.sincronizar')}
                       </button>
                     </Tooltip>
                   </div>
@@ -733,6 +734,8 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                 <span className="settings-info-value">{t('general.tecnologia_rag_valor')}</span>
                 <span className="settings-info-label">{t('general.tecnologia_saliencia')}</span>
                 <span className="settings-info-value">{t('general.tecnologia_saliencia_valor')}</span>
+                <span className="settings-info-label">{t('general.tecnologia_nexus')}</span>
+                <span className="settings-info-value">{t('general.tecnologia_nexus_valor')}</span>
               </div>
             </div>
             <div className="settings-section">

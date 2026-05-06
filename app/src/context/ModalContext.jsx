@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const ModalContext = createContext();
@@ -17,7 +17,10 @@ export const ModalProvider = ({ children }) => {
   const [modalInput, setModalInput] = useState('');
   const [isClosing, setIsClosing] = useState(false);
 
+  const timeoutRef = useRef(null);
+  
   const openModal = (type, data = null) => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsClosing(false);
     setModal({ type, data });
     setModalInput('');
@@ -25,10 +28,11 @@ export const ModalProvider = ({ children }) => {
 
   const closeModal = () => {
     setIsClosing(true);
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setModal({ type: null, data: null });
       setModalInput('');
       setIsClosing(false);
+      timeoutRef.current = null;
     }, 220);
   };
 

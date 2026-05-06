@@ -49,6 +49,7 @@ export default function Sidebar({ active, onNavigate, collapsed, onToggle }) {
           onClick={onToggle}
           id="sidebar-toggle-btn"
           aria-label={collapsed ? t('sidebar.expandir') : t('sidebar.colapsar')}
+          disabled={!activeNovel}
         >
           {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
         </button>
