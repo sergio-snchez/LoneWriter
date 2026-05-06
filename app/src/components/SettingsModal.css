@@ -493,6 +493,17 @@
     padding: 16px;
   }
 
+  .cloud-sync-card__footer {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .cloud-sync-card__footer span {
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
   .ai-settings-input,
   .ai-settings-select {
     padding: 10px 12px;

@@ -71,10 +71,15 @@
   flex-shrink: 0;
   transition: all var(--trans-fast);
 }
-.sidebar__toggle:hover {
+.sidebar__toggle:hover:not(:disabled) {
   background: var(--bg-hover);
   color: var(--text-primary);
   border-color: rgba(255,255,255,0.15);
+}
+
+.sidebar__toggle:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
 }
 
 /* Novel chip */

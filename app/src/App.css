@@ -105,6 +105,25 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 200px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.app-topbar__novel:hover {
+  opacity: 0.8;
+}
+
+.app-topbar__novel-input {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  width: 200px;
+  outline: none;
 }
 
 .app-topbar__divider {
@@ -158,12 +177,17 @@
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.topbar-settings-btn:hover {
+.topbar-settings-btn:hover:not(:disabled) {
   opacity: 1;
   color: var(--accent-light) !important;
   background: var(--bg-hover) !important;
   filter: drop-shadow(0 0 4px rgba(212, 168, 83, 0.4));
   transform: translateY(-1px);
+}
+
+.topbar-settings-btn:disabled {
+  opacity: 0.2 !important;
+  cursor: not-allowed !important;
 }
 
 /* ---- Main body ---- */
@@ -237,6 +261,12 @@
 .spinner {
   animation: spin 1s linear infinite;
   color: var(--accent);
+  display: inline-block;
+  vertical-align: middle;
+  filter: drop-shadow(0 0 2px rgba(212, 168, 83, 0.4));
+}
+
+.app-loading .spinner {
   width: 32px;
   height: 32px;
 }
