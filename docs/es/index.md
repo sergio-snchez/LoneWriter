@@ -11,7 +11,7 @@ hero:
       link: /es/guide/getting-started
     - theme: alt
       text: Descubrir Funciones
-      link: /es/guide/editor
+      link: /es/guide/editor/basics
 
 features:
   - title: Privacidad y Soberanía
