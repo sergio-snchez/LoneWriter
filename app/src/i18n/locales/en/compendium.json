@@ -11,7 +11,7 @@
     "error_escaneo": "Error searching for duplicates.",
     "error_fusion": "Error merging: {{error}}",
     "error_confirmar": "Error confirming merge: {{error}}",
-"similitud": "Similarity: {{percent}}%",
+    "similitud": "Similarity: {{percent}}%",
     "fusion_preview": "Merge preview:",
     "seleccionar_nombre": "Select the final name:",
     "confirmar": "Confirm merge",
@@ -99,6 +99,7 @@
     "completar_ia_error": "Please enter at least a name or title before attempting to extract data.",
     "completar_ia_fallo": "Auto-complete error: {{error}}",
     "completar_ia_cargando": "COLLECTING LORE...",
+    "completar_ia_entidad_cambiada": "The AI process has stopped because you changed entities. The data has not been applied to avoid overwriting the new selected entity's information.",
     "personajes": {
       "nombre": "Name",
       "nombre_placeholder": "Lyra Ashveil",

@@ -162,9 +162,56 @@ export const AIService = {
 
     if (!apiKey && provider !== 'local') throw new Error(errorAPI);
 
+    // Limpiar campos internos antes de enviar a la IA para evitar confusión
+    const cleanData = { ...currentData };
+    delete cleanData._rawTraits;
+    delete cleanData._rawTags;
+    delete cleanData._originalCategory;
+    delete cleanData.id;
+
     const promptTemplate = isSpanish
-      ? `Actúa como un asistente literario experto. Vas a rellenar automáticamente la ficha de "${name}" (${type}) para el Compendio de la novela, infiriendo los datos ESTRICTAMENTE a partir del siguiente fragmento de la historia. No inventes absolutamente nada que no se deduzca de este texto.\n\n[CONTEXTO DE LA NOVELA]\n${sceneText}\n\n[DATOS EXISTENTES (Mantén estos o mejóralos si el texto lo justifica)]\n${JSON.stringify(currentData, null, 2)}\n\nINSTRUCCIONES DE FORMATO:\nDevuelve ÚNICAMENTE un JSON válido (sin marcas de formato markdown \`\`\`json ni texto previo o posterior). Usa esta estructura según el tipo, omitiendo campos si no hay información en el texto:\n- characters: { "role": "", "occupation": "", "age": 0, "description": "", "traits": ["rasgo1"], "associatedLocations": ["NombreLugar"], "associatedObjects": ["NombreObjeto"], "associatedLore": ["TituloLore"], "relations": [{ "name": "NombreOtro", "type": "como lo veo", "reverseType": "como me ve" }] }\n- locations: { "type": "", "climate": "", "description": "", "tags": ["tag1"], "associatedCharacters": ["NombreChar"], "associatedObjects": ["NombreObj"], "associatedLore": ["TituloLore"] }\n- objects: { "type": "", "description": "", "origin": "", "currentOwner": "", "tags": ["tag1"], "associatedCharacters": ["NombreChar"], "associatedLocations": ["NombreLugar"], "associatedLore": ["TituloLore"] }\n- lore: { "category": "", "summary": "", "tags": ["tag1"], "associatedCharacters": ["NombreChar"], "associatedLocations": ["NombreLugar"], "associatedObjects": ["NombreObj"] }`
-      : `Act as an expert literary assistant. You will automatically fill in the entry for "${name}" (${type}) for the novel's Compendium, inferring the data STRICTLY from the following fragment of the story. Do not invent absolutely anything that cannot be deduced from this text.\n\n[NOVEL CONTEXT]\n${sceneText}\n\n[EXISTING DATA (Keep these or improve them if the text justifies)]\n${JSON.stringify(currentData, null, 2)}\n\nFORMAT INSTRUCTIONS:\nReturn ONLY valid JSON (without markdown formatting markers \`\`\`json or any preceding or following text). Use this structure according to the type, omitting fields if there is no information in the text:\n- characters: { "role": "", "occupation": "", "age": 0, "description": "", "traits": ["trait1"], "associatedLocations": ["LocationName"], "associatedObjects": ["ObjectName"], "associatedLore": ["LoreTitle"], "relations": [{ "name": "OtherName", "type": "how I see them", "reverseType": "how they see me" }] }\n- locations: { "type": "", "climate": "", "description": "", "tags": ["tag1"], "associatedCharacters": ["CharName"], "associatedObjects": ["ObjectName"], "associatedLore": ["LoreTitle"] }\n- objects: { "type": "", "description": "", "origin": "", "currentOwner": "", "tags": ["tag1"], "associatedCharacters": ["CharName"], "associatedLocations": ["LocationName"], "associatedLore": ["LoreTitle"] }\n- lore: { "category": "", "summary": "", "tags": ["tag1"], "associatedCharacters": ["CharName"], "associatedLocations": ["LocationName"], "associatedObjects": ["ObjectName"] }`;
+      ? `Actúa como un asistente literario experto y detective de narrativa. Tu objetivo es COMPLETAR AL MÁXIMO la ficha de "${name}" (categoría: ${type}) para el Compendio, extrayendo cada detalle relevante del texto proporcionado.
+
+[CONTEXTO DE LA NOVELA]
+${sceneText}
+
+[DATOS ACTUALES (Prioriza completar los campos vacíos o mejorar los existentes)]
+${JSON.stringify(cleanData, null, 2)}
+
+INSTRUCCIONES CRÍTICAS:
+1. INFIERE rasgos de personalidad, descripciones físicas y roles basándote en las acciones, diálogos y descripciones del texto.
+2. Si el campo está vacío, es PRIORITARIO encontrar información para rellenarlo.
+3. Sé DESCRIPTIVO. No te limites a una sola palabra si el texto permite una frase rica.
+4. Para RELACIONES: Identifica cómo interactúa con otros personajes y define el vínculo bidireccional.
+5. NO inventes hechos que contradigan el texto, pero sé proactivo interpretando la caracterización.
+6. Devuelve ÚNICAMENTE un JSON válido (sin marcas de markdown).
+
+ESTRUCTURA OBLIGATORIA POR TIPO:
+- characters: { "role": "", "occupation": "", "age": 0, "description": "", "traits": ["rasgo1"], "associatedLocations": ["NombreLugar"], "associatedObjects": ["NombreObjeto"], "associatedLore": ["TituloLore"], "relations": [{ "name": "NombreOtro", "type": "cómo lo ve", "reverseType": "cómo le ve" }] }
+- locations: { "type": "", "climate": "", "description": "", "tags": ["tag1"], "associatedCharacters": ["NombreChar"], "associatedObjects": ["NombreObj"], "associatedLore": ["TituloLore"] }
+- objects: { "type": "", "description": "", "origin": "", "currentOwner": "", "tags": ["tag1"], "associatedCharacters": ["NombreChar"], "associatedLocations": ["NombreLugar"], "associatedLore": ["TituloLore"] }
+- lore: { "category": "", "summary": "", "tags": ["tag1"], "associatedCharacters": ["NombreChar"], "associatedLocations": ["NombreLugar"], "associatedObjects": ["NombreObj"] }`
+      : `Act as an expert literary assistant and narrative detective. Your goal is to FULLY COMPLETE the entry for "${name}" (category: ${type}) for the Compendium, extracting every relevant detail from the provided text.
+
+[NOVEL CONTEXT]
+${sceneText}
+
+[CURRENT DATA (Prioritize filling empty fields or improving existing ones)]
+${JSON.stringify(cleanData, null, 2)}
+
+CRITICAL INSTRUCTIONS:
+1. INFER personality traits, physical descriptions, and roles based on the text's actions, dialogues, and descriptions.
+2. If a field is empty, it is a PRIORITY to find information to fill it.
+3. Be DESCRIPTIVE. Do not limit yourself to a single word if the text allows for a rich sentence.
+4. For RELATIONS: Identify how they interact with other characters and define the bi-directional bond.
+5. Do NOT invent facts that contradict the text, but be proactive in interpreting characterization.
+6. Return ONLY valid JSON (without markdown markers).
+
+MANDATORY STRUCTURE PER TYPE:
+- characters: { "role": "", "occupation": "", "age": 0, "description": "", "traits": ["trait1"], "associatedLocations": ["LocationName"], "associatedObjects": ["ObjectName"], "associatedLore": ["LoreTitle"], "relations": [{ "name": "OtherName", "type": "how I see them", "reverseType": "how they see me" }] }
+- locations: { "type": "", "climate": "", "description": "", "tags": ["tag1"], "associatedCharacters": ["CharName"], "associatedObjects": ["ObjectName"], "associatedLore": ["LoreTitle"] }
+- objects: { "type": "", "description": "... ", "origin": "", "currentOwner": "", "tags": ["tag1"], "associatedCharacters": ["CharName"], "associatedLocations": ["LocationName"], "associatedLore": ["LoreTitle"] }
+- lore: { "category": "", "summary": "", "tags": ["tag1"], "associatedCharacters": ["CharName"], "associatedLocations": ["LocationName"], "associatedObjects": ["ObjectName"] }`;
 
     let response = null;
     if (provider === 'google') {

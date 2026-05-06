@@ -1,0 +1,28 @@
+/* Estilos para los vídeos de demostración */
+.demo-video {
+  width: 100%;
+  max-width: 800px;
+  margin: 1.5rem auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--vp-c-divider);
+  display: block;
+}
+
+.video-container {
+  position: relative;
+  margin: 2rem 0;
+}
+
+.video-caption {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--vp-c-text-2);
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+/* Ajustes para modo oscuro si es necesario */
+.dark .demo-video {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
