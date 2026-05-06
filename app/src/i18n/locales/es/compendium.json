@@ -100,6 +100,7 @@
     "completar_ia_error": "Por favor, introduce al menos un nombre o título antes de intentar extraer datos.",
     "completar_ia_fallo": "Error en auto-completado: {{error}}",
     "completar_ia_cargando": "RECOPILANDO LORE...",
+    "completar_ia_entidad_cambiada": "El proceso de IA se ha detenido porque has cambiado de entidad. Los datos no se han aplicado para evitar sobreescribir la información de la nueva entidad seleccionada.",
     "personajes": {
       "nombre": "Nombre",
       "nombre_placeholder": "Lyra Ashveil",

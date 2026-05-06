@@ -157,9 +157,8 @@ function RewriteTab({ activeScene }) {
   const { openModal } = useModal();
 
   const [instruction, setInstruction] = useState('')
-  const [activeGoal, setActiveGoal] = useState('style')
+  const [activeGoal, setActiveGoal] = useState(null)
   const [isGenerating, setIsGenerating] = useState(false)
-  const [isEditingPrompt, setIsEditingPrompt] = useState(false)
   const [copied, setCopied] = useState(false)
   const [includePreviousContext, setIncludePreviousContext] = useState(true)
 
@@ -189,7 +188,7 @@ function RewriteTab({ activeScene }) {
       console.log('[Rewrite] previousContext:', previousContext ? `${previousContext.substring(0, 80)}...` : 'null');
 
 
-      const response = await AIService.rewrite(selection, activeGoal, prompts[activeGoal], {
+      const response = await AIService.rewrite(selection, activeGoal, instruction ? "" : (activeGoal ? prompts[activeGoal] : ""), {
         provider,
         apiKey,
         model: currentModel,
@@ -248,29 +247,7 @@ function RewriteTab({ activeScene }) {
         <div className="rewrite-section__label">
           <Zap size={12} />
           {t('rewrite.objetivo_rapido')}
-          <Tooltip content={t('rewrite.editar_prompt')}>
-            <button
-              className="rewrite-section__edit-prompt"
-              onClick={() => setIsEditingPrompt(!isEditingPrompt)}
-            >
-              {isEditingPrompt ? t('rewrite.cerrar_editor') : t('rewrite.ver_prompt')}
-            </button>
-          </Tooltip>
         </div>
-
-        {isEditingPrompt && (
-          <div className="prompt-editor">
-            <textarea
-              className="prompt-editor__textarea"
-              value={prompts[activeGoal]}
-              onChange={(e) => updatePrompt(activeGoal, e.target.value)}
-              rows={3}
-            />
-            <p className="prompt-editor__hint">
-              {t('rewrite.hint_prompt')}
-            </p>
-          </div>
-        )}
 
         <div className="rewrite-goals">
           {QUICK_GOALS.map(({ id, label, icon: Icon, desc }) => (
@@ -278,7 +255,22 @@ function RewriteTab({ activeScene }) {
               <button
                 id={`rewrite-goal-${id}`}
                 className={`rewrite-goal ${activeGoal === id ? 'rewrite-goal--active' : ''}`}
-                onClick={() => setActiveGoal(id)}
+                onClick={() => {
+                  setActiveGoal(id);
+                  // Populate the instruction textarea with the prompt template
+                  const template = prompts[id] || '';
+                  const isSpanish = i18n.language === 'es';
+                  const defaultTone = isSpanish ? 'más dramático' : 'more dramatic';
+                  const defaultLength = isSpanish ? 'conciso' : 'concise';
+                  const defaultChar = activeScene?.pov || (isSpanish ? 'el protagonista' : 'the protagonist');
+
+                  const processed = template
+                    .replace(/\[TONO\]/g, defaultTone).replace(/\[TONE\]/g, defaultTone)
+                    .replace(/\[LONGITUD\]/g, defaultLength).replace(/\[LENGTH\]/g, defaultLength)
+                    .replace(/\[PERSONAJE\]/g, defaultChar).replace(/\[CHARACTER\]/g, defaultChar);
+
+                  setInstruction(processed);
+                }}
               >
                 <Icon size={11} />
                 {t(`objetivos.${label}`)}
@@ -318,7 +310,7 @@ function RewriteTab({ activeScene }) {
             }
             value={instruction}
             onChange={e => setInstruction(e.target.value)}
-            rows={2}
+            rows={4}
           />
         </div>
       </div>

@@ -433,7 +433,8 @@
   font-size: 12px;
   font-family: 'Inter', sans-serif;
   line-height: 1.6;
-  resize: none;
+  resize: vertical;
+  min-height: 80px;
   outline: none;
   transition: border-color var(--trans-fast);
 }

@@ -86,6 +86,8 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [typingComplete, setTypingComplete] = useState(false)
   const [pwaUpdateOpen, setPwaUpdateOpen] = useState(false)
+  const [isEditingNovelTitle, setIsEditingNovelTitle] = useState(false)
+  const [editedNovelTitle, setEditedNovelTitle] = useState('')
 
   useEffect(() => {
     registerPWA(() => setPwaUpdateOpen(true));
@@ -100,7 +102,7 @@ export default function App() {
 
   const {
     activeNovel, activeScene, allNovels, loading, acts,
-    switchNovel, createNovel, deleteNovel, updateNovelTarget, refreshAfterRestore
+    switchNovel, createNovel, deleteNovel, updateNovelTarget, updateNovel, refreshAfterRestore
   } = useNovel();
 
   const fileInputRef = useRef(null);
@@ -437,7 +439,16 @@ export default function App() {
     };
 
     tryImport();
-  }
+  };
+
+  const handleNovelRename = async () => {
+    if (!activeNovel) return;
+    const newTitle = editedNovelTitle.trim();
+    if (newTitle && newTitle !== activeNovel.title) {
+      await updateNovel(activeNovel.id, { title: newTitle });
+    }
+    setIsEditingNovelTitle(false);
+  };
 
   if (loading) {
     return (
@@ -525,7 +536,31 @@ export default function App() {
             )}
           </div>
           <span className="app-topbar__divider">|</span>
-          <span className="app-topbar__novel">{activeNovel?.title || t('menu.sin_titulo')}</span>
+          {isEditingNovelTitle ? (
+            <input
+              className="app-topbar__novel-input"
+              autoFocus
+              value={editedNovelTitle}
+              onChange={(e) => setEditedNovelTitle(e.target.value)}
+              onBlur={handleNovelRename}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleNovelRename();
+                if (e.key === 'Escape') setIsEditingNovelTitle(false);
+              }}
+            />
+          ) : (
+            <Tooltip content={t('topbar.doble_clic_renombrar') || 'Doble clic para renombrar'}>
+              <span 
+                className="app-topbar__novel" 
+                onDoubleClick={() => {
+                  setEditedNovelTitle(activeNovel?.title || '');
+                  setIsEditingNovelTitle(true);
+                }}
+              >
+                {activeNovel?.title || t('menu.sin_titulo')}
+              </span>
+            </Tooltip>
+          )}
         </div>
         <Tooltip content={t('topbar.estadisticas_tooltip')}>
           <div
@@ -562,6 +597,7 @@ export default function App() {
                 setSettingsTab('general');
                 setSettingsOpen(true);
               }}
+              disabled={!activeNovel}
             >
               <Settings size={16} />
             </button>

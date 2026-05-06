@@ -54,6 +54,7 @@ function CompendiumPanel({ isOpen, type, item, characters, locations, objects, l
     if (initial.tags) initial._rawTags = initial.tags.join(', ');
     initial._originalCategory = type;
     setFormData(initial);
+    setIsAiLoading(false); // Resetear estado de carga al cambiar de entidad
   }, [item, type]);
 
   const handleChange = (e) => {
@@ -122,6 +123,7 @@ function CompendiumPanel({ isOpen, type, item, characters, locations, objects, l
     delete data._rawTags;
     
     onSave(data, selectedCategory);
+    onClose();
   };
 
   let titleText = item ? t('panel.editar') : t('panel.añadir');
@@ -195,7 +197,19 @@ function CompendiumPanel({ isOpen, type, item, characters, locations, objects, l
       logAIUsage(res.usage);
       const aiData = res.data;
 
+      const startingId = formData.id;
       setFormData(prev => {
+        // VALIDACIÓN: Evitar sobreescribir si el usuario cambió de entidad mientras la IA cargaba
+        const currentName = prev.name || prev.title;
+        const currentId = prev.id;
+        if (currentName !== nameToMatch || currentId !== startingId) {
+          openModal('alert', { 
+            title: t('panel.editar'),
+            message: t('formulario.completar_ia_entidad_cambiada') 
+          });
+          return prev;
+        }
+
         const next = { ...prev };
         Object.keys(aiData).forEach(k => {
           if (aiData[k] !== undefined && aiData[k] !== null && aiData[k] !== "") {
@@ -1639,7 +1653,7 @@ export default function CompendiumView() {
       }
 
       await Promise.all(promises);
-      await syncLoreBidirectional(data, targetCategory, isUpdate, editingItem);
+      await syncCompendiumRelationships(data, targetCategory, isUpdate, editingItem);
       
       if (isMpcProposal && mpcId) {
         dismissMpcProposal(mpcId);
