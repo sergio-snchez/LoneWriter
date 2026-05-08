@@ -1,25 +1,27 @@
-# Why I Built LoneWriter 🕊️
+# Why I Built LoneWriter
 
-LoneWriter is not a corporate product. It is a personal project born from my own needs as a writer and my obsession with technology and privacy.
+LoneWriter is not a corporate product. It is a personal project born from my own needs as a writing enthusiast and my interest in technology and privacy.
 
-I am a developer, but above all, I am someone who enjoys creating stories. I was frustrated to see how modern AI tools often force us to choose between **power** and **privacy**.
-
----
-
-## 1. Your Privacy is My Priority
-As an author, I understand that a draft is something intimate. That's why I designed LoneWriter under a non-negotiable premise: **your data is yours**.
-- **No accounts**: I don't want your personal data, which is why you don't need to register to write.
-- **No intermediate servers**: LoneWriter runs entirely in your browser. Your texts do not pass through my hands or get saved in any external database that I control.
-- **Sovereignty**: If you choose to use a local model, not a single word of your novel will ever leave your room.
-
-## 2. AI as a Copilot, Not as a Substitute
-I don't want a machine to write for me, and I assume you don't either. That's why I've focused the AI in LoneWriter to be a logistics and creativity assistant:
-- **No inventions (RAG)**: I have implemented technology so that the Oracle answers based *only* on your real notes.
-- **Total control**: You are the one who decides which MPC suggestions to accept. The merit of the work will always be yours.
-
-## 3. A Transparent Project
-As a solo, open-source project, I seek total transparency. Anyone can review the code to verify how data is handled or help me improve the worldbuilding tools.
+As a developer and narrative enthusiast, I consider it fundamental that the relationship between technology and creativity be balanced and respect human authorship.
 
 ---
 
-> "I have built the tool that I myself wanted to use to write my novels. I hope it is as useful to you as it is to me."
+## Privacy and Sovereignty
+I understand that a draft is an intimate workspace. Therefore, I designed LoneWriter under a fundamental premise: absolute data ownership by the user.
+
+- **No accounts**: No registration or personal data collection is required to use the application.
+- **No intermediate servers**: LoneWriter runs entirely in your browser. Texts are not stored on external servers under my control.
+- **Technological sovereignty**: By opting for [local models](./setup/local-models.md), information processing stays strictly on the user's device.
+
+## AI as an Assistant
+The artificial intelligence in LoneWriter has been conceived as a logistical and creative support tool, not as a substitute for the author.
+
+- **Data-driven generation**: [RAG technology](./editor/context.md) allows the system to respond based on the author's notes, minimizing the generation of fictitious information.
+- **Editorial control**: The author maintains final authority over all suggestions and changes proposed by the system.
+
+## Open Source Project
+As a solo and open-source project, I seek total transparency. The code is available on [GitHub](https://github.com/sergio-snchez/LoneWriter) for review, allowing verification of data management and fostering continuous improvement of the tools.
+
+---
+
+> "I built the tool that I myself wanted to use to bring my stories to life. I hope you find it very useful."

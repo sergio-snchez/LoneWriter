@@ -1,32 +1,35 @@
-# The LoneWriter Editor ✍️
+# The Editor
 
-The editor is the heart of the application. I have designed this space to be as clean as possible, allowing you to focus on the only thing that matters: **your story**.
+The LoneWriter editor has been designed to minimize distractions and maximize creative flow, integrating artificial intelligence tools organically.
+
+---
+
+## Main Interface
+
+### The Writing Area
+The heart of the application is a rich text editor that supports basic formatting. Its clean design allows focusing exclusively on the word.
+
+### Intelligent Toolbar
+Located at the top or side, it provides quick access to key functions:
+- **[Oracle](../analysis/oracle.md)**: For lore queries.
+- **[MPC](../worldbuilding/mpc.md)**: Proposal monitor for the [Compendium](../worldbuilding/compendium.md).
+- **[Rewriting](./rewrites.md)**: Tools to polish selected text.
+- **[AI Settings](../setup/api-keys.md)**: Quick access to switch models.
 
 ---
 
-## Writing Interface
-When you open a project, you'll see a blank canvas (or your text). LoneWriter is not a traditional word processor full of useless buttons.
+## Scene and Chapter Management
+LoneWriter organizes work into logical units to facilitate navigation and data indexing.
 
-- **Toolbar**: Appears at the bottom or top. It contains basic formatting options (Bold, Italic, Headings).
-- **Word Counter**: In one corner, always visible so you can track your daily progress.
-- **Focus Mode**: The editor expands to hide the sidebars so nothing distracts you.
-
-## Keyboard Shortcuts
-For those of us who write fast, shortcuts are vital:
-- `Ctrl + B`: Bold.
-- `Ctrl + I`: Italic.
-- `Ctrl + S`: Manual save (although LoneWriter automatically saves to your browser every few seconds).
-
-## Local Saving and Security
-As I mentioned in the [Philosophy](../philosophy) section, your texts are saved in your browser's internal database (**IndexedDB**).
-- **You don't need Internet** to write.
-- If you close your browser, your work will still be there when you return.
-- **Recommendation**: Use [Google Drive Sync](../cloud/sync) for automatic external backup.
-
-## Chapter Structure
-In the left sidebar (the Project Navigator), you can create, rename, and reorder chapters. I have programmed this so you can drag and drop scenes, allowing you to restructure your novel agilely.
+- **Navigator**: Allows quickly jumping between scenes.
+- **Synopsis**: Each scene can have a brief summary that helps the Oracle understand the plot's progression without needing to read the entire text every time.
 
 ---
+
+## Automatic and Local Saving
+The security of your texts is a priority.
+- **Persistence**: Data is automatically saved in your browser's local database (IndexedDB).
+- **Saving Status**: A visual indicator confirms that your work is safe after each change.
 
 > [!NOTE]
-> In the next section, we'll see how to use the power of AI directly on the text you've just written.
+> Although saving is automatic, it is recommended to perform periodic exports or configure synchronization with Google Drive for added security.

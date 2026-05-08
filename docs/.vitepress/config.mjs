@@ -29,10 +29,10 @@ export default defineConfig({
             ]
           },
           {
-            text: 'AI & Setup',
+            text: 'AI and Setup',
             items: [
-              { text: 'API Keys (Google, Anthropic...)', link: '/guide/setup/api-keys' },
-              { text: 'Local Models (Ollama, LM Studio)', link: '/guide/setup/local-models' },
+              { text: 'API Keys', link: '/guide/setup/api-keys' },
+              { text: 'Local Models', link: '/guide/setup/local-models' },
               { text: 'Model Selection Guide', link: '/guide/setup/model-guide' }
             ]
           },
@@ -41,26 +41,26 @@ export default defineConfig({
             items: [
               { text: 'The Editor', link: '/guide/editor/basics' },
               { text: 'Smart Rewrites', link: '/guide/editor/rewrites' },
-              { text: 'Context & Continuity', link: '/guide/editor/context' }
+              { text: 'Context and Continuity', link: '/guide/editor/context' }
             ]
           },
           {
-            text: 'Worldbuilding (Lore)',
+            text: 'Worldbuilding',
             items: [
               { text: 'The Compendium', link: '/guide/worldbuilding/compendium' },
               { text: 'The MPC', link: '/guide/worldbuilding/mpc' },
-              { text: 'Relationships & Entities', link: '/guide/worldbuilding/entities' }
+              { text: 'Relationships and Entities', link: '/guide/worldbuilding/entities' }
             ]
           },
           {
-            text: 'Analysis & Nexus',
+            text: 'Analysis and Nexus',
             items: [
-              { text: 'The Oracle (RAG)', link: '/guide/analysis/oracle' },
-              { text: 'The Nexus & Timeline', link: '/guide/analysis/nexus' }
+              { text: 'The Oracle', link: '/guide/analysis/oracle' },
+              { text: 'The Nexus and Timeline', link: '/guide/analysis/nexus' }
             ]
           },
           {
-            text: 'Cloud & Sovereignty',
+            text: 'Cloud and Sovereignty',
             items: [
               { text: 'Google Drive Sync', link: '/guide/cloud/sync' },
               { text: 'Exporting Your Work', link: '/guide/cloud/export' }
@@ -98,8 +98,8 @@ export default defineConfig({
           {
             text: 'IA y Configuración',
             items: [
-              { text: 'Claves API (Google, Anthropic...)', link: '/es/guide/setup/api-keys' },
-              { text: 'Modelos Locales (Ollama, LM Studio)', link: '/es/guide/setup/local-models' },
+              { text: 'Claves API', link: '/es/guide/setup/api-keys' },
+              { text: 'Modelos Locales', link: '/es/guide/setup/local-models' },
               { text: 'Guía de Modelos', link: '/es/guide/setup/model-guide' }
             ]
           },
@@ -112,7 +112,7 @@ export default defineConfig({
             ]
           },
           {
-            text: 'Worldbuilding (Lore)',
+            text: 'Worldbuilding',
             items: [
               { text: 'El Compendio', link: '/es/guide/worldbuilding/compendium' },
               { text: 'El MPC', link: '/es/guide/worldbuilding/mpc' },
@@ -122,7 +122,7 @@ export default defineConfig({
           {
             text: 'Análisis y Nexus',
             items: [
-              { text: 'El Oráculo (RAG)', link: '/es/guide/analysis/oracle' },
+              { text: 'El Oráculo', link: '/es/guide/analysis/oracle' },
               { text: 'El Nexus y Timeline', link: '/es/guide/analysis/nexus' }
             ]
           },
