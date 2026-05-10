@@ -27,5 +27,5 @@ For continuity to be effective, the author should:
 - **Summarize Scenes**: Use the synopsis function to provide the system with a structured view of the plot.
 - **Periodic Indexing**: The system updates its knowledge database automatically, but the author can force a re-indexing if deep structural changes have been made.
 
-> [!IMPORTANT]
+> [!IMPORTANT] IMPORTANT
 > The system does not make creative decisions for you. Its function is to act as a safety net that warns you of possible logical errors, allowing you to maintain total control over the narrative.

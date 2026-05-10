@@ -41,7 +41,8 @@ export default defineConfig({
             items: [
               { text: 'The Editor', link: '/guide/editor/basics' },
               { text: 'Smart Rewrites', link: '/guide/editor/rewrites' },
-              { text: 'Context and Continuity', link: '/guide/editor/context' }
+              { text: 'Debate Forum', link: '/guide/editor/debate' },
+              { text: 'The Oracle', link: '/guide/analysis/oracle' }
             ]
           },
           {
@@ -55,8 +56,8 @@ export default defineConfig({
           {
             text: 'Analysis and Nexus',
             items: [
-              { text: 'The Oracle', link: '/guide/analysis/oracle' },
-              { text: 'The Nexus and Timeline', link: '/guide/analysis/nexus' }
+              { text: 'The Nexus and Timeline', link: '/guide/analysis/nexus' },
+              { text: 'Context and Continuity', link: '/guide/editor/context' }
             ]
           },
           {
@@ -108,7 +109,8 @@ export default defineConfig({
             items: [
               { text: 'El Editor', link: '/es/guide/editor/basics' },
               { text: 'Reescritura Inteligente', link: '/es/guide/editor/rewrites' },
-              { text: 'Contexto y Continuidad', link: '/es/guide/editor/context' }
+              { text: 'Foro de Debate', link: '/es/guide/editor/debate' },
+              { text: 'El Oráculo', link: '/es/guide/analysis/oracle' }
             ]
           },
           {
@@ -122,8 +124,8 @@ export default defineConfig({
           {
             text: 'Análisis y Nexus',
             items: [
-              { text: 'El Oráculo', link: '/es/guide/analysis/oracle' },
-              { text: 'El Nexus y Timeline', link: '/es/guide/analysis/nexus' }
+              { text: 'El Nexus y Timeline', link: '/es/guide/analysis/nexus' },
+              { text: 'Contexto y Continuidad', link: '/es/guide/editor/context' }
             ]
           },
           {
