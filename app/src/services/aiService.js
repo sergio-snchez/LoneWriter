@@ -11,6 +11,26 @@ import { callLocal, callLocalChat } from './providers/local';
 
 export const AIService = {
   /**
+   * Generic call method for MPC and other direct prompting.
+   */
+  _callWithConfig: async (promptTemplate, config) => {
+    const { provider, apiKey, model, localBaseUrl } = config;
+    const isSpanish = i18n.language === 'es';
+
+    const errorAPI = isSpanish ? 'Se requiere una clave API para usar la IA.' : 'An API key is required to use the AI.';
+    const errorProvider = isSpanish ? 'Proveedor de IA desconocido.' : 'Unknown AI provider.';
+
+    if (!apiKey && provider !== 'local') throw new Error(errorAPI);
+
+    if (provider === 'google') return await callGemini(promptTemplate, apiKey, model);
+    if (provider === 'openai') return await callOpenAI(promptTemplate, apiKey, model);
+    if (provider === 'anthropic') return await callClaude(promptTemplate, apiKey, model);
+    if (provider === 'openrouter') return await callOpenRouter(promptTemplate, apiKey, model);
+    if (provider === 'local') return await callLocal(promptTemplate, model, localBaseUrl);
+    throw new Error(errorProvider);
+  },
+
+  /**
    * Generic rewrite function
    */
   rewrite: async (text, goal, promptTemplate, config) => {

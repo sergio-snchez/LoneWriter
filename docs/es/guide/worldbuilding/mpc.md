@@ -23,6 +23,22 @@ Por ejemplo, si escribe: *"El oficial Valerius exploraba las ruinas de Kaelum"*,
 </div>
 </div>
 
+---
+
+### Guía visual paso a paso
+
+````carousel
+![1. Detección automática de entidades mientras el autor escribe](/img/guide/worldbuilding/mpc_step1.png)
+<!-- slide -->
+![2. Revisión de las entidades detectadas automáticamente](/img/guide/worldbuilding/mpc_step2.png)
+<!-- slide -->
+![3. Activación manual del MPC (búsqueda en texto seleccionado)](/img/guide/worldbuilding/mpc_step3.png)
+<!-- slide -->
+![4. Revisión de las nuevas entidades detectadas en la selección](/img/guide/worldbuilding/mpc_step4.png)
+<!-- slide -->
+![5. Navegación por el Compendio con las entidades guardadas](/img/guide/worldbuilding/mpc_step5.png)
+````
+
 > [!TIP] Primer uso
 > La primera vez que active el MPC, el sistema descargará automáticamente el modelo local **all-MiniLM-L6-v2** (aprox. 25MB). Este proceso solo ocurre una vez y permite que el análisis semántico se realice íntegramente en su dispositivo, garantizando su privacidad.
 
