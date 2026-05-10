@@ -6,7 +6,6 @@ import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Sparkles, X, Wand2, MessageSquare, Eye, Key } from 'lucide-react'
 import { useAI } from '../context/AIContext'
-import { useModal } from '../context/ModalContext'
 import { Tooltip } from './Tooltip'
 import { RewriteTab } from './aipanel/RewriteTab'
 import DebateTab from './aipanel/DebateTab'
@@ -15,7 +14,6 @@ import './AIPanel.css'
 
 export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewrite', onOpenSettings }) {
   const { t } = useTranslation('ai')
-  const { openModal } = useModal()
   const [activeTab, setActiveTab] = useState(defaultTab)
   const { apiKey, currentModel } = useAI()
 

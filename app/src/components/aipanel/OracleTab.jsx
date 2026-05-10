@@ -35,7 +35,6 @@ function OracleTab({ activeScene }) {
   const [copiedId, setCopiedId] = useState(null)
   const [compContextUsed, setCompContextUsed] = useState('')
   const [expandedEntries, setExpandedEntries] = useState(new Set())
-  const [isSaliencyExpanded, setIsSaliencyExpanded] = useState(false)
   const [isEntitiesExpanded, setIsEntitiesExpanded] = useState(true)
   const historyEndRef = useRef(null)
 

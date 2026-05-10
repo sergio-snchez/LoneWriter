@@ -18,13 +18,6 @@ export const QUICK_GOALS = [
   { id: 'cohesion', label: 'cohesion',  icon: AlignLeft,desc: 'cohesion_desc' },
 ]
 
-/* ---- Debate mock/default agent definitions ---- */
-export const AI_AGENTS = {
-  editor:    { id: 'editor',    name: 'Editor',   color: '#6b9fd4', bgColor: 'rgba(107,159,212,0.12)', initials: 'ED', desc: 'Estructura y narrativa' },
-  critic:    { id: 'critic',    name: 'Crítico',  color: '#e07070', bgColor: 'rgba(224,112,112,0.12)', initials: 'CR', desc: 'Análisis y valoración' },
-  corrector: { id: 'corrector', name: 'Corrector',color: '#5cb98a', bgColor: 'rgba(92,185,138,0.12)',  initials: 'CO', desc: 'Gramática y estilo' },
-}
-
 /* ---- Pure text helpers ---- */
 export const normalizeHtmlForEditor = (html) => {
   return html
