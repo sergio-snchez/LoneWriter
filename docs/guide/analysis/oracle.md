@@ -32,6 +32,11 @@ To ensure accuracy and speed of responses, LoneWriter utilizes **RAG** (Retrieva
 2. **Privacy**: All processing is done locally in the browser. The knowledge database is not transferred to external servers.
 3. **Updating**: The system notifies the user when the draft content has been correctly indexed and is available for queries.
 
+> [!TIP] TIP
+> The first time you access the Oracle (or use local semantic features), the system will automatically download the local **all-MiniLM-L6-v2** model (approx. 25MB). This process only happens once and allows the analysis to be performed entirely on your device, ensuring your privacy.
+
+![RAG Model Ready Notification](/img/guide/analysis/oracle_model_ready.png)
+
 ---
 
 ## Usage Recommendations
