@@ -29,11 +29,4 @@ Esta función permite a la inteligencia artificial asistir en la creación de en
 ---
 
 ## Relaciones entre Entidades
-LoneWriter permite definir vínculos entre los diferentes elementos del Compendio para construir una red narrativa sólida.
-
-### Crear una relación:
-1. Acceda a la sección de Relaciones dentro de una entidad.
-2. Seleccione la entidad de destino.
-3. Defina el tipo de vínculo (ejemplo: "Aliado de", "Ubicado en").
-
-Estas relaciones se visualizan gráficamente en el Nexus, permitiendo analizar la estructura de la historia de forma visual.
+Para una guía detallada sobre cómo conectar personajes, lugares y objetos, consulte la sección [Relaciones y Entidades](./entities.md).

@@ -29,11 +29,4 @@ This feature allows artificial intelligence to assist in creating Compendium ent
 ---
 
 ## Relationships between Entities
-LoneWriter allows defining links between different Compendium elements to build a solid narrative network.
-
-### Create a Relationship:
-1. Access the Relationships section within an entity.
-2. Select the target entity.
-3. Define the type of link (example: "Ally of," "Located in").
-
-These relationships are visualized graphically in the Nexus, allowing the structure of the story to be analyzed visually.
+For a detailed guide on how to connect characters, places, and objects, please refer to the [Relationships and Entities](./entities.md) section.

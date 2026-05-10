@@ -4,6 +4,9 @@ The Compendium Proposal Monitor (MPC) is an assistance tool that operates during
 
 ---
 
+> [!IMPORTANT]
+> The MPC has been designed as a support tool that always requires author supervision. No element will be added to the Compendium without your explicit approval.
+
 ## MPC Operation
 
 <div style="display: flex; gap: 40px; align-items: center; flex-wrap: wrap;">
@@ -14,54 +17,34 @@ The Compendium Proposal Monitor (MPC) is an assistance tool that operates during
 </div>
 <div style="flex: 1; min-width: 300px;">
 
-While you write in the editor, the AI engine periodically and silently analyzes your narrative flow in the background to detect key elements.
+While you write in the editor, the AI engine periodically and silently analyzes your narrative flow in the background to detect key elements that haven't been registered yet (Characters, Locations, Objects, or Lore).
 
-**To ensure this intelligent analysis runs correctly, make sure the automatic scanning switch (Scanning Auto) located at the top of the Compendium view is active.**
+To ensure smooth performance, the monitor uses a **cooldown** interval of about 15 seconds between each automatic analysis. If you prefer an immediate result on a specific paragraph, you can force it using **Manual Analysis**: simply select the text and press the MPC button in the header.
 
-For example, if you write: *"Officer Valerius explored the ruins of Kaelum,"* the MPC will identify possible entries for Valerius and Kaelum.
+**To ensure background analysis runs, make sure the "Scanning Auto" switch at the top of the Compendium view is active.**
 
 </div>
 </div>
 
 ---
 
-### Step-by-step visual guide
-
-````carousel
-![1. Automatic entity detection while the author writes](/img/guide/worldbuilding/mpc_step1.png)
-<!-- slide -->
-![2. Review of automatically detected entities](/img/guide/worldbuilding/mpc_step2.png)
-<!-- slide -->
-![3. Manual MPC activation (search in selected text)](/img/guide/worldbuilding/mpc_step3.png)
-<!-- slide -->
-![4. Review of new entities detected in the selection](/img/guide/worldbuilding/mpc_step4.png)
-<!-- slide -->
-![5. Compendium navigation with saved entities](/img/guide/worldbuilding/mpc_step5.png)
-````
-
-> [!TIP] First Use
-> The first time you activate the MPC, the system will automatically download the local **all-MiniLM-L6-v2** model (approx. 25MB). This process only happens once and allows the semantic analysis to be performed entirely on your device, ensuring your privacy.
-
----
 
 ## Managing Proposals
-Detections are shown in the MPC side panel. For each proposal, you have the following options:
+Detections are shown in the MPC side panel. The system automatically filters any name already in your Compendium to avoid duplicates. For each proposal, you have the following options:
 
-- **Accept**: The entity is created in the Compendium with the data extracted by the system.
-- **Reject**: The proposal is discarded.
-- **Edit**: Allows modifying the name or category before confirming the creation.
+- **Accept**: The entity is created in the Compendium. The system attempts to automatically extract data such as role, category, or distinctive traits based on the detected context.
+- **Reject**: Removes the proposal from the current suggestions list.
+- **Ignore Permanently**: Adds the name to a novel-specific "blacklist" so the monitor won't suggest that entity again in future scans.
+- **Edit**: Allows modifying the name or changing the category (e.g., from Character to Object) before confirming the final creation.
 
----
+> [!NOTE] TIP
+> MPC proposals are saved locally for each novel. You can close the application, and your pending suggestions will still be available in your next session.
 
-## Relationship Detection
-The system is not limited to identifying proper names but also attempts to infer links between entities based on the context of the text, suggesting automatic relationships when possible.
+<StepCarousel :slides="[
+  { src: '/img/guide/worldbuilding/mpc_step1.png', label: '1. Automatic entity detection while the author writes.' },
+  { src: '/img/guide/worldbuilding/mpc_step2.png', label: '2. Review of automatically detected entities (notified on the MPC button).' },
+  { src: '/img/guide/worldbuilding/mpc_step3.png', label: '3. Manual MPC activation: search for entities in a selected text fragment.' },
+  { src: '/img/guide/worldbuilding/mpc_step4.png', label: '4. Review of new entities detected based on the previous selection.' },
+  { src: '/img/guide/worldbuilding/mpc_step5.png', label: '5. Compendium navigation with all new entities saved and organized.' }
+]" />
 
----
-
-## Configuration
-The sensitivity and frequency of the MPC can be adjusted from the Settings menu:
-- **Frequency**: Defines the text analysis interval.
-- **Status**: Allows activating or deactivating the monitor according to workflow needs.
-
-> [!IMPORTANT]
-> The MPC has been designed as a support tool that always requires author supervision. No element will be added to the Compendium without your explicit approval.

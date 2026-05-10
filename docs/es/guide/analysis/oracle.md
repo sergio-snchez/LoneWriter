@@ -32,6 +32,11 @@ Para garantizar la precisión y rapidez de las respuestas, LoneWriter utiliza te
 2. **Privacidad**: Todo el procesamiento se realiza de forma local en el navegador. La base de datos de conocimiento no se transfiere a servidores externos.
 3. **Actualización**: El sistema notifica al usuario cuando el contenido del borrador ha sido indexado correctamente y está disponible para consultas.
 
+> [!TIP] CONSEJO
+> La primera vez que acceda al Oráculo (o utilice funciones semánticas locales), el sistema descargará automáticamente el modelo local **all-MiniLM-L6-v2** (aprox. 25MB). Este proceso solo ocurre una vez y permite que el análisis se realice íntegramente en su dispositivo, garantizando su privacidad.
+
+![Notificación de Modelo RAG Listo](/img/guide/analysis/oracle_model_ready.png)
+
 ---
 
 ## Recomendaciones de Uso
