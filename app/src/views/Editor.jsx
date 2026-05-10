@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from 'i18next'
 import {
-  BookOpen, Eye, Edit3,
+  BookOpen, Eye, Edit3, ChevronDown, ChevronRight, Plus, Circle,
   FileText, Clock, CheckCircle2,
   BarChart2, Target, Flame, Save, Loader2, Trash2, FileDown,
   GripVertical, ChevronsDownUp, ChevronsUpDown, Sparkles, Calendar
@@ -34,6 +34,26 @@ import './MpcBadge.css'
 
 
 
+
+function ProgressBar({ value, max, label, sublabel, color }) {
+  const { t } = useTranslation('editor')
+  const pct = max > 0 ? Math.round((value / max) * 100) : 0
+  return (
+    <div className="progress-item">
+      <div className="progress-item__labels">
+        <span className="progress-item__label">{label}</span>
+        <span className="progress-item__nums">{value?.toLocaleString() || 0} / {max?.toLocaleString() || 0}</span>
+      </div>
+      <div className="progress-item__bar-bg">
+        <div
+          className="progress-item__bar-fill"
+          style={{ width: `${pct}%`, background: color || 'var(--accent)' }}
+        />
+      </div>
+      {sublabel && <span className="progress-item__sublabel">{pct}%</span>}
+    </div>
+  )
+}
 
 export default function EditorView({ menuOpen = false, onNavigate }) {
   const { t } = useTranslation('editor')

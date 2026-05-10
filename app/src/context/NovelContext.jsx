@@ -1,11 +1,10 @@
-import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import i18n from '../i18n/i18n';
 import { db } from '../db/database';
 import { ExportService } from '../services/exportService';
-import { GoogleDriveService } from '../services/googleDriveService';
 import { deleteVectorsForScene, deleteVectorsForNovel, indexPendingScenes } from '../services/ragService';
-import { AIService } from '../services/aiService';
-import { findSimilarEntities } from '../services/entityDetector';
+import { useMergeEngine } from './useMergeEngine';
+import { useCloudSync } from './useCloudSync';
 
 const NovelContext = createContext();
 
@@ -22,24 +21,9 @@ export const NovelProvider = ({ children }) => {
   const [nexusLinks, setNexusLinks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Cloud Sync State
-  const [isCloudSyncEnabled, setIsCloudSyncEnabled] = useState(localStorage.getItem('lw_cloud_sync') === 'true');
-  const [cloudSyncStatus, setCloudSyncStatus] = useState('idle'); // 'idle', 'syncing', 'success', 'error'
-  const [lastCloudSync, setLastCloudSync] = useState(localStorage.getItem('lw_last_cloud_sync'));
-  const [pendingSync, setPendingSync] = useState(false);
-  const cloudCheckInProgress = useRef(false);
+  const { isCloudSyncEnabled, cloudSyncStatus, lastCloudSync, setPendingSync,
+          toggleCloudSync, performCloudSync, checkCloudBackupStatus } = useCloudSync({ db })
   
-  // Compendium Merge State (Global for background processing)
-  const [mergeGroups, setMergeGroups] = useState([]);
-  const [selectedMerge, setSelectedMerge] = useState(null);
-  const [mergeResult, setMergeResult] = useState(null);
-  const [isMerging, setIsMerging] = useState(false);
-  const [mergingEntitiesIds, setMergingEntitiesIds] = useState([]);
-  const [isScanningMerge, setIsScanningMerge] = useState(false);
-  const [selectedMergeIdx, setSelectedMergeIdx] = useState(0);
-  const [showMergeOverlay, setShowMergeOverlay] = useState(false);
-  const [isMergeOverlayClosing, setIsMergeOverlayClosing] = useState(false);
-  const [mergeSection, setMergeSection] = useState('characters');
   const [expandedIds, setExpandedIds] = useState(new Set());
 
   // Initial seeding and loading
@@ -79,112 +63,7 @@ export const NovelProvider = ({ children }) => {
     initializeDB();
   }, []);
 
-  const checkCloudBackupStatus = async () => {
-    if (cloudCheckInProgress.current) return;
-    cloudCheckInProgress.current = true;
 
-    try {
-      if (!GoogleDriveService.isAuthenticated()) return;
-      
-      const cloudFile = await GoogleDriveService.findBackupFile();
-      if (cloudFile && cloudFile.modifiedTime) {
-        const cloudDate = new Date(cloudFile.modifiedTime);
-        // Leer directamente de localStorage para evitar problemas de timing con el estado
-        const localSync = localStorage.getItem('lw_last_cloud_sync');
-        const localDate = localSync ? new Date(localSync) : new Date(0);
-        
-        if (cloudDate > localDate) {
-          // Cloud version is newer — trigger UI notification
-          await new Promise(resolve => setTimeout(resolve, 100));
-          window.dispatchEvent(new CustomEvent('cloud-version-available', { 
-            detail: { date: cloudFile.modifiedTime, id: cloudFile.id } 
-          }));
-        }
-      }
-    } catch (e) {
-      console.warn('[LoneWriter] Error verificando backup en la nube al inicio');
-    } finally {
-      cloudCheckInProgress.current = false;
-    }
-  };
-
-  // Debounced Auto-Sync Effect
-  useEffect(() => {
-    if (!isCloudSyncEnabled || !pendingSync || cloudSyncStatus === 'syncing') return;
-
-    const timer = setTimeout(async () => {
-      await performCloudSync();
-    }, 30000); // 30 segundos de inactividad tras cambios
-
-    return () => clearTimeout(timer);
-  }, [pendingSync, isCloudSyncEnabled]);
-
-  const performCloudSync = async () => {
-    if (!isCloudSyncEnabled) return;
-    if (cloudCheckInProgress.current) return;
-    
-    setCloudSyncStatus('syncing');
-    cloudCheckInProgress.current = true;
-
-    try {
-      // ── SAFETY CHECK: Verify cloud isn't newer before uploading ──────────
-      // This prevents overwriting a backup made from another device/session.
-      if (GoogleDriveService.isAuthenticated()) {
-        const cloudFile = await GoogleDriveService.findBackupFile();
-        if (cloudFile && cloudFile.modifiedTime) {
-          const cloudDate = new Date(cloudFile.modifiedTime);
-          // Leer directamente de localStorage para evitar problemas de timing
-          const localSync = localStorage.getItem('lw_last_cloud_sync');
-          const localSyncDate = localSync ? new Date(localSync) : new Date(0);
-          const tolerance = 5000; // 5 segundos de tolerancia
-
-          if (cloudDate.getTime() > localSyncDate.getTime() + tolerance) {
-            console.warn('[LoneWriter] La nube tiene datos más recientes. Abortando subida para evitar sobreescribir.');
-            setCloudSyncStatus('idle');
-            setPendingSync(false);
-            // Surface the "restore from cloud?" dialog
-            await new Promise(resolve => setTimeout(resolve, 100));
-            window.dispatchEvent(new CustomEvent('cloud-version-available', {
-              detail: { date: cloudFile.modifiedTime, id: cloudFile.id }
-            }));
-            return;
-          }
-        }
-      }
-      // ─────────────────────────────────────────────────────────────────────
-
-      // Build the full database export
-      const data = {
-        version: 1,
-        exportedAt: new Date().toISOString(),
-        tables: {}
-      };
-      for (const table of db.tables) {
-        data.tables[table.name] = await table.toArray();
-      }
-      
-      await GoogleDriveService.saveBackup(data);
-      
-      const now = new Date().toISOString();
-      setLastCloudSync(now);
-      localStorage.setItem('lw_last_cloud_sync', now);
-      setCloudSyncStatus('success');
-      setPendingSync(false);
-      
-      setTimeout(() => setCloudSyncStatus('idle'), 5000);
-    } catch (error) {
-      console.error('[LoneWriter] Error en auto-sincronización:', error);
-      setCloudSyncStatus('error');
-    } finally {
-      cloudCheckInProgress.current = false;
-    }
-  };
-
-  const toggleCloudSync = (enabled) => {
-    setIsCloudSyncEnabled(enabled);
-    localStorage.setItem('lw_cloud_sync', enabled ? 'true' : 'false');
-    if (enabled) setPendingSync(true); // Trigger initial sync
-  };
 
   const refreshAllNovels = async () => {
     const novels = await db.novels.toArray();
@@ -641,137 +520,7 @@ export const NovelProvider = ({ children }) => {
     setPendingSync(true);
   };
 
-  const scanForMergeDuplicates = async (activeSection, config = {}) => {
-    let items = [];
-    setMergeSection(activeSection);
-    if (activeSection === 'characters') items = characters;
-    else if (activeSection === 'locations') items = locations;
-    else if (activeSection === 'objects') items = objects;
-    else if (activeSection === 'lore') items = lore;
-
-    if (items.length < 2) return;
-
-    setIsScanningMerge(true);
-    setMergeGroups([]);
-    setSelectedMerge(null);
-    setMergeResult(null);
-
-    try {
-      const result = await findSimilarEntities(items, 0.70);
-      setMergeGroups(result.groups || []);
-      setShowMergeOverlay(true);
-    } catch (err) {
-      console.error('[NovelContext] Scan error:', err);
-      throw err;
-    } finally {
-      setIsScanningMerge(false);
-    }
-  };
-
-  const handleMergeSelection = async (entities, activeSection, aiConfig, logAIUsage) => {
-    if (entities.length < 2) return;
-
-    setIsMerging(true);
-    setMergingEntitiesIds(entities.map(e => e.id));
-    setMergeResult(null);
-
-    try {
-      const result = await AIService.fuseMultipleEntities(entities, activeSection, aiConfig);
-      if (logAIUsage) logAIUsage(result.usage);
-      
-      const nameField = activeSection === 'lore' ? 'title' : 'name';
-      const candidate = {
-        entity1: entities[0],
-        entity2: entities[1],
-        _allEntities: entities,
-        name1: entities[0][nameField],
-        name2: entities[1][nameField]
-      };
-      
-      setSelectedMerge(candidate);
-      setMergeResult(result.data);
-    } catch (err) {
-      console.error('[NovelContext] Merge error:', err);
-      throw err;
-    } finally {
-      setIsMerging(false);
-    }
-  };
-
-  const confirmMerge = async (activeSection, finalData = null) => {
-    if (!mergeResult || !selectedMerge) return;
-
-    try {
-      const table = activeSection;
-      const data = finalData || { ...mergeResult };
-      
-      // CRITICAL FIX: Remove any ID to prevent IndexedDB key errors
-      delete data.id;
-
-      // Normalize name/title
-      if (table === 'lore' && data.name && !data.title) {
-        data.title = data.name;
-        delete data.name;
-      } else if (table !== 'lore' && data.title && !data.name) {
-        data.name = data.title;
-        delete data.title;
-      }
-
-      if (table === 'characters') {
-        data.name = data.name || 'Nuevo personaje';
-        data.initials = data.initials || (data.name || '').substring(0, 2).toUpperCase();
-        data.color = data.color || '#6b9fd4';
-      } else if (table === 'locations') {
-        data.name = data.name || 'Nueva localización';
-        data.color = data.color || '#6b9fd4';
-      } else if (table === 'objects') {
-        data.name = data.name || 'Nuevo objeto';
-      } else if (table === 'lore') {
-        data.title = data.title || 'Nueva entrada de lore';
-      }
-
-      if (selectedMerge._allEntities) {
-        for (const e of selectedMerge._allEntities) {
-          await deleteCompendiumEntry(table, e.id);
-        }
-      } else {
-        await deleteCompendiumEntry(table, selectedMerge.entity1.id);
-        await deleteCompendiumEntry(table, selectedMerge.entity2.id);
-      }
-
-      await addCompendiumEntry(table, data);
-      
-      const mergedIds = new Set(selectedMerge._allEntities.map(e => e.id));
-      setMergeGroups(prev => prev.filter(g => !g.entities.some(e => mergedIds.has(e.id))));
-
-      setSelectedMerge(null);
-      setMergingEntitiesIds([]);
-      setMergeResult(null);
-    } catch (err) {
-      console.error('[NovelContext] Confirm error:', err);
-      throw err;
-    }
-  };
-
-  const skipMerge = () => {
-    setSelectedMerge(null);
-    setMergingEntitiesIds([]);
-    setMergeResult(null);
-  };
-
-  const closeMergeOverlay = () => {
-    setIsMergeOverlayClosing(true);
-    setTimeout(() => {
-      setShowMergeOverlay(false);
-      setIsMergeOverlayClosing(false);
-      if (!isMerging && !mergeResult) {
-        setMergeGroups([]);
-        setSelectedMerge(null);
-        setMergingEntitiesIds([]);
-        setSelectedMergeIdx(0);
-      }
-    }, 220);
-  };
+  const merge = useMergeEngine({ characters, locations, objects, lore, addCompendiumEntry, deleteCompendiumEntry })
 
   const value = {
     activeNovel,
@@ -817,22 +566,7 @@ export const NovelProvider = ({ children }) => {
     toggleCloudSync,
     performCloudSync,
     refreshAfterRestore,
-    // Merge Exports
-    mergeGroups, setMergeGroups,
-    selectedMerge, setSelectedMerge,
-    mergeResult, setMergeResult,
-    isMerging, setIsMerging,
-    mergingEntitiesIds, setMergingEntitiesIds,
-    isScanningMerge, setIsScanningMerge,
-    selectedMergeIdx, setSelectedMergeIdx,
-    showMergeOverlay, setShowMergeOverlay,
-    isMergeOverlayClosing, setIsMergeOverlayClosing,
-    mergeSection, setMergeSection,
-    scanForMergeDuplicates,
-    handleMergeSelection,
-    confirmMerge,
-    skipMerge,
-    closeMergeOverlay,
+    ...merge,
     expandedIds,
     setExpandedIds
   };

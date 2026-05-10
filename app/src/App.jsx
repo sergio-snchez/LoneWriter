@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import {
   Sparkles, Loader2, Download, Upload, FileDown,
@@ -30,85 +30,49 @@ import MeshBackground from './components/MeshBackground'
 import PwaUpdateModal from './components/PwaUpdateModal'
 import { registerPWA, triggerUpdate } from './pwa'
 import { APP_VERSION } from './utils/version'
+import { useAppNavigation } from './hooks/useAppNavigation'
+import { useAppPreferences } from './hooks/useAppPreferences'
+import { useAppUI } from './hooks/useAppUI'
 
 export default function App() {
   const { t, i18n } = useTranslation('app')
   const { t: tc } = useTranslation('common')
-  const [activeView, setActiveView] = useState('editor')
-  const [viewKey, setViewKey] = useState(0)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
-  const [aiPanelOpen, setAiPanelOpen] = useState(false)
-  const [aiPanelTab, setAiPanelTab] = useState('rewrite')
-  const [theme, setTheme] = useState(() => localStorage.getItem('lw_theme') || 'dark')
-  const [editorFont, setEditorFont] = useState(() => localStorage.getItem('lw_editor_font') || 'serif')
-  const [meshEnabled, setMeshEnabled] = useState(() => {
-    const saved = localStorage.getItem('lw_mesh_enabled');
-    return saved === null ? true : saved === 'true';
-  })
 
-  // Handle view change with animation
-  const handleViewChange = (view) => {
-    setActiveView(view);
-    setViewKey(prev => prev + 1);
-  };
+  const { activeView, viewKey, sidebarCollapsed, setSidebarCollapsed,
+          mobileDrawerOpen, setMobileDrawerOpen, handleViewChange } = useAppNavigation()
 
-  // Apply theme to document and persist
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('lw_theme', theme);
-  }, [theme]);
+  const { theme, setTheme, editorFont, setEditorFont,
+          meshEnabled, setMeshEnabled } = useAppPreferences()
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-font', editorFont);
-    localStorage.setItem('lw_editor_font', editorFont);
-  }, [editorFont]);
+  const {
+    aiPanelOpen, setAiPanelOpen, aiPanelTab, setAiPanelTab,
+    settingsOpen, setSettingsOpen, settingsTab, setSettingsTab,
+    menuOpen, setMenuOpen,
+    typingComplete, setTypingComplete,
+    pwaUpdateOpen, setPwaUpdateOpen,
+    isEditingNovelTitle, setIsEditingNovelTitle,
+    editedNovelTitle, setEditedNovelTitle,
+    projectMenuRef,
+  } = useAppUI()
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-mesh', meshEnabled ? 'on' : 'off');
-    localStorage.setItem('lw_mesh_enabled', meshEnabled);
-  }, [meshEnabled]);
+  const fileInputRef = useRef(null)
 
-  useEffect(() => {
-    document.title = t('app_title');
-  }, [t, i18n.language]);
-
-  useEffect(() => {
-    const handleOpenOracle = () => {
-      setAiPanelTab('oracle');
-      setAiPanelOpen(true);
-    };
-    window.addEventListener('open-oracle-panel', handleOpenOracle);
-    return () => window.removeEventListener('open-oracle-panel', handleOpenOracle);
-  }, []);
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [settingsTab, setSettingsTab] = useState('cloud')
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [typingComplete, setTypingComplete] = useState(false)
-  const [pwaUpdateOpen, setPwaUpdateOpen] = useState(false)
-  const [isEditingNovelTitle, setIsEditingNovelTitle] = useState(false)
-  const [editedNovelTitle, setEditedNovelTitle] = useState('')
-
-  useEffect(() => {
-    registerPWA(() => setPwaUpdateOpen(true));
-  }, []);
-
-  // Reset typing when language changes
-  useEffect(() => {
-    setTypingComplete(false)
-  }, [i18n?.language])
-
-  const { openModal } = useModal();
+  const { openModal } = useModal()
 
   const {
     activeNovel, activeScene, allNovels, loading, acts,
     switchNovel, createNovel, deleteNovel, updateNovelTarget, updateNovel, refreshAfterRestore
-  } = useNovel();
+  } = useNovel()
 
-  const fileInputRef = useRef(null);
-  const projectMenuRef = useRef(null);
+  // App title
+  useEffect(() => { document.title = t('app_title') }, [t, i18n.language])
 
-  // Cloud Restore Listener
+  // PWA update listener
+  useEffect(() => { registerPWA(() => setPwaUpdateOpen(true)) }, [])
+
+  // Reset typing on language change
+  useEffect(() => { setTypingComplete(false) }, [i18n?.language])
+
   useEffect(() => {
     let isRestoring = false;
 
@@ -178,19 +142,7 @@ export default function App() {
     };
   }, [openModal, refreshAfterRestore]);
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (projectMenuRef.current && !projectMenuRef.current.contains(event.target)) {
-        setMenuOpen(false);
-      }
-    }
-    if (menuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [menuOpen]);
+
 
   const handleDeleteProject = (e, id) => {
     e.stopPropagation();
