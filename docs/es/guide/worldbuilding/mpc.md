@@ -5,9 +5,42 @@ El Monitor de Propuestas del Compendio (MPC) es una herramienta de asistencia qu
 ---
 
 ## Funcionamiento del MPC
-Mientras redacta en el editor, el sistema analiza el texto de forma periódica. Si detecta elementos que podrían ser relevantes para el lore, genera una propuesta de creación.
+
+<div style="display: flex; gap: 40px; align-items: center; flex-wrap: wrap;">
+<div style="flex: 0.8; min-width: 280px; text-align: center;">
+
+![Interruptor de Escaneo Automático del MPC](/img/guide/worldbuilding/mpc_switch.png)
+
+</div>
+<div style="flex: 1; min-width: 300px;">
+
+Mientras redacta en el editor, el motor de IA analiza el flujo de su narrativa de forma periódica y silenciosa en segundo plano para detectar elementos clave.
+
+**Para que este análisis inteligente se ejecute correctamente, asegúrese de tener siempre activado el interruptor de escaneo automático (Scanning Auto) que encontrará en la cabecera de la vista del Compendio.**
 
 Por ejemplo, si escribe: *"El oficial Valerius exploraba las ruinas de Kaelum"*, el MPC identificará posibles entradas para Valerius y Kaelum.
+
+</div>
+</div>
+
+---
+
+### Guía visual paso a paso
+
+````carousel
+![1. Detección automática de entidades mientras el autor escribe](/img/guide/worldbuilding/mpc_step1.png)
+<!-- slide -->
+![2. Revisión de las entidades detectadas automáticamente](/img/guide/worldbuilding/mpc_step2.png)
+<!-- slide -->
+![3. Activación manual del MPC (búsqueda en texto seleccionado)](/img/guide/worldbuilding/mpc_step3.png)
+<!-- slide -->
+![4. Revisión de las nuevas entidades detectadas en la selección](/img/guide/worldbuilding/mpc_step4.png)
+<!-- slide -->
+![5. Navegación por el Compendio con las entidades guardadas](/img/guide/worldbuilding/mpc_step5.png)
+````
+
+> [!TIP] Primer uso
+> La primera vez que active el MPC, el sistema descargará automáticamente el modelo local **all-MiniLM-L6-v2** (aprox. 25MB). Este proceso solo ocurre una vez y permite que el análisis semántico se realice íntegramente en su dispositivo, garantizando su privacidad.
 
 ---
 

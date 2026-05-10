@@ -384,6 +384,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
   }, [activeNovel, apiKey, provider, currentModel, localBaseUrl, mpcCooldownRef, MPC_COOLDOWN_MS, setMpcStatus, addMpcProposals, isMpcEnabled, logAIUsage])
 
   const handleManualMpcScan = useCallback(async () => {
+    console.log('[MPC] handleManualMpcScan triggered');
     if (mpcStatus === 'analyzing') return
     if (!activeScene?.content) return
     if (!activeNovel?.id) return
@@ -391,6 +392,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     // Paso 0: Limpieza
     const html = activeScene.content
     const plainText = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    console.log('[MPC] plainText length:', plainText.length);
     if (plainText.length < 10) return
 
     setMpcStatus('analyzing')
@@ -399,10 +401,13 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
         loadRegisteredEntityNames(activeNovel.id),
         loadIgnoredNames(activeNovel.id),
       ])
+      console.log('[MPC] Registered names:', registeredNames.size, 'Ignored:', ignoredNames.size);
 
       const candidates = extractCandidates(plainText, registeredNames, ignoredNames)
+      console.log('[MPC] Extracted candidates:', candidates);
 
       if (candidates.length === 0) {
+        console.log('[MPC] No candidates found, aborting');
         setMpcStatus('idle')
         return
       }
@@ -421,6 +426,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
         lore: loreEntries.map(l => l.title).filter(Boolean),
       }
 
+      console.log('[MPC] Calling analyzeWithAI with provider:', provider);
       const { proposals, usage } = await analyzeWithAI(
         candidates,
         plainText,
@@ -430,6 +436,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
         8, // Más candidatos en manual
         compendiumByType
       )
+      console.log('[MPC] Proposals received:', proposals);
 
       logAIUsage(usage)
 
@@ -437,6 +444,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
         addMpcProposals(proposals)
       }
     } catch (err) {
+      console.error('[MPC] Error in handleManualMpcScan:', err);
     } finally {
       setMpcStatus('idle')
     }
