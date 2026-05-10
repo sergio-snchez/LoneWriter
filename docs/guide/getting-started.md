@@ -1,23 +1,34 @@
-# Getting Started with LoneWriter
+# Getting Started
 
-Welcome to the official LoneWriter documentation! This platform is designed to help you build deep worlds and weave complex stories without losing creative control.
+LoneWriter is a writing application designed for authors seeking technological power without compromising their privacy. This guide will walk you through the initial setup process so you can start your first novel in minutes.
 
-## What makes LoneWriter different?
+---
 
-LoneWriter is not just a text editor; it's a comprehensive platform with Artificial Intelligence assistance that respects your **local sovereignty**.
-Unlike other platforms, LoneWriter allows you to:
-- **Run local models** to guarantee your creative work never leaves your computer.
-- Generate visualizations of your plot connections using the **Knowledge Nexus**.
-- Extract relationships and key information automatically via the **MPC (Compendium Proposal Monitor)**.
+## Initial Setup Process
 
-## Basic Workflow
+### 1. Environment Preparation
+LoneWriter runs directly in your browser but requires a connection to a language model (AI) to enable its advanced features.
 
-To get the most out of the tool, we recommend this workflow:
+- **Cloud**: Recommended for fast setup. Requires an API Key.
+- **Local**: Recommended for maximum privacy. Requires installing additional software such as Ollama or LM Studio.
 
-1. **Set Up Your Project**: Open a new project and configure the AI model you prefer to use.
-2. **Build your Compendium (Lore)**: Define your characters, locations, and world history manually to lay the groundwork.
+### 2. Artificial Intelligence Configuration
+Access the Settings menu within the application and configure your preferred provider.
+- If using the cloud, see the [API Keys](./setup/api-keys.md) section.
+- If you prefer a local environment, see the [Local Models](./setup/local-models.md) section.
 
-   *Alternatively, just start writing:* The **MPC** will detect new entities and suggest relationships in real-time, keeping your "World Lore" updated without interrupting your flow.
-3. **Consult the Oracle**: Don't remember the exact relationship between two characters from three chapters ago? The Oracle can read your own notes and answer without hallucinations (RAG).
+### 3. Creating a Project
+Once the AI is configured, you can create your first novel. The system will ask for a title and an optional basic description.
 
-In the following sections of the guide, we will dive deeper into each of these tools.
+---
+
+## Recommended Workflow
+
+### 1. Immersion in Writing
+Start writing directly in the [Editor](./editor/basics.md) or transferring your current drafts. There's no need to have everything defined beforehand; LoneWriter lets you focus on the narrative from the very first second.
+
+### 2. Real-Time Monitoring (MPC)
+As you write, the [Proposal Monitor (MPC)](./worldbuilding/mpc.md) will automatically detect new entities (characters, locations, objects) and suggest adding them to the [Compendium](./worldbuilding/compendium.md), allowing you to build your lore organically without interrupting your creativity.
+
+### 3. Query and Analysis
+Use the [Oracle](./analysis/oracle.md) to resolve doubts about your own plot or the [Nexus](./analysis/nexus.md) to visualize the network of relationships being woven throughout your work.

@@ -1,56 +1,17 @@
 /**
  * AI Service for LoneWriter
- * Handles communication with AI providers (OpenAI, Google Gemini, Claude, OpenRouter)
+ * Handles communication with AI providers via specialized modules.
  */
-
 import i18n from '../i18n/i18n';
-
-const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
-const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-
-/** Retryable HTTP status codes (rate-limit / server overload) */
-const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
-
-/**
- * fetch() wrapper with exponential backoff retry.
- * @param {string} url
- * @param {RequestInit} options
- * @param {number} maxRetries - default 3
- * @returns {Promise<Response>}
- */
-async function fetchWithRetry(url, options, maxRetries = 3) {
-  let lastError;
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      const response = await fetch(url, options);
-      if (RETRYABLE_STATUSES.has(response.status)) {
-        const waitMs = Math.min(1000 * 2 ** attempt, 8000);
-        if (attempt < maxRetries - 1) {
-          await new Promise(r => setTimeout(r, waitMs));
-          continue;
-        }
-        return response;
-      }
-      return response;
-    } catch (err) {
-      lastError = err;
-      if (attempt < maxRetries - 1) {
-        await new Promise(r => setTimeout(r, 1000 * 2 ** attempt));
-      }
-    }
-  }
-  throw lastError;
-}
+import { callGemini, callGeminiChat } from './providers/gemini';
+import { callOpenAI, callOpenAIChat } from './providers/openai';
+import { callClaude, callClaudeChat } from './providers/claude';
+import { callOpenRouter, callOpenRouterChat } from './providers/openrouter';
+import { callLocal, callLocalChat } from './providers/local';
 
 export const AIService = {
   /**
    * Generic rewrite function
-   * @param {string} text - Original selection
-   * @param {string} goal - Goal ID (style, tone, etc.)
-   * @param {string} promptTemplate - The prompt to use
-   * @param {Object} config - { provider, apiKey, model, customInstructions, pov, previousContext }
    */
   rewrite: async (text, goal, promptTemplate, config) => {
     const { provider, apiKey, model, customInstructions, pov, knowledgeBase, previousContext } = config;
@@ -90,29 +51,19 @@ export const AIService = {
       fullPrompt += `\n\n${kbLabel}\n${knowledgeBase}\n---\n${kbNote}`;
     }
 
-
     const outputLabel = isSpanish ? 'RESCRITURA (Responde ÚNICAMENTE con el texto reescrito en formato HTML válido. Usa etiquetas <p>, <strong>, <em>, etc. NO uses Markdown. NO añadas introducciones ni explicaciones):' : 'REWRITE (Respond ONLY with the rewritten text in valid HTML format. Use tags like <p>, <strong>, <em>, etc. Do NOT use Markdown. Do NOT add introductions or explanations):';
     fullPrompt += `\n\n${outputLabel}`;
 
-    if (provider === 'google') {
-      return await AIService._callGemini(fullPrompt, apiKey, model);
-    } else if (provider === 'openai') {
-      return await AIService._callOpenAI(fullPrompt, apiKey, model);
-    } else if (provider === 'anthropic') {
-      return await AIService._callClaude(fullPrompt, apiKey, model);
-    } else if (provider === 'openrouter') {
-      return await AIService._callOpenRouter(fullPrompt, apiKey, model);
-    } else if (provider === 'local') {
-      return await AIService._callLocal(fullPrompt, model, config.localBaseUrl);
-    } else {
-      throw new Error(`Proveedor de IA desconocido: ${provider}`);
-    }
+    if (provider === 'google') return await callGemini(fullPrompt, apiKey, model);
+    if (provider === 'openai') return await callOpenAI(fullPrompt, apiKey, model);
+    if (provider === 'anthropic') return await callClaude(fullPrompt, apiKey, model);
+    if (provider === 'openrouter') return await callOpenRouter(fullPrompt, apiKey, model);
+    if (provider === 'local') return await callLocal(fullPrompt, model, config.localBaseUrl);
+    throw new Error(`Proveedor de IA desconocido: ${provider}`);
   },
 
   /**
    * Generates a 1-2 sentence summary of a scene for the timeline.
-   * @param {string} sceneText - Full text of the scene
-   * @param {Object} config - { provider, apiKey, model, localBaseUrl }
    */
   summarizeScene: async (sceneText, config) => {
     const { provider, apiKey, model, localBaseUrl } = config;
@@ -127,31 +78,16 @@ export const AIService = {
       ? `Actúa como un asistente de logística editorial. Genera un resumen de la escena estilo "post-it" o "telegrama". Máximo 10 palabras. Describe ÚNICAMENTE el hecho físico o el giro de trama más importante. NO uses lenguaje poético, NO interpretes el significado y NO uses metáforas. Sé puramente fáctico y directo.\n\n[ESCENA]\n${sceneText}`
       : `Act as an editorial logistics assistant. Generate a "post-it" or "telegram" style summary of the scene. Maximum 10 words. Describe ONLY the physical fact or the most important plot twist. Do NOT use poetic language, do NOT interpret meaning, and do NOT use metaphors. Be purely factual and direct.\n\n[SCENE]\n${sceneText}`;
 
-    let response = null;
-    if (provider === 'google') {
-      response = await AIService._callGemini(promptTemplate, apiKey, model);
-    } else if (provider === 'openai') {
-      response = await AIService._callOpenAI(promptTemplate, apiKey, model);
-    } else if (provider === 'anthropic') {
-      response = await AIService._callClaude(promptTemplate, apiKey, model);
-    } else if (provider === 'openrouter') {
-      response = await AIService._callOpenRouter(promptTemplate, apiKey, model);
-    } else if (provider === 'local') {
-      response = await AIService._callLocal(promptTemplate, model, localBaseUrl);
-    } else {
-      throw new Error(errorProvider);
-    }
-
-    return { text: response.text, usage: response.usage };
+    if (provider === 'google') return await callGemini(promptTemplate, apiKey, model);
+    if (provider === 'openai') return await callOpenAI(promptTemplate, apiKey, model);
+    if (provider === 'anthropic') return await callClaude(promptTemplate, apiKey, model);
+    if (provider === 'openrouter') return await callOpenRouter(promptTemplate, apiKey, model);
+    if (provider === 'local') return await callLocal(promptTemplate, model, localBaseUrl);
+    throw new Error(errorProvider);
   },
 
   /**
    * Auto-completes a compendium entry based on the novel text.
-   * @param {string} sceneText - Background text from the novel
-   * @param {string} type - Compendium category (characters, locations, etc)
-   * @param {string} name - Entity name
-   * @param {Object} currentData - Current entity object
-   * @param {Object} config - { provider, apiKey, model, localBaseUrl }
    */
   autoCompleteCompendiumEntry: async (sceneText, type, name, currentData, config) => {
     const { provider, apiKey, model, localBaseUrl } = config;
@@ -162,7 +98,6 @@ export const AIService = {
 
     if (!apiKey && provider !== 'local') throw new Error(errorAPI);
 
-    // Limpiar campos internos antes de enviar a la IA para evitar confusión
     const cleanData = { ...currentData };
     delete cleanData._rawTraits;
     delete cleanData._rawTags;
@@ -214,38 +149,26 @@ MANDATORY STRUCTURE PER TYPE:
 - lore: { "category": "", "summary": "", "tags": ["tag1"], "associatedCharacters": ["CharName"], "associatedLocations": ["LocationName"], "associatedObjects": ["ObjectName"] }`;
 
     let response = null;
-    if (provider === 'google') {
-      response = await AIService._callGemini(promptTemplate, apiKey, model);
-    } else if (provider === 'openai') {
-      response = await AIService._callOpenAI(promptTemplate, apiKey, model);
-    } else if (provider === 'anthropic') {
-      response = await AIService._callClaude(promptTemplate, apiKey, model);
-    } else if (provider === 'openrouter') {
-      response = await AIService._callOpenRouter(promptTemplate, apiKey, model);
-    } else if (provider === 'local') {
-      response = await AIService._callLocal(promptTemplate, model, localBaseUrl);
-    } else {
-      throw new Error(errorProvider);
-    }
+    if (provider === 'google') response = await callGemini(promptTemplate, apiKey, model);
+    else if (provider === 'openai') response = await callOpenAI(promptTemplate, apiKey, model);
+    else if (provider === 'anthropic') response = await callClaude(promptTemplate, apiKey, model);
+    else if (provider === 'openrouter') response = await callOpenRouter(promptTemplate, apiKey, model);
+    else if (provider === 'local') response = await callLocal(promptTemplate, model, localBaseUrl);
+    else throw new Error(errorProvider);
 
     try {
       const text = response.text;
       const match = text.match(/\{[\s\S]*\}/);
-      if (match) {
-        return { data: JSON.parse(match[0]), usage: response.usage };
-      }
+      if (match) return { data: JSON.parse(match[0]), usage: response.usage };
       return { data: JSON.parse(text), usage: response.usage };
     } catch (e) {
-      console.error("[AIService] JSON parse error in auto-complete", e, response.text);
+      console.error("[AIService] JSON parse error in auto-complete", e, response?.text);
       throw new Error(i18n.language === 'es' ? 'El modelo no devolvió un JSON válido.' : 'The model did not return valid JSON.');
     }
   },
 
   /**
    * Agent chat for the Debate Forum
-   * @param {Object} agent - { systemPrompt, name }
-   * @param {Array}  history - Debate message history [{ role, agent, text }]
-   * @param {Object} config - { provider, apiKey, model, localBaseUrl, sceneContent }
    */
   agentChat: async (agent, history, config) => {
     const { provider, apiKey, model, localBaseUrl, sceneContent, pov, roundInstruction, knowledgeBase, compendiumContext } = config;
@@ -303,425 +226,23 @@ MANDATORY STRUCTURE PER TYPE:
       : `[YOUR TURN]: Now it's your turn, ${agent.name}. Review the entire previous debate thread, regardless of whom the messages were directed to. Stay true to your role and instructions. ${roundInstruction || ''}`;
 
     const chatMessages = history.map(msg => {
-      if (msg.role === 'user') {
-        return { role: 'user', content: authorLabel + ' ' + msg.text };
-      }
-      if (msg.agent === agent.id) {
-        return { role: 'assistant', content: msg.text };
-      }
+      if (msg.role === 'user') return { role: 'user', content: authorLabel + ' ' + msg.text };
+      if (msg.agent === agent.id) return { role: 'assistant', content: msg.text };
       return { role: 'user', content: participantLabel(msg.agentName || msg.agent) + ' ' + msg.text };
     });
 
     chatMessages.push({ role: 'user', content: yourTurn });
 
-    if (provider === 'google') {
-      return await AIService._callGeminiChat(systemPrompt, chatMessages, apiKey, model);
-    } else if (provider === 'openai') {
-      return await AIService._callOpenAIChat(systemPrompt, chatMessages, apiKey, model);
-    } else if (provider === 'anthropic') {
-      return await AIService._callClaudeChat(systemPrompt, chatMessages, apiKey, model);
-    } else if (provider === 'openrouter') {
-      return await AIService._callOpenRouterChat(systemPrompt, chatMessages, apiKey, model);
-    } else if (provider === 'local') {
-      return await AIService._callLocalChat(systemPrompt, chatMessages, model, localBaseUrl);
-    } else {
-      throw new Error(errorProvider);
-    }
-  },
-
-  /**
-   * Private method for Google Gemini API
-   */
-  _callGemini: async (prompt, apiKey, model) => {
-    try {
-      const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
-      const response = await fetchWithRetry(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 2048,
-          }
-        }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error?.message || 'Error en la API de Gemini');
-      }
-
-      const data = await response.json();
-      return {
-        text: data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Error al generar la respuesta.',
-        usage: {
-          prompt_tokens: data.usageMetadata?.promptTokenCount || 0,
-          completion_tokens: data.usageMetadata?.candidatesTokenCount || 0,
-          total_tokens: data.usageMetadata?.totalTokenCount || 0
-        }
-      };
-    } catch (error) {
-      console.error('Error in AIService._callGemini:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Private method for OpenAI API
-   */
-  _callOpenAI: async (prompt, apiKey, model) => {
-    try {
-      const response = await fetchWithRetry(OPENAI_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: model || 'gpt-4o-mini',
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.7,
-        }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error?.message || 'Error en la API de OpenAI');
-      }
-
-      const data = await response.json();
-      return {
-        text: data.choices?.[0]?.message?.content?.trim() || 'Error al generar la respuesta.',
-        usage: {
-          prompt_tokens: data.usage?.prompt_tokens || 0,
-          completion_tokens: data.usage?.completion_tokens || 0,
-          total_tokens: data.usage?.total_tokens || 0
-        }
-      };
-    } catch (error) {
-      console.error('Error in AIService._callOpenAI:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Private method for Anthropic (Claude) API
-   */
-  _callClaude: async (prompt, apiKey, model) => {
-    try {
-      const response = await fetchWithRetry(CLAUDE_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: model || 'claude-3-haiku-20240307',
-          max_tokens: 2048,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error?.message || 'Error en la API de Anthropic');
-      }
-
-      const data = await response.json();
-      return {
-        text: data.content?.[0]?.text?.trim() || 'Error al generar la respuesta.',
-        usage: {
-          prompt_tokens: data.usage?.input_tokens || 0,
-          completion_tokens: data.usage?.output_tokens || 0,
-          total_tokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0)
-        }
-      };
-    } catch (error) {
-      console.error('Error in AIService._callClaude:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Private method for OpenRouter API
-   */
-  _callOpenRouter: async (prompt, apiKey, model) => {
-    try {
-      const response = await fetchWithRetry(OPENROUTER_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://lonewriter.app',
-          'X-Title': 'LoneWriter',
-        },
-        body: JSON.stringify({
-          model: model || 'openrouter/auto',
-          messages: [{ role: 'user', content: prompt }],
-        }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error?.message || 'Error en la API de OpenRouter');
-      }
-
-      const data = await response.json();
-      return {
-        text: data.choices?.[0]?.message?.content?.trim() || 'Error al generar la respuesta.',
-        usage: {
-          prompt_tokens: data.usage?.prompt_tokens || 0,
-          completion_tokens: data.usage?.completion_tokens || 0,
-          total_tokens: data.usage?.total_tokens || 0
-        }
-      };
-    } catch (error) {
-      console.error('Error in AIService._callOpenRouter:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Private method for Local models (LM Studio / Ollama)
-   * Both expose an OpenAI-compatible API at a configurable base URL.
-   * LM Studio default: http://localhost:1234/v1
-   * Ollama default:    http://localhost:11434/v1
-   */
-  _callLocal: async (prompt, model, baseUrl) => {
-    const url = `${(baseUrl || 'http://localhost:1234/v1').replace(/\/$/, '')}/chat/completions`;
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: model || 'local-model',
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.7,
-          stream: false,
-        }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error?.message || `Error ${response.status} conectando con el servidor local (${url})`);
-      }
-
-      const data = await response.json();
-      
-      const content = data.choices?.[0]?.message?.content;
-      if (!content) {
-        throw new Error('La IA local no devolvió contenido. Verifica que el modelo esté cargado correctamente en LM Studio.');
-      }
-      
-      return {
-        text: content.trim(),
-        usage: data.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
-      };
-    } catch (error) {
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        throw new Error(`No se pudo conectar con el servidor local en ${url}. Asegúrate de que LM Studio u Ollama está en ejecución.`);
-      }
-      throw error;
-    }
-  },
-
-  // ── Chat variants (multi-turn) ──────────────────────────────
-
-  _callGeminiChat: async (systemPrompt, messages, apiKey, model) => {
-    const url = `${GEMINI_API_BASE}/${model || 'gemini-2.0-flash'}:generateContent?key=${apiKey}`;
-    // Gemini uses 'contents' with 'user'/'model' roles
-    const contents = messages.map(m => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }],
-    }));
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: systemPrompt }] },
-          contents,
-          generationConfig: { temperature: 0.8, maxOutputTokens: 1024 },
-        }),
-      });
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error?.message || 'Error en la API de Gemini');
-      }
-      const data = await response.json();
-      return {
-        text: data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Sin respuesta.',
-        usage: {
-          prompt_tokens: data.usageMetadata?.promptTokenCount || 0,
-          completion_tokens: data.usageMetadata?.candidatesTokenCount || 0,
-          total_tokens: data.usageMetadata?.totalTokenCount || 0
-        }
-      };
-    } catch (error) {
-      console.error('Error in AIService._callGeminiChat:', error);
-      throw error;
-    }
-  },
-
-  _callOpenAIChat: async (systemPrompt, messages, apiKey, model) => {
-    try {
-      const response = await fetch(OPENAI_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-        body: JSON.stringify({
-          model: model || 'gpt-4o-mini',
-          messages: [{ role: 'system', content: systemPrompt }, ...messages],
-          temperature: 0.8,
-          max_tokens: 1024,
-        }),
-      });
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error?.message || 'Error en la API de OpenAI');
-      }
-      const data = await response.json();
-      return {
-        text: data.choices?.[0]?.message?.content?.trim() || 'Sin respuesta.',
-        usage: {
-          prompt_tokens: data.usage?.prompt_tokens || 0,
-          completion_tokens: data.usage?.completion_tokens || 0,
-          total_tokens: data.usage?.total_tokens || 0
-        }
-      };
-    } catch (error) {
-      console.error('Error in AIService._callOpenAIChat:', error);
-      throw error;
-    }
-  },
-
-  _callClaudeChat: async (systemPrompt, messages, apiKey, model) => {
-    // Anthropic requires messages to alternate user/assistant
-    // Ensure we never have two consecutive messages with the same role
-    const normalized = [];
-    for (const m of messages) {
-      if (normalized.length > 0 && normalized[normalized.length - 1].role === m.role) {
-        normalized[normalized.length - 1].content += '\n' + m.content;
-      } else {
-        normalized.push({ ...m });
-      }
-    }
-    // Must start with user
-    if (normalized.length === 0 || normalized[0].role !== 'user') {
-      normalized.unshift({ role: 'user', content: '.' });
-    }
-    try {
-      const response = await fetch(CLAUDE_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: model || 'claude-3-haiku-20240307',
-          system: systemPrompt,
-          messages: normalized,
-          max_tokens: 1024,
-        }),
-      });
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error?.message || 'Error en la API de Claude');
-      }
-      const data = await response.json();
-      return {
-        text: data.content?.[0]?.text?.trim() || 'Sin respuesta.',
-        usage: {
-          prompt_tokens: data.usage?.input_tokens || 0,
-          completion_tokens: data.usage?.output_tokens || 0,
-          total_tokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0)
-        }
-      };
-    } catch (error) {
-      console.error('Error in AIService._callClaudeChat:', error);
-      throw error;
-    }
-  },
-
-  _callOpenRouterChat: async (systemPrompt, messages, apiKey, model) => {
-    try {
-      const response = await fetch(OPENROUTER_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://lonewriter.app',
-          'X-Title': 'LoneWriter',
-        },
-        body: JSON.stringify({
-          model: model || 'openrouter/auto',
-          messages: [{ role: 'system', content: systemPrompt }, ...messages],
-          temperature: 0.8,
-        }),
-      });
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error?.message || 'Error en la API de OpenRouter');
-      }
-      const data = await response.json();
-      return {
-        text: data.choices?.[0]?.message?.content?.trim() || 'Sin respuesta.',
-        usage: {
-          prompt_tokens: data.usage?.prompt_tokens || 0,
-          completion_tokens: data.usage?.completion_tokens || 0,
-          total_tokens: data.usage?.total_tokens || 0
-        }
-      };
-    } catch (error) {
-      console.error('Error in AIService._callOpenRouterChat:', error);
-      throw error;
-    }
-  },
-
-  _callLocalChat: async (systemPrompt, messages, model, baseUrl) => {
-    const url = `${(baseUrl || 'http://localhost:1234/v1').replace(/\/$/, '')}/chat/completions`;
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: model || 'local-model',
-          messages: [{ role: 'system', content: systemPrompt }, ...messages],
-          temperature: 0.8,
-          stream: false,
-        }),
-      });
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.error?.message || `Error ${response.status}`);
-      }
-      const data = await response.json();
-      return {
-        text: data.choices?.[0]?.message?.content?.trim() || 'Sin respuesta.',
-        usage: {
-          prompt_tokens: data.usage?.prompt_tokens || 0,
-          completion_tokens: data.usage?.completion_tokens || 0,
-          total_tokens: data.usage?.total_tokens || 0
-        }
-      };
-    } catch (error) {
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        throw new Error(`No se pudo conectar con el servidor local en ${url}.`);
-      }
-      console.error('Error in AIService._callLocalChat:', error);
-      throw error;
-    }
+    if (provider === 'google') return await callGeminiChat(systemPrompt, chatMessages, apiKey, model);
+    if (provider === 'openai') return await callOpenAIChat(systemPrompt, chatMessages, apiKey, model);
+    if (provider === 'anthropic') return await callClaudeChat(systemPrompt, chatMessages, apiKey, model);
+    if (provider === 'openrouter') return await callOpenRouterChat(systemPrompt, chatMessages, apiKey, model);
+    if (provider === 'local') return await callLocalChat(systemPrompt, chatMessages, model, localBaseUrl);
+    throw new Error(errorProvider);
   },
 
   /**
    * Fuses two entities into one coherent entry using AI
-   * @param {Object} entity1 - First entity object
-   * @param {Object} entity2 - Second entity object
-   * @param {string} type - Entity type (characters, locations, objects, lore)
-   * @param {Object} config - { provider, apiKey, model, localBaseUrl }
    */
   fuseEntities: async (entity1, entity2, type, config) => {
     const { provider, apiKey, model, localBaseUrl } = config;
@@ -753,28 +274,19 @@ ${type === 'objects' ? '- { "name": "...", "description": "...", "type": "...", 
 ${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "tags": [] }' : ''}`;
 
     let response = null;
-    if (provider === 'google') {
-      response = await AIService._callGemini(promptTemplate, apiKey, model);
-    } else if (provider === 'openai') {
-      response = await AIService._callOpenAI(promptTemplate, apiKey, model);
-    } else if (provider === 'anthropic') {
-      response = await AIService._callClaude(promptTemplate, apiKey, model);
-    } else if (provider === 'openrouter') {
-      response = await AIService._callOpenRouter(promptTemplate, apiKey, model);
-    } else if (provider === 'local') {
-      response = await AIService._callLocal(promptTemplate, model, localBaseUrl);
-    } else {
-      throw new Error(errorProvider);
-    }
+    if (provider === 'google') response = await callGemini(promptTemplate, apiKey, model);
+    else if (provider === 'openai') response = await callOpenAI(promptTemplate, apiKey, model);
+    else if (provider === 'anthropic') response = await callClaude(promptTemplate, apiKey, model);
+    else if (provider === 'openrouter') response = await callOpenRouter(promptTemplate, apiKey, model);
+    else if (provider === 'local') response = await callLocal(promptTemplate, model, localBaseUrl);
+    else throw new Error(errorProvider);
 
     try {
       const text = response.text;
       const match = text.match(/\{[\s\S]*\}/);
       let data = match ? JSON.parse(match[0]) : JSON.parse(text);
       
-      if (!data[nameField] || data[nameField].trim() === '') {
-        data[nameField] = fallbackName;
-      }
+      if (!data[nameField] || data[nameField].trim() === '') data[nameField] = fallbackName;
       
       const descField = type === 'lore' ? 'summary' : 'description';
       if (!data[descField] || data[descField].trim() === '') {
@@ -783,16 +295,13 @@ ${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "t
 
       return { data, usage: response.usage };
     } catch (e) {
-      console.error("[AIService] JSON parse error in fuseEntities", e, response.text);
+      console.error("[AIService] JSON parse error in fuseEntities", e, response?.text);
       throw new Error(i18n.t('compendium:unificar.error_no_json'));
     }
   },
 
   /**
    * Fuses multiple entities into one coherent entry using AI
-   * @param {Array<Object>} entities - List of entity objects to merge
-   * @param {string} type - Entity type (characters, locations, objects, lore)
-   * @param {Object} config - { provider, apiKey, model, localBaseUrl }
    */
   fuseMultipleEntities: async (entities, type, config) => {
     const { provider, apiKey, model, localBaseUrl } = config;
@@ -823,28 +332,19 @@ ${type === 'objects' ? '- { "name": "...", "description": "...", "type": "...", 
 ${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "tags": [] }' : ''}`;
 
     let response = null;
-    if (provider === 'google') {
-      response = await AIService._callGemini(promptTemplate, apiKey, model);
-    } else if (provider === 'openai') {
-      response = await AIService._callOpenAI(promptTemplate, apiKey, model);
-    } else if (provider === 'anthropic') {
-      response = await AIService._callClaude(promptTemplate, apiKey, model);
-    } else if (provider === 'openrouter') {
-      response = await AIService._callOpenRouter(promptTemplate, apiKey, model);
-    } else if (provider === 'local') {
-      response = await AIService._callLocal(promptTemplate, model, localBaseUrl);
-    } else {
-      throw new Error(errorProvider);
-    }
+    if (provider === 'google') response = await callGemini(promptTemplate, apiKey, model);
+    else if (provider === 'openai') response = await callOpenAI(promptTemplate, apiKey, model);
+    else if (provider === 'anthropic') response = await callClaude(promptTemplate, apiKey, model);
+    else if (provider === 'openrouter') response = await callOpenRouter(promptTemplate, apiKey, model);
+    else if (provider === 'local') response = await callLocal(promptTemplate, model, localBaseUrl);
+    else throw new Error(errorProvider);
 
     try {
       const text = response.text;
       const match = text.match(/\{[\s\S]*\}/);
       let data = match ? JSON.parse(match[0]) : JSON.parse(text);
       
-      if (!data[nameField] || data[nameField].trim() === '') {
-        data[nameField] = fallbackName;
-      }
+      if (!data[nameField] || data[nameField].trim() === '') data[nameField] = fallbackName;
       
       const descField = type === 'lore' ? 'summary' : 'description';
       if (!data[descField] || data[descField].trim() === '') {
@@ -854,24 +354,20 @@ ${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "t
 
       return { data, usage: response.usage };
     } catch (e) {
-      console.error("[AIService] JSON parse error in fuseMultipleEntities", e, response.text);
+      console.error("[AIService] JSON parse error in fuseMultipleEntities", e, response?.text);
       throw new Error(i18n.t('compendium:unificar.error_no_json'));
     }
   },
 
   /**
    * Test de conexión con el proveedor
-   * @param {Object} config - { provider, apiKey, model, localBaseUrl }
-   * @returns {Promise<{success: boolean, latency: number, error?: string}>}
    */
   testConnection: async (config) => {
     const { provider, apiKey, model, localBaseUrl } = config;
     const startTime = Date.now();
-
     const isEmpty = (val) => !val || typeof val !== 'string' || val.trim().length === 0;
 
     if (!provider) return { success: false, error: 'Selecciona un proveedor', latency: 0 };
-
     if (provider === 'local') {
       if (isEmpty(localBaseUrl)) return { success: false, error: 'URL del servidor no configurada', latency: 0 };
     } else {
@@ -885,27 +381,18 @@ ${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "t
           headers: { 'Authorization': `Bearer ${apiKey}` }
         });
         let latency = Date.now() - startTime;
-        
         if (!keyResponse.ok) {
           if (keyResponse.status === 401) return { success: false, error: 'API key inválida', latency };
           if (keyResponse.status === 403) return { success: false, error: 'Sin permisos', latency };
           const err = await keyResponse.json();
           return { success: false, error: err.error?.message || `Error ${keyResponse.status}`, latency };
         }
-        
         await keyResponse.json().catch(() => ({}));
         
         const chatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: model,
-            messages: [{ role: 'user', content: 'Hi' }],
-            max_tokens: 1
-          })
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+          body: JSON.stringify({ model: model, messages: [{ role: 'user', content: 'Hi' }], max_tokens: 1 })
         });
         latency = Date.now() - startTime;
         
@@ -919,17 +406,13 @@ ${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "t
           const err = await chatResponse.json();
           return { success: false, error: err.error?.message || `Error ${chatResponse.status}`, latency };
         }
-        
         const chatData = await chatResponse.json().catch(() => ({}));
-        
-        if (chatData.choices && chatData.choices.length > 0) {
-          return { success: true, latency };
-        }
+        if (chatData.choices && chatData.choices.length > 0) return { success: true, latency };
         return { success: false, error: 'El modelo no devolvió respuesta', latency };
       }
 
       if (provider === 'google') {
-        const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -939,38 +422,24 @@ ${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "t
         
         if (response.ok) {
           const data = await response.json().catch(() => ({}));
-          if (data.error) {
-            return { success: false, error: data.error.message || 'Error de Google API', latency };
-          }
+          if (data.error) return { success: false, error: data.error.message || 'Error de Google API', latency };
           return { success: true, latency };
         }
         
         const err = await response.json().catch(() => ({}));
-        if (response.status === 401 || err.error?.message?.includes('API_KEY')) {
-          return { success: false, error: 'API key inválida', latency };
-        }
+        if (response.status === 401 || err.error?.message?.includes('API_KEY')) return { success: false, error: 'API key inválida', latency };
         if (response.status === 403) return { success: false, error: 'Sin permisos', latency };
-        if (response.status === 400 || err.error?.message?.includes('model')) {
-          return { success: false, error: err.error?.message || 'Modelo no válido', latency };
-        }
+        if (response.status === 400 || err.error?.message?.includes('model')) return { success: false, error: err.error?.message || 'Modelo no válido', latency };
         return { success: false, error: err.error?.message || `Error ${response.status}`, latency };
       }
 
       if (provider === 'anthropic') {
         const keyResponse = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01'
-          },
-          body: JSON.stringify({
-            model: model,
-            max_tokens: 1,
-            messages: [{ role: 'user', content: 'Hi' }]
-          })
+          headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+          body: JSON.stringify({ model: model, max_tokens: 1, messages: [{ role: 'user', content: 'Hi' }] })
         });
-        let latency = Date.now() - startTime;
+        const latency = Date.now() - startTime;
         
         if (!keyResponse.ok) {
           if (keyResponse.status === 401) return { success: false, error: 'API key inválida', latency };
@@ -983,19 +452,13 @@ ${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "t
           const err = await keyResponse.json();
           return { success: false, error: err.error?.message || `Error ${keyResponse.status}`, latency };
         }
-        
         await keyResponse.json().catch(() => ({}));
-        
         return { success: true, latency };
       }
 
       if (provider === 'openrouter') {
         const keyResponse = await fetch('https://openrouter.ai/api/v1/models', {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'HTTP-Referer': 'https://lonewriter.app',
-            'X-Title': 'LoneWriter'
-          }
+          headers: { 'Authorization': `Bearer ${apiKey}`, 'HTTP-Referer': 'https://lonewriter.app', 'X-Title': 'LoneWriter' }
         });
         let latency = Date.now() - startTime;
         
@@ -1010,22 +473,12 @@ ${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "t
             return { success: false, error: `Error ${keyResponse.status}`, latency };
           }
         }
-        
         await keyResponse.json().catch(() => ({}));
         
         const chatResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
-            'HTTP-Referer': 'https://lonewriter.app',
-            'X-Title': 'LoneWriter'
-          },
-          body: JSON.stringify({
-            model: model || 'openrouter/auto',
-            messages: [{ role: 'user', content: 'Hi' }],
-            max_tokens: 1
-          })
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`, 'HTTP-Referer': 'https://lonewriter.app', 'X-Title': 'LoneWriter' },
+          body: JSON.stringify({ model: model || 'openrouter/auto', messages: [{ role: 'user', content: 'Hi' }], max_tokens: 1 })
         });
         latency = Date.now() - startTime;
         
@@ -1050,10 +503,7 @@ ${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "t
         }
         
         const chatData = await chatResponse.json().catch(() => ({}));
-        
-        if (chatData.choices && chatData.choices.length > 0) {
-          return { success: true, latency };
-        }
+        if (chatData.choices && chatData.choices.length > 0) return { success: true, latency };
         return { success: false, error: 'El modelo no devolvió respuesta', latency };
       }
 
@@ -1069,9 +519,7 @@ ${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "t
           
           if (response.ok) {
             const data = await response.json().catch(() => ({}));
-            if (data.data && Array.isArray(data.data) && data.data.length > 0) {
-              return { success: true, latency };
-            }
+            if (data.data && Array.isArray(data.data) && data.data.length > 0) return { success: true, latency };
             return { success: false, error: 'No se pudieron obtener modelos', latency };
           }
           const err = await response.json().catch(() => ({}));
@@ -1079,9 +527,7 @@ ${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "t
         } catch (err) {
           clearTimeout(timeout);
           const latency = Date.now() - startTime;
-          if (err.name === 'AbortError') {
-            return { success: false, error: 'Sin respuesta (servidor caído)', latency };
-          }
+          if (err.name === 'AbortError') return { success: false, error: 'Sin respuesta (servidor caído)', latency };
           return { success: false, error: 'No se pudo conectar', latency };
         }
       }
@@ -1093,4 +539,3 @@ ${type === 'lore' ? '- { "title": "...", "summary": "...", "category": "...", "t
     }
   }
 };
-

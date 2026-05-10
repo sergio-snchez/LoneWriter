@@ -3,40 +3,13 @@ import i18n from '../i18n/i18n';
 import { db } from '../db/database';
 import { useNovel } from './NovelContext';
 import { createDebouncedEntityDetector, parseOracleResponse } from '../services/entityDetector';
-import { addToIgnoredNames } from '../services/mpcService';
 import { AIService } from '../services/aiService';
-import { loadUserStopwords } from '../i18n/stopwords';
+import { useAIConfig, DEFAULT_MODELS } from './useAIConfig';
+import { useAIMpc } from './useAIMpc';
+import { useAIUsage } from './useAIUsage';
 
-const AI_PROVIDERS = ['google', 'openai', 'anthropic', 'openrouter', 'local'];
-
-const AIContext = createContext();
-
-export const useAI = () => {
-  const context = useContext(AIContext);
-  if (!context) {
-    throw new Error('useAI must be used within an AIProvider');
-  }
-  return context;
-};
-
-export const DEFAULT_MODELS = {
-  google:      'gemini-2.0-flash',
-  openai:      'gpt-4o-mini',
-  anthropic:   'claude-3-5-sonnet-20241022',
-  openrouter:  'openrouter/auto',
-  local:       'local-model',
-};
-
-const DEFAULT_PROMPTS = () => ({
-  style: i18n.t('ai:rewrite_prompts.style'),
-  language: i18n.t('ai:rewrite_prompts.language'),
-  tone: i18n.t('ai:rewrite_prompts.tone'),
-  length: i18n.t('ai:rewrite_prompts.length'),
-  clarity: i18n.t('ai:rewrite_prompts.clarity'),
-  rhythm: i18n.t('ai:rewrite_prompts.rhythm'),
-  cohesion: i18n.t('ai:rewrite_prompts.cohesion'),
-  character: i18n.t('ai:rewrite_prompts.character'),
-});
+// Re-export for backward-compat (SettingsModal imports DEFAULT_MODELS from here)
+export { DEFAULT_MODELS };
 
 const getDefaultDebateAgents = () => [
   {
@@ -68,120 +41,30 @@ const getDefaultDebateAgents = () => [
   },
 ];
 
-const emptyProviderConfig = { model: '', apiKey: '', localBaseUrl: '' };
+const AIContext = createContext();
+
+export const useAI = () => {
+  const context = useContext(AIContext);
+  if (!context) {
+    throw new Error('useAI must be used within an AIProvider');
+  }
+  return context;
+};
 
 export const AIProvider = ({ children }) => {
   const { activeNovel, activeScene } = useNovel();
-  
-  // Provider activo (solo esto en localStorage)
-  const [provider, setProvider] = useState(() => localStorage.getItem('ai_provider') || 'google');
-  
-  // Todas las configs de todos los proveedores (cargadas una vez de Dexie)
-  const [allConfigs, setAllConfigs] = useState(() => {
-    const initial = {};
-    for (const p of AI_PROVIDERS) {
-      initial[p] = { ...emptyProviderConfig };
-    }
-    return initial;
-  });
-  const [configsLoaded, setConfigsLoaded] = useState(false);
 
-  // Cargar TODAS las configs desde Dexie al inicio
-  useEffect(() => {
-    const loadAllConfigs = async () => {
-      try {
-        const rows = await db.aiProviderConfigs.toArray();
-        const loaded = {};
-        for (const p of AI_PROVIDERS) {
-          loaded[p] = { ...emptyProviderConfig };
-        }
-        for (const row of rows) {
-          if (loaded[row.provider]) {
-            loaded[row.provider] = {
-              model: loaded[row.provider].model || row.model || '',
-              apiKey: loaded[row.provider].apiKey || row.apiKey || '',
-              localBaseUrl: loaded[row.provider].localBaseUrl || row.localBaseUrl || '',
-            };
-          }
-        }
-        setAllConfigs(loaded);
-        setConfigsLoaded(true);
-      } catch (err) {
-        console.error('[AIContext] Error loading configs:', err);
-        setConfigsLoaded(true);
-      }
-    };
-    loadAllConfigs();
-    loadUserStopwords();
-  }, []);
+  // ── Extracted Hooks ─────────────────────────────────────────────────────────
+  const aiConfig = useAIConfig();
+  const aiMpc    = useAIMpc({ activeNovel });
+  const aiUsage  = useAIUsage({ db, provider: aiConfig.provider, currentModel: aiConfig.currentModel });
 
-  // Valores del provider activo
-  const currentConfig = allConfigs[provider] || emptyProviderConfig;
-  const apiKey = currentConfig.apiKey || '';
-  // selectedModel usa default solo para llamadas API, pero el input puede estar vacío
-  const selectedModel = currentConfig.model ? currentConfig.model : DEFAULT_MODELS[provider];
-  const localBaseUrl = currentConfig.localBaseUrl || 'http://localhost:1234/v1';
-
-  // Función simple para guardar en Dexie - preserva data previa
-  const saveProviderConfig = async (prov, updates) => {
-    try {
-      const existing = await db.aiProviderConfigs.where('provider').equals(prov).first();
-      const data = { 
-        provider: prov, 
-        ...updates,
-        updatedAt: new Date().toISOString() 
-      };
-      // Si existe, preserva campos que no están en updates
-      if (existing) {
-        data.id = existing.id;
-        if (!updates.model && existing.model) data.model = existing.model;
-        if (!updates.apiKey && existing.apiKey) data.apiKey = existing.apiKey;
-        if (!updates.localBaseUrl && existing.localBaseUrl) data.localBaseUrl = existing.localBaseUrl;
-      }
-      await db.aiProviderConfigs.put(data);
-    } catch (err) {
-      console.error('[AIContext] Save error:', err);
-    }
-  };
-
-  // Setters simples envueltos en useCallback
-  const setApiKey = useCallback(async (val, prov) => {
-    const targetProvider = prov || provider;
-    setAllConfigs(prev => ({
-      ...prev,
-      [targetProvider]: { ...prev[targetProvider], apiKey: val }
-    }));
-    await saveProviderConfig(targetProvider, { apiKey: val });
-  }, [provider]);
-
-  const setModelForProvider = useCallback(async (prov, modelId) => {
-    setAllConfigs(prev => ({
-      ...prev,
-      [prov]: { ...prev[prov], model: modelId }
-    }));
-    await saveProviderConfig(prov, { model: modelId });
-  }, []);
-
-  const setLocalBaseUrl = useCallback(async (val) => {
-    setAllConfigs(prev => ({
-      ...prev,
-      local: { ...prev.local, localBaseUrl: val }
-    }));
-    await saveProviderConfig('local', { localBaseUrl: val });
-  }, []);
-  const [prompts, setPrompts] = useState(() => {
-    return DEFAULT_PROMPTS();
-  });
-
-  useEffect(() => {
-    setPrompts(DEFAULT_PROMPTS());
-  }, [i18n.language]);
-  
-  const [selection, setSelection] = useState('');
+  // ── Rewrite selection & result ─────────────────────────────────────────────
+  const [selection, setSelection]     = useState('');
   const [lastRewrite, setLastRewrite] = useState('');
-  const [oracleText, setOracleText] = useState('');
 
-  // ── Oracle History & Status (Async Dexie) ────────────────────────────────
+  // ── Oracle ─────────────────────────────────────────────────────────────────
+  const [oracleText, setOracleText] = useState('');
   const [oracleHistory, setOracleHistory] = useState([]);
   const [oracleStatus, setOracleStatus] = useState({
     status: 'idle',
@@ -190,139 +73,13 @@ export const AIProvider = ({ children }) => {
   });
   const entityDetectorRef = useRef(createDebouncedEntityDetector(() => {}, 2000));
 
-  const forceEntityRecheck = useCallback(() => {
-    if (!activeNovel || !oracleText) return;
-    const plainText = oracleText.trim();
-    if (plainText.length < 3) return;
-    entityDetectorRef.current.immediate(plainText, activeNovel.id, i18n.language)
-      .then(({ detections }) => {
-        const criticalDetections = detections.filter(d => d.severity === 'critical');
-        const doubtfulDetections = detections.filter(d => d.severity === 'doubtful');
-        
-        if (criticalDetections.length > 0) {
-          setOracleStatus(prev => ({
-            ...prev,
-            status: 'suspicious',
-            detectedEntities: criticalDetections,
-          }));
-        } else if (doubtfulDetections.length >= 2) {
-          setOracleStatus(prev => ({
-            ...prev,
-            status: 'suspicious',
-            detectedEntities: doubtfulDetections,
-          }));
-        } else {
-          setOracleStatus(prev => ({
-            ...prev,
-            status: 'idle',
-            detectedEntities: [],
-          }));
-        }
-      });
-  }, [activeNovel, oracleText, i18n.language]);
-
-  // ── MPC — Monitor de Propuestas del Compendio ─────────────────────────────
-  // 'idle' | 'analyzing' | 'error'
-  const [mpcStatus, setMpcStatus] = useState('idle');
-  const [mpcProposals, setMpcProposals] = useState([]);
-  const [isMpcDrawerOpen, setIsMpcDrawerOpen] = useState(false);
-  const [isMpcEnabled, setIsMpcEnabled] = useState(() => {
-    const saved = localStorage.getItem('ai_mpc_enabled');
-    return saved === null ? true : saved === 'true';
-  });
-
-  useEffect(() => {
-    localStorage.setItem('ai_mpc_enabled', isMpcEnabled ? 'true' : 'false');
-  }, [isMpcEnabled]);
-
-  const mpcCooldownRef = useRef(null); // timestamp de último análisis
-  const MPC_COOLDOWN_MS = 15_000; // 15 segundos entre análisis a la IA para ahorrar tokens pero mantener fluidez
-
-  const currentModel = selectedModel;
-
-  // ── AI Usage Monitoring ──────────────────────────────────────────────────
-  const [usageStats, setUsageStats] = useState({ tokens: 0, requests: 0 });
-
-  const refreshUsage = useCallback(async () => {
-    if (!provider || !currentModel) return;
-    const today = new Date().toISOString().split('T')[0];
-    try {
-      const entry = await db.aiUsage.where('[date+provider+model]')
-        .equals([today, provider, currentModel])
-        .first();
-      setUsageStats(entry || { tokens: 0, requests: 0 });
-    } catch (err) {
-      console.error('[AIContext] Error loading usage stats:', err);
-    }
-  }, [provider, currentModel]);
-
-  useEffect(() => {
-    refreshUsage();
-  }, [refreshUsage]);
-
-  const logAIUsage = useCallback(async (usage) => {
-    if (!usage) return;
-    const today = new Date().toISOString().split('T')[0];
-    
-    try {
-      await db.transaction('rw', db.aiUsage, async () => {
-        let entry = await db.aiUsage.where('[date+provider+model]')
-          .equals([today, provider, currentModel])
-          .first();
-          
-        if (entry) {
-          await db.aiUsage.update(entry.id, {
-            tokens: (entry.tokens || 0) + (usage.total_tokens || 0),
-            requests: (entry.requests || 0) + 1
-          });
-        } else {
-          await db.aiUsage.add({
-            date: today,
-            provider,
-            model: currentModel,
-            tokens: usage.total_tokens || 0,
-            requests: 1
-          });
-        }
-      });
-      refreshUsage();
-    } catch (err) {
-      console.error('[AIContext] Error logging usage:', err);
-    }
-  }, [provider, currentModel, refreshUsage]);
-
-  // Restore and sync MPC proposals to keep them persistent during refreshes
-  const activeNovelId = activeNovel?.id;
-  useEffect(() => {
-    if (!activeNovelId) {
-      setMpcProposals([]);
-      return;
-    }
-    const savedStr = localStorage.getItem(`mpc_prop_${activeNovelId}`);
-    if (savedStr) {
-      try {
-        setMpcProposals(JSON.parse(savedStr));
-      } catch (e) {
-        setMpcProposals([]);
-      }
-    } else {
-      setMpcProposals([]);
-    }
-  }, [activeNovelId]);
-
-  useEffect(() => {
-    if (activeNovelId) {
-      localStorage.setItem(`mpc_prop_${activeNovelId}`, JSON.stringify(mpcProposals));
-    }
-  }, [mpcProposals, activeNovelId]);
-
-  // ── Debate Agents & Sessions (Async Dexie) ────────────────────────
-  const [debateAgents, setDebateAgents] = useState(getDefaultDebateAgents());
-  const [debateSessions, setDebateSessions] = useState([]);
+  // ── Debate ─────────────────────────────────────────────────────────────────
+  const [debateAgents, setDebateAgents]       = useState(getDefaultDebateAgents());
+  const [debateSessions, setDebateSessions]   = useState([]);
   const [activeSessionId, setActiveSessionId] = useState(null);
 
-  // Derived history for the active session to maintain compatibility with AIPanel
   const debateHistory = debateSessions.find(s => s.id === activeSessionId)?.messages || [];
+
 
   useEffect(() => {
     const loadDebateData = async () => {
@@ -414,6 +171,26 @@ export const AIProvider = ({ children }) => {
     };
     restoreLastRewrite();
   }, [activeNovel, activeScene]);
+
+
+  const forceEntityRecheck = useCallback(() => {
+    if (!activeNovel || !oracleText) return;
+    const plainText = oracleText.trim();
+    if (plainText.length < 3) return;
+    entityDetectorRef.current.immediate(plainText, activeNovel.id, i18n.language)
+      .then(({ detections }) => {
+        const criticalDetections = detections.filter(d => d.severity === 'critical');
+        const doubtfulDetections = detections.filter(d => d.severity === 'doubtful');
+        if (criticalDetections.length > 0) {
+          setOracleStatus(prev => ({ ...prev, status: 'suspicious', detectedEntities: criticalDetections }));
+        } else if (doubtfulDetections.length >= 2) {
+          setOracleStatus(prev => ({ ...prev, status: 'suspicious', detectedEntities: doubtfulDetections }));
+        } else {
+          setOracleStatus(prev => ({ ...prev, status: 'idle', detectedEntities: [] }));
+        }
+      });
+  }, [activeNovel, oracleText, i18n.language]);
+
 
   // Persisted lastRewrite
   const saveLastRewrite = async (text, goal, instruction, originalText) => {
@@ -557,6 +334,7 @@ export const AIProvider = ({ children }) => {
     return result;
   };
 
+
   // Session mutators
   const addDebateSession = async (title = null, scene = null) => {
     if (!activeNovel) return;
@@ -691,69 +469,12 @@ export const AIProvider = ({ children }) => {
     setDebateAgents(prev => prev.map(a => a.id === id ? { ...a, active: newActiveState } : a));
   };
 
-  useEffect(() => {
-    localStorage.setItem('ai_provider', provider);
-  }, [provider]);
 
-  useEffect(() => {
-    localStorage.setItem('ai_custom_prompts', JSON.stringify(prompts));
-  }, [prompts]);
-
-  const updatePrompt = (id, value) => {
-    setPrompts(prev => ({ ...prev, [id]: value }));
-  };
-
-  const resetPrompt = (id) => {
-    setPrompts(prev => ({ ...prev, [id]: DEFAULT_PROMPTS()[id] }));
-  };
-
-  // ── MPC actions ────────────────────────────────────────────────────────────
-
-  /** Descarta una propuesta solo en esta sesión */
-  const dismissMpcProposal = useCallback((proposalId) => {
-    setMpcProposals(prev => prev.filter(p => p.id !== proposalId));
-  }, []);
-
-  /** Descarta una propuesta y la añade a la lista de ignorados permanentes */
-  const dismissMpcProposalPermanently = useCallback(async (proposal) => {
-    if (!activeNovel) return;
-    const name = proposal.name || proposal.title || '';
-    if (name) {
-      await addToIgnoredNames(activeNovel.id, name, proposal.type);
-    }
-    setMpcProposals(prev => prev.filter(p => p.id !== proposal.id));
-  }, [activeNovel]);
-
-  /** Acepta una propuesta: la elimina de la bandeja (la escritura en DB la gestiona el componente via addCompendiumEntry) */
-  const acceptMpcProposal = useCallback((proposalId) => {
-    setMpcProposals(prev => prev.filter(p => p.id !== proposalId));
-  }, []);
-
-  /** Limpia todas las propuestas pendientes */
-  const clearMpcProposals = useCallback(() => {
-    setMpcProposals([]);
-  }, []);
-
-  /** Añade propuestas nuevas evitando duplicados por nombre */
-  const addMpcProposals = useCallback((newProposals) => {
-    setMpcProposals(prev => {
-      const existingNames = new Set(prev.map(p => (p.name || p.title || '').toLowerCase()));
-      const filtered = newProposals.filter(p => {
-        const n = (p.name || p.title || '').toLowerCase();
-        return n && !existingNames.has(n);
-      });
-      return [...prev, ...filtered];
-    });
-  }, []);
 
   const value = {
-    provider, setProvider,
-    apiKey, setApiKey,
-    localBaseUrl, setLocalBaseUrl,
-    allConfigs,
-    setModelForProvider,
-    currentModel,
-    prompts, updatePrompt, resetPrompt,
+    ...aiConfig,
+    ...aiMpc,
+    ...aiUsage,
     selection, setSelection,
     oracleText, setOracleText,
     lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite,
@@ -768,22 +489,6 @@ export const AIProvider = ({ children }) => {
     switchDebateSession,
     renameDebateSession,
     deleteDebateSession,
-    // MPC
-    mpcProposals, mpcStatus, setMpcStatus,
-    addMpcProposals,
-    dismissMpcProposal,
-    dismissMpcProposalPermanently,
-    acceptMpcProposal,
-    clearMpcProposals,
-    mpcCooldownRef,
-    MPC_COOLDOWN_MS,
-    isMpcEnabled,
-    setIsMpcEnabled,
-    usageStats,
-    logAIUsage,
-    refreshUsage,
-    isMpcDrawerOpen, 
-    setIsMpcDrawerOpen,
     testConnection: AIService.testConnection
   };
 
