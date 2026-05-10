@@ -18,7 +18,7 @@ export function useAIMpc({ activeNovel }) {
   const [isMpcDrawerOpen, setIsMpcDrawerOpen] = useState(false)
   const [isMpcEnabled, setIsMpcEnabled]     = useState(() => {
     const saved = localStorage.getItem('ai_mpc_enabled')
-    return saved === null ? true : saved === 'true'
+    return saved === null ? false : saved === 'true'
   })
   const mpcCooldownRef = useRef(null)
 

@@ -17,8 +17,16 @@ Access to the Oracle is provided via the main toolbar.
 
 ---
 
-## Technical Operation
-To ensure the accuracy and speed of responses, LoneWriter performs a local indexing process:
+### The Trial by Fire
+There is no better way to understand the value of the Oracle than seeing it in action detecting a human error. Here, the system alerts us to a direct inconsistency based on previously established facts:
+
+![Oracle Inconsistency Detection](/img/guide/editor/oracle_proof.png)
+
+---
+
+## Technical Operation (RAG)
+
+To ensure accuracy and speed of responses, LoneWriter utilizes **RAG** (Retrieval-Augmented Generation) technology through a local indexing process:
 
 1. **Indexing**: The system processes the text in the background to structure information in a local vector database.
 2. **Privacy**: All processing is done locally in the browser. The knowledge database is not transferred to external servers.

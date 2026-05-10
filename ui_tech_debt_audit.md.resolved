@@ -1,0 +1,36 @@
+# Auditoría Integral y Hoja de Ruta Técnica (Post-Fase 6)
+
+He completado la auditoría integral de la aplicación utilizando analizadores estáticos propios y verificando el árbol de compilación completo de Vite. El resultado es muy positivo, pero aquí tienes el **diagnóstico de integridad y la hoja de ruta técnica** para futuras fases.
+
+## 1. Integridad y Referencias Muertas (Estado del código)
+*   **Imports y Dependencias:** La compilación de Rollup/Vite certifica (Exit Code: 0) que el árbol de dependencias es 100% íntegro. No hay `imports` huérfanos ni referencias a funciones eliminadas. Todas las importaciones rotas tras sacar variables del `AIContext` (como `forceEntityRecheck`) han sido solventadas.
+*   **Dead Code:** El "God Context" de la IA fue purgado con éxito. Al extraer `useAIConfig`, `useAIMpc` y `useAIUsage` no solo redujimos el tamaño, sino que eliminamos los `useEffect` en cascada que bloqueaban el hilo principal cuando el Monitor de Propuestas (MPC) escribía silenciosamente en segundo plano.
+
+## 2. Potenciales Problemas / Bugs (Riesgos a vigilar)
+*   **Race Conditions en DB:** El hook `useCloudSync.js` y `useMergeEngine.js` ahora están aislados, pero ambos interactúan asincrónicamente con la base de datos `Dexie.js`. Al carecer de bloqueos globales (Locks), existe un ligero riesgo de que una sincronización automática sobrescriba una fusión del compendio si ocurren en el mismo milisegundo exacto. 
+*   **Manejo de promesas en useEffects:** En `AIContext.jsx`, la carga inicial `loadDebateData()` contiene algo de lógica en cascada (primero `agents`, luego `sessions`). Si la base de datos es muy lenta, podría causar un destello (*flicker*) en la pestaña de debate del usuario.
+
+## 3. Siguientes Candidatos a Refactorización ("Deuda Técnica" de la UI)
+Tras analizar la densidad de líneas, *states* y *efectos* de cada archivo de la app, este es el mapa de los módulos que están creciendo peligrosamente:
+
+1.  **`views/Editor.jsx` (1004 líneas, 10 states, 8 effects)**
+    *   *El problema:* Sigue siendo la joya de la corona del "God Component" visual. Mezcla la instancia cruda de Tiptap, atajos de teclado, el menú flotante (*BubbleMenu*) y subpaneles del MPC.
+    *   *La solución:* Extraer la barra de herramientas de Tiptap y el panel de Synopsis a componentes hijos dedicados (`EditorToolbar.jsx`, `EditorSynopsis.jsx`).
+2.  **`views/Compendium.jsx` (871 líneas, 9 states)**
+    *   *El problema:* Toda la lógica de la UI de filtrado, las 13 categorías del universo y la vista en tabla/rejilla están juntas.
+    *   *La solución:* Externalizar la barra lateral de filtros a un componente `CompendiumFilters.jsx` e implementar `useCompendiumSearch` para la lógica de filtrado puro.
+3.  **`components/SettingsModal.jsx` (826 líneas)**
+    *   *El problema:* Es un bloque monolítico que renderiza docenas de inputs (Preferencias, Tema, Claves API de IA, Modelos Locales) simultáneamente.
+    *   *La solución:* Implementar **Lazy Loading** (`React.lazy` + `Suspense`). Cada pestaña de los ajustes (e.g., `GeneralSettings`, `AISettings`) debería cargarse bajo demanda para aligerar la memoria.
+4.  **`components/aipanel/DebateTab.jsx` (619 líneas, 14 states)**
+    *   *El problema:* Al ser la herramienta más compleja (varios agentes de IA debatiendo entre sí), esta pestaña acumula más estado visual que el propio editor.
+    *   *La solución:* Mover toda la orquestación del debate (asignar turnos de agentes) a un hook de servicio `useDebateOrchestrator.js`.
+
+---
+
+## Instrucciones para Resolución Diferida
+Cuando decidas abordar estas optimizaciones, te sugiero seguir este orden de prioridad:
+
+1. Empieza por `SettingsModal.jsx` (punto 3), es el cambio más asilado y que mayor impacto tendrá en el uso de memoria inicial de la app.
+2. Continúa con `views/Compendium.jsx` (punto 2), extrayendo puramente la parte visual (componentes hijos) sin tocar apenas la lógica.
+3. Deja `views/Editor.jsx` (punto 1) y `DebateTab.jsx` para el final, ya que tienen acoplamiento directo con la escritura principal y requieren testing manual intenso tras cada partición de componentes.

@@ -5,9 +5,26 @@ The Compendium Proposal Monitor (MPC) is an assistance tool that operates during
 ---
 
 ## MPC Operation
-While you write in the editor, the system periodically analyzes the text. If it detects elements that could be relevant to the lore, it generates a creation proposal.
+
+<div style="display: flex; gap: 40px; align-items: center; flex-wrap: wrap;">
+<div style="flex: 0.8; min-width: 280px; text-align: center;">
+
+![MPC Automatic Scanning Switch](/img/guide/worldbuilding/mpc_switch.png)
+
+</div>
+<div style="flex: 1; min-width: 300px;">
+
+While you write in the editor, the AI engine periodically and silently analyzes your narrative flow in the background to detect key elements.
+
+**To ensure this intelligent analysis runs correctly, make sure the automatic scanning switch (Scanning Auto) located at the top of the Compendium view is active.**
 
 For example, if you write: *"Officer Valerius explored the ruins of Kaelum,"* the MPC will identify possible entries for Valerius and Kaelum.
+
+</div>
+</div>
+
+> [!TIP] First Use
+> The first time you activate the MPC, the system will automatically download the local **all-MiniLM-L6-v2** model (approx. 25MB). This process only happens once and allows the semantic analysis to be performed entirely on your device, ensuring your privacy.
 
 ---
 

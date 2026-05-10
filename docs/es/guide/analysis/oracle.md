@@ -17,8 +17,16 @@ El acceso al Oráculo se realiza desde la barra de herramientas principal.
 
 ---
 
-## Funcionamiento Técnico
-Para garantizar la precisión y rapidez de las respuestas, LoneWriter realiza un proceso de indexación local:
+### La Prueba de Fuego
+No hay mejor forma de entender el valor del Oráculo que verlo en acción detectando un error humano. Aquí el sistema nos alerta de una inconsistencia directa basada en lo establecido previamente:
+
+![Detección de Incoherencia del Oráculo](/img/guide/editor/oracle_proof.png)
+
+---
+
+## Funcionamiento Técnico (RAG)
+
+Para garantizar la precisión y rapidez de las respuestas, LoneWriter utiliza tecnología **RAG** (Generación Aumentada por Recuperación) mediante un proceso de indexación local:
 
 1. **Indexación**: El sistema procesa el texto en segundo plano para estructurar la información en una base de datos vectorial local.
 2. **Privacidad**: Todo el procesamiento se realiza de forma local en el navegador. La base de datos de conocimiento no se transfiere a servidores externos.
