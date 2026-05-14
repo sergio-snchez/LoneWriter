@@ -7,7 +7,6 @@ This guide explains how to obtain keys from the main providers step by step.
 > [!CAUTION]
 > **Privacy**: API Keys send your texts to the cloud and could be used to train their models. To ensure total privacy and **work offline**, we recommend configuring **[Local Models](./local-models.md)**.
 
----
 
 ## 1. Google Gemini
 Google currently offers a free tier through Google AI Studio, making it the ideal choice for users who are starting out.
@@ -30,7 +29,6 @@ Google currently offers a free tier through Google AI Studio, making it the idea
   { src: '/img/guide/api/step5.png', label: '5. Copy the newly created API Key.' }
 ]" />
 
----
 
 ## 2. Anthropic (Claude)
 Claude is recognized for its reasoning capacity and natural writing style.
@@ -50,7 +48,6 @@ Claude is recognized for its reasoning capacity and natural writing style.
   { src: '/img/guide/api/anthropic_step4.png', label: '4. Copy the generated key securely.' }
 ]" />
 
----
 
 ## 3. OpenAI (ChatGPT)
 Note that the OpenAI API is billed independently from the ChatGPT Plus monthly subscription.
@@ -70,7 +67,6 @@ Note that the OpenAI API is billed independently from the ChatGPT Plus monthly s
   { src: '/img/guide/api/openai_step5.png', label: '5. Copy the generated key (you won’t be able to see it again).' }
 ]" />
 
----
 
 ## 4. OpenRouter
 OpenRouter allows access to various models with a single account and a single key.
@@ -96,7 +92,6 @@ On OpenRouter, you can use **free LLMs** by filtering them by `:free` or `(free)
   { src: '/img/guide/api/openrouter_step5.png', label: '5. Copy the generated key and save it securely.' }
 ]" />
 
----
 
 ## Configuration in LoneWriter
 
@@ -118,6 +113,10 @@ Once you have your API key, the final step is to link it within the application 
   { src: '/img/guide/setup/config_step5.png', label: '5. Copy the model ID and paste it into LoneWriter.' }
 ]" />
 
+
 :::tip CONNECTION TEST
 We recommend clicking the **connection test button** to verify that everything is correctly configured before you start writing. If the indicator lights up green, the configuration is correct.
 :::
+
+## Next step
+Once your connection is configured, learn how to use the **[LoneWriter Editor](../editor/basics.md)** to bring your story to life.

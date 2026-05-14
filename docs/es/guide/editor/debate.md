@@ -2,7 +2,6 @@
 
 ¿Alguna vez has deseado poder discutir un giro de guion o la coherencia de un personaje con un equipo de profesionales? El Foro de Debate de LoneWriter permite invocar a diferentes agentes de IA para analizar tu obra desde múltiples perspectivas.
 
----
 
 ## Cómo funciona el Debate
 
@@ -11,7 +10,6 @@ A diferencia de la reescritura, el Foro de Debate no modifica tu texto directame
 2. **Activar** a los participantes que desees (Editor, Crítico, Corrector...).
 3. **Iniciar el Debate** y dejar que la IA discuta entre sí para ofrecerte una conclusión razonada.
 
----
 
 ## Gestión de Agentes
 
@@ -31,7 +29,6 @@ Puedes personalizar tu equipo de debate según las necesidades de cada consulta:
   { src: '/img/guide/editor/debate_step5.png', label: '5. Pon a prueba a tu nuevo agente para obtener una perspectiva única sobre tu escena.' }
 ]" />
 
----
 
 ## Los Participantes (Agentes)
 
@@ -41,12 +38,15 @@ LoneWriter incluye tres perfiles preconfigurados, cada uno con una "personalidad
 - **Crítico**: Ofrece una valoración analítica y honesta, comparando técnicas y buscando puntos débiles en la lógica de la historia.
 - **Corrector**: Se encarga de la parte más técnica: gramática, ortografía, tics de escritura y fluidez a nivel de frase.
 
-![Botón de Gestión de Participantes](/img/guide/editor/debate_manage_btn.png)
+<ZoomImage src="/img/guide/editor/debate_manage_btn.png" alt="Botón de Gestión de Participantes" />
 
----
 
 ## Memoria del Foro
 Cada chat de debate se guarda de forma independiente. Puedes navegar por tu historial de discusiones, renombrar hilos o eliminarlos cuando ya no los necesites.
 
+
 > [!TIP] CONSEJO
 > El Foro de Debate es especialmente potente gracias a su integración con el Compendio. Los agentes podrán avisarte si alguna idea surgida en la conversación contradice lo que ya has establecido como canon en tu mundo.
+
+## Siguiente paso
+Organice los detalles de su universo en **[El Compendio](../worldbuilding/compendium.md)**.

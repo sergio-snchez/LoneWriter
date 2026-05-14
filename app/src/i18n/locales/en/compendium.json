@@ -108,6 +108,7 @@
       "ocupacion": "Occupation",
       "ocupacion_placeholder": "Cartographer, Guard...",
       "edad": "Age (Optional)",
+      "edad_placeholder": "25 years old, Elderly, Unknown...",
       "descripcion": "Detailed description",
       "rasgos": "Traits (comma-separated)",
       "rasgos_placeholder": "Brave, Cynical, Loyal...",

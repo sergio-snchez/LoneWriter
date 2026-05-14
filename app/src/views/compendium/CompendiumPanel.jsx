@@ -190,8 +190,10 @@ export function CompendiumPanel({ isOpen, type, item, characters, locations, obj
         }
         const next = { ...prev }
         Object.keys(aiData).forEach(k => {
-          if (aiData[k] !== undefined && aiData[k] !== null && aiData[k] !== '') {
-            next[k] = aiData[k]
+          // Prevent numeric zero or string "0" from polluting text fields
+          const val = aiData[k]
+          if (val !== undefined && val !== null && val !== '' && val !== 0 && val !== '0') {
+            next[k] = val
           }
         })
         if (next.traits && Array.isArray(next.traits)) next._rawTraits = next.traits.join(', ')
@@ -286,7 +288,7 @@ export function CompendiumPanel({ isOpen, type, item, characters, locations, obj
             </div>
             <div className="compendium-form-group">
               <label>{t('formulario.personajes.edad')}</label>
-              <input type="number" name="age" value={formData.age || ''} onChange={handleChange} />
+              <input type="text" name="age" value={formData.age || ''} onChange={handleChange} placeholder={t('formulario.personajes.edad_placeholder')} />
             </div>
             <div className="compendium-form-group">
               <label>{t('formulario.personajes.descripcion')}</label>

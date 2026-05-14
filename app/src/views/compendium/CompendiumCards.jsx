@@ -34,10 +34,14 @@ export function CharacterCard({ char, onEdit, onDelete, onToggleIgnore }) {
               </span>
             </div>
           )}
-          <span className="char-card__occupation">{char.occupation}</span>
+          {char.occupation && char.occupation !== 0 && char.occupation !== '0' && <span className="char-card__occupation">{char.occupation}</span>}
           <div className="char-card__tags">
-            <span className="badge badge-muted">{char.role}</span>
-            {char.age && <span className="tag">{t('tarjetas.años', { age: char.age })}</span>}
+            {char.role && char.role !== 0 && char.role !== '0' && <span className="badge badge-muted">{char.role}</span>}
+            {char.age && (
+              <span className="tag">
+                {isNaN(char.age) ? char.age : t('tarjetas.años', { age: char.age })}
+              </span>
+            )}
           </div>
         </div>
         <div className="compendium-card-actions">
@@ -102,7 +106,7 @@ export function LocationCard({ loc, onEdit, onDelete, onToggleIgnore }) {
               </span>
             </div>
           )}
-          <span className="loc-card__type">{loc.type}</span>
+          {loc.type && loc.type !== 0 && loc.type !== '0' && <span className="loc-card__type">{loc.type}</span>}
           <div className="loc-card__tags">
             {loc.tags?.slice(0, 3).map(tag => <span key={tag} className="tag">{tag}</span>)}
           </div>
@@ -127,7 +131,7 @@ export function LocationCard({ loc, onEdit, onDelete, onToggleIgnore }) {
           <p className="loc-card__desc">{loc.description}</p>
           <div className="loc-card__climate">
             <span className="char-card__section-label">{t('tarjetas.clima')}</span>
-            <span className="loc-card__climate-val">{loc.climate}</span>
+            {loc.climate && loc.climate !== 0 && loc.climate !== '0' && <span className="loc-card__climate-val">{loc.climate}</span>}
           </div>
           <AssocList label={t('tarjetas.personajes')} raw={loc.associatedCharacters} />
           <AssocList label={t('tarjetas.objetos')} raw={loc.associatedObjects} />
@@ -163,7 +167,7 @@ export function ObjectCard({ obj, onEdit, onDelete, onToggleIgnore }) {
               </span>
             </div>
           )}
-          <span className="obj-card__type">{obj.type}</span>
+          {obj.type && obj.type !== 0 && obj.type !== '0' && <span className="obj-card__type">{obj.type}</span>}
           <div className="obj-card__tags">
             {obj.currentOwner && <span className="badge badge-muted">{t('tarjetas.portador', { name: obj.currentOwner })}</span>}
             {obj.tags?.slice(0, 2).map(tag => <span key={tag} className="tag">{tag}</span>)}
@@ -232,7 +236,7 @@ export function LoreCard({ entry, onEdit, onDelete, onToggleIgnore }) {
               </span>
             </div>
           )}
-          <span className="lore-card__cat">{entry.category}</span>
+          {entry.category && entry.category !== 0 && entry.category !== '0' && <span className="lore-card__cat">{entry.category}</span>}
           <div className="lore-card__tags">
             {entry.tags?.slice(0, 3).map(tag => <span key={tag} className="tag">{tag}</span>)}
           </div>

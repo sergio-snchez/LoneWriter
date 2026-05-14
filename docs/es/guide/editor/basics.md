@@ -2,12 +2,9 @@
 
 El editor de LoneWriter ha sido diseñado para minimizar las distracciones y maximizar el flujo creativo, integrando las herramientas de inteligencia artificial de forma orgánica.
 
----
 
 ### El Área de Escritura
 El corazón de la aplicación es un editor de texto enriquecido que admite formatos básicos. Su diseño limpio permite centrarse exclusivamente en la palabra.
-
----
 
 
 ## Gestión de Actos, Capítulos y Escenas
@@ -36,7 +33,7 @@ El editor no es solo un lienzo de texto; incluye herramientas integradas para ge
 
 ### Configuración de Escena y Estadísticas
 1. **Herramientas de Escena**: Junto al nombre o título de la escena, encontrarás un **Chevron** (flecha) que despliega herramientas relacionadas con otras funciones de LoneWriter.
-2. **Metadata y Nexus**: Desde esta sección puedes modificar el estado de la escena (**Borrador, En progreso, Completado**), asignar el **POV** (punto de vista) y establecer la fecha y la sinopsis. Estos datos son fundamentales para las visualizaciones cronológicas del Nexus.
+2. **Metadata y Nexus**: Desde esta sección puedes modificar el estado de la escena (**Borrador, En progreso, Completado**), asignar el **POV** (punto de vista) y establecer la fecha y la sinopsis. Estos datos son fundamentales para las visualizaciones cronológicas del **[Nexus](../analysis/nexus.md)**.
 3. **Herramientas de IA y Exportación**: Junto al botón de exportar escena en .docx, encontrarás botones para funciones de IA avanzadas como "No Key Elements" y "MPC Compendium" (que veremos en detalle más adelante).
 4. **Estadísticas Detalladas**: La sección **Estadísticas del Proyecto** en la parte inferior también puede desplegarse para ampliar la información sobre tu ritmo de escritura.
 5. **Objetivos de Escritura**: El contador de "palabras totales" es un botón interactivo. Al pulsarlo, puedes configurar diferentes tipos de escritos (Relato corto, Novela estándar, etc.) y sus respectivas extensiones para realizar un seguimiento de tus metas.
@@ -49,29 +46,29 @@ El editor no es solo un lienzo de texto; incluye herramientas integradas para ge
   { src: '/img/guide/editor/editor_options_4.png', label: '5. Configura metas de palabras personalizadas según tu proyecto.' }
 ]" />
 
----
-
----
 
 ## Panel IA
 
 Más allá del texto, el editor integra un panel de herramientas inteligentes diseñadas para asistir en el proceso creativo sin romper el flujo de trabajo.
 
 ### Herramientas de Asistencia
-1. **[Oráculo](../analysis/oracle.md)**: Tu conexión directa con el conocimiento del mundo. Permite realizar consultas sobre el lore, personajes o tramas que hayas definido en tu proyecto.
-2. **[MPC](../worldbuilding/mpc.md)**: El Monitor de Propuestas del Compendio analiza tu texto para sugerir nuevas entradas o actualizaciones para tu enciclopedia personal.
+1. **[Oráculo](../analysis/oracle.md)**: Tu conexión directa con el conocimiento del mundo. Permite realizar consultas sobre el lore, personajes o tramas que hayas definido en tu proyecto (consulte la guía de **[El Oráculo](../analysis/oracle.md)**).
+2. **[MPC](../worldbuilding/mpc.md)**: El Monitor de Propuestas del Compendio analiza tu texto para sugerir nuevas entradas o actualizaciones para tu enciclopedia personal (consulte la guía de **[El MPC](../worldbuilding/mpc.md)**).
 3. **[Reescritura](./rewrites.md)**: Un conjunto de herramientas para pulir, expandir o cambiar el tono de fragmentos específicos de tu manuscrito.
 4. **[Ajustes de IA](../setup/api-keys.md)**: Permite cambiar entre diferentes modelos (locales o en la nube) y ajustar los parámetros de generación al vuelo.
 
 > [!TIP] CONSEJO
 > Encontrarás guías detalladas sobre el funcionamiento profundo de cada una de estas herramientas en sus respectivas secciones de la documentación.
 
----
 
 ## Guardado Automático y Local
 La seguridad de tus textos es prioritaria.
 - **Persistencia**: Los datos se guardan automáticamente en la base de datos local de tu navegador (IndexedDB).
 - **Estado de Guardado**: Un indicador visual te confirmará que tu trabajo está seguro tras cada cambio.
 
+
 > [!NOTE] NOTA
 > Aunque el guardado es automático, se recomienda realizar [exportaciones periódicas](../cloud/export.md) o configurar la [sincronización con Google Drive](../cloud/sync.md) para mayor seguridad.
+
+## Siguiente paso
+Aprenda a pulir su prosa con la **[Reescritura Inteligente](./rewrites.md)** o comience a construir su mundo en **[El Compendio](../worldbuilding/compendium.md)**.

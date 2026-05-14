@@ -2,30 +2,23 @@
 
 La soberanía del autor implica la capacidad de mover su obra a cualquier otra plataforma sin restricciones. LoneWriter facilita la exportación de sus textos y datos de lore en formatos estándar y abiertos.
 
----
 
 ## Formatos de Exportación Disponibles
 
-### Borrador de la Novela
-Puede exportar el texto completo o escenas individuales en los siguientes formatos:
-- **Markdown (.md)**: El estándar para la escritura técnica y creativa moderna. Conserva la estructura y es compatible con casi cualquier editor.
-- **Texto Plano (.txt)**: Compatibilidad universal sin formato.
-- **JSON**: Para exportaciones técnicas que incluyen metadatos de las escenas.
+### Proyectos y Borradores
+LoneWriter utiliza formatos optimizados para garantizar que no se pierda ninguna información durante el proceso:
 
-### El Compendio y Datos de Lore
-Sus notas de mundo y relaciones no están bloqueadas en la aplicación:
-- **JSON**: Exportación completa de todas las entidades, relaciones y etiquetas. Ideal para realizar copias de seguridad manuales o para desarrolladores que deseen procesar los datos de forma externa.
-- **CSV**: Formato compatible con hojas de cálculo para analizar la densidad de personajes o ubicaciones.
+- **Archivo de Proyecto (.lwrt)**: Es el formato nativo de LoneWriter. Contiene una exportación completa de la base de datos local: manuscrito, **[Compendio](./worldbuilding/compendium.md)**, **[relaciones y vínculos](./worldbuilding/entities.md)** del Nexus, configuraciones de IA y vectores de búsqueda. Este archivo puede comprimirse y protegerse opcionalmente con contraseña (cifrado AES-GCM).
+- **Manuscrito (.docx)**: Exporta la obra completa en formato Microsoft Word, organizada por Actos, Capítulos y Escenas. Ideal para maquetación profesional o para compartir con editores.
 
----
 
 ## Cómo realizar una exportación
-1. Acceda al menú del Proyecto o a **Ajustes** > **Exportar**.
-2. Seleccione los elementos que desea incluir (Borrador, Compendio, Timeline).
-3. Elija el formato de destino.
-4. Haga clic en **Generar Archivo**. El archivo se descargará directamente en su ordenador.
+1. Despliegue el menú del Proyecto (con el nombre de su obra) en la barra lateral.
+2. Seleccione **Export Projects (.lwrt)** para una copia de seguridad completa del proyecto (Lore y Manuscrito) o **Export Manuscript (.docx)** para exportar el texto de la novela.
+3. El archivo se descargará automáticamente en su ordenador.
 
----
+<ZoomImage src="/img/guide/cloud/export_options.png" alt="Opciones de exportación en el menú del proyecto" />
+
 
 ## Copias de Seguridad Manuales
 Se recomienda realizar una exportación completa en formato JSON al finalizar sesiones de trabajo importantes. Este archivo contiene toda la estructura de su universo y puede ser importado de nuevo en LoneWriter en cualquier momento, incluso en una instalación limpia del navegador.

@@ -4,7 +4,6 @@ One of the most powerful features of LoneWriter is its ability to operate privat
 
 By using a local model, your texts do not leave your device, and no internet connection is required to use artificial intelligence.
 
----
 
 ## Option A: Ollama
 Ollama is the recommended tool for running artificial intelligence models on Windows, Mac, or Linux easily and efficiently.
@@ -35,9 +34,8 @@ Ollama is the recommended tool for running artificial intelligence models on Win
 5. **Make sure the URL ends in `/v1`** if you have entered the address manually.
 6. Confirm the connection by clicking the test button.
 
-![Connection OK](/img/guide/local/config_ok.png)
+<ZoomImage src="/img/guide/local/config_ok.png" alt="Connection established successfully" />
 
----
 
 ## Option B: LM Studio
 LM Studio provides an advanced graphical interface to download and manage GGUF models, ideal for those who prefer not to use the terminal.
@@ -67,9 +65,8 @@ LM Studio provides an advanced graphical interface to download and manage GGUF m
 5. **Make sure to add `/v1` at the end of the URL** if LM Studio hasn't included it automatically (e.g., `http://localhost:1234/v1`).
 6. Confirm the connection by clicking the test button.
 
-![Connection OK](/img/guide/local/config_ok.png)
+<ZoomImage src="/img/guide/local/config_ok.png" alt="Connection established successfully" />
 
----
 
 ## Hardware Requirements
 Running local models requires significant resources:
@@ -77,5 +74,9 @@ Running local models requires significant resources:
 - **16GB RAM**: Standard models (7B - 8B parameters).
 - **32GB RAM or higher**: Advanced models.
 
+
 > [!TIP] TIP
 > If your device struggles to run local models, you can opt for cloud models. Check the [Model Selection Guide](./model-guide) to understand the differences in performance and privacy.
+
+## Next step
+Once your connection is configured, learn how to use the **[LoneWriter Editor](../editor/basics.md)** to bring your story to life.

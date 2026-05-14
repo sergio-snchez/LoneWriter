@@ -2,7 +2,6 @@
 
 LoneWriter no solo guarda tus palabras; te ayuda a esculpirlas. El sistema de reescritura actúa como un editor profesional disponible las 24 horas, permitiéndote pulir el estilo, ajustar el tono o transformar la estructura de tu prosa sin salir del editor.
 
----
 
 ## Modos de Reescritura (Objetivos Rápidos)
 
@@ -17,7 +16,6 @@ Se han diseñado diferentes algoritmos optimizados para resolver retos específi
 7. **Ritmo**: Optimiza la cadencia narrativa alternando longitudes de frase para crear un flujo más dinámico y envolvente.
 8. **Cohesión**: Pule las costuras entre frases, asegurando transiciones naturales y una fluidez lógica en todo el fragmento.
 
----
 
 ## Flujo de Trabajo
 
@@ -38,7 +36,6 @@ La reescritura está integrada directamente en tu lienzo. El proceso es sencillo
   { src: '/img/guide/editor/rewrite_step4.png', label: '4. Revisa la propuesta, regenera si es necesario, o decide si aplicar o descartar los cambios.' }
 ]" />
 
----
 
 ## Instrucciones Personalizadas
 
@@ -48,7 +45,6 @@ La reescritura está integrada directamente en tu lienzo. El proceso es sencillo
 - *"Revisa y minimiza el uso de adverbios terminados en -mente"*
 - *"Utiliza vocabulario marinero del siglo XVIII"*
 
----
 
 ## Control y Soberanía
 
@@ -60,7 +56,12 @@ LoneWriter te muestra ambos textos cara a cara. El original no desaparece hasta 
 ### Recomendación de Modelos
 Para que estas herramientas brillen, la elección del modelo es clave:
 
+
+
 > [!TIP] CONSEJO
 > Para reescrituras literarias complejas, utiliza modelos con gran capacidad de matiz:
-> - **Nube**: `claude-opus-4-7` es actualmente el estándar de oro en prosa.
-> - **Local**: `qwen3.5:9b` ofrece un equilibrio espectacular entre velocidad y creatividad literaria.
+> - **Nube**: `claude-opus-4-7` (consulte la guía de **[Claves API](../setup/api-keys.md)**) es actualmente el estándar de oro en prose.
+> - **Local**: `qwen3.5:9b` (consulte la guía de **[Modelos Locales](../setup/local-models.md)**) ofrece un equilibrio espectacular entre velocidad y creatividad literaria.
+
+## Siguiente paso
+Discuta sus ideas con un equipo de expertos en el **[Foro de Debate](./debate.md)**.

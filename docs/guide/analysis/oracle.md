@@ -1,10 +1,9 @@
 # The Oracle
 
-The Oracle is an advanced narrative query tool. Unlike general language models, the Oracle has direct access to the drafts and the Compendium of your project.
+The Oracle is an advanced narrative query tool. Unlike general language models, the Oracle has direct access to the drafts and the **[Compendium](../worldbuilding/compendium.md)** of your project.
 
 It uses RAG (Retrieval-Augmented Generation) technology to process your texts and provide accurate answers based exclusively on your story.
 
----
 
 ## Queries to the Oracle
 Access to the Oracle is provided via the main toolbar.
@@ -15,14 +14,12 @@ Access to the Oracle is provided via the main toolbar.
 - "Provide a summary of the events that occurred in the previous scene."
 - "Are there any inconsistencies in the description of the relic object?"
 
----
 
 ### The Trial by Fire
 There is no better way to understand the value of the Oracle than seeing it in action detecting a human error. Here, the system alerts us to a direct inconsistency based on previously established facts:
 
-![Oracle Inconsistency Detection](/img/guide/editor/oracle_proof.png)
+<ZoomImage src="/img/guide/editor/oracle_proof.png" alt="Oracle Inconsistency Detection" />
 
----
 
 ## Technical Operation (RAG)
 
@@ -35,14 +32,17 @@ To ensure accuracy and speed of responses, LoneWriter utilizes **RAG** (Retrieva
 > [!TIP] TIP
 > The first time you access the Oracle (or use local semantic features), the system will automatically download the local **all-MiniLM-L6-v2** model (approx. 25MB). This process only happens once and allows the analysis to be performed entirely on your device, ensuring your privacy.
 
-![RAG Model Ready Notification](/img/guide/analysis/oracle_model_ready.png)
+<ZoomImage src="/img/guide/analysis/oracle_model_ready.png" alt="RAG Model Ready Notification" />
 
----
 
 ## Usage Recommendations
 - **Precision**: For best results, it is recommended to ask specific questions that include entity names.
-- **Compendium Maintenance**: The quality of responses depends on the completeness of information in the Compendium and the drafts.
+- **Compendium Maintenance**: The quality of responses depends on the completeness of information in the **[Compendium](../worldbuilding/compendium.md)** and the drafts.
 - **Context**: It is possible to limit the scope of the search to specific chapters or the entire work.
+
 
 > [!NOTE]
 > The Oracle is a tool designed to assist in managing complex plots and maintaining consistency in extensive works.
+
+## Next step
+Visualize your universe in three dimensions with **[The Nexus and Timeline](./nexus.md)**.
