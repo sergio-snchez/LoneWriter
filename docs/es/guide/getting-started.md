@@ -2,7 +2,6 @@
 
 LoneWriter es una aplicación de escritura diseñada para autores que buscan potencia tecnológica sin comprometer su privacidad. Esta guía le acompañará en el proceso de configuración inicial para que pueda comenzar su primera novela en pocos minutos.
 
----
 
 ## Proceso de Configuración Inicial
 
@@ -20,7 +19,6 @@ Acceda al menú de Ajustes dentro de la aplicación y configure su proveedor pre
 ### 3. Creación de un Proyecto
 Una vez configurada la IA, puede crear su primera novela. El sistema le pedirá un título y una descripción básica opcional.
 
----
 
 ## Flujo de Trabajo Recomendado
 
@@ -30,5 +28,9 @@ Comience escribiendo directamente en el [Editor](./editor/basics.md) o trasladan
 ### 2. Monitorización en Tiempo Real (MPC)
 Mientras escribe, el [Monitor de Propuestas (MPC)](./worldbuilding/mpc.md) detectará automáticamente nuevas entidades (personajes, lugares, objetos) y sugerirá añadirlas al [Compendio](./worldbuilding/compendium.md), permitiéndole construir su lore de forma orgánica sin interrumpir su creatividad.
 
+
 ### 3. Consulta y Análisis
 Utilice el [Oráculo](./analysis/oracle.md) para resolver dudas sobre su propia trama o el [Nexus](./analysis/nexus.md) para visualizar la red de relaciones que se va tejiendo a lo largo de su obra.
+
+## Siguiente paso
+Para habilitar estas funciones, debe configurar una conexión con la IA mediante **[Claves API](./setup/api-keys.md)** o utilizando **[Modelos Locales](./setup/local-models.md)**.

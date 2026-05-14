@@ -2,7 +2,6 @@
 
 Aunque LoneWriter prioriza el almacenamiento local para garantizar la privacidad, la sincronización con la nube es una herramienta esencial para asegurar la disponibilidad de sus proyectos en diferentes dispositivos y disponer de copias de seguridad automáticas.
 
----
 
 ## Cómo activar la sincronización
 LoneWriter utiliza su propia cuenta de Google Drive como almacén remoto. Los datos no pasan por servidores intermedios; la conexión es directa entre su navegador y su espacio personal de Google.
@@ -11,16 +10,18 @@ LoneWriter utiliza su propia cuenta de Google Drive como almacén remoto. Los da
 2. Haga clic en **Conectar con Google Drive**.
 3. Autorice a la aplicación para acceder a su espacio de almacenamiento (LoneWriter creará una carpeta específica para sus proyectos).
 
----
+<ZoomImage src="/img/guide/cloud/cloud_sync_setup.png" alt="Configuración de sincronización con Google Drive" />
+
 
 ## Funcionamiento de la Sincronización
 Una vez activada, la aplicación gestionará sus archivos de la siguiente manera:
 
-- **Guardado en Segundo Plano**: Al realizar cambios importantes, LoneWriter intentará sincronizar la versión local con la copia en la nube.
+- **Guardado en Segundo Plano**: Al realizar cambios importantes, LoneWriter intentará sincronizar la versión local con la copia en la nube, incluyendo el **[Compendio](../worldbuilding/compendium.md)**, el Manuscrito y los datos del **[Nexus](../analysis/nexus.md)**.
 - **Conflictos**: Si edita el mismo proyecto en dos dispositivos diferentes sin conexión, el sistema le preguntará qué versión desea mantener al volver a conectarse.
 - **Estado de Conexión**: Un indicador en la barra de estado le informará si la sincronización ha sido exitosa o si hay cambios pendientes de subida.
 
----
+<ZoomImage src="/img/guide/cloud/cloud_restore.png" alt="Indicador de versión en la nube disponible" />
+
 
 ## Privacidad en la Nube
 Es importante destacar que, aunque los datos se suban a Google Drive, LoneWriter no tiene acceso a otros archivos de su cuenta. La aplicación solo puede interactuar con la carpeta que ella misma ha creado.

@@ -142,7 +142,7 @@ INSTRUCCIONES CRÍTICAS:
 6. Devuelve ÚNICAMENTE un JSON válido (sin marcas de markdown).
 
 ESTRUCTURA OBLIGATORIA POR TIPO:
-- characters: { "role": "", "occupation": "", "age": 0, "description": "", "traits": ["rasgo1"], "associatedLocations": ["NombreLugar"], "associatedObjects": ["NombreObjeto"], "associatedLore": ["TituloLore"], "relations": [{ "name": "NombreOtro", "type": "cómo lo ve", "reverseType": "cómo le ve" }] }
+- characters: { "role": "", "occupation": "", "age": "", "description": "", "traits": ["rasgo1"], "associatedLocations": ["NombreLugar"], "associatedObjects": ["NombreObjeto"], "associatedLore": ["TituloLore"], "relations": [{ "name": "NombreOtro", "type": "cómo lo ve", "reverseType": "cómo le ve" }] }
 - locations: { "type": "", "climate": "", "description": "", "tags": ["tag1"], "associatedCharacters": ["NombreChar"], "associatedObjects": ["NombreObj"], "associatedLore": ["TituloLore"] }
 - objects: { "type": "", "description": "", "origin": "", "currentOwner": "", "tags": ["tag1"], "associatedCharacters": ["NombreChar"], "associatedLocations": ["NombreLugar"], "associatedLore": ["TituloLore"] }
 - lore: { "category": "", "summary": "", "tags": ["tag1"], "associatedCharacters": ["NombreChar"], "associatedLocations": ["NombreLugar"], "associatedObjects": ["NombreObj"] }`
@@ -163,7 +163,7 @@ CRITICAL INSTRUCTIONS:
 6. Return ONLY valid JSON (without markdown markers).
 
 MANDATORY STRUCTURE PER TYPE:
-- characters: { "role": "", "occupation": "", "age": 0, "description": "", "traits": ["trait1"], "associatedLocations": ["LocationName"], "associatedObjects": ["ObjectName"], "associatedLore": ["LoreTitle"], "relations": [{ "name": "OtherName", "type": "how I see them", "reverseType": "how they see me" }] }
+- characters: { "role": "", "occupation": "", "age": "", "description": "", "traits": ["trait1"], "associatedLocations": ["LocationName"], "associatedObjects": ["ObjectName"], "associatedLore": ["LoreTitle"], "relations": [{ "name": "OtherName", "type": "how I see them", "reverseType": "how they see me" }] }
 - locations: { "type": "", "climate": "", "description": "", "tags": ["tag1"], "associatedCharacters": ["CharName"], "associatedObjects": ["ObjectName"], "associatedLore": ["LoreTitle"] }
 - objects: { "type": "", "description": "... ", "origin": "", "currentOwner": "", "tags": ["tag1"], "associatedCharacters": ["CharName"], "associatedLocations": ["LocationName"], "associatedLore": ["LoreTitle"] }
 - lore: { "category": "", "summary": "", "tags": ["tag1"], "associatedCharacters": ["CharName"], "associatedLocations": ["LocationName"], "associatedObjects": ["ObjectName"] }`;

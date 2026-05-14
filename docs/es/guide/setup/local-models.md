@@ -4,7 +4,6 @@ Una de las características más potentes de LoneWriter es su capacidad para fun
 
 Al utilizar un modelo local, los textos no salen de su equipo y no se requiere conexión a internet para el uso de la inteligencia artificial.
 
----
 
 ## Opción A: Ollama
 Ollama es la herramienta recomendada para ejecutar modelos de inteligencia artificial en Windows, Mac o Linux de forma sencilla y eficiente.
@@ -34,9 +33,8 @@ Ollama es la herramienta recomendada para ejecutar modelos de inteligencia artif
 5. **Asegúrate de que la URL finalice en `/v1`** si has introducido la dirección manualmente.
 6. Confirma la conexión pulsando el botón de prueba.
 
-![Connection OK](/img/guide/local/config_ok.png)
+<ZoomImage src="/img/guide/local/config_ok.png" alt="Conexión establecida correctamente" />
 
----
 
 ## Opción B: LM Studio
 LM Studio ofrece una interfaz gráfica avanzada para descargar y gestionar modelos GGUF, ideal para quienes prefieren no utilizar la terminal.
@@ -66,9 +64,8 @@ LM Studio ofrece una interfaz gráfica avanzada para descargar y gestionar model
 5. **Asegúrate de añadir `/v1` al final de la URL** si LM Studio no lo ha incluido automáticamente (ej. `http://localhost:1234/v1`).
 6. Confirma la conexión pulsando el botón de prueba.
 
-![Connection OK](/img/guide/local/config_ok.png)
+<ZoomImage src="/img/guide/local/config_ok.png" alt="Conexión establecida correctamente" />
 
----
 
 ## Requisitos de Hardware
 La ejecución de modelos locales requiere recursos significativos:
@@ -76,5 +73,9 @@ La ejecución de modelos locales requiere recursos significativos:
 - **16GB RAM**: Modelos estándar (7B - 8B parámetros).
 - **32GB RAM o superior**: Modelos avanzados.
 
+
 > [!TIP] CONSEJO
 > Si tu equipo tiene dificultades con los modelos locales, puedes optar por modelos en la nube. Consulta la [Guía de Selección de Modelos](./model-guide) para entender las diferencias de rendimiento y privacidad.
+
+## Siguiente paso
+Una vez configurada su conexión, aprenda a utilizar el **[Editor de LoneWriter](../editor/basics.md)** para dar vida a su historia.

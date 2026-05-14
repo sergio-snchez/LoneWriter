@@ -2,7 +2,6 @@
 
 La elección del modelo de lenguaje es determinante para la experiencia de escritura. LoneWriter permite alternar entre diferentes motores según las necesidades de potencia, coste o privacidad.
 
----
 
 ## Modelos en la Nube
 Recomendados para quienes no disponen de hardware potente o desean la máxima capacidad de razonamiento.
@@ -17,7 +16,6 @@ Recomendados para quienes no disponen de hardware potente o desean la máxima ca
 | **OpenAI** | `gpt-5.5` | El equilibrio perfecto entre potencia creativa y precisión técnica. | [Ver modelos](https://platform.openai.com/docs/models) |
 | **OpenRouter** | `openrouter/free` | Acceso a una rotación de modelos **gratuitos** de alta calidad. | [Ver modelos](https://openrouter.ai/models?q=free) |
 
----
 
 ## Modelos Locales
 Ideales para autores que priorizan la privacidad absoluta y la soberanía de sus datos.
@@ -29,7 +27,6 @@ Ideales para autores que priorizan la privacidad absoluta y la soberanía de sus
 | **Qwen 3.5** | 9B<br>*(16GB RAM)* | `qwen3.5:9b` | `lmstudio-community/Qwen3.5-9B-GGUF` | Muy capaz en tareas creativas y altamente multilingüe. |
 | **Phi-3** | 3.8B<br>*(8GB RAM)* | `phi3:mini` | `microsoft/Phi-3-mini-4k-instruct-gguf` | Modelo ligero ideal para equipos con recursos limitados. |
 
----
 
 ## Recomendaciones según Tareas
 

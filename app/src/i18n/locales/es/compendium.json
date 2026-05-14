@@ -109,6 +109,7 @@
       "ocupacion": "Ocupación",
       "ocupacion_placeholder": "Cartógrafa, Guardia...",
       "edad": "Edad (Opcional)",
+      "edad_placeholder": "25 años, Anciano, Desconocida...",
       "descripcion": "Descripción detallada",
       "rasgos": "Rasgos (separados por coma)",
       "rasgos_placeholder": "Valiente, Cínica, Leal...",

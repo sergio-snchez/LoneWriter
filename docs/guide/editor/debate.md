@@ -2,7 +2,6 @@
 
 Have you ever wished you could discuss a plot twist or character consistency with a team of professionals? LoneWriter's Debate Forum allows you to invoke different AI agents to analyze your work from multiple perspectives.
 
----
 
 ## How Debate Works
 
@@ -11,7 +10,6 @@ Unlike rewriting, the Debate Forum does not modify your text directly. It is a c
 2. **Activate** the participants you want (Editor, Critic, Proofreader...).
 3. **Start the Debate** and let the AI discuss with each other to offer you a reasoned conclusion.
 
----
 
 ## Agent Management
 
@@ -31,7 +29,6 @@ You can customize your debate team according to the needs of each consultation:
   { src: '/img/guide/editor/debate_step5.png', label: '5. Test your new agent to get a unique perspective on your scene.' }
 ]" />
 
----
 
 ## The Participants (Agents)
 	
@@ -41,12 +38,15 @@ LoneWriter includes three pre-configured profiles, each with a distinct "persona
 - **Critic**: Offers an analytical and honest evaluation, comparing techniques and looking for weak points in the story's logic.
 - **Proofreader**: Handles the technical side: grammar, spelling, writing tics, and sentence-level fluency.
 
-![Manage Participants Button](/img/guide/editor/debate_manage_btn.png)
+<ZoomImage src="/img/guide/editor/debate_manage_btn.png" alt="Manage Participants Button" />
 
----
 
 ## Forum Memory
 Each debate chat is saved independently. You can browse your discussion history, rename threads, or delete them when no longer needed.
 
+
 > [!TIP] TIP
 > The Debate Forum is especially powerful thanks to its Compendium integration. Agents can warn you if any idea arising in the conversation contradicts what you've already established as canon in your world.
+
+## Next step
+Organize the details of your universe in **[The Compendium](../worldbuilding/compendium.md)**.

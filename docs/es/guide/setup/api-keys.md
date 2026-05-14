@@ -7,7 +7,6 @@ En esta guía se explica cómo obtener las claves de los principales proveedores
 > [!CAUTION] PRECAUCIÓN
 > **Privacidad**: Las Claves API envían sus textos a la nube y podrían utilizarse para entrenar sus modelos. Para garantizar una privacidad total y **trabajar sin conexión**, le recomendamos configurar **[Modelos Locales](./local-models.md)**.
 
----
 
 ## 1. Google Gemini
 Google ofrece actualmente un nivel gratuito a través de Google AI Studio, lo que lo convierte en la opción ideal para usuarios que están empezando.
@@ -30,7 +29,6 @@ Google ofrece actualmente un nivel gratuito a través de Google AI Studio, lo qu
   { src: '/img/guide/api/step5.png', label: '5. Copia la Clave API recién creada.' }
 ]" />
 
----
 
 ## 2. Anthropic (Claude)
 Claude es reconocido por su capacidad de razonamiento y su estilo de escritura natural.
@@ -50,7 +48,6 @@ Claude es reconocido por su capacidad de razonamiento y su estilo de escritura n
   { src: '/img/guide/api/anthropic_step4.png', label: '4. Copia la clave generada de forma segura.' }
 ]" />
 
----
 
 ## 3. OpenAI (ChatGPT)
 Ten en cuenta que la API de OpenAI se factura de forma independiente a la suscripción mensual de ChatGPT Plus.
@@ -70,7 +67,6 @@ Ten en cuenta que la API de OpenAI se factura de forma independiente a la suscri
   { src: '/img/guide/api/openai_step5.png', label: '5. Copia la clave generada (no podrás volver a verla).' }
 ]" />
 
----
 
 ## 4. OpenRouter
 OpenRouter permite acceder a diversos modelos con una sola cuenta y una única clave.
@@ -96,7 +92,6 @@ En OpenRouter se pueden utilizar **LLM gratuitos**, filtrándolos por `:free` o 
   { src: '/img/guide/api/openrouter_step5.png', label: '5. Copia la clave generada y guárdala bien.' }
 ]" />
 
----
 
 ## Configuración en LoneWriter
 
@@ -118,6 +113,10 @@ Una vez que tengas tu clave API, el último paso es vincularla dentro de la apli
   { src: '/img/guide/setup/config_step5.png', label: '5. Copia el identificador del modelo y pégalo en LoneWriter.' }
 ]" />
 
+
 :::tip PRUEBA DE CONEXIÓN
 Te recomendamos pulsar el **botón de prueba de conexión** para verificar que todo está configurado correctamente antes de empezar a escribir. Si el indicador se ilumina en verde, la configuración es correcta.
 :::
+
+## Siguiente paso
+Una vez configurada su conexión, aprenda a utilizar el **[Editor de LoneWriter](../editor/basics.md)** para dar vida a su historia.

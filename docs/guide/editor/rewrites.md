@@ -2,7 +2,6 @@
 
 LoneWriter doesn't just save your words; it helps you sculpt them. The rewriting system acts as a professional editor available 24/7, allowing you to polish the style, adjust the tone, or transform the structure of your prose without leaving the editor.
 
----
 
 ## Rewriting Modes (Quick Goals)
 
@@ -17,7 +16,6 @@ Different algorithms have been designed and optimized to solve specific challeng
 7. **Pace**: Optimizes narrative cadence by alternating sentence lengths to create a more dynamic and engaging flow.
 8. **Cohesion**: Polishes the seams between sentences, ensuring natural transitions and logical fluency throughout the fragment.
 
----
 
 ## Workflow
 
@@ -38,7 +36,6 @@ Rewriting is integrated directly into your canvas. The process is simple and int
   { src: '/img/guide/editor/rewrite_step4.png', label: '4. Review the proposal, regenerate if necessary, or decide to apply or discard changes.' }
 ]" />
 
----
 
 ## Custom Instructions
 
@@ -48,7 +45,6 @@ Do you have a specific quirk or a very marked style? You can configure global in
 - *"Review and minimize the use of adverbs ending in -ly"*
 - *"Use 18th-century nautical vocabulary"*
 
----
 
 ## Control and Sovereignty
 
@@ -60,7 +56,12 @@ LoneWriter shows you both texts side-by-side. The original doesn't disappear unt
 ### Model Recommendation
 For these tools to shine, model choice is key:
 
+
+
 > [!TIP] TIP
 > For complex literary rewrites, use models with high nuance capacity:
-> - **Cloud**: `claude-opus-4-7` is currently the gold standard in prose.
-> - **Local**: `qwen3.5:9b` offers a spectacular balance between speed and literary creativity.
+> - **Cloud**: `claude-opus-4-7` (see **[API Keys](../setup/api-keys.md)**) is currently the gold standard in prose.
+> - **Local**: `qwen3.5:9b` (see **[Local Models](../setup/local-models.md)**) offers a spectacular balance between speed and literary creativity.
+
+## Next step
+Discuss your ideas with a team of experts in the **[Debate Forum](./debate.md)**.
