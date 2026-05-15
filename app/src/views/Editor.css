@@ -925,6 +925,32 @@
   border-color: var(--accent);
 }
 
+.meta-field-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meta-input-text {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 11px;
+  padding: 0;
+  width: 100px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.meta-input-text:focus {
+  color: var(--accent);
+}
+
+.meta-input-text::placeholder {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
 .meta-select option {
   background: var(--bg-surface);
   color: var(--text-primary);
