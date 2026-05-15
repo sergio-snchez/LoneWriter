@@ -218,12 +218,30 @@
 }
 
 .timeline-item-inner {
-  padding: 6px 10px;
-  max-width: 350px;
+  padding: 8px 12px;
+  max-width: 300px;
   text-align: left;
   white-space: normal;
   word-break: break-word;
   line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timeline-item-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--accent);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.2);
+  padding-bottom: 4px;
+  margin-bottom: 2px;
+}
+
+.timeline-item-synopsis {
+  font-size: 11px;
+  color: var(--text-primary);
+  opacity: 0.9;
 }
 
 /* The most aggressive selector possible to force font-size */
@@ -248,12 +266,43 @@
   font-size: 10px !important;
 }
 
-.vis-time-axis .vis-grid.vis-minor {
-  border-color: var(--border) !important;
+/* --- The Precision Ruler (Clean Implementation) --- */
+
+/* 1. The Axis Background */
+.vis-timeline .vis-panel.vis-top {
+  background: linear-gradient(to bottom, rgba(var(--bg-glass-rgb), 0.8), transparent) !important;
+  border-bottom: 2px solid rgba(var(--accent-rgb), 0.6) !important;
+  height: 40px !important;
 }
 
-.vis-time-axis .vis-grid.vis-major {
-  border-color: var(--border-accent) !important;
+/* 2. The Ticks (Using the text elements intelligently) */
+/* We make the text invisible, but use its container as the physical tick mark */
+.vis-timeline .vis-time-axis .vis-text {
+  color: transparent !important; /* Hide the actual numbers/letters */
+  border-left: 1.5px solid rgba(var(--accent-rgb), 0.4) !important;
+  height: 12px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transform: translateY(28px); /* Push them down to the border */
+  overflow: hidden !important;
+}
+
+/* Major Ticks (The Scenes) */
+.vis-timeline .vis-time-axis .vis-text.vis-major {
+  border-left: 2.5px solid var(--accent) !important;
+  height: 20px !important;
+  transform: translateY(20px);
+  filter: drop-shadow(0 0 4px var(--accent));
+}
+
+/* 3. The Vertical Guide Lines (Grid) */
+/* Restore them to full height so they connect the ruler to the items */
+.vis-timeline .vis-grid.vis-minor {
+  border-left: 1px dashed rgba(var(--text-muted-rgb), 0.1) !important;
+}
+
+.vis-timeline .vis-grid.vis-major {
+  border-left: 1px solid rgba(var(--accent-rgb), 0.15) !important;
 }
 
 .nexus-graph-container {

@@ -128,11 +128,16 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
   const goalEditorRef = useRef(null)
   const hoverTimerRef = useRef(null)
   const [localSynopsis, setLocalSynopsis] = useState('')
+  
+  // Local state for fast typing in metadata fields
+  const [localChronology, setLocalChronology] = useState('');
 
-  // Sync local state when activeScene changes
   useEffect(() => {
-    setLocalSynopsis(activeScene?.synopsis || '')
-  }, [activeScene?.id])
+    if (activeScene) {
+      setLocalSynopsis(activeScene.synopsis || '')
+      setLocalChronology(activeScene.inGameDate || '')
+    }
+  }, [activeScene?.id, activeScene?.synopsis, activeScene?.inGameDate])
 
   // Debounced persistence for synopsis
   const debouncedSynopsisSave = useCallback(
@@ -791,10 +796,24 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                         </select>
                       </div>
                       <div className="meta-field">
-                        <CustomDatePicker
-                          value={activeScene.inGameDate || ''}
-                          onChange={(val) => handleMetaChange('inGameDate', val)}
-                        />
+                        <Tooltip content={t('editor.tooltip_cronologia', 'Momento cronológico (ej: Día 1, Pasado, 1240...)')}>
+                          <div className="meta-field-inner">
+                            <Clock size={12} />
+                            <input
+                              type="text"
+                              className="meta-select meta-input-text"
+                              placeholder={t('editor.cronologia_placeholder', 'Cronología...')}
+                              value={localChronology}
+                              onChange={(e) => setLocalChronology(e.target.value)}
+                              onBlur={(e) => handleMetaChange('inGameDate', e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.target.blur();
+                                }
+                              }}
+                            />
+                          </div>
+                        </Tooltip>
                       </div>
                     </div>
                   </div>
