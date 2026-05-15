@@ -925,30 +925,30 @@
   border-color: var(--accent);
 }
 
-.meta-field-inner {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 
 .meta-input-text {
-  background: transparent;
-  border: none;
+  background: var(--bg-glass-ui);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-size: 11px;
-  padding: 0;
-  width: 100px;
+  padding: 4px 10px;
+  width: 120px;
   outline: none;
   transition: all 0.2s ease;
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  font-family: 'Inter', sans-serif;
+}
+
+.meta-input-text:hover {
+  background-color: var(--bg-hover);
+  border-color: rgba(255,255,255,0.12);
 }
 
 .meta-input-text:focus {
-  color: var(--accent);
-}
-
-.meta-input-text::placeholder {
-  color: var(--text-muted);
-  opacity: 0.5;
+  border-color: var(--accent);
+  background-color: var(--bg-hover);
 }
 
 .meta-select option {

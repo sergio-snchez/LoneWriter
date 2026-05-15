@@ -96,12 +96,3 @@ export function Tooltip({ children, content, position = 'bottom' }) {
   );
 }
 
-export function withTooltip(Component, content) {
-  return function TooltippedComponent(props) {
-    return (
-      <Tooltip content={content}>
-        <Component {...props} />
-      </Tooltip>
-    );
-  };
-}

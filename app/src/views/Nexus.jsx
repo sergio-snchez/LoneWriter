@@ -63,10 +63,10 @@ export default function Nexus({ onNavigate }) {
     };
   }, [currentTheme]);
 
-  // Clear 3D texture cache when theme changes to force label color regeneration
+  // Clear 3D texture cache when theme or graph data changes
   useEffect(() => {
     nodeObjectCache.current.clear();
-  }, [currentTheme]);
+  }, [currentTheme, characters, locations, objects, lore, nexusLinks]);
   
   // Navigation from timeline listener
   // Global navigation is now managed in NovelContext
