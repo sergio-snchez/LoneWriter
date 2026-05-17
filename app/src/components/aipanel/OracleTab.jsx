@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../../i18n/i18n'
 import {
-  Trash2, Check, AlertTriangle, Eye, CheckCheck, Loader2, ChevronDown, Copy
+  Trash2, Check, AlertTriangle, Eye, CheckCheck, Loader2, ChevronDown, Copy, X, XCircle
 } from 'lucide-react'
 import { useAI } from '../../context/AIContext'
 import { useNovel } from '../../context/NovelContext'
@@ -53,7 +53,8 @@ function OracleTab({ activeScene }) {
   }, [oracleHistory])
 
   const stripJsonBlock = (text) => {
-    let cleaned = text.replace(/\{[\s\S]*"hasContradiction"[\s\S]*\}/g, '').trim();
+    let cleaned = text.replace(/```(?:json)?\s*\{[\s\S]*?"hasContradiction"[\s\S]*?\}\s*```/gi, '');
+    cleaned = cleaned.replace(/\{[\s\S]*"hasContradiction"[\s\S]*\}/g, '').trim();
     cleaned = normalizeTextForDisplay(cleaned);
     return cleaned;
   }
@@ -157,6 +158,7 @@ ${oracleAnswer}`
         chapterId: activeScene.chapterId || null,
         chapterNumber: chapterInfo?.number || null,
         compendiumUsed: compendiumInfo,
+        hasContradiction: parsed.hasContradiction,
       })
     } catch (err) {
       console.error('[Oracle] Full error:', err);
@@ -229,7 +231,7 @@ ${oracleAnswer}`
                     {e.matchedTerms?.join(', ')}
                   </div>
                 }>
-                  <span className={`oracle-entity-tag oracle-entity-tag--hoverable ${oracleStatus.status === 'error' ? 'oracle-entity-tag--error' : ''}`}>
+                  <span className={`oracle-entity-tag oracle-entity-tag--hoverable ${oracleStatus.status === 'error' ? 'oracle-entity-tag--error' : oracleStatus.status === 'success' ? 'oracle-entity-tag--success' : ''}`}>
                     {e.name}
                   </span>
                 </Tooltip>
@@ -260,14 +262,20 @@ ${oracleAnswer}`
           const isChecked = checkedEntries.has(entry.id)
           const cleanText = stripJsonBlock(entry.text)
           return (
-            <div key={entry.id} className={`oracle-tab__entry ${isChecked ? 'oracle-tab__entry--checked' : ''}`}>
+            <div key={entry.id} className={`oracle-tab__entry ${isChecked ? 'oracle-tab__entry--checked' : ''} ${entry.hasContradiction ? 'oracle-tab__entry--contradiction' : ''}`}>
               <div className="oracle-tab__entry-header">
                 <div className="oracle-tab__entry-left">
-                  <Tooltip content={isChecked ? t('oraculo.marcar_pendiente') : t('oraculo.marcar_corregido')}>
-                    <button className="oracle-tab__check-btn" onClick={() => toggleChecked(entry.id)}>
-                      {isChecked ? <CheckCheck size={14} /> : <Check size={14} />}
+                  {entry.hasContradiction ? (
+                    <Tooltip content={isChecked ? t('oraculo.marcar_pendiente') : t('oraculo.marcar_corregido')}>
+                      <button className={`oracle-tab__check-btn ${!isChecked ? 'oracle-tab__check-btn--error' : ''}`} onClick={() => toggleChecked(entry.id)}>
+                        {isChecked ? <Check size={14} /> : <X size={14} />}
+                      </button>
+                    </Tooltip>
+                  ) : (
+                    <button className="oracle-tab__check-btn" style={{ cursor: 'default', opacity: 0.8 }} disabled>
+                      <CheckCheck size={14} />
                     </button>
-                  </Tooltip>
+                  )}
                   <div className="oracle-tab__entry-info">
                     <div className="oracle-tab__entry-label">
                       <Eye size={12} />

@@ -206,6 +206,22 @@
   display: block;
   text-align: center;
 }
+.sidebar__support-link {
+  font-size: 11px;
+  color: var(--accent);
+  text-decoration: none;
+  display: block;
+  text-align: center;
+  margin-top: 6px;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+  font-weight: 500;
+}
+.sidebar__support-link:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+  filter: drop-shadow(0 0 4px rgba(212, 168, 83, 0.3));
+}
 
 /* ============================================
    RESPONSIVE – MOBILE (< 768px)

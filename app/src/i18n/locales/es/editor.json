@@ -4,7 +4,12 @@
     "en_progreso": "En progreso",
     "borrador": "Borrador",
     "sin_comenzar": "Sin comenzar",
-    "opciones": ["Sin comenzar", "Borrador", "En progreso", "Finalizado"]
+    "opciones": [
+      "Sin comenzar",
+      "Borrador",
+      "En progreso",
+      "Finalizado"
+    ]
   },
   "editable": {
     "doble_clic": "Doble clic para editar"
@@ -70,6 +75,7 @@
     "tooltip_oraculo": "Haz clic para que la IA verifique si este párrafo contradice alguna ficha del Compendio",
     "sin_coincidencias": "Sin elementos clave",
     "coincidencias": "Elementos del Compendio presentes",
+    "revisado_ok": "Coherencia verificada",
     "contradiccion": "Contradicción en este párrafo",
     "palabras_escena": "{{count}} palabras en esta escena",
     "meta_escena": "Meta: {{count}} palabras por escena",
@@ -109,5 +115,8 @@
   "fecha_ok": "OK",
   "exportar": {
     "escena_vacia_word": "La escena está vacía. Escribe algo antes de exportar."
+  },
+  "bienvenida": {
+    "texto": "¡Bienvenido a tu próxima gran aventura literaria! Este es el lienzo donde tus ideas cobrarán vida.\n\nPara organizar tu mundo, recuerda que puedes renombrar cualquier <strong>Acto, Capítulo o Escena</strong> haciendo doble clic sobre su nombre en el panel de la izquierda. Además, tienes total libertad para arrastrar y soltar los elementos y reordenar tu narrativa a tu gusto.\n\nUn pequeño consejo: no olvides usar el <strong>Oráculo</strong> para mantener la coherencia de tu historia y el <strong>Compendio</strong> para dar profundidad a tus personajes y lugares.\n\n¡Feliz escritura!"
   }
 }

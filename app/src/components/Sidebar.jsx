@@ -91,6 +91,14 @@ export default function Sidebar({ active, onNavigate, collapsed, onToggle }) {
       {!collapsed && (
         <div className="sidebar__footer">
           <span className="sidebar__version">LoneWriter v{APP_VERSION}</span>
+          <a 
+            href="https://buymeacoffee.com/sergio.snchez" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="sidebar__support-link"
+          >
+            {t('sidebar.apoyar_proyecto')}
+          </a>
         </div>
       )}
     </aside>

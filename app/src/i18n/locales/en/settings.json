@@ -39,7 +39,10 @@
     "seguridad_hint": "<strong>Security:</strong> LoneWriter only has access to its own backup files. Your private documents are not visible to the application.",
     "error_cargar_historial": "Error loading version history",
     "error_restaurar_version": "Error restoring version",
-    "confirmar_restaurar": "Restore backup from {{date}}? This will overwrite all current data."
+    "confirmar_restaurar": "Restore copy from {{date}}? This will overwrite all current data.",
+    "recargar_app": "Clear Cache and Reload",
+    "recargar_app_hint": "Clears LoneWriter's cache and erases your preferences. Restarts the app.",
+    "recargar_app_boton": "Clear Cache and Reload"
   },
   "ia": {
     "seccion_titulo": "Artificial Intelligence Settings",
@@ -84,7 +87,7 @@
   "general": {
     "seccion_titulo": "Application Information",
     "version": "Version",
-    "version_valor": "1.9-nexus",
+    "version_valor": "2.0-timeline",
     "base_datos": "Database",
     "base_datos_valor": "IndexedDB (Dexie.js)",
     "plataforma": "Platform",
@@ -94,10 +97,7 @@
     "tecnologia_saliencia": "Compendium (MPC)",
     "tecnologia_saliencia_valor": "Oracle (Semantic RAG + Compendium)",
     "tecnologia_nexus": "Nexus",
-    "tecnologia_nexus_valor": "Force Graph (3D) + Vis Timeline",
-    "recargar_app": "Clear Cache & Reload",
-    "recargar_app_hint": "Clears LoneWriter cache and erases your preferences. Restarts the app.",
-    "recargar_app_boton": "Clear Cache & Reload",
+    "tecnologia_nexus_valor": "Force Graph (3D) + React Force Graph",
     "idioma": "Language",
     "idioma_hint": "Select the application interface language.",
     "tema": "Theme",
@@ -115,7 +115,8 @@
     "fondo_dinamico": "Dynamic Background",
     "fondo_dinamico_hint": "Enables a subtle animated background that improves visual depth (uses more CPU/GPU).",
     "enlaces_titulo": "Links",
-    "github_link": "GitHub Repository",
+    "docs_link": "Official Documentation",
+    "landing_link": "Official Website",
     "buymeacoffee_link": "Support the project (Buy Me a Coffee)"
   },
   "errores": {

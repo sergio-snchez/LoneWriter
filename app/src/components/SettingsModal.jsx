@@ -173,6 +173,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
                 onRestoreRevision={handleRestoreRevision}
                 onCloseRevisions={() => setShowRevisions(false)}
                 onToggleAutoSync={toggleCloudSync}
+                onClearCache={handleClearCache}
               />
             )}
             {activeTab === 'ia' && (

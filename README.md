@@ -6,13 +6,15 @@
 
 </div>
 
-# LoneWriter v1.9-nexus 🖋️
+# LoneWriter v2.0-timeline 🖋️
 
 > **Your "Narrative Operating System": The AI that listens to you, organizes your chaos, and monitors your world's coherence while you only worry about writing.**
 >
 > 🏠 **Official Web:** [getlonewriter.vercel.app](https://getlonewriter.vercel.app/)
 >
 > 🌐 **Web App:** [lonewriter.vercel.app](https://lonewriter.vercel.app/)
+>
+> 📚 **Documentation:** [lonewriter-docs.vercel.app](https://lonewriter-docs.vercel.app/)
 >
 > 🗺️ **Roadmap:** [View upcoming features](./ROADMAP.md)
 >
@@ -52,10 +54,11 @@ LoneWriter is a **100% local, privacy-first** writing application. Your manuscri
 - **Responsive Design:** Interface optimized for mobile and tablets with drawer navigation, touch targets and collapsible panels.
 - **Category Selector:** Quickly change category (Character, Location, etc.) for compendium entries.
 
-### 🤖 Invisible AI & Lore Monitor (MPC)
-- **MPC (Compendium Proposal Monitor):** Goodbye to "world bureaucracy." LoneWriter listens as you write and automatically detects new entities (characters, places, objects). It suggests them in a non-intrusive purple panel so you can add them to your compendium with one click, without stopping your narrative flow.
-- **Magic Auto-complete:** Mentioned a new sword or a mysterious village? Use the sparkle button in the Compendium to let the AI scan your novel and automatically fill in descriptions, traits, and relationships for you.
-- **RAG Engine (all-MiniLM-L6-v2):** Semantic search powered by local embeddings (Transformers.js). Your entire novel is vectorized in the browser — context-aware queries without external APIs, keeping your data private.
+### 🤖 Invisible AI and Lore Monitor (MPC)
+- **MPC (Compendium Proposal Monitor):** Say goodbye to "world-building bureaucracy". LoneWriter listens while you write and automatically detects new entities (characters, locations, objects). It suggests them in a non-intrusive purple panel so you can add them to your compendium with one click, without stopping your narration.
+- **Continuity Validation:** The Oracle detects contradictions between your text and the Compendium (e.g., if a character was an elf and now you say they are human) using advanced semantics and visual indicators.
+- **Magic Autocomplete:** Have you mentioned a new sword or town? Use the sparkle button in the Compendium to let the AI scan your novel and automatically fill in the description, traits, and relationships for you.
+- **RAG Engine (all-MiniLM-L6-v2):** Semantic search powered by local embeddings (Transformers.js). Your entire novel is vectorized in the browser — contextual queries without external APIs, keeping your data private.
 - **Oracle Verdicts (Continuity Linter):** Real-time paragraph-by-paragraph coherence analysis. It acts as a "logic corrector" that detects contradictions with your established lore (e.g., a dead character reappearing or an object mistakenly changing owners).
 - **Oracle Stopwords:** Manage custom filtered words in the Resources section to fine-tune entity detection and coherence analysis.
 - **Saliency Engine (Anaphoras):** Real-time monitoring of characters and coreferences. It detects pronouns (he, she, they, etc.) and suggests which character they refer to, helping maintain consistency and solving ambiguities in long or complex scenes.
@@ -112,13 +115,19 @@ If you want to try LoneWriter in your own environment:
    npm run dev
    ```
 
+## 📚 Resources and Support
+
+- 📖 **Official Documentation:** Full usage and configuration guide at [lonewriter-docs.vercel.app](https://lonewriter-docs.vercel.app/).
+- 🌐 **Project Website:** Project info and news at [getlonewriter.vercel.app](https://getlonewriter.vercel.app/).
+- ☕ **Support the project:** If you like LoneWriter, you can [buy me a coffee](https://buymeacoffee.com/sergio.snchez).
+
 ## 📜 Credits
 
 Designed and developed with ♥ by **Sergio Sánchez** with Antigravity.
 
 ---
 
-*LoneWriter v1.9-nexus - Your personal space to bring great stories to life.*
+*LoneWriter v2.0-timeline - Your personal space to bring great stories to life.*
 
 ---
 

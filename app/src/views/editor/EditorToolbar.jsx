@@ -165,6 +165,7 @@ export default function EditorToolbar({ activeScene, activeNovel, characters, up
             <span className="oracle-traffic-light__label">
               {oracleStatus.status === 'idle' && t('editor.sin_coincidencias')}
               {oracleStatus.status === 'suspicious' && t('editor.coincidencias')}
+              {oracleStatus.status === 'success' && t('editor.revisado_ok', 'Coherencia verificada')}
               {oracleStatus.status === 'error' && t('editor.contradiccion')}
             </span>
           </div>

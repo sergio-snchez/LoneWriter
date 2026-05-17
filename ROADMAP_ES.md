@@ -21,7 +21,7 @@ Esta hoja de ruta detalla el futuro de LoneWriter. Priorizamos las funciones bas
 
 ---
 
-## ✅ Completado en v1.9-nexus
+## ✅ Completado en v2.0-timeline
 - **[x] Líneas de Tiempo Interactivas**: Cronología de los eventos de tu historia escena a escena, con navegación directa al Editor al hacer clic.
 - **[x] Grafo de Conocimiento 3D**: Grafo inmersivo 3D/2D (Nexus) integrado en la app para visualizar todas las conexiones entre entidades del Compendio (personajes, lugares, objetos, lore).
 
