@@ -63,3 +63,5 @@ app/.vercel
 # Strategy Maps
 NotebookLM.md
 
+# VitePress Cache
+docs/.vitepress/cache/
