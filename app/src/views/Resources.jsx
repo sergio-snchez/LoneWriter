@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react'
-import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import {
   FileText, Upload, Search, FolderOpen, Tag, Calendar, HardDrive,
@@ -11,125 +10,32 @@ import { useAI } from '../context/AIContext'
 import { useModal } from '../context/ModalContext'
 import { Tooltip } from '../components/Tooltip';
 import { renderMarkdown } from '../utils/renderMarkdown';
-import { getEntityStopWords, getAllCustomStopwords, addCustomStopword, deleteCustomStopword } from '../i18n/stopwords';
+import { getAllCustomStopwords } from '../i18n/stopwords';
+import StopwordsModal from '../components/StopwordsModal';
 import './Resources.css';
 
 const ALLOWED_EXTENSIONS = ['txt', 'md', 'json', 'csv']
 
 
-function StopwordsModal({ isOpen, onClose, customWords, onAdd, onDelete, t }) {
-  const [newWord, setNewWord] = useState('')
-  const [isVisible, setIsVisible] = useState(false)
-  const [isClosing, setIsClosing] = useState(false)
-  const { t: tc } = useTranslation('common')
-
-  useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true)
-      setIsClosing(false)
-    }
-  }, [isOpen])
-
-  const handleClose = () => {
-    setIsClosing(true)
-    setTimeout(() => {
-      setIsVisible(false)
-      onClose()
-    }, 220)
-  }
-
-  if (!isVisible) return null
-
-  return createPortal(
-    <div
-      className={`modal-overlay${isClosing ? ' modal-overlay--closing' : ''}`}
-      onClick={handleClose}
-      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000 }}
-    >
-      <div
-        className={`modal-content${isClosing ? ' modal-content--closing' : ''}`}
-        onClick={e => e.stopPropagation()}
-        style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 12, width: '90%', maxWidth: 500, padding: 20 }}
-      >
-        <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>{t('stopwords_modal_titulo')}</h3>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>{t('stopwords_modal_texto')}</p>
-        
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          <input
-            type="text"
-            value={newWord}
-            onChange={e => setNewWord(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && newWord.trim() && (onAdd(newWord), setNewWord(''))}
-            placeholder={t('stopwords_add_placeholder')}
-            style={{ flex: 1, padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text-primary)', fontSize: '13px' }}
-          />
-          <button onClick={() => newWord.trim() && (onAdd(newWord), setNewWord(''))} className="btn btn-primary" style={{ padding: '8px 16px' }}>
-            {t('stopwords_add')}
-          </button>
-        </div>
-
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 200, overflowY: 'auto', padding: '10px', background: 'var(--bg-surface)', borderRadius: 6 }}>
-          {customWords.length === 0 ? (
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t('stopwords_empty')}</span>
-          ) : (
-            customWords.map(w => (
-              <span key={w.id} style={{ background: 'rgba(100,180,100,0.15)', color: 'var(--success)', padding: '4px 8px', borderRadius: 4, fontSize: '12px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                {w.word}
-                <button onClick={() => onDelete(w.id)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'inherit', display: 'flex' }}>
-                  <X size={12} />
-                </button>
-              </span>
-            ))
-          )}
-        </div>
-        
-        <div style={{ marginTop: 20, textAlign: 'right' }}>
-          <button className="btn btn-ghost" onClick={handleClose}>{tc('botones.cerrar')}</button>
-        </div>
+function ViewerContent({ res, t, onClose }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '85vh' }}>
+      <div className="modal-header" style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, fontSize: 16 }}>{res.name}</h3>
+        <button className="btn btn-ghost btn-icon" onClick={onClose}><X size={16} /></button>
       </div>
-    </div>,
-    document.body
-  )
-}
-
-
-function ViewerModal({ res, onClose, t }) {
-  const [isClosing, setIsClosing] = useState(false)
-
-  const handleClose = () => {
-    setIsClosing(true)
-    setTimeout(onClose, 220)
-  }
-
-  return createPortal(
-    <div
-      className={`modal-overlay${isClosing ? ' modal-overlay--closing' : ''}`}
-      onClick={handleClose}
-      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000 }}
-    >
-      <div
-        className={`modal-content${isClosing ? ' modal-content--closing' : ''}`}
-        onClick={e => e.stopPropagation()}
-        style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 12, width: '90%', maxWidth: 700, maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}
-      >
-        <div className="modal-header" style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, fontSize: 16 }}>{res.name}</h3>
-          <button className="btn btn-ghost btn-icon" onClick={handleClose}><X size={16} /></button>
-        </div>
-        <div className="modal-body" style={{ padding: 20, overflowY: 'auto', flex: 1 }}>
-          {res.content ? (
-            <div className="resource-viewer__content" dangerouslySetInnerHTML={{ __html: renderMarkdown(res.content) }}></div>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-              <Eye size={32} style={{ opacity: 0.5, marginBottom: 12 }} />
-              <p style={{ margin: 0 }}>{t('vista_previa_no_disponible')}</p>
-              <p style={{ fontSize: 13, marginTop: 8 }}>{t('formato', { type: res.type })}</p>
-            </div>
-          )}
-        </div>
+      <div className="modal-body" style={{ padding: 20, overflowY: 'auto', flex: 1 }}>
+        {res.content ? (
+          <div className="resource-viewer__content" dangerouslySetInnerHTML={{ __html: renderMarkdown(res.content) }} />
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+            <Eye size={32} style={{ opacity: 0.5, marginBottom: 12 }} />
+            <p style={{ margin: 0 }}>{t('vista_previa_no_disponible')}</p>
+            <p style={{ fontSize: 13, marginTop: 8 }}>{t('formato', { type: res.type })}</p>
+          </div>
+        )}
       </div>
-    </div>,
-    document.body
+    </div>
   )
 }
 
@@ -217,43 +123,12 @@ export default function ResourcesView() {
   const [activeTag, setActiveTag] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
   const [alertsExpanded, setAlertsExpanded] = useState(false)
-  
-  const [viewingRes, setViewingRes] = useState(null)
-  const [showStopwordsModal, setShowStopwordsModal] = useState(false)
-  const [customWords, setCustomWords] = useState([])
-  const [stopwordsLoading, setStopwordsLoading] = useState(true)
+  const [wordCount, setWordCount] = useState(0)
   const fileInputRef = useRef(null)
 
   useEffect(() => {
-    loadCustomWords()
+    getAllCustomStopwords().then(w => setWordCount(w.length)).catch(() => {})
   }, [])
-
-  const loadCustomWords = async () => {
-    setStopwordsLoading(true)
-    try {
-      const words = await getAllCustomStopwords()
-      setCustomWords(words)
-    } catch (err) {
-      console.error('[Stopwords] Error loading:', err)
-    }
-    setStopwordsLoading(false)
-  }
-
-  const handleAddStopword = async (word) => {
-    const trimmed = word.trim().toLowerCase()
-    if (!trimmed) return
-    const result = await addCustomStopword(trimmed)
-    if (result) {
-      setCustomWords(prev => [...prev, result])
-      setTimeout(() => forceEntityRecheck(), 100)
-    }
-  }
-
-  const handleDeleteStopword = async (id) => {
-    await deleteCustomStopword(id)
-    setCustomWords(prev => prev.filter(w => w.id !== id))
-    setTimeout(() => forceEntityRecheck(), 100)
-  }
 
   const clearFilters = () => {
     setActiveTag(null)
@@ -443,11 +318,11 @@ export default function ResourcesView() {
             <span className="res-row__desc">{t('archivo_sistema')}</span>
           </div>
           <div className="res-row__meta">
-            <span className="badge badge-gold">{customWords.length} {t('stopwords_count_short')}</span>
+            <span className="badge badge-gold">{wordCount} {t('stopwords_count_short')}</span>
           </div>
           <div className="res-row__actions">
             <Tooltip content={t('stopwords_editar')}>
-              <button className="res-action-btn" aria-label={t('stopwords_editar')} onClick={() => setShowStopwordsModal(true)}>
+              <button className="res-action-btn" aria-label={t('stopwords_editar')} onClick={() => openModal('custom', { render: (close) => <StopwordsModal onClose={() => { close(); getAllCustomStopwords().then(w => setWordCount(w.length)).catch(() => {}); forceEntityRecheck() }} /> })}>
                 <Edit size={14} />
               </button>
             </Tooltip>
@@ -467,7 +342,7 @@ export default function ResourcesView() {
               res={res} 
               onDelete={(id) => deleteCompendiumEntry('resources', id)}
               onToggleIgnore={(r) => updateCompendiumEntry('resources', r.id, { ignoredForOracle: r.ignoredForOracle ? 0 : 1 })}
-              onView={setViewingRes}
+              onView={(res) => openModal('custom', { render: (close) => <ViewerContent res={res} t={t} onClose={close} /> })}
             />
           ))
         )}
@@ -488,24 +363,7 @@ export default function ResourcesView() {
         </button>
       </div>
 
-      {/* Viewer Modal */}
-      {viewingRes && (
-        <ViewerModal
-          res={viewingRes}
-          onClose={() => setViewingRes(null)}
-          t={t}
-        />
-      )}
 
-      {/* Stopwords Modal */}
-      <StopwordsModal 
-        isOpen={showStopwordsModal}
-        onClose={() => setShowStopwordsModal(false)}
-        customWords={customWords}
-        onAdd={handleAddStopword}
-        onDelete={handleDeleteStopword}
-        t={t}
-      />
     </div>
   )
 }

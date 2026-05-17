@@ -1368,15 +1368,6 @@
   transition: all var(--trans-fast);
 }
 
-.oracle-tab__entry--checked {
-  border-color: rgba(92, 185, 138, 0.3);
-  opacity: 0.7;
-}
-
-.oracle-tab__entry--checked .oracle-tab__entry-label {
-  color: var(--green);
-}
-
 .oracle-tab__entry--loading {
   display: flex;
   flex-direction: column;
@@ -1387,6 +1378,33 @@
   font-size: 12px;
   background: var(--bg-base);
   border-style: dashed;
+}
+
+.oracle-tab__entry--contradiction {
+  border-color: rgba(224, 112, 112, 0.5);
+  background: rgba(224, 112, 112, 0.02);
+}
+
+.oracle-tab__entry--contradiction .oracle-tab__entry-label {
+  color: var(--red);
+}
+
+.oracle-tab__check-btn--error {
+  color: var(--red);
+  border-color: rgba(224, 112, 112, 0.3);
+}
+
+.oracle-tab__check-btn--error:hover {
+  background: rgba(224, 112, 112, 0.1);
+  border-color: rgba(224, 112, 112, 0.5);
+}
+
+.oracle-tab__entry--checked {
+  border-color: rgba(92, 185, 138, 0.4);
+}
+
+.oracle-tab__entry--checked .oracle-tab__entry-label {
+  color: var(--green);
 }
 
 .oracle-tab__entry-header {
@@ -1668,8 +1686,14 @@
   line-height: 1.4;
 }
 
-/* Idle - green */
+/* Idle - grey */
 .oracle-traffic-light--idle .oracle-traffic-light__dot {
+  background: var(--text-muted);
+  box-shadow: none;
+}
+
+/* Success - green */
+.oracle-traffic-light--success .oracle-traffic-light__dot {
   background: var(--green);
   box-shadow: 0 0 6px var(--green);
 }
@@ -1730,6 +1754,12 @@
   background: rgba(224, 112, 112, 0.12);
   border-color: rgba(224, 112, 112, 0.25);
   color: var(--red);
+}
+
+.oracle-entity-tag--success {
+  background: rgba(92, 185, 138, 0.12);
+  border-color: rgba(92, 185, 138, 0.25);
+  color: var(--green);
 }
 
 .oracle-entity-tag--hoverable {

@@ -4,7 +4,12 @@
     "en_progreso": "In progress",
     "borrador": "Draft",
     "sin_comenzar": "Not started",
-    "opciones": ["Not started", "Draft", "In progress", "Completed"]
+    "opciones": [
+      "Not started",
+      "Draft",
+      "In progress",
+      "Completed"
+    ]
   },
   "editable": {
     "doble_clic": "Double-click to edit"
@@ -70,6 +75,7 @@
     "tooltip_oraculo": "Click to let AI verify if this paragraph contradicts your Compendium",
     "sin_coincidencias": "No key elements",
     "coincidencias": "Compendium elements present",
+    "revisado_ok": "Coherence verified",
     "contradiccion": "Contradiction in this paragraph",
     "palabras_escena": "{{count}} words in this scene",
     "meta_escena": "Goal: {{count}} words per scene",
@@ -109,5 +115,8 @@
   "fecha_ok": "OK",
   "exportar": {
     "escena_vacia_word": "The scene is empty. Write something before exporting."
+  },
+  "bienvenida": {
+    "texto": "Welcome to your next great literary adventure! This is the canvas where your ideas will come to life.\n\nTo organize your world, remember that you can rename any <strong>Act, Chapter, or Scene</strong> by double-clicking its name in the left panel. Also, feel free to drag and drop elements to reshape your narrative exactly how you want.\n\nA quick tip: don't forget to use the <strong>Oracle</strong> to keep your story consistent and the <strong>Compendium</strong> to add depth to your characters and locations.\n\nHappy writing!"
   }
 }

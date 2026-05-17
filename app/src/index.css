@@ -438,6 +438,16 @@ body {
   border-color: var(--border-accent);
 }
 
+.btn-danger {
+  background: #732a2a;
+  color: #ffcccc;
+}
+
+.btn-danger:hover {
+  background: #943535;
+  color: #ffffff;
+}
+
 .btn-sm {
   padding: 4px 10px;
   font-size: 11px;

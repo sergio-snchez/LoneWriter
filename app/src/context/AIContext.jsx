@@ -232,6 +232,8 @@ export const AIProvider = ({ children }) => {
       novelId: activeNovel.id,
       sceneId: entry.sceneId || null,
       createdAt: new Date().toISOString(),
+      // Si no hay contradicción, marcar como corregido (verde) automáticamente
+      isCorrected: entry.hasContradiction === false,
     };
     const id = await db.oracleEntries.add(newEntry);
     newEntry.id = id;
@@ -327,7 +329,7 @@ export const AIProvider = ({ children }) => {
     } else {
       setOracleStatus(prev => ({
         ...prev,
-        status: 'idle',
+        status: 'success',
         lastContradiction: null,
       }));
     }

@@ -3,10 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useNovel } from '../context/NovelContext';
 import ForceGraph3D from 'react-force-graph-3d';
 import ForceGraph2D from 'react-force-graph-2d';
-import { DataSet, Timeline } from 'vis-timeline/standalone';
 import { Lock, Unlock, Share2, Clock, Box, Square, AlertCircle } from 'lucide-react';
 import * as THREE from 'three';
-import 'vis-timeline/styles/vis-timeline-graph2d.css';
+import StorylineChart from '../components/StorylineChart';
 import './Nexus.css';
 
 const ENTITY_COLORS = {
@@ -64,31 +63,26 @@ export default function Nexus({ onNavigate }) {
     };
   }, [currentTheme]);
 
-  // Clear 3D texture cache when theme changes to force label color regeneration
+  // Clear 3D texture cache when theme or graph data changes
   useEffect(() => {
     nodeObjectCache.current.clear();
-  }, [currentTheme]);
+  }, [currentTheme, characters, locations, objects, lore, nexusLinks]);
   
   // Navigation from timeline listener
   // Global navigation is now managed in NovelContext
 
 
-  const timelineRef = useRef(null);
-  const timelineContainerRef = useRef(null);
-
   // Resize handling
   const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [activeView, setActiveView] = useState(() => {
-    return localStorage.getItem('lw_nexus_active_view') || 'graph';
+    return localStorage.getItem('lw_nexus_active_view') || 'timeline';
   });
   const [renderError, setRenderError] = useState(null);
   const [graphMode, setGraphMode] = useState(() => {
     return localStorage.getItem('lw_nexus_graph_mode') || '3D';
   });
-  const [lockZoom, setLockZoom] = useState(() => {
-    return localStorage.getItem('lw_nexus_lock_zoom') === 'true';
-  });
+
 
   // Click tracker for single/double click on graph nodes — must be declared
   // here (top of component), before any conditional early-returns.
@@ -111,180 +105,8 @@ export default function Nexus({ onNavigate }) {
     return () => observer.disconnect();
   }, [activeView]); // Re-observe when view changes
 
-  // Format scenes for timeline
-  const timelineData = useMemo(() => {
-    const items = [];
-    
-    // Flat list of all scenes from acts
-    acts.forEach(act => {
-      act.chapters?.forEach(ch => {
-        ch.scenes?.forEach(sc => {
-          if (sc.inGameDate) {
-            let dateVal = sc.inGameDate;
-            if (/^\d{1,4}$/.test(dateVal)) {
-              dateVal = `${dateVal.padStart(4, '0')}-01-01`;
-            }
+  // Vis-timeline logic replaced by StorylineChart
 
-            items.push({
-              id: sc.id,
-              content: `<div class="timeline-item-inner">${sc.synopsis || t('nexus.no_synopsis')}</div>`,
-              start: dateVal,
-              type: 'box',
-              className: 'nexus-timeline-item'
-            });
-          }
-        });
-      });
-    });
-
-    return items;
-  }, [acts, t]);
-
-  // Persistent dataset for timeline to avoid re-renders
-  const timelineDataSetRef = useRef(null);
-  if (!timelineDataSetRef.current && DataSet) {
-    timelineDataSetRef.current = new DataSet();
-  }
-
-  // Update DataSet whenever timelineData changes
-  useEffect(() => {
-    if (!timelineDataSetRef.current) return;
-    try {
-      timelineDataSetRef.current.clear();
-      if (timelineData.length > 0) {
-        timelineDataSetRef.current.add(timelineData);
-      }
-      
-      // Handle auto-fit or restoration
-      if (timelineRef.current) {
-        if (!lockZoom) {
-          // Default behavior: auto-fit all items
-          timelineRef.current.fit();
-        } else {
-          // Locked behavior: try to restore saved range
-          const savedRange = localStorage.getItem('lw_nexus_timeline_range');
-          if (savedRange) {
-            try {
-              const { start, end } = JSON.parse(savedRange);
-              if (start && end) {
-                timelineRef.current.setWindow(start, end, { animation: false });
-              }
-            } catch (err) {}
-          }
-        }
-        // Force a redraw to handle visibility changes after navigation
-        timelineRef.current.redraw();
-      }
-    } catch (err) {
-      console.error('[Nexus] Error updating timeline dataset:', err);
-      setRenderError(err.message);
-    }
-  }, [timelineData, lockZoom]);
-
-  // Initialize Timeline (only once)
-  useEffect(() => {
-    if (activeView !== 'timeline' || !timelineContainerRef.current) return;
-
-    try {
-      const options = {
-        stack: true,
-        selectable: true,
-        showCurrentTime: false,
-        zoomMin: 1000 * 60 * 60 * 24 * 2, // 2 days minimum zoom
-        zoomMax: 1000 * 60 * 60 * 24 * 365 * 1000, // 1000 years
-        editable: false,
-        margin: { item: 10, axis: 5 },
-        orientation: 'top',
-        timeAxis: { scale: 'day', step: 1 },
-        template: (item) => item.content,
-        format: {
-          minorLabels: {
-            millisecond: 'D MMM',
-            second: 'D MMM',
-            minute: 'D MMM',
-            hour: 'D MMM',
-            weekday: 'ddd D MMM',
-            day: 'D MMM',
-            month: 'MMM YYYY',
-            year: 'YYYY'
-          },
-          majorLabels: {
-            millisecond: 'YYYY',
-            second: 'YYYY',
-            minute: 'YYYY',
-            hour: 'YYYY',
-            weekday: 'MMMM YYYY',
-            day: 'MMMM YYYY',
-            month: 'YYYY',
-            year: ''
-          }
-        },
-        // Localization
-        locale: i18n.language,
-        locales: {
-          [i18n.language]: {
-            current: t('nexus.current') || 'Actual',
-            time: t('nexus.time') || 'Tiempo',
-          }
-        }
-      };
-
-      if (!timelineRef.current) {
-        timelineRef.current = new Timeline(timelineContainerRef.current, timelineDataSetRef.current, options);
-      } else {
-        timelineRef.current.setOptions(options);
-      }
-
-      // Restore zoom if available
-      const savedRange = localStorage.getItem('lw_nexus_timeline_range');
-      if (savedRange && !lockZoom) {
-        try {
-          const { start, end } = JSON.parse(savedRange);
-          timelineRef.current.setWindow(start, end, { animation: false });
-        } catch (e) {
-          console.warn('Could not restore timeline range', e);
-        }
-      }
-
-      // Cleanup old listeners to prevent duplicates
-      timelineRef.current.off('select');
-      timelineRef.current.off('rangechanged');
-
-      timelineRef.current.on('select', (properties) => {
-        if (properties.items && properties.items.length > 0) {
-          const itemId = String(properties.items[0]);
-          const sceneId = itemId.replace('scene-', '');
-          
-          window.dispatchEvent(new CustomEvent('navigate-to-scene', { detail: { sceneId } }));
-          onNavigate('editor');
-        }
-      });
-
-      timelineRef.current.on('rangechanged', (properties) => {
-        if (!lockZoom) {
-          localStorage.setItem('lw_nexus_timeline_range', JSON.stringify({
-            start: properties.start,
-            end: properties.end
-          }));
-        }
-      });
-
-    } catch (err) {
-      console.error('[Nexus] Error initializing timeline:', err);
-      setRenderError(err.message);
-    }
-
-    return () => {
-      if (timelineRef.current) {
-        try {
-          timelineRef.current.destroy();
-          timelineRef.current = null;
-        } catch (e) {
-          console.warn('Error destroying timeline', e);
-        }
-      }
-    };
-  }, [activeView, onNavigate, i18n.language, t, lockZoom]);
 
   const graphData = useMemo(() => {
     const nodes = [];
@@ -516,6 +338,20 @@ export default function Nexus({ onNavigate }) {
     clickTracker.current = { time: now, id: node.id };
   };
 
+  const handleSceneNavigate = (sceneId) => {
+    for (const act of acts) {
+      for (const chapter of act.chapters || []) {
+        const scene = (chapter.scenes || []).find(s => s.id === sceneId);
+        if (scene) {
+          setExpandedIds(prev => new Set([...prev, `act-${act.id}`, `ch-${chapter.id}`]));
+          setActiveScene(scene);
+          onNavigate('editor');
+          return;
+        }
+      }
+    }
+  };
+
   return (
     <div className="nexus-view fade-in">
       <header className="nexus-header">
@@ -524,28 +360,6 @@ export default function Nexus({ onNavigate }) {
           <p className="nexus-subtitle">{t('nexus.subtitle')}</p>
         </div>
         <div className="nexus-header__actions">
-          {activeView === 'timeline' && (
-            <button 
-              className={`btn btn-ghost nexus-lock-btn ${!lockZoom ? 'active' : ''}`}
-              onClick={() => {
-                const next = !lockZoom;
-                setLockZoom(next);
-                localStorage.setItem('lw_nexus_lock_zoom', next);
-                if (next && timelineRef.current) {
-                  const range = timelineRef.current.getWindow();
-                  localStorage.setItem('lw_nexus_timeline_range', JSON.stringify({
-                    start: range.start,
-                    end: range.end
-                  }));
-                }
-              }}
-              title={lockZoom ? t('nexus.lock_zoom') : t('nexus.unlock_zoom')}
-            >
-              {lockZoom ? <Unlock size={16} /> : <Lock size={16} />}
-              <span className="btn-label">{lockZoom ? t('nexus.unlocked') : t('nexus.locked')}</span>
-            </button>
-          )}
-
           {activeView === 'graph' && (
             <button 
               className={`btn btn-ghost nexus-lock-btn ${graphMode === '3D' ? 'active' : ''}`}
@@ -572,7 +386,7 @@ export default function Nexus({ onNavigate }) {
               }}
             >
               <div className="nexus-view-btn-icon"><Share2 size={16} /></div>
-              <span>{t('nexus.view_graph', 'Grafo 3D')}</span>
+              <span>{t('nexus.view_graph', 'Grafo')}</span>
             </button>
             <button 
               className={`nexus-view-btn ${activeView === 'timeline' ? 'active' : ''}`}
@@ -590,17 +404,14 @@ export default function Nexus({ onNavigate }) {
 
       <div className="nexus-content">
         {activeView === 'timeline' ? (
-          <div className="glass-panel nexus-main-container">
-            <div 
-              ref={timelineContainerRef} 
-              className="vis-timeline-wrapper"
-              style={{ display: timelineData.length === 0 ? 'none' : 'block' }}
-            ></div>
-            {timelineData.length === 0 && (
-              <div className="nexus-placeholder-text">
-                <p>{t('nexus.timeline_empty')}</p>
-              </div>
-            )}
+          <div className="glass-panel nexus-main-container" ref={containerRef}>
+            <StorylineChart 
+              acts={acts} 
+              characters={characters}
+              onNavigate={handleSceneNavigate} 
+              dimensions={dimensions} 
+              themeCtx={themeCtx} 
+            />
           </div>
         ) : (
           <div className="glass-panel nexus-main-container" ref={containerRef}>
