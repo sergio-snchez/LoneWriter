@@ -16,17 +16,25 @@ export function useAIMpc({ activeNovel }) {
   const [mpcStatus, setMpcStatus]           = useState('idle') // 'idle' | 'analyzing' | 'error'
   const [mpcProposals, setMpcProposals]     = useState([])
   const [isMpcDrawerOpen, setIsMpcDrawerOpen] = useState(false)
-  const [isMpcEnabled, setIsMpcEnabled]     = useState(() => {
-    const saved = localStorage.getItem('ai_mpc_enabled')
-    return saved === null ? false : saved === 'true'
-  })
+  const [isMpcEnabled, setIsMpcEnabled]     = useState(false)
   const mpcCooldownRef = useRef(null)
 
-  // ── Effects ────────────────────────────────────────────────────────────────
-
+  // Load per-novel setting
   useEffect(() => {
-    localStorage.setItem('ai_mpc_enabled', isMpcEnabled ? 'true' : 'false')
-  }, [isMpcEnabled])
+    if (activeNovel?.id) {
+      const saved = localStorage.getItem(`ai_mpc_enabled_${activeNovel.id}`)
+      setIsMpcEnabled(saved === 'true') // Defaults to false if null
+    } else {
+      setIsMpcEnabled(false)
+    }
+  }, [activeNovel?.id])
+
+  // Save per-novel setting
+  useEffect(() => {
+    if (activeNovel?.id) {
+      localStorage.setItem(`ai_mpc_enabled_${activeNovel.id}`, isMpcEnabled ? 'true' : 'false')
+    }
+  }, [isMpcEnabled, activeNovel?.id])
 
   // Restore proposals from localStorage when active novel changes
   const activeNovelId = activeNovel?.id

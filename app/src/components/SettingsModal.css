@@ -6,11 +6,11 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  animation: fadeIn 0.25s ease-out forwards;
 }
 
 .settings-modal-overlay.closing {
@@ -36,13 +36,23 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes slideInUp {
@@ -50,6 +60,7 @@
     opacity: 0;
     transform: translateY(20px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -61,24 +72,11 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+
   to {
     opacity: 0;
     transform: translateY(15px) scale(0.98);
   }
-}
-
-.settings-modal {
-  width: 750px;
-  max-width: 90vw;
-  height: 600px;
-  max-height: 85vh;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  display: flex;
-  overflow: hidden;
-  box-shadow: var(--shadow-xl);
-  animation: slideInUp 0.3s ease;
 }
 
 .settings-modal__sidebar {
@@ -293,6 +291,37 @@
 
 .settings-info-value {
   color: var(--text-secondary);
+}
+
+.settings-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-link-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  transition: all var(--trans-fast);
+}
+
+.settings-link-item:hover {
+  background: var(--bg-hover);
+  color: var(--accent);
+  border-color: var(--border-accent);
+  transform: translateX(4px);
+}
+
+.settings-link-item svg {
+  color: var(--accent);
 }
 
 .ai-settings-group {

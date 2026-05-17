@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             nav_features: "Features",
             nav_engine: "MPC Engine",
             nav_openapp: "Open App",
-            badge_version: "v1.9-nexus is Live",
+            badge_version: "v2.0-timeline is Live",
             hero_title_1: "The Intelligent App<br/>for",
             hero_title_2: "Writers",
             hero_subtitle: "Compose, structure, and refine your masterwork in a distraction-free, privacy-first environment enhanced by local AI.",
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             footer_change: "Changelog",
             footer_auth: "Author",
             footer_copy: "Designed and developed with ♥ by Sergio Sánchez with Antigravity.",
-            link_doc: "https://github.com/sergio-snchez/LoneWriter/blob/main/README.md",
+            link_doc: "https://lonewriter-docs.vercel.app/",
             link_change: "https://github.com/sergio-snchez/LoneWriter/blob/main/CHANGELOG.md",
             link_roadmap: "https://github.com/sergio-snchez/LoneWriter/blob/main/ROADMAP.md",
             nav_roadmap: "Roadmap",
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
             rd_7_desc: "Map/import MD files into narrative tree.",
             rd_8_title: "Enhanced RAG Memory",
             rd_8_desc: "Support for larger local models and better indexing.",
-            roadmap_completed: "Completed in v1.9-nexus",
+            roadmap_completed: "Completed",
             roadmap_view_full: "View Full Roadmap"
         },
         es: {
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             nav_features: "Características",
             nav_engine: "Motor MPC",
             nav_openapp: "Abrir App",
-            badge_version: "v1.9-nexus ya disponible",
+            badge_version: "v2.0-timeline ya disponible",
             hero_title_1: "La App Inteligente<br/>para",
             hero_title_2: "Escritores",
             hero_subtitle: "Componer, estructurar y refinar tu obra maestra en un entorno sin distracciones, enfocado en la privacidad y potenciado por IA local.",
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
             footer_change: "Registro de cambios",
             footer_auth: "Autor",
             footer_copy: "Diseñado y desarrollado con ♥ por Sergio Sánchez con Antigravity.",
-            link_doc: "https://github.com/sergio-snchez/LoneWriter/blob/main/README_ES.md",
+            link_doc: "https://lonewriter-docs.vercel.app/es/",
             link_change: "https://github.com/sergio-snchez/LoneWriter/blob/main/CHANGELOG_ES.md",
             link_roadmap: "https://github.com/sergio-snchez/LoneWriter/blob/main/ROADMAP_ES.md",
             nav_roadmap: "Roadmap",
@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
             rd_7_desc: "Mapear archivos MD en el árbol narrativo.",
             rd_8_title: "Memoria RAG Mejorada",
             rd_8_desc: "Soporte para modelos locales mayores y mejor indexación.",
-            roadmap_completed: "Completado en v1.9-nexus",
+            roadmap_completed: "Completado",
             roadmap_view_full: "Ver Roadmap Completo"
         }
     };

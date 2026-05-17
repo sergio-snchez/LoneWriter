@@ -21,7 +21,7 @@ This roadmap outlines the future of LoneWriter. We prioritize features based on 
 
 ---
 
-## ✅ Completed in v1.9-nexus
+## ✅ Completed in v2.0-timeline
 - **[x] Interactive Timelines**: Chronological timeline of in-universe scene events, with direct navigation to the Editor on click.
 - **[x] 3D Knowledge Graph**: Immersive 3D/2D dual-mode graph (Nexus) integrated in the app to visualize all connections between Compendium entities (characters, locations, objects, lore).
 

@@ -1,46 +1,41 @@
 import { useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import {
   Users, MapPin, Package, BookOpen,
-  Search, Filter, Plus, Trash2, 
-  X, Zap, Sparkles, Loader2, CheckCircle2, Combine
+  Search, Plus,
+  Zap, Sparkles, Loader2, CheckCircle2, Combine
 } from 'lucide-react'
 import { useNovel } from '../context/NovelContext'
 import { useAI } from '../context/AIContext'
 import { useModal } from '../context/ModalContext'
 import { extractKeywords, TABLE_CONFIG } from '../services/compendiumSearch'
 import { Tooltip } from '../components/Tooltip'
-import { ProposalCard } from '../components/MpcProposalDrawer'
-import './Compendium.css'
-
+import { CompendiumFilters, matchesFilters } from './compendium/CompendiumFilters'
+import { CompendiumMpcOverlay } from './compendium/CompendiumMpcOverlay'
 import { CompendiumPanel } from './compendium/CompendiumPanel'
 import { CharacterCard, LocationCard, ObjectCard, LoreCard } from './compendium/CompendiumCards'
+import './Compendium.css'
 
 export default function CompendiumView() {
   const { t } = useTranslation('compendium')
   const { characters, locations, objects, lore, addCompendiumEntry, updateCompendiumEntry, deleteCompendiumEntry, activeNovel } = useNovel()
-  const { 
+  const {
     mpcProposals, dismissMpcProposal, isMpcEnabled, setIsMpcEnabled,
     mpcStatus,
-    acceptMpcProposal, dismissMpcProposalPermanently, clearMpcProposals
+    acceptMpcProposal, dismissMpcProposalPermanently, clearMpcProposals,
+    provider, apiKey, currentModel, localBaseUrl, logAIUsage
   } = useAI()
-  const { provider, apiKey, currentModel, localBaseUrl, logAIUsage } = useAI()
   const { openModal } = useModal()
   const [activeSection, setActiveSection] = useState('characters')
   const [query, setQuery] = useState('')
 
-  // Edit Panel State
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState(null); // null means "Add new"
-
-  // Filter State
+  const [editingItem, setEditingItem] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState([]);
   const [isMpcOverlayOpen, setIsMpcOverlayOpen] = useState(false);
   const [isMpcOverlayClosing, setIsMpcOverlayClosing] = useState(false);
 
-  // Merge/Unify State (from useNovel)
   const {
     selectedMerge, setSelectedMerge,
     mergeResult, setMergeResult,
@@ -61,7 +56,6 @@ export default function CompendiumView() {
   };
   const [acceptingMpcId, setAcceptingMpcId] = useState(null);
 
-  // Limpiar filtros al cambiar de sección
   useEffect(() => {
     setActiveFilters([]);
     setIsFilterOpen(false);
@@ -115,58 +109,6 @@ export default function CompendiumView() {
     window.addEventListener('navigate-to-compendium-item', handler);
     return () => window.removeEventListener('navigate-to-compendium-item', handler);
   }, [characters, locations, objects, lore]);
-
-  const getAvailableFilters = () => {
-    const list = new Set();
-    const ensureArr = (val) => Array.isArray(val) ? val : (typeof val === 'string' ? val.split(',').map(s=>s.trim()).filter(Boolean) : []);
-    
-    if (activeSection === 'characters') {
-      characters.forEach(c => {
-        if (c.role) list.add(c.role);
-        ensureArr(c.tags).forEach(t => list.add(t));
-        ensureArr(c.traits).forEach(t => list.add(t));
-      });
-    } else if (activeSection === 'locations') {
-      locations.forEach(l => {
-        if (l.type) list.add(l.type);
-        ensureArr(l.tags).forEach(t => list.add(t));
-      });
-    } else if (activeSection === 'objects') {
-      objects.forEach(o => {
-        if (o.type) list.add(o.type);
-        ensureArr(o.tags).forEach(t => list.add(t));
-      });
-    } else if (activeSection === 'lore') {
-      lore.forEach(e => {
-        if (e.category) list.add(e.category);
-        ensureArr(e.tags).forEach(t => list.add(t));
-      });
-    }
-    return Array.from(list).sort();
-  };
-
-  const toggleFilter = (f) => {
-    setActiveFilters(prev => 
-      prev.includes(f) ? prev.filter(x => x !== f) : [...prev, f]
-    );
-  };
-
-  const matchesFilters = (item) => {
-    if (activeFilters.length === 0) return true;
-    let itemTags = [];
-    const ensureArr = (val) => Array.isArray(val) ? val : (typeof val === 'string' ? val.split(',').map(s=>s.trim()).filter(Boolean) : []);
-    
-    if (activeSection === 'characters') {
-      itemTags = [item.role, ...ensureArr(item.tags), ...ensureArr(item.traits)];
-    } else if (activeSection === 'locations') {
-      itemTags = [item.type, ...ensureArr(item.tags)];
-    } else if (activeSection === 'objects') {
-      itemTags = [item.type, ...ensureArr(item.tags)];
-    } else if (activeSection === 'lore') {
-      itemTags = [item.category, ...ensureArr(item.tags)];
-    }
-    return activeFilters.some(f => itemTags.includes(f));
-  };
 
   const SECTIONS = [
     { id: 'characters', label: t('tabs.personajes'), icon: Users, count: characters.length },
@@ -635,42 +577,17 @@ export default function CompendiumView() {
               id="compendium-search-input"
             />
           </div>
-          <div style={{ position: 'relative' }}>
-            <button 
-              className={`btn ${isFilterOpen || activeFilters.length > 0 ? 'btn-primary' : 'btn-ghost'}`} 
-              id="compendium-filter-btn"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-            >
-              <Filter size={13} />
-              {activeFilters.length > 0 ? t('toolbar.filtrar_con_cuenta', { count: activeFilters.length }) : t('toolbar.filtrar')}
-            </button>
-            {isFilterOpen && (
-              <div className="compendium-filter-popup">
-                <div className="compendium-filter-popup__header">
-                  <span className="compendium-filter-popup__title">{t('toolbar.filtrar_titulo')}</span>
-                  {activeFilters.length > 0 && (
-                    <button className="btn btn-ghost" onClick={() => setActiveFilters([])} style={{padding: '2px 6px', fontSize: 11}}>{t('toolbar.limpiar')}</button>
-                  )}
-                </div>
-                <div className="compendium-filter-popup__body">
-                  {getAvailableFilters().length === 0 ? (
-                    <div style={{color: 'var(--text-muted)', fontSize: 12}}>{t('toolbar.sin_etiquetas')}</div>
-                  ) : (
-                    getAvailableFilters().map(f => (
-                      <label key={f} className="compendium-filter-option">
-                        <input 
-                          type="checkbox" 
-                          checked={activeFilters.includes(f)} 
-                          onChange={() => toggleFilter(f)} 
-                        />
-                        {f}
-                      </label>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          <CompendiumFilters
+            isFilterOpen={isFilterOpen}
+            activeFilters={activeFilters}
+            activeSection={activeSection}
+            characters={characters}
+            locations={locations}
+            objects={objects}
+            lore={lore}
+            onToggle={() => setIsFilterOpen(!isFilterOpen)}
+            onSetActiveFilters={setActiveFilters}
+          />
           
           <Tooltip content={t('unificar.boton_tooltip')}>
             <button 
@@ -711,22 +628,22 @@ export default function CompendiumView() {
         <div className="compendium-cards">
           {activeSection === 'characters' && characters
             .filter(matchesQuery)
-            .filter(matchesFilters)
+            .filter(i => matchesFilters(i, activeFilters, activeSection))
             .map(c => <CharacterCard key={c.id} char={c} onEdit={handleEdit} onDelete={handleDelete} onToggleIgnore={handleToggleIgnore} />)}
 
           {activeSection === 'locations' && locations
             .filter(matchesQuery)
-            .filter(matchesFilters)
+            .filter(i => matchesFilters(i, activeFilters, activeSection))
             .map(l => <LocationCard key={l.id} loc={l} onEdit={handleEdit} onDelete={handleDelete} onToggleIgnore={handleToggleIgnore} />)}
 
           {activeSection === 'objects' && objects
             .filter(matchesQuery)
-            .filter(matchesFilters)
+            .filter(i => matchesFilters(i, activeFilters, activeSection))
             .map(o => <ObjectCard key={o.id} obj={o} onEdit={handleEdit} onDelete={handleDelete} onToggleIgnore={handleToggleIgnore} />)}
 
           {activeSection === 'lore' && lore
             .filter(matchesQuery)
-            .filter(matchesFilters)
+            .filter(i => matchesFilters(i, activeFilters, activeSection))
             .map(e => <LoreCard key={e.id} entry={e} onEdit={handleEdit} onDelete={handleDelete} onToggleIgnore={handleToggleIgnore} />)}
             
           {/* Empty state visual fallback */}
@@ -771,100 +688,19 @@ export default function CompendiumView() {
         onSave={handleSavePanel} 
       />
 
-      {/* MPC Overlay Flotante */}
-      {isMpcOverlayOpen && createPortal(
-        <div 
-          className={`compendium-mpc-overlay${isMpcOverlayClosing ? ' compendium-mpc-overlay--closing' : ''}`} 
-          onClick={handleCloseMpcOverlay}
-          style={{ background: 'transparent', backdropFilter: 'none', pointerEvents: 'none' }}
-        >
-          <div 
-            className={`compendium-mpc-overlay__panel${isMpcOverlayClosing ? ' compendium-mpc-overlay__panel--closing' : ''}`} 
-            onClick={(e) => e.stopPropagation()}
-            style={{ pointerEvents: 'auto' }}
-          >
-            <div className="compendium-mpc-overlay__header">
-              <div className="compendium-mpc-overlay__title">
-                <Sparkles size={18} className="compendium-mpc-overlay__icon" />
-                <span>{t('compendium:mpc.titulo')}</span>
-                {mpcStatus === 'analyzing' && (
-                  <Loader2 size={14} className="spin" />
-                )}
-              </div>
-              <button className="btn btn-ghost btn-icon" onClick={handleCloseMpcOverlay}>
-                <X size={18} />
-              </button>
-            </div>
-            
-            <div className="compendium-mpc-overlay__body">
-              {mpcProposals.length === 0 ? (
-                <div className="compendium-mpc-overlay__empty">
-                  {mpcStatus === 'analyzing' ? (
-                    <>
-                      <Loader2 size={32} className="spin" style={{ color: 'var(--accent)' }} />
-                      <p>{t('ai:oraculo.consultando')}</p>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={32} style={{ opacity: 0.3, color: '#9b72cf' }} />
-                      <p>
-                        {t('compendium:mpc.empty_desc_1')}
-                        <br /><br />
-                        <span style={{ color: 'var(--gold)', opacity: 0.7, fontStyle: 'italic' }}>
-                          {t('compendium:mpc.empty_desc_2')}
-                        </span>
-                      </p>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <div className="compendium-mpc-overlay__subtitle">
-                    {mpcProposals.length === 1 
-                      ? t('compendium:mpc.subtitulo', { count: 1 })
-                      : t('compendium:mpc.subtitulo_plural', { count: mpcProposals.length })
-                    }
-                  </div>
-                  <div className="compendium-mpc-overlay__cards">
-                    {mpcProposals.map(proposal => (
-                      <ProposalCard
-                        key={proposal.id}
-                        proposal={proposal}
-                        onAccept={handleMpcAccept}
-                        onEdit={handleMpcEdit}
-                        onDismiss={handleMpcDismiss}
-                        onDismissPermanently={handleMpcDismissPermanently}
-                        isAccepting={acceptingMpcId === proposal.id}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-
-            {mpcProposals.length > 1 && (
-              <div className="compendium-mpc-overlay__footer">
-                <button className="btn btn-ghost" onClick={clearMpcProposals}>
-                  <Trash2 size={13} />
-                  {t('compendium:mpc.ignorar_todas')}
-                </button>
-                <button 
-                  className="btn btn-primary" 
-                  onClick={async () => {
-                    for (const proposal of [...mpcProposals]) {
-                      await handleMpcAccept(proposal);
-                    }
-                  }}
-                >
-                  <CheckCircle2 size={13} />
-                  {t('compendium:mpc.aceptar_todas')}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>,
-        document.body
-      )}
+      <CompendiumMpcOverlay
+        isOpen={isMpcOverlayOpen}
+        isClosing={isMpcOverlayClosing}
+        proposals={mpcProposals}
+        mpcStatus={mpcStatus}
+        acceptingMpcId={acceptingMpcId}
+        onClose={handleCloseMpcOverlay}
+        onAccept={handleMpcAccept}
+        onEdit={handleMpcEdit}
+        onDismiss={handleMpcDismiss}
+        onDismissPermanently={handleMpcDismissPermanently}
+        onClearAll={clearMpcProposals}
+      />
 
     </div>
   )

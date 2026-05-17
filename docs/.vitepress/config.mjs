@@ -72,8 +72,8 @@ export default defineConfig({
         outline: { label: 'On this page' },
         search: { provider: 'local' },
         footer: {
-          message: 'Personal & Open Source Project. Built for writers.',
-          copyright: 'Copyright © 2024-present'
+          message: 'Designed and developed with ♥ by Sergio Sánchez with Antigravity.<br/><a href="https://github.com/sergio-snchez/LoneWriter" target="_blank" rel="noopener noreferrer">Open Source</a> & MIT License.',
+          copyright: ''
         }
       }
     },
@@ -140,8 +140,8 @@ export default defineConfig({
         outline: { label: 'En esta página' },
         search: { provider: 'local' },
         footer: {
-          message: 'Proyecto Personal y de Código Abierto. Creado por y para escritores.',
-          copyright: 'Copyright © 2024-presente'
+          message: 'Diseñado y desarrollado con ♥ por Sergio Sánchez con Antigravity.<br/><a href="https://github.com/sergio-snchez/LoneWriter" target="_blank" rel="noopener noreferrer">Open Source</a> y Licencia MIT.',
+          copyright: ''
         }
       }
     }

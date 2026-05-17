@@ -55,10 +55,10 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
   }
 
   useEffect(() => {
-    if (defaultTab && open) {
+    if (defaultTab) {
       setActiveTab(defaultTab);
     }
-  }, [defaultTab, open]);
+  }, [defaultTab]);
 
   return (
     <>

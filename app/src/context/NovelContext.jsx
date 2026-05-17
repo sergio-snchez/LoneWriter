@@ -282,10 +282,54 @@ export const NovelProvider = ({ children }) => {
         lastEdited: new Date().toISOString(),
         createdAt: new Date().toISOString()
       });
-      // Add an initial Act
-      await addAct(novelId, i18n.t('editor:acto_inicial'));
+      // Initial structure: Act -> Chapter -> Scene
+      const actId = await db.acts.add({ 
+        novelId, 
+        title: i18n.t('editor:acto_inicial'), 
+        order: 0, 
+        wordCount: 0 
+      });
+
+      const chapterId = await db.chapters.add({ 
+        actId, 
+        title: i18n.t('editor:nuevo.capitulo_placeholder'), 
+        order: 0, 
+        number: 1, 
+        wordCount: 0 
+      });
+
+      const welcomeText = i18n.t('editor:bienvenida.texto');
+      const welcomeHtml = welcomeText.split('\n\n').map(p => `<p>${p}</p>`).join('');
+      const words = welcomeText.trim().split(/\s+/).length;
+
+      const sceneId = await db.scenes.add({ 
+        chapterId, 
+        title: i18n.t('editor:nuevo.escena_placeholder'), 
+        order: 0, 
+        number: 1, 
+        status: 'Sin comenzar', 
+        pov: '', 
+        inGameDate: '', 
+        wordCount: words, 
+        content: welcomeHtml 
+      });
+
+      // Update parent counts
+      await db.chapters.update(chapterId, { wordCount: words });
+      await db.acts.update(actId, { wordCount: words });
+      await db.novels.update(novelId, { wordCount: words });
+
+      // Expand the tree by default
+      const expanded = new Set([`act-${actId}`, `ch-${chapterId}`]);
+      await db.novels.update(novelId, { uiExpanded: JSON.stringify([...expanded]) });
+
       await refreshAllNovels();
       await switchNovel(novelId);
+      
+      // Select the first scene automatically
+      const scene = await db.scenes.get(sceneId);
+      if (scene) setActiveScene(scene);
+
       setPendingSync(true);
     } catch (error) {
       console.error('[LoneWriter] Error creating novel:', error);
@@ -388,7 +432,7 @@ export const NovelProvider = ({ children }) => {
     const ch = await db.chapters.get(chapterId);
     const act = await db.acts.get(ch.actId);
     const count = await db.scenes.where('chapterId').equals(chapterId).count();
-    const id = await db.scenes.add({ chapterId, title, order: count, number: count + 1, status: 'Borrador', pov: '', inGameDate: '', wordCount: 0, content: '' });
+    const id = await db.scenes.add({ chapterId, title, order: count, number: count + 1, status: 'Sin comenzar', pov: '', inGameDate: '', wordCount: 0, content: '' });
     await reloadData(act.novelId);
     setPendingSync(true);
     return id;
