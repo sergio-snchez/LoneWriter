@@ -293,6 +293,37 @@
   color: var(--text-secondary);
 }
 
+.settings-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-link-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  transition: all var(--trans-fast);
+}
+
+.settings-link-item:hover {
+  background: var(--bg-hover);
+  color: var(--accent);
+  border-color: var(--border-accent);
+  transform: translateX(4px);
+}
+
+.settings-link-item svg {
+  color: var(--accent);
+}
+
 .ai-settings-group {
   display: flex;
   flex-direction: column;

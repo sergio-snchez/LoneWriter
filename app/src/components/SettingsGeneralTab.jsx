@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Info, RotateCw, AlertTriangle } from 'lucide-react'
+import { Info, RefreshCw, AlertTriangle, ExternalLink, Globe, Heart } from 'lucide-react'
 
 export function SettingsGeneralTab({ onClearCache }) {
   const { t } = useTranslation('settings')
@@ -28,14 +28,22 @@ export function SettingsGeneralTab({ onClearCache }) {
       </div>
       <div className="settings-section">
         <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <RotateCw size={14} />{t('general.recargar_app')}
+          <ExternalLink size={14} />{t('general.enlaces_titulo')}
         </span>
-        <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>{t('general.recargar_app_hint')}</p>
-        <button className="btn btn-primary" onClick={onClearCache} style={{ maxWidth: '300px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-          <AlertTriangle size={16} />
-          <span>{t('general.recargar_app_boton')}</span>
-          <AlertTriangle size={16} />
-        </button>
+        <div className="settings-links-list">
+          <a href="https://lonewriter-docs.vercel.app/" target="_blank" rel="noopener noreferrer" className="settings-link-item">
+            <Info size={14} />
+            <span>{t('general.docs_link')}</span>
+          </a>
+          <a href="https://lonewriter.vercel.app/" target="_blank" rel="noopener noreferrer" className="settings-link-item">
+            <Globe size={14} />
+            <span>{t('general.landing_link')}</span>
+          </a>
+          <a href="https://buymeacoffee.com/sergio.snchez" target="_blank" rel="noopener noreferrer" className="settings-link-item">
+            <Heart size={14} />
+            <span>{t('general.buymeacoffee_link')}</span>
+          </a>
+        </div>
       </div>
     </div>
   )

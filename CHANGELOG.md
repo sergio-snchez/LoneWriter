@@ -6,6 +6,25 @@
 
 </div>
 
+## [LoneWriter v2.0-timeline] - 2026-05-16
+### Added
+- **New Links section in Settings**: Centralized access to Official Documentation, Website, and Support (Buy Me a Coffee).
+- **Official Documentation Integration**: Direct link to `https://lonewriter-docs.vercel.app/` from both the App and Landing Page.
+- **Extended Multilingual Support**: Full translations for new configuration panels and external resource links.
+- Automated Oracle continuity validation with visual status indicators.
+- Narrative structure auto-generation (Act/Chapter/Scene) for new novels.
+- Persistence verification for scene chronology (in-game dates).
+
+### Changed
+- **Architectural Refactoring**: Decomposed monolithic components (such as `SettingsModal` and configuration panels) into specialized modules for better maintainability and performance.
+- **Timeline Redesign**: Adjusted labels and persistence logic for the scene "Chronology", ensuring in-game dates are correctly saved in Dexie.
+- **Settings UI Optimization**: Relocated "Clear Cache & Reload" tool to the Cloud & Backup tab for a more logical functional hierarchy.
+- **Icon Compatibility**: Replaced problematic icons with universal versions to ensure reliability across environments with legacy dependencies.
+- Improved glassmorphism and visual consistency across the editor.
+
+### Removed
+- Obsolete v1.9 references in banners and footers across the application and landing page.
+
 ## [LoneWriter v1.9-nexus] - 2026-05-03
 
 ### Added

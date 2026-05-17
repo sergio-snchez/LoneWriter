@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
-import { Cloud, RefreshCw, LogIn, LogOut, X, Shield, ExternalLink, Heart, History } from 'lucide-react'
+import { Cloud, RefreshCw, LogIn, LogOut, X, Shield, ExternalLink, Heart, History, AlertTriangle } from 'lucide-react'
 import { Tooltip } from './Tooltip'
 
-export function SettingsCloudTab({ isCloudLinked, isSyncing, cloudSyncStatus, lastCloudSync, isCloudSyncEnabled, showRevisions, revisions, onLink, onSignOut, onManualSync, onShowRevisions, onRestoreRevision, onCloseRevisions, onToggleAutoSync }) {
+export function SettingsCloudTab({ isCloudLinked, isSyncing, cloudSyncStatus, lastCloudSync, isCloudSyncEnabled, showRevisions, revisions, onLink, onSignOut, onManualSync, onShowRevisions, onRestoreRevision, onCloseRevisions, onToggleAutoSync, onClearCache }) {
   const { t } = useTranslation('settings')
 
   return (
@@ -84,36 +84,32 @@ export function SettingsCloudTab({ isCloudLinked, isSyncing, cloudSyncStatus, la
         )}
 
         {isCloudLinked && (
-          <>
-            <div style={{ padding: '12px', background: 'var(--accent-dim)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-accent)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <label style={{ fontSize: '13px' }}>{t('nube.sincronizacion_automatica')}</label>
-                  <span style={{ fontSize: '11px', color: 'var(--accent-light)' }}>{t('nube.proteccion_cache')}</span>
-                </div>
-                <input type="checkbox" className="form-toggle" checked={isCloudSyncEnabled} onChange={(e) => onToggleAutoSync(e.target.checked)} style={{ height: '20px', width: '20px', cursor: 'pointer', accentColor: 'var(--accent)' }} />
+          <div style={{ padding: '12px', background: 'var(--accent-dim)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-accent)', display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <label style={{ fontSize: '13px' }}>{t('nube.sincronizacion_automatica')}</label>
+                <span style={{ fontSize: '11px', color: 'var(--accent-light)' }}>{t('nube.proteccion_cache')}</span>
               </div>
-              <div style={{ display: 'flex', gap: '10px', paddingTop: '8px', borderTop: '1px solid var(--border-accent)' }}>
-                <Shield size={16} style={{ color: 'var(--accent-light)', flexShrink: 0 }} />
-                <p style={{ fontSize: '11px', color: 'var(--accent-light)', margin: 0 }} dangerouslySetInnerHTML={{ __html: t('nube.seguridad_hint', { interpolation: { escapeValue: false } }) }} />
-              </div>
+              <input type="checkbox" className="form-toggle" checked={isCloudSyncEnabled} onChange={(e) => onToggleAutoSync(e.target.checked)} style={{ height: '20px', width: '20px', cursor: 'pointer', accentColor: 'var(--accent)' }} />
             </div>
-
-            <div className="settings-section" style={{ marginTop: '16px' }}>
-              <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ExternalLink size={14} />{t('general.enlaces_titulo')}
-              </span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
-                <a href="https://github.com/sergio-snchez/LoneWriter" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '12px' }}>
-                  <ExternalLink size={14} />{t('general.github_link')}
-                </a>
-                <a href="https://buymeacoffee.com/sergio.snchez" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '12px' }}>
-                  <Heart size={14} />{t('general.buymeacoffee_link')}
-                </a>
-              </div>
+            <div style={{ display: 'flex', gap: '10px', paddingTop: '8px', borderTop: '1px solid var(--border-accent)' }}>
+              <Shield size={16} style={{ color: 'var(--accent-light)', flexShrink: 0 }} />
+              <p style={{ fontSize: '11px', color: 'var(--accent-light)', margin: 0 }} dangerouslySetInnerHTML={{ __html: t('nube.seguridad_hint', { interpolation: { escapeValue: false } }) }} />
             </div>
-          </>
+          </div>
         )}
+
+        <div className="settings-section" style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--border)' }}>
+          <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <RefreshCw size={14} />{t('nube.recargar_app')}
+          </span>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>{t('nube.recargar_app_hint')}</p>
+          <button className="btn btn-primary" onClick={onClearCache} style={{ maxWidth: '300px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <AlertTriangle size={16} />
+            <span>{t('nube.recargar_app_boton')}</span>
+            <AlertTriangle size={16} />
+          </button>
+        </div>
       </div>
     </div>
   )
