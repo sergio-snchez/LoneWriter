@@ -255,8 +255,8 @@ export default function StorylineChart({ acts, characters, onNavigate, dimension
     }
 
     if (node.isLaneLabel) {
-      // Calculate Sticky X for the left axis (Sticks to 80px from the left of the screen)
-      const screenX = 80;
+      // Calculate Sticky X for the left axis (Sticks to 20px from the left of the screen)
+      const screenX = 20;
       const stickyX = Math.max(node.x, (screenX - transform.e) / transform.a);
 
       // Draw POV lane label inside a hollow pill for perfect readability
@@ -268,7 +268,7 @@ export default function StorylineChart({ acts, characters, onNavigate, dimension
       const pillHeight = 14 / safeScale + paddingY * 2;
       
       ctx.beginPath();
-      ctx.roundRect(stickyX - pillWidth, node.y - pillHeight / 2, pillWidth, pillHeight, pillHeight / 2);
+      ctx.roundRect(stickyX, node.y - pillHeight / 2, pillWidth, pillHeight, pillHeight / 2);
       ctx.fillStyle = themeCtx.isLight ? '#ffffff' : '#1a1a1f';
       ctx.fill();
       ctx.lineWidth = 2 / safeScale;
@@ -278,7 +278,7 @@ export default function StorylineChart({ acts, characters, onNavigate, dimension
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = themeCtx.textMain; 
-      ctx.fillText(node.label, stickyX - pillWidth / 2, node.y);
+      ctx.fillText(node.label, stickyX + pillWidth / 2, node.y);
       return;
     }
 
@@ -366,14 +366,66 @@ export default function StorylineChart({ acts, characters, onNavigate, dimension
     if (link.isLaneBackground) {
       // Draw an infinite horizontal rail for the character lane
       ctx.lineTo(10000, link.source.y);
+      ctx.lineWidth = link.isAxisLink ? 1 / safeScale : 4 / safeScale;
+      ctx.strokeStyle = link.isAxisLink ? (themeCtx.isLight ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.25)') : link.color;
+      ctx.stroke();
     } else {
-      ctx.lineTo(link.target.x, link.target.y);
+      // Draw curved lines (bezier) to avoid sharp peaks between nodes
+      const dx = link.target.x - link.source.x;
+      const offset = (link.curvature || 0) * 50 / safeScale; // Offset for overlapping tracks
+      
+      const cp1x = link.source.x + dx / 2;
+      const cp1y = link.source.y - offset;
+      const cp2x = link.source.x + dx / 2;
+      const cp2y = link.target.y - offset;
+      
+      ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, link.target.x, link.target.y);
+      
+      // Draw thinner, subtler lines for the subway tracks
+      ctx.lineWidth = link.isAxisLink ? 1 / safeScale : 4 / safeScale;
+      ctx.strokeStyle = link.isAxisLink ? (themeCtx.isLight ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.25)') : link.color;
+      ctx.stroke();
+
+      // Custom Particle Drawing along the Bezier curve
+      if (!link.isAxisLink) {
+        // We use Date.now() to animate the particle along the path
+        const duration = 4000; // 4 seconds to cross the link
+        
+        // Give each link a pseudo-random offset so particles don't all move in sync
+        const idStr = (link.source.id || 'a').toString() + (link.target.id || 'b').toString();
+        let hash = 0;
+        for (let i = 0; i < idStr.length; i++) {
+          hash = idStr.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const timeOffset = Math.abs(hash) % duration;
+        
+        // Calculate t from 0 to 1
+        const t = ((Date.now() + timeOffset) % duration) / duration;
+        
+        // Bezier formula for cubic curve
+        const invT = 1 - t;
+        const px = invT*invT*invT * link.source.x + 
+                   3 * invT*invT * t * cp1x + 
+                   3 * invT * t*t * cp2x + 
+                   t*t*t * link.target.x;
+        const py = invT*invT*invT * link.source.y + 
+                   3 * invT*invT * t * cp1y + 
+                   3 * invT * t*t * cp2y + 
+                   t*t*t * link.target.y;
+
+        // Draw particle
+        ctx.beginPath();
+        ctx.arc(px, py, 2 / safeScale, 0, 2 * Math.PI, false);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        
+        // Draw particle glow
+        ctx.beginPath();
+        ctx.arc(px, py, 4.5 / safeScale, 0, 2 * Math.PI, false);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.fill();
+      }
     }
-    
-    // Draw thinner, subtler lines for the subway tracks
-    ctx.lineWidth = link.isAxisLink ? 1 / safeScale : 4 / safeScale;
-    ctx.strokeStyle = link.isAxisLink ? (themeCtx.isLight ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.25)') : link.color;
-    ctx.stroke();
   };
 
   return (
@@ -399,7 +451,8 @@ export default function StorylineChart({ acts, characters, onNavigate, dimension
           linkDirectionalParticles={link => link.isAxisLink || link.isLaneBackground ? 0 : 1}
           linkDirectionalParticleWidth={3}
           linkDirectionalParticleSpeed={0.003}
-          linkDirectionalParticleColor={link => '#ffffff'}
+          // Make native particles transparent since we draw them manually along the bezier curve
+          linkDirectionalParticleColor={link => 'transparent'}
           enableNodeDrag={false}
           backgroundColor={themeCtx.bgGraph}
           onNodeClick={(node) => {
