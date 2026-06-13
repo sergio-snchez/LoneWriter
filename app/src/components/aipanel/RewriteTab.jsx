@@ -17,7 +17,7 @@ import { AIService } from '../../services'
 import { MarkdownRenderer, Tooltip } from '../'
 import { QUICK_GOALS, normalizeHtmlForEditor, extractPreviousContext } from './aiPanelHelpers'
 
-export function RewriteTab({ activeScene }) {
+export default function RewriteTab({ activeScene }) {
   RewriteTab.propTypes = {
     activeScene: PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -56,7 +56,6 @@ export function RewriteTab({ activeScene }) {
 
     setIsGenerating(true);
     try {
-      console.log('[Rewrite] Reescribiendo escena', activeScene?.id, '— objetivo:', activeGoal);
       const activeRes = resources?.filter(r => r.activeForAI && r.content) || [];
       const knowledgeBase = activeRes.length > 0
         ? activeRes.map(r => `Archivo: [${r.name}]\nContenido:\n${r.content}`).join('\n\n')
@@ -65,9 +64,6 @@ export function RewriteTab({ activeScene }) {
       const previousContext = includePreviousContext
         ? extractPreviousContext(activeScene?.content, selection, 120)
         : null;
-
-      console.log('[Rewrite] previousContext:', previousContext ? `${previousContext.substring(0, 80)}...` : 'null');
-
 
       const response = await AIService.rewrite(selection, activeGoal, instruction ? "" : (activeGoal ? prompts[activeGoal] : ""), {
         provider,

@@ -21,7 +21,7 @@ const TYPE_TRANSLATION_KEYS = {
   lore: 'mpc.tipo_lore',
 }
 
-export function ProposalCard({ proposal, onAccept, onEdit, onDismiss, onDismissPermanently, isAccepting }) {
+export default function ProposalCard({ proposal, onAccept, onEdit, onDismiss, onDismissPermanently, isAccepting }) {
   ProposalCard.propTypes = {
     proposal: PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

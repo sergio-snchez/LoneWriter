@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { useModal } from '../../context'
 
-export function AgentEditForm({ agent, colors, onSave, onCancel, isNew, canDelete, onDelete }) {
+export default function AgentEditForm({ agent, colors, onSave, onCancel, isNew, canDelete, onDelete }) {
   const { t } = useTranslation('ai')
   const { openModal } = useModal()
   const [form, setForm] = useState({ ...agent })

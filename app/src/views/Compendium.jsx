@@ -500,17 +500,13 @@ export default function CompendiumView() {
       </div>
       
       {/* Right Slide Panel for Edit/Create */}
-      <CompendiumPanel 
+      <CompendiumPanel
         isOpen={isPanelOpen}
-        type={activeSection} 
-        item={editingItem} 
-        characters={characters}
-        locations={locations}
-        objects={objects}
-        lore={lore}
-        activeNovel={activeNovel}
-        onClose={() => setIsPanelOpen(false)} 
-        onSave={handleSavePanel} 
+        type={activeSection}
+        item={editingItem}
+        entities={{ characters, locations, objects, lore }}
+        onClose={() => setIsPanelOpen(false)}
+        onSave={handleSavePanel}
       />
 
       <CompendiumMpcOverlay

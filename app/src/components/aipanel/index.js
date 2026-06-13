@@ -1,5 +1,5 @@
-export { AgentEditForm } from './AgentEditForm'
-export { RewriteTab } from './RewriteTab'
+export { default as AgentEditForm } from './AgentEditForm'
+export { default as RewriteTab } from './RewriteTab'
 export { default as DebateTab } from './DebateTab'
 export { default as OracleTab } from './OracleTab'
 export { QUICK_GOALS, normalizeHtmlForEditor, normalizeTextForDisplay, extractPreviousContext } from './aiPanelHelpers'

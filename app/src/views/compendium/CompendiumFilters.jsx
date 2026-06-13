@@ -32,7 +32,7 @@ function matchesFilters(item, activeFilters, activeSection) {
   return activeFilters.some(f => itemTags.includes(f))
 }
 
-export function CompendiumFilters({ isFilterOpen, activeFilters, activeSection, characters, locations, objects, lore, onToggle, onSetActiveFilters }) {
+export default function CompendiumFilters({ isFilterOpen, activeFilters, activeSection, characters, locations, objects, lore, onToggle, onSetActiveFilters }) {
   CompendiumFilters.propTypes = {
     isFilterOpen: PropTypes.bool.isRequired,
     activeFilters: PropTypes.arrayOf(PropTypes.string).isRequired,

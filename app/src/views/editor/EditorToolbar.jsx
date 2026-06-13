@@ -7,27 +7,25 @@ import {
 import { AIService, ExportService } from '../../services'
 import { Tooltip, CustomDatePicker } from '../../components'
 import { STATUS_OPTIONS } from './EditorSortables'
+import { useNovel, useAI } from '../../context'
 import debounce from 'lodash/debounce'
 import './EditorToolbar.css'
 
-const EditorToolbar = memo(function EditorToolbar({ activeScene, activeNovel, characters, updateScene, onNavigate, oracleStatus, mpcProposals, mpcStatus, handleManualMpcScan, menuOpen, logAIUsage, apiKey, provider, currentModel, localBaseUrl }) {
+const EditorToolbar = memo(function EditorToolbar({ onNavigate, menuOpen, handleManualMpcScan }) {
   EditorToolbar.propTypes = {
-    activeScene: PropTypes.object,
-    activeNovel: PropTypes.object,
-    characters: PropTypes.array,
-    updateScene: PropTypes.func.isRequired,
     onNavigate: PropTypes.func,
-    oracleStatus: PropTypes.object,
-    mpcProposals: PropTypes.array,
-    mpcStatus: PropTypes.string,
-    handleManualMpcScan: PropTypes.func,
     menuOpen: PropTypes.bool,
-    logAIUsage: PropTypes.func,
-    apiKey: PropTypes.string,
-    provider: PropTypes.string,
-    currentModel: PropTypes.string,
-    localBaseUrl: PropTypes.string,
+    handleManualMpcScan: PropTypes.func,
   };
+
+  const {
+    activeScene, activeNovel, characters, updateScene,
+  } = useNovel();
+
+  const {
+    oracleStatus, mpcProposals, mpcStatus, logAIUsage,
+    apiKey, provider, currentModel, localBaseUrl,
+  } = useAI();
 
   const { t } = useTranslation('editor')
   const [isHeaderExpanded, setIsHeaderExpanded] = useState(false)

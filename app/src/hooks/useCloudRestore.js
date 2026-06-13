@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { GoogleDriveService } from '../services'
-import { db } from '../db/database'
+import { restoreTables } from '../db/database'
 
 export function useCloudRestore({ openModal, refreshAfterRestore }) {
   const { t } = useTranslation('app')
@@ -21,14 +21,7 @@ export function useCloudRestore({ openModal, refreshAfterRestore }) {
           try {
             const cloudData = await GoogleDriveService.downloadBackup();
             if (cloudData) {
-              await db.transaction('rw', db.tables, async () => {
-                for (const table of db.tables) {
-                  await table.clear();
-                  if (cloudData.tables[table.name]) {
-                    await table.bulkAdd(cloudData.tables[table.name]);
-                  }
-                }
-              });
+              await restoreTables(cloudData.tables);
               localStorage.setItem('lw_last_cloud_sync', date);
               await refreshAfterRestore();
             }
@@ -47,14 +40,7 @@ export function useCloudRestore({ openModal, refreshAfterRestore }) {
       if (isRestoring) return;
       isRestoring = true;
       try {
-        await db.transaction('rw', db.tables, async () => {
-          for (const table of db.tables) {
-            await table.clear();
-            if (cloudData.tables[table.name]) {
-              await table.bulkAdd(cloudData.tables[table.name]);
-            }
-          }
-        });
+        await restoreTables(cloudData.tables);
         localStorage.setItem('lw_last_cloud_sync', date);
         await refreshAfterRestore();
       } catch (err) {

@@ -12,6 +12,7 @@ import {
 import { useNovel, useAI, useModal } from '../../context'
 import { Tooltip } from '../../components'
 import { AIService, retrieveRelevantFragments } from '../../services'
+import AssociationGroup from './AssociationGroup'
 import './CompendiumPanel.css'
 
 /* ---- Shared constants (also used by CompendiumCards) ---- */
@@ -29,23 +30,25 @@ export const CATEGORIES = [
   { id: 'lore', icon: BookOpen },
 ]
 
-export function CompendiumPanel({ isOpen, type, item, characters, locations, objects, lore, onClose, onSave, activeNovel }) {
+export default function CompendiumPanel({ isOpen, type, item, entities, onClose, onSave }) {
   CompendiumPanel.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     type: PropTypes.oneOf(['characters', 'locations', 'objects', 'lore']).isRequired,
     item: PropTypes.object,
-    characters: PropTypes.array,
-    locations: PropTypes.array,
-    objects: PropTypes.array,
-    lore: PropTypes.array,
+    entities: PropTypes.shape({
+      characters: PropTypes.array,
+      locations: PropTypes.array,
+      objects: PropTypes.array,
+      lore: PropTypes.array,
+    }),
     onClose: PropTypes.func.isRequired,
     onSave: PropTypes.func.isRequired,
-    activeNovel: PropTypes.object,
   };
 
   const { t } = useTranslation('compendium')
-  const { acts } = useNovel()
+  const { acts, activeNovel } = useNovel()
   const { provider, apiKey, currentModel, localBaseUrl, logAIUsage } = useAI()
+  const { characters, locations, objects, lore } = entities || {};
   const { openModal } = useModal()
   const [formData, setFormData] = useState(item || {})
   const [isAiLoading, setIsAiLoading] = useState(false)
@@ -269,170 +272,52 @@ export function CompendiumPanel({ isOpen, type, item, characters, locations, obj
         )}
 
         {selectedCategory === 'characters' && (
-          <>
-            <div className="compendium-form-group">
-              <label>{t('formulario.personajes.nombre')}</label>
-              <input name="name" value={formData.name || ''} onChange={handleChange} autoFocus placeholder={t('formulario.personajes.nombre_placeholder')} />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.personajes.rol')}</label>
-              <input name="role" value={formData.role || ''} onChange={handleChange} placeholder={t('formulario.personajes.rol_placeholder')} />
-            </div>
-            <div className="form-group-row">
-              <div className="form-group-inner">
-                <label>{t('formulario.personajes.estado_vital')}</label>
-                <select name="isAlive" value={formData.isAlive || 'Vivo'} onChange={handleChange}>
-                  <option value="Vivo">{t('formulario.personajes.estado_vivo')}</option>
-                  <option value="Muerto">{t('formulario.personajes.estado_muerto')}</option>
-                </select>
-              </div>
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.personajes.ocupacion')}</label>
-              <input name="occupation" value={formData.occupation || ''} onChange={handleChange} placeholder={t('formulario.personajes.ocupacion_placeholder')} />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.personajes.edad')}</label>
-              <input type="text" name="age" value={formData.age || ''} onChange={handleChange} placeholder={t('formulario.personajes.edad_placeholder')} />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.personajes.descripcion')}</label>
-              <textarea name="description" value={formData.description || ''} onChange={handleChange} />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.personajes.rasgos')}</label>
-              <input name="_rawTraits" value={formData._rawTraits || ''} onChange={handleChange} placeholder={t('formulario.personajes.rasgos_placeholder')} />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.personajes.relaciones')}</label>
-              {characters && characters.filter(c => c.name !== formData.name).length === 0 ? (
-                <p className="empty-hint">
-                  {t('formulario.personajes.sin_personajes')}
-                </p>
-              ) : (
-                <>
-                  {(formData.relations || []).map((rel, i) => (
-                    <div key={i} className="relation-row">
-                      <select value={rel.name} onChange={e => handleRelationChange(i, 'name', e.target.value)}>
-                        <option value="" disabled>{t('formulario.personajes.seleccionar')}</option>
-                        {(characters || []).map(c => c.name !== formData.name && (
-                          <option key={c.id} value={c.name}>{c.name}</option>
-                        ))}
-                      </select>
-                      <div className="relation-row__fields">
-                        <input name="type" placeholder={t('formulario.personajes.relacion_para_mi')} value={rel.type} onChange={e => handleRelationChange(i, 'type', e.target.value)} />
-                        <input name="reverseType" placeholder={t('formulario.personajes.relacion_para_el')} value={rel.reverseType} onChange={e => handleRelationChange(i, 'reverseType', e.target.value)} className="relation-input-reverse" />
-                      </div>
-                      <Tooltip content={t('formulario.personajes.eliminar_relacion')}>
-                        <button className="btn btn-ghost btn-icon text-danger" onClick={() => removeRelation(i)}>
-                          <Trash2 size={14} />
-                        </button>
-                      </Tooltip>
-                    </div>
-                  ))}
-                  <button className="btn btn-ghost add-relation-btn" onClick={addRelation}>
-                    <Plus size={13} /> {t('formulario.personajes.añadir_vinculo')}
-                  </button>
-                </>
-              )}
-            </div>
-            <AssociationGroup label={t('formulario.personajes.lugares_vinculados')} items={locations} field="associatedLocations" nameKey="name" accentColor={ENTITY_COLORS.locations} formData={formData} setFormData={setFormData} />
-            <AssociationGroup label={t('formulario.personajes.objetos_vinculados')} items={objects} field="associatedObjects" nameKey="name" accentColor={ENTITY_COLORS.objects} formData={formData} setFormData={setFormData} />
-            <AssociationGroup label={t('formulario.personajes.lore_vinculado')} items={lore} field="associatedLore" nameKey="title" accentColor={ENTITY_COLORS.lore} formData={formData} setFormData={setFormData} />
-          </>
+          <CharacterForm
+            formData={formData}
+            setFormData={setFormData}
+            handleChange={handleChange}
+            characters={characters}
+            locations={locations}
+            objects={objects}
+            lore={lore}
+            addRelation={addRelation}
+            handleRelationChange={handleRelationChange}
+            removeRelation={removeRelation}
+            t={t}
+          />
         )}
-
         {selectedCategory === 'locations' && (
-          <>
-            <div className="compendium-form-group">
-              <label>{t('formulario.localizaciones.nombre')}</label>
-              <input name="name" value={formData.name || ''} onChange={handleChange} autoFocus />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.localizaciones.tipo')}</label>
-              <input name="type" value={formData.type || ''} onChange={handleChange} placeholder={t('formulario.localizaciones.tipo_placeholder')} />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.localizaciones.clima')}</label>
-              <input name="climate" value={formData.climate || ''} onChange={handleChange} />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.localizaciones.descripcion')}</label>
-              <textarea name="description" value={formData.description || ''} onChange={handleChange} />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.localizaciones.etiquetas')}</label>
-              <input name="_rawTags" value={formData._rawTags || ''} onChange={handleChange} placeholder={t('formulario.localizaciones.etiquetas_placeholder')} />
-            </div>
-            <AssociationGroup label={t('formulario.localizaciones.personajes_asociados')} items={characters} field="associatedCharacters" nameKey="name" accentColor={ENTITY_COLORS.characters} formData={formData} setFormData={setFormData} />
-            <AssociationGroup label={t('formulario.localizaciones.objetos_asociados')} items={objects} field="associatedObjects" nameKey="name" accentColor={ENTITY_COLORS.objects} formData={formData} setFormData={setFormData} />
-            <AssociationGroup label={t('formulario.localizaciones.lore_vinculado')} items={lore} field="associatedLore" nameKey="title" accentColor={ENTITY_COLORS.lore} formData={formData} setFormData={setFormData} />
-          </>
+          <LocationForm
+            formData={formData}
+            setFormData={setFormData}
+            handleChange={handleChange}
+            characters={characters}
+            objects={objects}
+            lore={lore}
+            t={t}
+          />
         )}
-
         {selectedCategory === 'objects' && (
-          <>
-            <div className="compendium-form-group">
-              <label>{t('formulario.objetos.nombre')}</label>
-              <input name="name" value={formData.name || ''} onChange={handleChange} autoFocus />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.objetos.tipo')}</label>
-              <input name="type" value={formData.type || ''} onChange={handleChange} placeholder={t('formulario.objetos.tipo_placeholder')} />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.objetos.importancia')}</label>
-              <select name="importance" value={formData.importance || 'Secundario'} onChange={handleChange}>
-                <option value="Secundario">{t('formulario.objetos.importancia_secundario')}</option>
-                <option value="Relevante">{t('formulario.objetos.importancia_relevante')}</option>
-                <option value="MacGuffin">{t('formulario.objetos.importancia_macguffin')}</option>
-              </select>
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.objetos.portador')}</label>
-              <select name="currentOwner" value={formData.currentOwner || 'Desconocido'} onChange={handleChange}>
-                <option value="Desconocido">{t('formulario.objetos.portador_desconocido')}</option>
-                {(characters || []).map(c => (
-                  <option key={c.id} value={c.name}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.objetos.descripcion')}</label>
-              <textarea name="description" value={formData.description || ''} onChange={handleChange} />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.objetos.etiquetas')}</label>
-              <input name="_rawTags" value={formData._rawTags || ''} onChange={handleChange} />
-            </div>
-            <AssociationGroup label={t('formulario.objetos.personajes_vinculados')} items={characters} field="associatedCharacters" nameKey="name" accentColor={ENTITY_COLORS.characters} formData={formData} setFormData={setFormData} />
-            <AssociationGroup label={t('formulario.objetos.lugares_vinculados')} items={locations} field="associatedLocations" nameKey="name" accentColor={ENTITY_COLORS.locations} formData={formData} setFormData={setFormData} />
-            <AssociationGroup label={t('formulario.objetos.lore_vinculado')} items={lore} field="associatedLore" nameKey="title" accentColor={ENTITY_COLORS.lore} formData={formData} setFormData={setFormData} />
-          </>
+          <ObjectForm
+            formData={formData}
+            setFormData={setFormData}
+            handleChange={handleChange}
+            characters={characters}
+            locations={locations}
+            lore={lore}
+            t={t}
+          />
         )}
-
         {selectedCategory === 'lore' && (
-          <>
-            <div className="compendium-form-group">
-              <label>{t('formulario.lore.titulo')}</label>
-              <input name="title" value={formData.title || ''} onChange={handleChange} autoFocus />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.lore.categoria')}</label>
-              <input name="category" value={formData.category || ''} onChange={handleChange} placeholder={t('formulario.lore.categoria_placeholder')} />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.lore.resumen')}</label>
-              <textarea name="summary" value={formData.summary || ''} onChange={handleChange} className="lore-textarea" />
-            </div>
-            <div className="compendium-form-group">
-              <label>{t('formulario.lore.etiquetas')}</label>
-              <input name="_rawTags" value={formData._rawTags || ''} onChange={handleChange} />
-            </div>
-            <AssociationGroup label={t('formulario.lore.personajes_vinculados')} items={characters} field="associatedCharacters" nameKey="name" accentColor={ENTITY_COLORS.characters} formData={formData} setFormData={setFormData} />
-            <AssociationGroup label={t('formulario.lore.objetos_vinculados')} items={objects} field="associatedObjects" nameKey="name" accentColor={ENTITY_COLORS.objects} formData={formData} setFormData={setFormData} />
-            <AssociationGroup label={t('formulario.lore.lugares_vinculados')} items={locations} field="associatedLocations" nameKey="name" accentColor={ENTITY_COLORS.locations} formData={formData} setFormData={setFormData} />
-          </>
+          <LoreForm
+            formData={formData}
+            setFormData={setFormData}
+            handleChange={handleChange}
+            characters={characters}
+            objects={objects}
+            locations={locations}
+            t={t}
+          />
         )}
       </div>
 
@@ -444,40 +329,177 @@ export function CompendiumPanel({ isOpen, type, item, characters, locations, obj
   )
 }
 
-/* ---- Reusable association toggle group ---- */
-function AssociationGroup({ label, items, field, nameKey, accentColor, formData, setFormData }) {
-  if (!items || items.length === 0) return null
-  const rawVal = formData[field]
-  const assoc = Array.isArray(rawVal)
-    ? rawVal
-    : typeof rawVal === 'string'
-      ? rawVal.split(',').map(s => s.trim()).filter(Boolean)
-      : []
+/* ---- Sub-components: category form sections ---- */
 
+function CharacterForm({ formData, setFormData, handleChange, characters, locations, objects, lore, addRelation, handleRelationChange, removeRelation, t }) {
   return (
-    <div className="compendium-form-group">
-      <label>{label}</label>
-      <div className="relation-chars-grid" style={{ '--accent-color': accentColor }}>
-        {items.map(item => {
-          const name = item[nameKey]
-          const isChecked = assoc.includes(name)
-          return (
-            <button
-              key={item.id}
-              type="button"
-              className={`tag ${isChecked ? 'tag--active' : ''}`}
-              onClick={() => {
-                setFormData(prev => ({
-                  ...prev,
-                  [field]: isChecked ? assoc.filter(n => n !== name) : [...assoc, name]
-                }))
-              }}
-            >
-              {name}
-            </button>
-          )
-        })}
+    <>
+      <div className="compendium-form-group">
+        <label>{t('formulario.personajes.nombre')}</label>
+        <input name="name" value={formData.name || ''} onChange={handleChange} autoFocus placeholder={t('formulario.personajes.nombre_placeholder')} />
       </div>
-    </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.personajes.rol')}</label>
+        <input name="role" value={formData.role || ''} onChange={handleChange} placeholder={t('formulario.personajes.rol_placeholder')} />
+      </div>
+      <div className="form-group-row">
+        <div className="form-group-inner">
+          <label>{t('formulario.personajes.estado_vital')}</label>
+          <select name="isAlive" value={formData.isAlive || 'Vivo'} onChange={handleChange}>
+            <option value="Vivo">{t('formulario.personajes.estado_vivo')}</option>
+            <option value="Muerto">{t('formulario.personajes.estado_muerto')}</option>
+          </select>
+        </div>
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.personajes.ocupacion')}</label>
+        <input name="occupation" value={formData.occupation || ''} onChange={handleChange} placeholder={t('formulario.personajes.ocupacion_placeholder')} />
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.personajes.edad')}</label>
+        <input type="text" name="age" value={formData.age || ''} onChange={handleChange} placeholder={t('formulario.personajes.edad_placeholder')} />
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.personajes.descripcion')}</label>
+        <textarea name="description" value={formData.description || ''} onChange={handleChange} />
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.personajes.rasgos')}</label>
+        <input name="_rawTraits" value={formData._rawTraits || ''} onChange={handleChange} placeholder={t('formulario.personajes.rasgos_placeholder')} />
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.personajes.relaciones')}</label>
+        {characters && characters.filter(c => c.name !== formData.name).length === 0 ? (
+          <p className="empty-hint">{t('formulario.personajes.sin_personajes')}</p>
+        ) : (
+          <>
+            {(formData.relations || []).map((rel, i) => (
+              <div key={i} className="relation-row">
+                <select value={rel.name} onChange={e => handleRelationChange(i, 'name', e.target.value)}>
+                  <option value="" disabled>{t('formulario.personajes.seleccionar')}</option>
+                  {(characters || []).map(c => c.name !== formData.name && (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+                <div className="relation-row__fields">
+                  <input name="type" placeholder={t('formulario.personajes.relacion_para_mi')} value={rel.type} onChange={e => handleRelationChange(i, 'type', e.target.value)} />
+                  <input name="reverseType" placeholder={t('formulario.personajes.relacion_para_el')} value={rel.reverseType} onChange={e => handleRelationChange(i, 'reverseType', e.target.value)} className="relation-input-reverse" />
+                </div>
+                <Tooltip content={t('formulario.personajes.eliminar_relacion')}>
+                  <button className="btn btn-ghost btn-icon text-danger" onClick={() => removeRelation(i)}>
+                    <Trash2 size={14} />
+                  </button>
+                </Tooltip>
+              </div>
+            ))}
+            <button className="btn btn-ghost add-relation-btn" onClick={addRelation}>
+              <Plus size={13} /> {t('formulario.personajes.añadir_vinculo')}
+            </button>
+          </>
+        )}
+      </div>
+      <AssociationGroup label={t('formulario.personajes.lugares_vinculados')} items={locations} field="associatedLocations" nameKey="name" accentColor={ENTITY_COLORS.locations} formData={formData} setFormData={setFormData} />
+      <AssociationGroup label={t('formulario.personajes.objetos_vinculados')} items={objects} field="associatedObjects" nameKey="name" accentColor={ENTITY_COLORS.objects} formData={formData} setFormData={setFormData} />
+      <AssociationGroup label={t('formulario.personajes.lore_vinculado')} items={lore} field="associatedLore" nameKey="title" accentColor={ENTITY_COLORS.lore} formData={formData} setFormData={setFormData} />
+    </>
+  )
+}
+
+function LocationForm({ formData, setFormData, handleChange, characters, objects, lore, t }) {
+  return (
+    <>
+      <div className="compendium-form-group">
+        <label>{t('formulario.localizaciones.nombre')}</label>
+        <input name="name" value={formData.name || ''} onChange={handleChange} autoFocus />
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.localizaciones.tipo')}</label>
+        <input name="type" value={formData.type || ''} onChange={handleChange} placeholder={t('formulario.localizaciones.tipo_placeholder')} />
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.localizaciones.clima')}</label>
+        <input name="climate" value={formData.climate || ''} onChange={handleChange} />
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.localizaciones.descripcion')}</label>
+        <textarea name="description" value={formData.description || ''} onChange={handleChange} />
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.localizaciones.etiquetas')}</label>
+        <input name="_rawTags" value={formData._rawTags || ''} onChange={handleChange} placeholder={t('formulario.localizaciones.etiquetas_placeholder')} />
+      </div>
+      <AssociationGroup label={t('formulario.localizaciones.personajes_asociados')} items={characters} field="associatedCharacters" nameKey="name" accentColor={ENTITY_COLORS.characters} formData={formData} setFormData={setFormData} />
+      <AssociationGroup label={t('formulario.localizaciones.objetos_asociados')} items={objects} field="associatedObjects" nameKey="name" accentColor={ENTITY_COLORS.objects} formData={formData} setFormData={setFormData} />
+      <AssociationGroup label={t('formulario.localizaciones.lore_vinculado')} items={lore} field="associatedLore" nameKey="title" accentColor={ENTITY_COLORS.lore} formData={formData} setFormData={setFormData} />
+    </>
+  )
+}
+
+function ObjectForm({ formData, setFormData, handleChange, characters, locations, lore, t }) {
+  return (
+    <>
+      <div className="compendium-form-group">
+        <label>{t('formulario.objetos.nombre')}</label>
+        <input name="name" value={formData.name || ''} onChange={handleChange} autoFocus />
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.objetos.tipo')}</label>
+        <input name="type" value={formData.type || ''} onChange={handleChange} placeholder={t('formulario.objetos.tipo_placeholder')} />
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.objetos.importancia')}</label>
+        <select name="importance" value={formData.importance || 'Secundario'} onChange={handleChange}>
+          <option value="Secundario">{t('formulario.objetos.importancia_secundario')}</option>
+          <option value="Relevante">{t('formulario.objetos.importancia_relevante')}</option>
+          <option value="MacGuffin">{t('formulario.objetos.importancia_macguffin')}</option>
+        </select>
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.objetos.portador')}</label>
+        <select name="currentOwner" value={formData.currentOwner || 'Desconocido'} onChange={handleChange}>
+          <option value="Desconocido">{t('formulario.objetos.portador_desconocido')}</option>
+          {(characters || []).map(c => (
+            <option key={c.id} value={c.name}>{c.name}</option>
+          ))}
+        </select>
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.objetos.descripcion')}</label>
+        <textarea name="description" value={formData.description || ''} onChange={handleChange} />
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.objetos.etiquetas')}</label>
+        <input name="_rawTags" value={formData._rawTags || ''} onChange={handleChange} />
+      </div>
+      <AssociationGroup label={t('formulario.objetos.personajes_vinculados')} items={characters} field="associatedCharacters" nameKey="name" accentColor={ENTITY_COLORS.characters} formData={formData} setFormData={setFormData} />
+      <AssociationGroup label={t('formulario.objetos.lugares_vinculados')} items={locations} field="associatedLocations" nameKey="name" accentColor={ENTITY_COLORS.locations} formData={formData} setFormData={setFormData} />
+      <AssociationGroup label={t('formulario.objetos.lore_vinculado')} items={lore} field="associatedLore" nameKey="title" accentColor={ENTITY_COLORS.lore} formData={formData} setFormData={setFormData} />
+    </>
+  )
+}
+
+function LoreForm({ formData, setFormData, handleChange, characters, objects, locations, t }) {
+  return (
+    <>
+      <div className="compendium-form-group">
+        <label>{t('formulario.lore.titulo')}</label>
+        <input name="title" value={formData.title || ''} onChange={handleChange} autoFocus />
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.lore.categoria')}</label>
+        <input name="category" value={formData.category || ''} onChange={handleChange} placeholder={t('formulario.lore.categoria_placeholder')} />
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.lore.resumen')}</label>
+        <textarea name="summary" value={formData.summary || ''} onChange={handleChange} className="lore-textarea" />
+      </div>
+      <div className="compendium-form-group">
+        <label>{t('formulario.lore.etiquetas')}</label>
+        <input name="_rawTags" value={formData._rawTags || ''} onChange={handleChange} />
+      </div>
+      <AssociationGroup label={t('formulario.lore.personajes_vinculados')} items={characters} field="associatedCharacters" nameKey="name" accentColor={ENTITY_COLORS.characters} formData={formData} setFormData={setFormData} />
+      <AssociationGroup label={t('formulario.lore.objetos_vinculados')} items={objects} field="associatedObjects" nameKey="name" accentColor={ENTITY_COLORS.objects} formData={formData} setFormData={setFormData} />
+      <AssociationGroup label={t('formulario.lore.lugares_vinculados')} items={locations} field="associatedLocations" nameKey="name" accentColor={ENTITY_COLORS.locations} formData={formData} setFormData={setFormData} />
+    </>
   )
 }
