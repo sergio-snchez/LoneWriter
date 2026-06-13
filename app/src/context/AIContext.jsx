@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { db } from '../db/database';
 import { useNovel, useAIConfig, useAIMpc, useAIUsage, useOracle, useDebate } from './';
@@ -70,7 +70,7 @@ export const AIProvider = ({ children }) => {
       .delete();
   };
 
-  const value = {
+  const value = useMemo(() => ({
     ...aiConfig,
     ...aiMpc,
     ...aiUsage,
@@ -79,7 +79,7 @@ export const AIProvider = ({ children }) => {
     selection, setSelection,
     lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite,
     testConnection: AIService.testConnection,
-  };
+  }), [aiConfig, aiMpc, aiUsage, oracle, debate, selection, lastRewrite]);
 
   return <AIContext.Provider value={value}>{children}</AIContext.Provider>;
 };

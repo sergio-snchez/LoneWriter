@@ -40,7 +40,7 @@ export function SettingsGeneralTab({ onClearCache }) {
             <Info size={14} />
             <span>{t('general.docs_link')}</span>
           </a>
-          <a href="https://lonewriter.vercel.app/" target="_blank" rel="noopener noreferrer" className="settings-link-item">
+          <a href="https://getlonewriter.vercel.app/" target="_blank" rel="noopener noreferrer" className="settings-link-item">
             <Globe size={14} />
             <span>{t('general.landing_link')}</span>
           </a>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { db } from '../db/database'
 import i18n from '../i18n/i18n'
 
@@ -224,7 +224,7 @@ export function useDebate({ activeNovel }) {
     setDebateAgents(prev => prev.map(a => a.id === id ? { ...a, active: newActiveState } : a))
   }
 
-  return {
+  return useMemo(() => ({
     debateAgents,
     debateSessions,
     debateHistory,
@@ -239,5 +239,10 @@ export function useDebate({ activeNovel }) {
     addDebateAgent,
     removeDebateAgent,
     toggleDebateAgent,
-  }
+  }), [
+    debateAgents, debateSessions, debateHistory, activeSessionId,
+    addDebateSession, switchDebateSession, renameDebateSession,
+    deleteDebateSession, clearDebateHistory, addDebateMessage,
+    updateDebateAgent, addDebateAgent, removeDebateAgent, toggleDebateAgent,
+  ])
 }

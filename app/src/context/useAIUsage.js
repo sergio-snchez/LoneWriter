@@ -7,7 +7,7 @@
  * @param {string} deps.provider - active AI provider key
  * @param {string} deps.currentModel - active model identifier
  */
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 
 export function useAIUsage({ db, provider, currentModel }) {
   // ── State ──────────────────────────────────────────────────────────────────
@@ -62,5 +62,5 @@ export function useAIUsage({ db, provider, currentModel }) {
   }, [provider, currentModel, refreshUsage])
 
   // ── Exports ────────────────────────────────────────────────────────────────
-  return { usageStats, logAIUsage, refreshUsage }
+  return useMemo(() => ({ usageStats, logAIUsage, refreshUsage }), [usageStats, logAIUsage, refreshUsage])
 }

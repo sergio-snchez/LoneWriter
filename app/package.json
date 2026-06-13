@@ -43,11 +43,13 @@
     "react-i18next": "^17.0.8"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
-    "@vitejs/plugin-react": "^5.0.0",
-    "eslint": "^9.39.4",
+    "@vitejs/plugin-react": "^6.0.2",
+    "eslint": "^10.5.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
@@ -55,7 +57,7 @@
     "jsdom": "^29.1.1",
     "prettier": "^3.8.4",
     "typescript": "^6.0.3",
-    "vite": "^7.3.1",
+    "vite": "^8.0.16",
     "vite-plugin-node-polyfills": "^0.28.0",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.1.8"

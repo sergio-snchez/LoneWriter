@@ -343,7 +343,7 @@ function CharacterForm({ formData, setFormData, handleChange, characters, locati
         <input name="role" value={formData.role || ''} onChange={handleChange} placeholder={t('formulario.personajes.rol_placeholder')} />
       </div>
       <div className="form-group-row">
-        <div className="form-group-inner">
+        <div className="compendium-form-group form-group-inner">
           <label>{t('formulario.personajes.estado_vital')}</label>
           <select name="isAlive" value={formData.isAlive || 'Vivo'} onChange={handleChange}>
             <option value="Vivo">{t('formulario.personajes.estado_vivo')}</option>

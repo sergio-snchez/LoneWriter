@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { db } from '../db/database'
 
 /**
@@ -24,42 +24,6 @@ export function useNovelData() {
   const [resources, setResources] = useState([])
   const [nexusLinks, setNexusLinks] = useState([])
   const [expandedIds, setExpandedIds] = useState(new Set())
-
-  // ── Initial seeding and loading ────────────────────────────────────────────
-  useEffect(() => {
-    const initializeDB = async () => {
-      // One-time wipe of example content for existing users
-      const hasWiped = localStorage.getItem('lw_v2_wiped')
-      if (!hasWiped) {
-        await db.transaction('rw', [
-          db.novels, db.acts, db.chapters, db.scenes,
-          db.characters, db.locations, db.objects, db.lore,
-          db.resources, db.dailyProgress,
-        ], async () => {
-          await db.novels.clear()
-          await db.acts.clear()
-          await db.chapters.clear()
-          await db.scenes.clear()
-          await db.characters.clear()
-          await db.locations.clear()
-          await db.objects.clear()
-          await db.lore.clear()
-          await db.resources.clear()
-          await db.dailyProgress.clear()
-        })
-        localStorage.setItem('lw_v2_wiped', 'true')
-        localStorage.removeItem('activeNovelId')
-        setActiveNovel(null)
-        setActs([])
-      }
-
-      await refreshAllNovels()
-      setLoading(false)
-    }
-
-    initializeDB()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   // ── Data loading helpers ───────────────────────────────────────────────────
   const refreshAllNovels = useCallback(async () => {
@@ -144,6 +108,41 @@ export function useNovelData() {
     setActiveNovel(updatedNovel)
   }, [getNovelUIExpanded])
 
+  // ── Initial seeding and loading ────────────────────────────────────────────
+  useEffect(() => {
+    const initializeDB = async () => {
+      const hasWiped = localStorage.getItem('lw_v2_wiped')
+      if (!hasWiped) {
+        await db.transaction('rw', [
+          db.novels, db.acts, db.chapters, db.scenes,
+          db.characters, db.locations, db.objects, db.lore,
+          db.resources, db.dailyProgress,
+        ], async () => {
+          await db.novels.clear()
+          await db.acts.clear()
+          await db.chapters.clear()
+          await db.scenes.clear()
+          await db.characters.clear()
+          await db.locations.clear()
+          await db.objects.clear()
+          await db.lore.clear()
+          await db.resources.clear()
+          await db.dailyProgress.clear()
+        })
+        localStorage.setItem('lw_v2_wiped', 'true')
+        localStorage.removeItem('activeNovelId')
+        setActiveNovel(null)
+        setActs([])
+      }
+
+      await refreshAllNovels()
+      setLoading(false)
+    }
+
+    initializeDB()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // ── Global navigation listener ────────────────────────────────────────────
   useEffect(() => {
     const handleGlobalNavigate = (e) => {
@@ -188,8 +187,7 @@ export function useNovelData() {
     return () => clearTimeout(timer)
   }, [expandedIds, activeNovel?.id, updateNovelUIExpanded])
 
-  return {
-    // State
+  return useMemo(() => ({
     allNovels, setAllNovels,
     activeNovel, setActiveNovel,
     activeScene, setActiveScene,
@@ -202,12 +200,17 @@ export function useNovelData() {
     resources,
     nexusLinks,
     expandedIds, setExpandedIds,
-    // Functions
     reloadData,
     refreshAllNovels,
     refreshAfterRestore,
     syncNovelWordCount,
     getNovelUIExpanded,
     updateNovelUIExpanded,
-  }
+  }), [
+    allNovels, activeNovel, activeScene, loading,
+    acts, characters, locations, objects, lore, resources, nexusLinks, expandedIds,
+    setAllNovels, setActiveNovel, setActiveScene, setExpandedIds,
+    reloadData, refreshAllNovels, refreshAfterRestore,
+    syncNovelWordCount, getNovelUIExpanded, updateNovelUIExpanded,
+  ])
 }

@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import i18n from '../i18n/i18n'
 import { db } from '../db/database'
 import { deleteVectorsForScene, deleteVectorsForNovel, indexPendingScenes } from '../services'
@@ -332,7 +332,7 @@ export function useNovelCrud({
     setPendingSync(true)
   }, [activeNovel, reloadData, setPendingSync])
 
-  return {
+  return useMemo(() => ({
     createNovel,
     deleteNovel,
     switchNovel,
@@ -355,5 +355,13 @@ export function useNovelCrud({
     addCompendiumEntry,
     updateCompendiumEntry,
     deleteCompendiumEntry,
-  }
+  }), [
+    createNovel, deleteNovel, switchNovel, updateNovel, updateNovelTarget,
+    addAct, deleteAct, updateAct,
+    addChapter, deleteChapter, updateChapter,
+    addScene, deleteScene, updateScene,
+    updateActOrder, updateChapterOrder, updateSceneOrder,
+    moveScene, moveChapter,
+    addCompendiumEntry, updateCompendiumEntry, deleteCompendiumEntry,
+  ])
 }

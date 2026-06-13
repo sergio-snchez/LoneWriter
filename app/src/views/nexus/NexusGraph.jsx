@@ -1,7 +1,6 @@
 import React, { useRef } from 'react'
 import ForceGraph3D from 'react-force-graph-3d'
 import ForceGraph2D from 'react-force-graph-2d'
-import { Box, Square } from 'lucide-react'
 import * as THREE from 'three'
 
 const hexToRgb = (hex) => {
@@ -50,23 +49,6 @@ export default function NexusGraph({
 
   return (
     <div className="glass-panel nexus-main-container" ref={containerRef}>
-      <div className="nexus-graph-controls">
-        <button
-          className={`btn btn-ghost nexus-lock-btn ${graphMode === '3D' ? 'active' : ''}`}
-          onClick={() => {
-            const next = graphMode === '3D' ? '2D' : '3D';
-            setGraphMode(next);
-            localStorage.setItem('lw_nexus_graph_mode', next);
-          }}
-          title={graphMode === '3D' ? t('nexus.view_2d') : t('nexus.view_3d')}
-        >
-          {graphMode === '3D' ? <Box size={16} /> : <Square size={16} />}
-          <span className="btn-label">
-            {graphMode === '3D' ? t('nexus.view_3d') : t('nexus.view_2d')}
-          </span>
-        </button>
-      </div>
-
       {graphData.nodes.length === 0 ? (
         <div className="nexus-placeholder-text">
           <p>{t('nexus.empty_graph')}</p>
