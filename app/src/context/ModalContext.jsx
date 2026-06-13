@@ -78,18 +78,7 @@ export const ModalProvider = ({ children }) => {
                   }} />
                 )}
 
-                <div className="modal-actions">
-                  {modal.type !== 'alert' && (
-                    <button className="btn btn-ghost" onClick={closeModal}>{t('botones.cancelar')}</button>
-                  )}
-                  {modal.type === 'alert' ? (
-                    <button className="btn btn-primary" onClick={closeModal}>{t('botones.aceptar')}</button>
-                  ) : modal.type === 'confirm' ? (
-                    <button className={`btn ${modal.data.isDanger ? 'btn-danger' : 'btn-primary'}`} onClick={() => { modal.data.onConfirm(); closeModal() }}>{modal.data.confirmLabel || t('botones.confirmar')}</button>
-                  ) : modal.type !== 'custom' ? (
-                    <button className="btn btn-primary" onClick={() => { const canSubmit = modal.data?.allowEmpty ? true : !!modalInput.trim(); if (canSubmit) { modal.data.onConfirm(modalInput.trim()); closeModal() } }} disabled={!modal.data?.allowEmpty && !modalInput.trim()}>{modal.data?.confirmLabel || t('botones.aceptar')}</button>
-                  ) : null}
-                </div>
+                <ModalActions type={modal.type} data={modal.data} modalInput={modalInput} closeModal={closeModal} t={t} />
               </>
             )}
           </div>
@@ -97,6 +86,32 @@ export const ModalProvider = ({ children }) => {
       )}
     </ModalContext.Provider>
   );
+};
+
+/* ---- Sub-component: modal action buttons ---- */
+function ModalActions({ type, data, modalInput, closeModal, t }) {
+  return (
+    <div className="modal-actions">
+      {type !== 'alert' && (
+        <button className="btn btn-ghost" onClick={closeModal}>{t('botones.cancelar')}</button>
+      )}
+      {type === 'alert' ? (
+        <button className="btn btn-primary" onClick={closeModal}>{t('botones.aceptar')}</button>
+      ) : type === 'confirm' ? (
+        <button className={`btn ${data.isDanger ? 'btn-danger' : 'btn-primary'}`} onClick={() => { data.onConfirm(); closeModal() }}>{data.confirmLabel || t('botones.confirmar')}</button>
+      ) : type !== 'custom' ? (
+        <button className="btn btn-primary" onClick={() => { const canSubmit = data?.allowEmpty ? true : !!modalInput.trim(); if (canSubmit) { data.onConfirm(modalInput.trim()); closeModal() } }} disabled={!data?.allowEmpty && !modalInput.trim()}>{data?.confirmLabel || t('botones.aceptar')}</button>
+      ) : null}
+    </div>
+  );
+}
+
+ModalActions.propTypes = {
+  type: PropTypes.string,
+  data: PropTypes.object,
+  modalInput: PropTypes.string,
+  closeModal: PropTypes.func.isRequired,
+  t: PropTypes.func.isRequired,
 };
 
 ModalProvider.propTypes = {

@@ -28,6 +28,9 @@ vi.mock('pako', () => ({
 }));
 
 // Mock Dexie db
+const { mockRestoreTables } = vi.hoisted(() => ({
+  mockRestoreTables: vi.fn(),
+}));
 vi.mock('../db/database', () => ({
   db: {
     tables: [
@@ -37,6 +40,7 @@ vi.mock('../db/database', () => ({
     ],
     transaction: vi.fn((mode, tables, callback) => callback()),
   },
+  restoreTables: mockRestoreTables,
 }));
 
 import { compressToJson, decodeFromLwrt, ExportService } from './exportService';

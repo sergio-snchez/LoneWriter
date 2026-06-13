@@ -438,21 +438,9 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
           {activeScene ? (
             <div className="editor-container">
               <EditorToolbar
-                activeScene={activeScene}
-                activeNovel={activeNovel}
-                characters={characters}
-                updateScene={updateScene}
                 onNavigate={onNavigate}
-                oracleStatus={oracleStatus}
-                mpcProposals={mpcProposals}
-                mpcStatus={mpcStatus}
-                handleManualMpcScan={handleManualMpcScan}
                 menuOpen={menuOpen}
-                logAIUsage={logAIUsage}
-                apiKey={apiKey}
-                provider={provider}
-                currentModel={currentModel}
-                localBaseUrl={localBaseUrl}
+                handleManualMpcScan={handleManualMpcScan}
               />
 
               <div className={`editor-body ${menuOpen ? 'editor-body--menu-open' : ''}`}>

@@ -61,12 +61,15 @@ export default [
     },
   },
 
-  // Test files (vitest globals)
+  // Test files (vitest globals + JSX support)
   {
     files: ['src/**/*.test.{js,jsx}'],
     languageOptions: {
       globals: {
         ...globals.vitest,
+      },
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
       },
     },
   },

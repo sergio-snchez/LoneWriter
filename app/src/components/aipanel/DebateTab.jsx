@@ -15,7 +15,7 @@ import { useAI, useNovel, useModal } from '../../context'
 import { MarkdownRenderer, Tooltip } from '../'
 import { normalizeTextForDisplay } from './aiPanelHelpers'
 import { useDebateOrchestrator } from './useDebateOrchestrator'
-import { AgentEditForm } from './AgentEditForm'
+import AgentEditForm from './AgentEditForm'
 
 const AGENT_COLORS = ['#6b9fd4', '#e07070', '#5cb98a', '#c59de0', '#e0b870', '#70d4e0', '#e070b8']
 
@@ -149,41 +149,26 @@ function DebateTab({ activeScene }) {
           ))}
         </div>
         <div className="debate-toolbar__actions">
-          <div className="debate-sessions-wrapper" ref={dropdownRef}>
-            <Tooltip content={t('debate.cambiar_chat')}>
-              <button className="debate-sessions-trigger" onClick={() => setSessionsMenuOpen(!sessionsMenuOpen)}>
-                <MessageSquare size={13} />
-                <span className="debate-sessions-truncate">{activeSessionTitle}</span>
-                <ChevronDown size={12} className="debate-sessions-trigger__chevron" />
-              </button>
-            </Tooltip>
-            {sessionsMenuOpen && (
-              <div className="debate-sessions-dropdown">
-                <button className="debate-session-new-btn" onClick={() => { const si = getSceneChapterLabel(activeScene); addDebateSession(null, si); setSessionsMenuOpen(false) }}>
-                  <span>{t('debate.nuevo_debate')}</span>
-                </button>
-                <div className="debate-sessions-list">
-                  {debateSessions.map(session => (
-                    <div key={session.id} className={`debate-session-item ${session.id === activeSessionId ? 'active' : ''}`}>
-                      {sessionEditingId === session.id ? (
-                        <input className="debate-session-input" autoFocus value={sessionEditTitle} onChange={e => setSessionEditTitle(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { renameDebateSession(session.id, sessionEditTitle); setSessionEditingId(null) } else if (e.key === 'Escape') setSessionEditingId(null) }} onBlur={() => { if (sessionEditTitle.trim()) renameDebateSession(session.id, sessionEditTitle); setSessionEditingId(null) }} />
-                      ) : (
-                        <span className="debate-session-title" onClick={() => { switchDebateSession(session.id); setSessionsMenuOpen(false) }}>{session.title}</span>
-                      )}
-                      <div className="debate-session-actions">
-                        <Tooltip content={t('debate.renombrar')}>
-                          <button className="debate-session-action-btn" onClick={(e) => { e.stopPropagation(); setSessionEditTitle(session.title); setSessionEditingId(session.id) }}><Pencil size={11} /></button>
-                        </Tooltip>
-                        <Tooltip content={t('debate.borrar_chat')}>
-                          <button className="debate-session-action-btn" onClick={(e) => { e.stopPropagation(); openModal('confirm', { title: t('debate.borrar_chat_titulo'), message: t('debate.borrar_chat_mensaje', { title: session.title }), isDanger: true, confirmLabel: t('debate.borrar_chat_boton'), onConfirm: () => deleteDebateSession(session.id) }) }}><Trash2 size={11} /></button>
-                        </Tooltip>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          <DebateSessionMenu
+            dropdownRef={dropdownRef}
+            sessionsMenuOpen={sessionsMenuOpen}
+            setSessionsMenuOpen={setSessionsMenuOpen}
+            activeSessionTitle={activeSessionTitle}
+            activeSessionId={activeSessionId}
+            debateSessions={debateSessions}
+            sessionEditingId={sessionEditingId}
+            setSessionEditingId={setSessionEditingId}
+            sessionEditTitle={sessionEditTitle}
+            setSessionEditTitle={setSessionEditTitle}
+            getSceneChapterLabel={getSceneChapterLabel}
+            activeScene={activeScene}
+            addDebateSession={addDebateSession}
+            renameDebateSession={renameDebateSession}
+            switchDebateSession={switchDebateSession}
+            deleteDebateSession={deleteDebateSession}
+            openModal={openModal}
+            t={t}
+          />
           <Tooltip content={t('debate.rondas')}>
             <div className="debate-rounds">
               <RotateCcw size={13} strokeWidth={2.5} />
@@ -283,6 +268,77 @@ function DebateTab({ activeScene }) {
       <span className="debate-input-hint">{t('debate.hint_input')}</span>
     </div>
   )
+}
+
+/* ---- Sub-component: session dropdown menu ---- */
+function DebateSessionMenu({
+  dropdownRef, sessionsMenuOpen, setSessionsMenuOpen,
+  activeSessionTitle, activeSessionId, debateSessions,
+  sessionEditingId, setSessionEditingId,
+  sessionEditTitle, setSessionEditTitle,
+  getSceneChapterLabel, activeScene,
+  addDebateSession, renameDebateSession,
+  switchDebateSession, deleteDebateSession,
+  openModal, t,
+}) {
+  return (
+    <div className="debate-sessions-wrapper" ref={dropdownRef}>
+      <Tooltip content={t('debate.cambiar_chat')}>
+        <button className="debate-sessions-trigger" onClick={() => setSessionsMenuOpen(!sessionsMenuOpen)}>
+          <MessageSquare size={13} />
+          <span className="debate-sessions-truncate">{activeSessionTitle}</span>
+          <ChevronDown size={12} className="debate-sessions-trigger__chevron" />
+        </button>
+      </Tooltip>
+      {sessionsMenuOpen && (
+        <div className="debate-sessions-dropdown">
+          <button className="debate-session-new-btn" onClick={() => { const si = getSceneChapterLabel(activeScene); addDebateSession(null, si); setSessionsMenuOpen(false) }}>
+            <span>{t('debate.nuevo_debate')}</span>
+          </button>
+          <div className="debate-sessions-list">
+            {debateSessions.map(session => (
+              <div key={session.id} className={`debate-session-item ${session.id === activeSessionId ? 'active' : ''}`}>
+                {sessionEditingId === session.id ? (
+                  <input className="debate-session-input" autoFocus value={sessionEditTitle} onChange={e => setSessionEditTitle(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { renameDebateSession(session.id, sessionEditTitle); setSessionEditingId(null) } else if (e.key === 'Escape') setSessionEditingId(null) }} onBlur={() => { if (sessionEditTitle.trim()) renameDebateSession(session.id, sessionEditTitle); setSessionEditingId(null) }} />
+                ) : (
+                  <span className="debate-session-title" onClick={() => { switchDebateSession(session.id); setSessionsMenuOpen(false) }}>{session.title}</span>
+                )}
+                <div className="debate-session-actions">
+                  <Tooltip content={t('debate.renombrar')}>
+                    <button className="debate-session-action-btn" onClick={(e) => { e.stopPropagation(); setSessionEditTitle(session.title); setSessionEditingId(session.id) }}><Pencil size={11} /></button>
+                  </Tooltip>
+                  <Tooltip content={t('debate.borrar_chat')}>
+                    <button className="debate-session-action-btn" onClick={(e) => { e.stopPropagation(); openModal('confirm', { title: t('debate.borrar_chat_titulo'), message: t('debate.borrar_chat_mensaje', { title: session.title }), isDanger: true, confirmLabel: t('debate.borrar_chat_boton'), onConfirm: () => deleteDebateSession(session.id) }) }}><Trash2 size={11} /></button>
+                  </Tooltip>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+DebateSessionMenu.propTypes = {
+  dropdownRef: PropTypes.object.isRequired,
+  sessionsMenuOpen: PropTypes.bool.isRequired,
+  setSessionsMenuOpen: PropTypes.func.isRequired,
+  activeSessionTitle: PropTypes.string,
+  activeSessionId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  debateSessions: PropTypes.array,
+  sessionEditingId: PropTypes.any,
+  setSessionEditingId: PropTypes.func.isRequired,
+  sessionEditTitle: PropTypes.string.isRequired,
+  setSessionEditTitle: PropTypes.func.isRequired,
+  getSceneChapterLabel: PropTypes.func.isRequired,
+  activeScene: PropTypes.object,
+  addDebateSession: PropTypes.func.isRequired,
+  renameDebateSession: PropTypes.func.isRequired,
+  switchDebateSession: PropTypes.func.isRequired,
+  deleteDebateSession: PropTypes.func.isRequired,
+  openModal: PropTypes.func.isRequired,
+  t: PropTypes.func.isRequired,
 }
 
 export default DebateTab
