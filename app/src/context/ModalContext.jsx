@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import PropTypes from 'prop-types';
 import './ModalContext.css';
 
 const ModalContext = createContext();
@@ -96,4 +97,8 @@ export const ModalProvider = ({ children }) => {
       )}
     </ModalContext.Provider>
   );
+};
+
+ModalProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

@@ -5,7 +5,7 @@
  * Handles: act reorder, chapter reorder/move, scene reorder/move.
  * Provides: sensors, activeDragId, getDragLabel, handleDragStart/Over/Cancel/End
  */
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   KeyboardSensor,
@@ -49,7 +49,7 @@ export function useEditorDnd({
   )
 
   // ── Drag ghost label ─────────────────────────────────────────────────────
-  const getDragLabel = (id) => {
+  const getDragLabel = useCallback((id) => {
     if (!id) return ''
     const idStr = id.toString()
     if (idStr.startsWith('act-')) {
@@ -73,14 +73,14 @@ export function useEditorDnd({
       return t('drag.escena')
     }
     return ''
-  }
+  }, [acts, t])
 
   // ── Handlers ─────────────────────────────────────────────────────────────
-  const handleDragStart = (event) => {
+  const handleDragStart = useCallback((event) => {
     setActiveDragId(event.active.id)
-  }
+  }, [])
 
-  const handleDragOver = (event) => {
+  const handleDragOver = useCallback((event) => {
     const { active, over } = event
     if (!over) return
     const overIdStr = over.id.toString()
@@ -97,14 +97,14 @@ export function useEditorDnd({
         hoverTimerRef.current = null
       }
     }
-  }
+  }, [expandedIds, setExpandedIds])
 
-  const handleDragCancel = () => {
+  const handleDragCancel = useCallback(() => {
     setActiveDragId(null)
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current)
-  }
+  }, [])
 
-  const handleDragEnd = async (event) => {
+  const handleDragEnd = useCallback(async (event) => {
     setActiveDragId(null)
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current)
     const { active, over } = event
@@ -216,7 +216,7 @@ export function useEditorDnd({
         }
       }
     }
-  }
+  }, [acts, novelId, updateActOrder, updateChapterOrder, updateSceneOrder, moveScene, moveChapter])
 
   return {
     activeDragId,

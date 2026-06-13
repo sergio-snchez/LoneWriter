@@ -517,3 +517,201 @@
     height: 40px;
   }
 }
+
+/* ============================================
+   RESOURCE VIEWER (ViewerContent)
+   ============================================ */
+
+.resource-viewer {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+}
+
+.resource-viewer__header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resource-viewer__title {
+  margin: 0;
+  font-size: 16px;
+}
+
+.resource-viewer__body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.resource-viewer__empty {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--text-muted);
+}
+
+.resource-viewer__empty-icon {
+  opacity: 0.5;
+  margin-bottom: 12px;
+}
+
+.resource-viewer__empty-text {
+  margin: 0;
+}
+
+.resource-viewer__empty-sub {
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+/* ============================================
+   RESOURCE ROW EXTRAS
+   ============================================ */
+
+.res-row__icon-bg {
+  background: rgba(212, 168, 83, 0.12);
+}
+
+.res-row__icon-color {
+  color: var(--accent);
+}
+
+.res-row__name-flex {
+  flex-shrink: 1;
+}
+
+.res-row__badge-wrap {
+  margin-top: 4px;
+}
+
+.res-row__badge {
+  color: #d4a853;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(212, 168, 83, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.res-row__badge-light {
+  color: var(--accent-light);
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(212, 168, 83, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.res-row--pinned {
+  border: 2px solid var(--accent) !important;
+}
+
+/* ============================================
+   RESOURCE ICON STATES
+   ============================================ */
+
+.resource-icon--active {
+  fill: currentColor;
+}
+
+.resource-icon--ignored {
+  fill: none;
+}
+
+/* ============================================
+   FILTER PANEL
+   ============================================ */
+
+.resources-filter-panel {
+  margin: 0 26px 16px;
+  padding: 14px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.resources-filter-panel__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.resources-filter-panel__clear {
+  font-size: 11px;
+  padding: 2px 8px;
+  height: auto;
+}
+
+/* ============================================
+   FILTER BUTTON
+   ============================================ */
+
+.filter-btn--active {
+  border-color: var(--accent) !important;
+  color: var(--accent-light) !important;
+}
+
+.filter-btn__badge {
+  background: var(--accent);
+  color: #1a1710;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 5px;
+  line-height: 16px;
+}
+
+/* ============================================
+   TOOLBAR
+   ============================================ */
+
+.resources-toolbar .search-bar {
+  flex: 1;
+  max-width: 380px;
+}
+
+/* ============================================
+   ALERT STRONG
+   ============================================ */
+
+.resource-alert__strong-red {
+  color: var(--red);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.resource-alert__strong-accent {
+  color: var(--accent-light);
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ============================================
+   HIDDEN INPUT
+   ============================================ */
+
+.resources-hidden-input {
+  display: none;
+}
+
+/* ============================================
+   DROPZONE
+   ============================================ */
+
+.resources-dropzone {
+  cursor: pointer;
+}

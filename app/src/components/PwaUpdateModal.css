@@ -113,3 +113,11 @@
   min-width: 120px;
   justify-content: center;
 }
+
+.pwa-update-modal__footer--centered {
+  justify-content: center;
+}
+
+.pwa-update-modal__action-btn {
+  width: 100%;
+}

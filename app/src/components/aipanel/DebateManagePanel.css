@@ -1,0 +1,205 @@
+/* ── Agent Management ────────────────────────────────────── */
+.debate-manage-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+
+.debate-back-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+.debate-back-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.debate-manage-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.debate-agent-list {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.debate-agent-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-left-color: var(--agent-color);
+  border-radius: var(--radius-sm);
+}
+
+.debate-agent-card__info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.debate-agent-card__avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--agent-color) 19%, transparent);
+  color: var(--agent-color);
+}
+
+.debate-agent-card__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.debate-agent-card__desc {
+  font-size: 10px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+}
+
+.debate-agent-card__btn {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.debate-agent-card__btn:hover {
+  background: var(--border-accent);
+  color: var(--accent-light);
+}
+
+.debate-add-agent-btn {
+  margin: 0 16px;
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+}
+.debate-add-agent-btn:hover {
+  border-color: var(--border-accent);
+  color: var(--accent-light);
+}
+
+.agent-edit-form {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.agent-edit-form__row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.agent-edit-form__input {
+  width: 100%;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 12px;
+  outline: none;
+}
+.agent-edit-form__input:focus {
+  border-color: var(--border-accent);
+}
+
+.agent-edit-form .debate-agent-card__avatar {
+  width: 36px;
+  height: 36px;
+  font-size: 14px;
+}
+
+.agent-edit-form__colors {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.agent-color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-elevated);
+  cursor: pointer;
+  outline: 1px solid transparent;
+  outline-color: var(--swatch-color);
+  background: var(--swatch-color);
+  transition: all var(--trans-fast);
+}
+.agent-color-dot--active {
+  transform: scale(1.1);
+}
+
+.agent-edit-form__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  margin-bottom: -4px;
+}
+
+.agent-edit-form__prompt {
+  width: 100%;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+}
+.agent-edit-form__prompt:focus {
+  border-color: var(--border-accent);
+}
+
+.agent-edit-form__hint {
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.agent-edit-form__footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}

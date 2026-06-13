@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import {
   BarChart2, Target, Flame, CheckCircle2, FileText,
   ChevronsDownUp, ChevronsUpDown
 } from 'lucide-react'
-import { Tooltip } from '../../components/Tooltip'
+import { Tooltip } from '../../components'
+import './EditorStats.css'
 
 const GOAL_TEMPLATES = [
   { label: 'objetivos.plantillas.micro_relato', words: 1000, targetScenes: 2, scenesRange: '1-2', wps: '500-1000', chaptersRange: '—' },
@@ -18,7 +20,7 @@ function ProgressBar({ value, max, label, sublabel, color }) {
   const { t } = useTranslation('editor')
   const pct = max > 0 ? Math.round((value / max) * 100) : 0
   return (
-    <div className="progress-item">
+    <div className="progress-item" style={{ '--stat-color': color || 'var(--accent)' }}>
       <div className="progress-item__labels">
         <span className="progress-item__label">{label}</span>
         <span className="progress-item__nums">{value?.toLocaleString() || 0} / {max?.toLocaleString() || 0}</span>
@@ -26,7 +28,7 @@ function ProgressBar({ value, max, label, sublabel, color }) {
       <div className="progress-item__bar-bg">
         <div
           className="progress-item__bar-fill"
-          style={{ width: `${pct}%`, background: color || 'var(--accent)' }}
+          style={{ width: `${pct}%` }}
         />
       </div>
       {sublabel && <span className="progress-item__sublabel">{pct}%</span>}
@@ -34,7 +36,17 @@ function ProgressBar({ value, max, label, sublabel, color }) {
   )
 }
 
-export default function EditorStats({ activeNovel, acts, streak, t, updateNovelTarget, isStatsExpanded, setIsStatsExpanded }) {
+const EditorStats = memo(function EditorStats({ activeNovel, acts, streak, t, updateNovelTarget, isStatsExpanded, setIsStatsExpanded }) {
+  EditorStats.propTypes = {
+    activeNovel: PropTypes.object,
+    acts: PropTypes.array,
+    streak: PropTypes.number,
+    t: PropTypes.func.isRequired,
+    updateNovelTarget: PropTypes.func,
+    isStatsExpanded: PropTypes.bool,
+    setIsStatsExpanded: PropTypes.func,
+  };
+
   const [showGoalEditor, setShowGoalEditor] = useState(false)
   const goalEditorRef = useRef(null)
 
@@ -179,4 +191,6 @@ export default function EditorStats({ activeNovel, acts, streak, t, updateNovelT
       </div>
     </div>
   )
-}
+})
+
+export default EditorStats

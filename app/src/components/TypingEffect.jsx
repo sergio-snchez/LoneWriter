@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 
 export default function TypingEffect({ text, speed = 50, delay = 1000, onComplete }) {
   const [displayedText, setDisplayedText] = useState('');
@@ -49,3 +50,10 @@ export default function TypingEffect({ text, speed = 50, delay = 1000, onComplet
     </span>
   );
 }
+
+TypingEffect.propTypes = {
+  text: PropTypes.string.isRequired,
+  speed: PropTypes.number,
+  delay: PropTypes.number,
+  onComplete: PropTypes.func,
+};

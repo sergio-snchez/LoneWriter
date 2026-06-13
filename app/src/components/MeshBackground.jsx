@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import './MeshBackground.css';
 
 const MeshBackground = ({ animate = true }) => {
@@ -10,6 +11,10 @@ const MeshBackground = ({ animate = true }) => {
       <div className="mesh-blob mesh-blob--center" />
     </div>
   );
+};
+
+MeshBackground.propTypes = {
+  animate: PropTypes.bool,
 };
 
 export default MeshBackground;

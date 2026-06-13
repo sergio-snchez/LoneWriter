@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import {
   MessageSquare, RefreshCw, Send, Trash2,
   Pencil, User, AlertTriangle, RotateCcw,
   AlignLeft, ChevronDown, MoreHorizontal, BookOpen
 } from 'lucide-react'
-import { useAI } from '../../context/AIContext'
-import { useNovel } from '../../context/NovelContext'
-import { useModal } from '../../context/ModalContext'
-import { Tooltip } from '../Tooltip'
-import { renderMarkdown } from '../../utils/renderMarkdown'
+import './DebateTab.css'
+import './DebateToolbar.css'
+import './DebateManagePanel.css'
+import './DebateInput.css'
+import './Markdown.css'
+import { useAI, useNovel, useModal } from '../../context'
+import { MarkdownRenderer, Tooltip } from '../'
 import { normalizeTextForDisplay } from './aiPanelHelpers'
 import { useDebateOrchestrator } from './useDebateOrchestrator'
 import { AgentEditForm } from './AgentEditForm'
@@ -17,6 +20,16 @@ import { AgentEditForm } from './AgentEditForm'
 const AGENT_COLORS = ['#6b9fd4', '#e07070', '#5cb98a', '#c59de0', '#e0b870', '#70d4e0', '#e070b8']
 
 function DebateTab({ activeScene }) {
+  DebateTab.propTypes = {
+    activeScene: PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      title: PropTypes.string,
+      content: PropTypes.string,
+      pov: PropTypes.string,
+      chapterId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
+  };
+
   const { t } = useTranslation('ai')
   const {
     provider, apiKey, localBaseUrl, currentModel,
@@ -98,9 +111,9 @@ function DebateTab({ activeScene }) {
           <>
             <div className="debate-agent-list">
               {debateAgents.map(agent => (
-                <div key={agent.id} className="debate-agent-card" style={{ borderLeftColor: agent.color }}>
+                <div key={agent.id} className="debate-agent-card" style={{ '--agent-color': agent.color }}>
                   <div className="debate-agent-card__info">
-                    <div className="debate-agent-card__avatar" style={{ background: agent.color + '30', color: agent.color }}>{agent.initials}</div>
+                    <div className="debate-agent-card__avatar">{agent.initials}</div>
                     <div>
                       <div className="debate-agent-card__name">{agent.name}</div>
                       <div className="debate-agent-card__desc">{agent.desc || t('debate.sin_descripcion')}</div>
@@ -128,8 +141,8 @@ function DebateTab({ activeScene }) {
         <div className="debate-agents__list">
           {debateAgents.map(agent => (
             <Tooltip key={agent.id} content={`${agent.name} — ${t('debate.activar_agente')}`}>
-              <button id={`debate-agent-${agent.id}`} className={`debate-agent-btn ${agent.active ? 'debate-agent-btn--active' : ''}`} style={agent.active ? { borderColor: agent.color + '60', background: agent.color + '18', color: agent.color } : {}} onClick={() => toggleDebateAgent(agent.id)}>
-                <span className="debate-agent-btn__avatar" style={{ background: agent.color + '30', color: agent.color }}>{agent.initials}</span>
+              <button id={`debate-agent-${agent.id}`} className={`debate-agent-btn ${agent.active ? 'debate-agent-btn--active' : ''}`} style={{ '--agent-color': agent.color }} onClick={() => toggleDebateAgent(agent.id)}>
+                <span className="debate-agent-btn__avatar">{agent.initials}</span>
                 <span>{agent.name}</span>
               </button>
             </Tooltip>
@@ -141,7 +154,7 @@ function DebateTab({ activeScene }) {
               <button className="debate-sessions-trigger" onClick={() => setSessionsMenuOpen(!sessionsMenuOpen)}>
                 <MessageSquare size={13} />
                 <span className="debate-sessions-truncate">{activeSessionTitle}</span>
-                <ChevronDown size={12} style={{ opacity: 0.6 }} />
+                <ChevronDown size={12} className="debate-sessions-trigger__chevron" />
               </button>
             </Tooltip>
             {sessionsMenuOpen && (
@@ -210,7 +223,7 @@ function DebateTab({ activeScene }) {
         {debateHistory.map(msg => {
           if (msg.role === 'user') return (
             <div key={msg.id} className="debate-msg debate-msg--user">
-              <div className="debate-msg__bubble debate-msg__bubble--user" dangerouslySetInnerHTML={{ __html: renderMarkdown(normalizeTextForDisplay(msg.text)) }} />
+              <MarkdownRenderer className="debate-msg__bubble debate-msg__bubble--user" content={normalizeTextForDisplay(msg.text)} />
               <div className="debate-msg__meta debate-msg__meta--user">
                 <span className="debate-msg__time">{msg.time}</span>
                 <div className="debate-msg__avatar debate-msg__avatar--user"><User size={11} /></div>
@@ -220,7 +233,7 @@ function DebateTab({ activeScene }) {
           if (msg.role === 'error') return (
             <div key={msg.id} className="debate-msg debate-msg--error">
               <AlertTriangle size={13} />
-              <span><strong>{msg.agentName}:</strong> <span dangerouslySetInnerHTML={{ __html: renderMarkdown(normalizeTextForDisplay(msg.text)) }} /></span>
+              <strong>{msg.agentName}:</strong> <MarkdownRenderer className="debate-msg__error-text" content={normalizeTextForDisplay(msg.text)} />
             </div>
           )
           const color = msg.agentColor || '#888'
@@ -228,14 +241,14 @@ function DebateTab({ activeScene }) {
           const msgKey = String(msg.id)
           const isExpanded = expandedMessages.has(msgKey)
           return (
-            <div key={msg.id} className="debate-msg debate-msg--agent">
+            <div key={msg.id} className="debate-msg debate-msg--agent" style={{ '--agent-color': color }}>
               <div className="debate-msg__agent-header">
-                <div className="debate-msg__avatar-circle" style={{ background: color + '30', color }}>{msg.agentInitials || '?'}</div>
-                <span className="debate-msg__agent-name" style={{ color }}>{msg.agentName}</span>
+                <div className="debate-msg__avatar-circle">{msg.agentInitials || '?'}</div>
+                <span className="debate-msg__agent-name">{msg.agentName}</span>
                 <span className="debate-msg__time">{msg.time}</span>
               </div>
-              <div className="debate-msg__bubble debate-msg__bubble--agent" style={{ borderLeftColor: color + '70' }}>
-                <div className={`debate-msg__text ${!isExpanded ? 'debate-msg__text--clamped' : ''}`} dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }} />
+              <div className="debate-msg__bubble debate-msg__bubble--agent">
+              <MarkdownRenderer className="debate-msg__text" content={text} clamped={!isExpanded} />
                 {!isExpanded && <button className="debate-msg__read-more" onClick={() => setExpandedMessages(prev => new Set(prev).add(msgKey))}>{t('debate.leer_mas')}</button>}
                 {isExpanded && <button className="debate-msg__read-more" onClick={() => setExpandedMessages(prev => { const n = new Set(prev); n.delete(msgKey); return n })}>{t('debate.mostrar_menos')}</button>}
               </div>
@@ -247,13 +260,13 @@ function DebateTab({ activeScene }) {
           const agent = debateAgents.find(a => a.id === agentId)
           if (!agent) return null
           return (
-            <div key={`loading-${agentId}`} className="debate-msg debate-msg--agent">
+            <div key={`loading-${agentId}`} className="debate-msg debate-msg--agent" style={{ '--agent-color': agent.color }}>
               <div className="debate-msg__agent-header">
-                <div className="debate-msg__avatar-circle" style={{ background: agent.color + '30', color: agent.color }}>{agent.initials}</div>
-                <span className="debate-msg__agent-name" style={{ color: agent.color }}>{agent.name}</span>
+                <div className="debate-msg__avatar-circle">{agent.initials}</div>
+                <span className="debate-msg__agent-name">{agent.name}</span>
                 <span className="debate-msg__time">{t('debate.escribiendo')}</span>
               </div>
-              <div className="debate-msg__bubble debate-msg__bubble--agent debate-msg__typing" style={{ borderLeftColor: agent.color + '70' }}><span /><span /><span /></div>
+              <div className="debate-msg__bubble debate-msg__bubble--agent debate-msg__typing"><span /><span /><span /></div>
             </div>
           )
         })}
