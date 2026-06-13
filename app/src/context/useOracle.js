@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { createDebouncedEntityDetector, parseOracleResponse } from '../services'
 import { db } from '../db/database'
 import i18n from '../i18n/i18n'
@@ -121,11 +121,16 @@ export function useOracle({ activeNovel, activeScene }) {
 
   const checkedEntries = new Set(oracleHistory.filter(e => e.isCorrected).map(e => e.id))
 
-  return {
+  return useMemo(() => ({
     oracleText, setOracleText,
     oracleStatus, oracleHistory,
     forceEntityRecheck,
     checkOracleResponse, resetOracleStatus, markOracleContradiction,
     addOracleEntry, clearOracleHistory, deleteOracleEntry, toggleOracleCorrected, checkedEntries,
-  }
+  }), [
+    oracleText, oracleStatus, oracleHistory, checkedEntries,
+    setOracleText, forceEntityRecheck,
+    checkOracleResponse, resetOracleStatus, markOracleContradiction,
+    addOracleEntry, clearOracleHistory, deleteOracleEntry, toggleOracleCorrected,
+  ])
 }

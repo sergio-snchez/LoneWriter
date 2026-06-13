@@ -244,7 +244,7 @@ MANDATORY STRUCTURE PER TYPE:
       return { data: JSON.parse(text), usage: response.usage };
     } catch (e) {
       console.error('[AIService] JSON parse error in auto-complete', e, response?.text);
-      throw new Error(t('El modelo no devolvió un JSON válido.', 'The model did not return valid JSON.'));
+      throw new Error(t('El modelo no devolvió un JSON válido.', 'The model did not return valid JSON.'), { cause: e });
     }
   },
 
@@ -375,7 +375,7 @@ MANDATORY STRUCTURE PER TYPE:
       return { data, usage: response.usage };
     } catch (e) {
       console.error('[AIService] JSON parse error in fuseEntities', e, response?.text);
-      throw new Error(i18n.t('compendium:unificar.error_no_json'));
+      throw new Error(i18n.t('compendium:unificar.error_no_json'), { cause: e });
     }
   },
 
@@ -429,7 +429,7 @@ MANDATORY STRUCTURE PER TYPE:
       return { data, usage: response.usage };
     } catch (e) {
       console.error('[AIService] JSON parse error in fuseMultipleEntities', e, response?.text);
-      throw new Error(i18n.t('compendium:unificar.error_no_json'));
+      throw new Error(i18n.t('compendium:unificar.error_no_json'), { cause: e });
     }
   },
 

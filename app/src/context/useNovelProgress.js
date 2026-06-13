@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { db } from '../db/database'
 
 export function useNovelProgress() {
@@ -33,5 +33,5 @@ export function useNovelProgress() {
     return streak
   }, [])
 
-  return { trackDailyProgress, getStreak }
+  return useMemo(() => ({ trackDailyProgress, getStreak }), [trackDailyProgress, getStreak])
 }

@@ -6,7 +6,7 @@
  * @param {object} deps
  * @param {object|null} deps.activeNovel - current active novel from NovelContext
  */
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { addToIgnoredNames } from '../services'
 
 export const MPC_COOLDOWN_MS = 15_000 // 15s between AI analysis calls
@@ -92,7 +92,7 @@ export function useAIMpc({ activeNovel }) {
   }, [])
 
   // ── Exports ────────────────────────────────────────────────────────────────
-  return {
+  return useMemo(() => ({
     mpcStatus, setMpcStatus,
     mpcProposals,
     isMpcDrawerOpen, setIsMpcDrawerOpen,
@@ -104,5 +104,11 @@ export function useAIMpc({ activeNovel }) {
     acceptMpcProposal,
     clearMpcProposals,
     addMpcProposals,
-  }
+  }), [
+    mpcStatus, mpcProposals, isMpcDrawerOpen, isMpcEnabled,
+    mpcCooldownRef, MPC_COOLDOWN_MS,
+    setMpcStatus, setIsMpcDrawerOpen, setIsMpcEnabled,
+    dismissMpcProposal, dismissMpcProposalPermanently,
+    acceptMpcProposal, clearMpcProposals, addMpcProposals,
+  ])
 }
