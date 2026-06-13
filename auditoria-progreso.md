@@ -1,48 +1,47 @@
-# Auditoría LoneWriter — Registro de Progreso
-
-*Iniciado: 07/06/2026*
+# LoneWriter Audit — Progress Log
 
 ---
-# Plan de Deuda Técnica CRÍTICA + ALTA — Primera oleada (8 fases)
-## Fase 1 — Linter + Formateador ✅ Completada
 
-### Instalado
+# CRITICAL + HIGH Technical Debt Plan — First wave (8 phases)
+## Phase 1 — Linter + Formatter ✅ Completed
+
+### Installed
 - ESLint 9.39.4 (flat config) + Prettier 3.8.4
 - Plugins: `eslint-plugin-react`, `eslint-plugin-react-hooks`, `eslint-config-prettier`, `globals`
 
-### Configurado
-- `app/eslint.config.js` — reglas para React 19 JSX, browser globals, worker globals
-- `app/.prettierrc` — formato consistente (single quotes, trailing commas, 100 print width)
+### Configured
+- `app/eslint.config.js` — rules for React 19 JSX, browser globals, worker globals
+- `app/.prettierrc` — consistent formatting (single quotes, trailing commas, 100 print width)
 - `app/package.json` — scripts `lint`, `lint:fix`, `format`, `format:check`
 
-### Errores de código corregidos (que existían previamente)
-| Archivo | Problema | Arreglo |
+### Code errors fixed (pre-existing)
+| File | Issue | Fix |
 |---------|----------|---------|
-| `entityDetector.js:277` | `const matchWindow` reasignado con `=` | Cambiado a `let` |
-| `entityDetector.js:32` | Escapes innecesarios en regex | Limpiados `\[` y `\-` |
-| `entityDetector.js:171` | Promise executor async (no capturaba errores) | Cambiado a sync |
-| `entityDetector.js:237` | Catch block vacío con variable sin usar | Añadido comentario + eliminada variable |
-| `mpcService.js:19` | Escape innecesario `\[` en regex | Limpiado |
+| `entityDetector.js:277` | `const matchWindow` reassigned with `=` | Changed to `let` |
+| `entityDetector.js:32` | Unnecessary escapes in regex | Cleaned `\[` and `\-` |
+| `entityDetector.js:171` | Async Promise executor (didn't catch errors) | Changed to sync |
+| `entityDetector.js:237` | Empty catch block with unused variable | Added comment + removed variable |
+| `mpcService.js:19` | Unnecessary `\[` escape in regex | Cleaned |
 
-### Reglas ajustadas a warning (deuda diferida)
-- `react-hooks/set-state-in-effect` — 4 casos intencionales (inicialización desde localStorage/DB)
+### Rules set to warning (deferred debt)
+- `react-hooks/set-state-in-effect` — 4 intentional cases (initialization from localStorage/DB)
 
-### Verificación
-- `npm run lint` — 0 errores, 18 warnings aceptables (todos preexistentes en código fuente)
-- `npm run build` — exitoso
-- Smoke test en `localhost:5173` — funcionamiento normal confirmado por el usuario
+### Verification
+- `npm run lint` — 0 errors, 18 acceptable warnings (all pre-existing in source code)
+- `npm run build` — successful
+- Smoke test on `localhost:5173` — normal operation confirmed by user
 
 ---
 
-## Fase 2 — Tests Automatizados ✅ Completada
+## Phase 2 — Automated Tests ✅ Completed
 
-### Instalado
+### Installed
 - Vitest v4.1.8 + @testing-library/react + @testing-library/jest-dom + @testing-library/user-event + jsdom
-- Configurado en `vite.config.js` (globals: true, environment: jsdom, setupFiles)
+- Configured in `vite.config.js` (globals: true, environment: jsdom, setupFiles)
 
-### Tests escritos y verificados (117 tests, 12 test files)
+### Tests written and verified (117 tests, 12 test files)
 
-| Archivo | Tests | Funcionalidad cubierta |
+| File | Tests | Covered functionality |
 |---------|-------|----------------------|
 | `providers/openai.test.js` | 4 | callOpenAI, callOpenAIChat |
 | `providers/claude.test.js` | 4 | callClaude, callClaudeChat |
@@ -57,146 +56,146 @@
 | `renderMarkdown.test.js` | 11 | markdown rendering, edge cases |
 | `version.test.js` | 3 | version constant |
 
-### Verificación final
-- `npm run lint` — 0 errores, 23 warnings (todos preexistentes o aceptables)
-  - Los 5 warnings adicionales respecto a Fase 1 provienen de los **archivos de test**: `beforeEach` sin usar en `entityDetector.test.js` y `exportService.test.js`, y parámetros `prompt`/`model`/`baseUrl` sin usar en mocks de `aiService.test.js`. Son aceptables en contexto de test.
+### Final verification
+- `npm run lint` — 0 errors, 23 warnings (all pre-existing or acceptable)
+  - The 5 extra warnings vs Phase 1 come from **test files**: unused `beforeEach` in `entityDetector.test.js` and `exportService.test.js`, and unused `prompt`/`model`/`baseUrl` params in `aiService.test.js` mocks. Acceptable in test context.
 - `npm test` — 117 passed, 0 failed (12 files)
-- `npm run build` — exitoso (PWA generada)
+- `npm run build` — successful (PWA generated)
 
 ---
 
-## Fase 3 — Refactor AI Providers ✅ Completada
+## Phase 3 — AI Providers Refactor ✅ Completed
 
-### Cambio principal
+### Main change
 
-Se eliminaron **7 bloques if/else** duplicados (~35 condicionales) en `aiService.js` que mapeaban el nombre del proveedor a su función. Se reemplazaron por **2 lookup tables** (registro de proveedores):
+Eliminated **7 duplicate if/else blocks** (~35 conditionals) in `aiService.js` that mapped provider names to their functions. Replaced with **2 lookup tables** (provider registry):
 
-- `PROVIDER_COMPLETION` — mapea `'google'|'openai'|'anthropic'|'openrouter'|'local'` a `callGemini|callOpenAI|callClaude|callOpenRouter|callLocal`
-- `PROVIDER_CHAT` — mapea los mismos 5 proveedores a `callXxxChat`
+- `PROVIDER_COMPLETION` — maps `'google'|'openai'|'anthropic'|'openrouter'|'local'` to `callGemini|callOpenAI|callClaude|callOpenRouter|callLocal`
+- `PROVIDER_CHAT` — maps the same 5 providers to `callXxxChat`
 
-### Beneficios
+### Benefits
 
-| Antes | Después |
+| Before | After |
 |-------|---------|
-| ~35 condicionales if/else | 0 condicionales |
-| Cada nuevo provider requería editar 7 métodos | Un solo añadido en las lookup tables |
-| 5 lugares distintos para errores de provider | Función `getProvider()` centralizada |
-| `isSpanish` inline duplicado en 7 métodos | Helper `t(es, en)` centralizado |
-| API key check duplicado en 7 métodos | Helper `requireApiKey()` centralizado |
+| ~35 if/else conditionals | 0 conditionals |
+| Each new provider required editing 7 methods | Single add in lookup tables |
+| 5 different places for provider errors | Centralized `getProvider()` function |
+| `isSpanish` inline duplicated in 7 methods | Centralized `t(es, en)` helper |
+| API key check duplicated in 7 methods | Centralized `requireApiKey()` helper |
 
-### Toques extra de calidad
+### Extra polish
 
-- Normalizada la firma del provider `local` (que usaba `(prompt, model, baseUrl)` vs `(prompt, apiKey, model)` de los demás) dentro de las lookup tables.
-- Introducido helper `t(es, en)` para reducir el ruido de los ternarios `i18n.language === 'es'`.
-- Eliminados 4 destructures de `model` que ya no eran necesarios (se pasa dentro de `config`).
+- Normalized the `local` provider signature (which used `(prompt, model, baseUrl)` vs `(prompt, apiKey, model)` for others) inside the lookup tables.
+- Introduced `t(es, en)` helper to reduce noise from `i18n.language === 'es'` ternaries.
+- Removed 4 `model` destructures that were no longer needed (passed inside `config`).
 
-### Verificación
-- `npm run lint` — 0 errores, 23 warnings (sin nuevos)
+### Verification
+- `npm run lint` — 0 errors, 23 warnings (no new)
 - `npm test` — 117 passed, 0 failed (12 files)
-- `npm run build` — exitoso
+- `npm run build` — successful
 
 ---
 
-## Fase 4 — PropTypes + JSDoc Types ✅ Completada
+## Phase 4 — PropTypes + JSDoc Types ✅ Completed
 
-### Instalado / Modificado
-- `prop-types` ya estaba en dependencias (^15.8.1)
-- Añadidos bloques `Component.propTypes` en **34 archivos**
-- Añadido `@typedef AIConfig` + `@typedef AIResponse` en `aiService.js`
+### Installed / Modified
+- `prop-types` was already in dependencies (^15.8.1)
+- Added `Component.propTypes` blocks to **34 files**
+- Added `@typedef AIConfig` + `@typedef AIResponse` in `aiService.js`
 
-### PropTypes por carpeta
+### PropTypes by folder
 
-| Carpeta | Componentes con PropTypes |
+| Folder | Components with PropTypes |
 |---------|--------------------------|
 | `components/` | Tooltip, CustomDatePicker, ProposalCard, PwaUpdateModal, TypingEffect, MeshBackground, Sidebar, RichEditor, AIPanel, SettingsModal, SettingsAITab, SettingsCloudTab, SettingsGeneralTab, SettingsUITab, StorylineChart |
 | `components/aipanel/` | AgentEditForm, RewriteTab, DebateTab, OracleTab |
-| `views/compendium/` | CompendiumCards (4 subcomponentes), CompendiumFilters, CompendiumMpcOverlay, CompendiumPanel |
-| `views/editor/` | EditorSortables (5 subcomponentes), EditorStats, EditorToolbar |
+| `views/compendium/` | CompendiumCards (4 sub-components), CompendiumFilters, CompendiumMpcOverlay, CompendiumPanel |
+| `views/editor/` | EditorSortables (5 sub-components), EditorStats, EditorToolbar |
 | `views/` | EditorView, Nexus |
 | `context/` | AIProvider, ModalProvider, NovelProvider |
 
-Total: **34 componentes** con PropTypes de 45 que aceptan props.
+Total: **34 components** with PropTypes out of 45 that accept props.
 
-### JSDoc añadido
+### JSDoc added
 
-- **`aiService.js`**: Tipos `AIConfig` (14 campos) y `AIResponse` documentados con JSDoc. Todos los métodos públicos ahora tienen `@param`/`@returns` completos.
-- **`fetchWithRetry.js`**: JSDoc ampliado con `@throws` y descripciones de parámetros.
-- Los 5 providers (`openai`, `claude`, `gemini`, `openrouter`, `local`) ya tenían JSDoc desde Fase 2.
+- **`aiService.js`**: `AIConfig` type (14 fields) and `AIResponse` documented with JSDoc. All public methods now have complete `@param`/`@returns`.
+- **`fetchWithRetry.js`**: JSDoc expanded with `@throws` and parameter descriptions.
+- The 5 providers (`openai`, `claude`, `gemini`, `openrouter`, `local`) already had JSDoc from Phase 2.
 
-### Verificación final
-- `npm run lint` — **0 errores**, 23 warnings (todos preexistentes)
+### Final verification
+- `npm run lint` — **0 errors**, 23 warnings (all pre-existing)
 - `npm test` — **117 passed**, 0 failed (12 files)
-- `npm run build` — exitoso
+- `npm run build` — successful
 
-### Warnings diferidos (no corregidos)
-A continuación, los warnings que se mantienen como `warn` (no `error`) por ser intencionales o de bajo impacto:
+### Deferred warnings (not fixed)
+Warnings kept as `warn` (not `error`) since they're intentional or low impact:
 
-| Archivo | Línea | Warning | Motivo |
+| File | Line | Warning | Reason |
 |---------|-------|---------|--------|
-| `pwa.js` | 10 | `console.log` | Log informativo de que la PWA está lista, aceptable en producción |
-| `mpcService.js` | 149, 151, 153 | `console.log` | Logs de depuración del servicio MPC, protegidos por bandera implícita |
-| `entityDetector.js` | 2 | `getEntityStopWords` importada sin usar | Código legacy, la función se usaba en una fase anterior del detector |
-| `useMergeEngine.js` | 33 | `config` asignado pero no usado | Parámetro que se consumirá en futuras ampliaciones del merge |
-| `exportService.js` | 240 | `emptySceneMsg` sin usar | Constante preparada para exportación de escenas vacías |
-| `useCloudSync.js` | 45 | `e` definido pero no usado | Variable de catch-block, se deja para depuración futura |
-| `useDebateOrchestrator.js` | 141 | `getSceneChapterLabel` falta en deps | Dependencia omitida intencionalmente por estabilidad del hook |
+| `pwa.js` | 10 | `console.log` | Informational log that PWA is ready, acceptable in production |
+| `mpcService.js` | 149, 151, 153 | `console.log` | MPC service debug logs, protected by implicit flag |
+| `entityDetector.js` | 2 | `getEntityStopWords` imported but unused | Legacy code, function was used in an earlier phase of the detector |
+| `useMergeEngine.js` | 33 | `config` assigned but not used | Parameter to be consumed in future merge engine expansions |
+| `exportService.js` | 240 | `emptySceneMsg` unused | Constant prepared for empty scene export |
+| `useCloudSync.js` | 45 | `e` defined but not used | Catch-block variable, kept for future debugging |
+| `useDebateOrchestrator.js` | 141 | `getSceneChapterLabel` missing from deps | Dependency intentionally omitted for hook stability |
 
-### Pendiente para el futuro
-- Migración completa a TypeScript (PropTypes + JSDoc son el paso intermedio)
-- Los 11 componentes sin props (`LanguageSelector`, `MergeOverlay`, etc.) no necesitan PropTypes por diseño
+### Pending for the future
+- Full TypeScript migration (PropTypes + JSDoc are the intermediate step)
+- The 11 components without props (`LanguageSelector`, `MergeOverlay`, etc.) don't need PropTypes by design
 
 ---
 
-## Resumen del plan completo
+## Full plan summary
 
-| Fase | Estado | Impacto |
+| Phase | Status | Impact |
 |------|--------|---------|
-| 1 — Linter + Formatter | ✅ | 5 bugs corregidos, 0 errores lint |
-| 2 — Tests | ✅ | 117 tests, cobertura crítica |
-| 3 — Refactor AI Providers | ✅ | ~35 condicionales → 0 lookup tables |
-| 4 — PropTypes + JSDoc | ✅ | 34 componentes documentados, tipos en servicios clave |
-| 5 — CSS Monolítico | ✅ | 5 grandes CSS fragmentados, ~700 líneas responsive reubicadas |
-| 6 — Estilos inline | ✅ | ~242 estilos inline → clases CSS en 26 archivos |
-| 7 — dangerouslySetInnerHTML | ✅ | 9 usos → MarkdownRenderer + DOMPurify |
-| 8 — CompendiumCards genérico | ✅ | 332→265 líneas, 4→1 componente interno |
+| 1 — Linter + Formatter | ✅ | 5 bugs fixed, 0 lint errors |
+| 2 — Tests | ✅ | 117 tests, critical coverage |
+| 3 — Refactor AI Providers | ✅ | ~35 conditionals → 0 lookup tables |
+| 4 — PropTypes + JSDoc | ✅ | 34 components documented, types in key services |
+| 5 — Monolithic CSS | ✅ | 5 large CSS files fragmented, ~700 responsive lines relocated |
+| 6 — Inline styles | ✅ | ~242 inline styles → CSS classes across 26 files |
+| 7 — dangerouslySetInnerHTML | ✅ | 9 usages → MarkdownRenderer + DOMPurify |
+| 8 — Generic CompendiumCards | ✅ | 332→265 lines, 4→1 internal component |
 
-**¡Deuda técnica crítica + ALTA resuelta!** 🎉
+**Critical + HIGH technical debt resolved!** 🎉
 
 ---
 
-# Plan de Deuda Técnica ALTA — Segunda oleada (8 fases)
+# HIGH Technical Debt Plan — Second wave (8 phases)
 
-## Fase 1 — Error Boundaries ✅ Completada (07/06/2026)
+## Phase 1 — Error Boundaries ✅ Completed (07/06/2026)
 
-### Creado
-- `app/src/components/ErrorBoundary.jsx` — componente clase con `componentDidCatch`, estado de error, fallback visual y botón "Reintentar"
-- Estilos CSS en `app/src/index.css` (`.error-boundary` y variantes)
+### Created
+- `app/src/components/ErrorBoundary.jsx` — class component with `componentDidCatch`, error state, visual fallback and "Retry" button
+- CSS styles in `app/src/index.css` (`.error-boundary` and variants)
 
-### Envueltos con ErrorBoundary
-| Ubicación | Nombre | Propósito |
+### Wrapped with ErrorBoundary
+| Location | Name | Purpose |
 |-----------|--------|-----------|
-| `main.jsx` | `LoneWriter` | Global: captura cualquier error no manejado en toda la app |
-| `App.jsx:renderView` | `editor` | Vista del editor |
-| `App.jsx:renderView` | `compendio` | Vista del compendio |
-| `App.jsx:renderView` | `recursos` | Vista de recursos |
-| `App.jsx:renderView` | `nexus` | Vista del nexus |
-| `App.jsx:renderView` (default) | `editor` | Fallback de ruta por defecto |
+| `main.jsx` | `LoneWriter` | Global: catches any unhandled error in the entire app |
+| `App.jsx:renderView` | `editor` | Editor view |
+| `App.jsx:renderView` | `compendio` | Compendium view |
+| `App.jsx:renderView` | `recursos` | Resources view |
+| `App.jsx:renderView` | `nexus` | Nexus view |
+| `App.jsx:renderView` (default) | `editor` | Default route fallback |
 | `App.jsx:JSX` | `configuración` | SettingsModal + PwaUpdateModal + MergeOverlay |
 | `App.jsx:JSX` | `panel IA` | AIPanel |
 
-### Verificación
-- `npm run lint` — **0 errores**, 23 warnings (sin nuevos)
+### Verification
+- `npm run lint` — **0 errors**, 23 warnings (no new)
 - `npm test` — **117 passed**, 0 failed (12 files)
-- `npm run build` — exitoso (PWA generada)
-- Error boundaries anidados: global → vista/panel → componente (recuperación granular sin perder la app)
+- `npm run build` — successful (PWA generated)
+- Nested error boundaries: global → view/panel → component (granular recovery without losing the app)
 
 ---
 
-## Fase 2 — Barrel Files ✅ Completada (12/06/2026)
+## Phase 2 — Barrel Files ✅ Completed (12/06/2026)
 
-### Barrel files creados (9)
+### Barrel files created (9)
 
-| Ruta | Re-exporta |
+| Path | Re-exports |
 |------|-----------|
 | `components/index.js` | Tooltip, CustomDatePicker, AIPanel, ErrorBoundary, RichEditor, Sidebar, SettingsModal, SettingsAITab, SettingsCloudTab, SettingsGeneralTab, SettingsUITab, ProposalCard, MergeOverlay, LanguageSelector, PwaUpdateModal, StorylineChart, MeshBackground, TypingEffect |
 | `components/aipanel/index.js` | RewriteTab, DebateTab, OracleTab, AgentEditForm, useDebateOrchestrator, QUICK_GOALS, normalizeHtmlForEditor, normalizeTextForDisplay, extractPreviousContext |
@@ -208,61 +207,61 @@ A continuación, los warnings que se mantienen como `warn` (no `error`) por ser 
 | `views/editor/index.js` | EditorToolbar, EditorStats, STATUS_MAP, STATUS_OPTIONS, StatusBadge, EditableTitle, SortableSceneRow, SortableChapterAccordion, SortableActSection, useEditorDnd |
 | `views/compendium/index.js` | CompendiumFilters, matchesFilters, CompendiumMpcOverlay, CompendiumPanel, CharacterCard, LocationCard, ObjectCard, LoreCard |
 
-### Importaciones actualizadas (~35 archivos)
+### Imports updated (~35 files)
 
-**Nuevos imports barrel (simplificados):**
-- `App.jsx` — vistas, componentes, servicios, utils desde `../views`, `../components`, etc.
-- `main.jsx` — contextos, componentes desde `./context`, `./components`
-- `Editor.jsx` — contextos, Tooltip, RichEditor, servicios desde barrel; `./editor/index` por conflicto Windows
-- `Compendium.jsx` — contextos, servicios, componentes desde barrel; `./compendium/index` por conflicto Windows
-- `Nexus.jsx`, `Resources.jsx` — contextos, componentes desde barrel
-- `AIPanel.jsx` — `./aipanel/index` por conflicto Windows; Tooltip desde `./`
-- `RichEditor.jsx` — Tooltip desde `./`
-- `Sidebar.jsx` — Tooltip desde `./` (ya estaba)
-- `SettingsModal.jsx` — componentes desde `./` (ya estaba)
-- `SettingsAITab.jsx` — Tooltip desde `./` (ya estaba)
-- `SettingsCloudTab.jsx`, `ProposalCard.jsx` — Tooltip desde `./`
-- `MergeOverlay.jsx` — servicios desde barrel
-- `EditorToolbar.jsx`, `EditorStats.jsx`, `EditorSortables.jsx` — context, services desde barrel
-- `CompendiumPanel.jsx`, `CompendiumMpcOverlay.jsx`, `CompendiumCards.jsx` — desde barrel
-- `OracleTab.jsx`, `DebateTab.jsx`, `RewriteTab.jsx`, `AgentEditForm.jsx`, `useDebateOrchestrator.js` — context, services, components desde barrel
-- `AIContext.jsx`, `NovelContext.jsx`, `useMergeEngine.js`, `useCloudSync.js`, `useAIMpc.js` — services, context desde barrel
+**New barrel imports (simplified):**
+- `App.jsx` — views, components, services, utils from `../views`, `../components`, etc.
+- `main.jsx` — contexts, components from `./context`, `./components`
+- `Editor.jsx` — contexts, Tooltip, RichEditor, services from barrel; `./editor/index` due to Windows conflict
+- `Compendium.jsx` — contexts, services, components from barrel; `./compendium/index` due to Windows conflict
+- `Nexus.jsx`, `Resources.jsx` — contexts, components from barrel
+- `AIPanel.jsx` — `./aipanel/index` due to Windows conflict; Tooltip from `./`
+- `RichEditor.jsx` — Tooltip from `./`
+- `Sidebar.jsx` — Tooltip from `./` (already was)
+- `SettingsModal.jsx` — components from `./` (already was)
+- `SettingsAITab.jsx` — Tooltip from `./` (already was)
+- `SettingsCloudTab.jsx`, `ProposalCard.jsx` — Tooltip from `./`
+- `MergeOverlay.jsx` — services from barrel
+- `EditorToolbar.jsx`, `EditorStats.jsx`, `EditorSortables.jsx` — context, services from barrel
+- `CompendiumPanel.jsx`, `CompendiumMpcOverlay.jsx`, `CompendiumCards.jsx` — from barrel
+- `OracleTab.jsx`, `DebateTab.jsx`, `RewriteTab.jsx`, `AgentEditForm.jsx`, `useDebateOrchestrator.js` — context, services, components from barrel
+- `AIContext.jsx`, `NovelContext.jsx`, `useMergeEngine.js`, `useCloudSync.js`, `useAIMpc.js` — services, context from barrel
 
-### Problema conocido: Windows case-insensitive FS
+### Known issue: Windows case-insensitive FS
 
-Tres archivos (`Editor.jsx`, `Compendium.jsx`, `AIPanel.jsx`) no pueden usar `from './editor'` porque Rollup resuelve `./editor` → `Editor.jsx` en lugar del directorio `editor/`. Solución: usar `'./editor/index'` explícitamente.
+Three files (`Editor.jsx`, `Compendium.jsx`, `AIPanel.jsx`) cannot use `from './editor'` because Rollup resolves `./editor` → `Editor.jsx` instead of the `editor/` directory. Solution: use `'./editor/index'` explicitly.
 
-**Alternativa futura:** renombrar los archivos a minúsculas (`editor.jsx`, `compendium.jsx`, `aipanel.jsx`) para eliminar el conflicto, o configurar `resolve.mainFields` en Vite.
+**Future alternative:** rename the files to lowercase (`editor.jsx`, `compendium.jsx`, `aipanel.jsx`) to eliminate the conflict, or configure `resolve.mainFields` in Vite.
 
-### Verificación final
-- `npm run lint` — **0 errores**, 23 warnings (sin nuevos)
+### Final verification
+- `npm run lint` — **0 errors**, 23 warnings (no new)
 - `npm test` — **117 passed**, 0 failed (12 files)
-- `npm run build` — exitoso (PWA generada)
+- `npm run build` — successful (PWA generated)
 
 ---
 
-## Fase 3 — Memoización ✅ Completada (12/06/2026)
+## Phase 3 — Memoization ✅ Completed (12/06/2026)
 
-### useCallback añadido
+### useCallback added
 
-| Archivo | Handlers | Dependencias clave |
+| File | Handlers | Key dependencies |
 |---------|----------|-------------------|
-| `useEditorDnd.js` | `getDragLabel`, `handleDragStart`, `handleDragOver`, `handleDragCancel`, `handleDragEnd` | acts, expandedIds, novelId, handlers del context |
-| `Editor.jsx` | `startTreeDrag`, `toggleExpand`, `handleExpandAll`, `handleCollapseAll`, `handleAddChapter`, `handleAddScene`, `confirmDeleteAct`, `confirmDeleteChapter`, `confirmDeleteScene` | setExpandedIds, openModal, t, CRUD del context |
-| `Compendium.jsx` | `handleEdit`, `handleDelete`, `handleAdd`, `handleToggleIgnore`, `matchesQuery` | activeSection, entidades, openModal, t |
+| `useEditorDnd.js` | `getDragLabel`, `handleDragStart`, `handleDragOver`, `handleDragCancel`, `handleDragEnd` | acts, expandedIds, novelId, context handlers |
+| `Editor.jsx` | `startTreeDrag`, `toggleExpand`, `handleExpandAll`, `handleCollapseAll`, `handleAddChapter`, `handleAddScene`, `confirmDeleteAct`, `confirmDeleteChapter`, `confirmDeleteScene` | setExpandedIds, openModal, t, context CRUD |
+| `Compendium.jsx` | `handleEdit`, `handleDelete`, `handleAdd`, `handleToggleIgnore`, `matchesQuery` | activeSection, entities, openModal, t |
 | `AIPanel.jsx` | `startDrag`, `handleTabChange` | — |
 
-### useMemo añadido
+### useMemo added
 
-| Archivo | Cálculo | Dependencias |
+| File | Computation | Dependencies |
 |---------|---------|-------------|
 | `Editor.jsx` | `totalChapters`, `allScenes` | acts |
 | `Compendium.jsx` | `SECTIONS`, `filteredCharacters`, `filteredLocations`, `filteredObjects`, `filteredLore` | characters/locations/objects/lore, matchesQuery, activeFilters, activeSection |
-| `EditorSortables.jsx` | `completedChapters`, `actWords`, `actProgress` (dentro de SortableActSection) | act.chapters |
+| `EditorSortables.jsx` | `completedChapters`, `actWords`, `actProgress` (inside SortableActSection) | act.chapters |
 
-### React.memo añadido
+### React.memo added
 
-| Componente | Archivo | Props que recibe |
+| Component | File | Props received |
 |------------|---------|-----------------|
 | `SortableActSection` | `EditorSortables.jsx` | act, actIndex, expandedIds, 9 callbacks |
 | `SortableChapterAccordion` | `EditorSortables.jsx` | chapter, isOpen, expandedIds, 7 callbacks |
@@ -275,310 +274,310 @@ Tres archivos (`Editor.jsx`, `Compendium.jsx`, `AIPanel.jsx`) no pueden usar `fr
 | `ObjectCard` | `CompendiumCards.jsx` | obj, 3 callbacks |
 | `LoreCard` | `CompendiumCards.jsx` | entry, 3 callbacks |
 
-### No se tocó (diferido)
-- **Context providers** (AIProvider, NovelProvider): el valor del contexto es un objeto con ~30 propiedades que cambian en cada render. Memoizarlo requeriría envolver todos los handlers en useCallback (~25 funciones) o dividir el contexto en múltiples contextos pequeños. Se abordará en una fase posterior si es necesario.
-- **CompendiumFilters**, **CompendiumPanel**, **CompendiumMpcOverlay**: componentes de UI que se renderizan una sola vez o tienen estado interno propio, el beneficio de memoizarlos es marginal.
+### Not touched (deferred)
+- **Context providers** (AIProvider, NovelProvider): the context value is an object with ~30 properties that changes on every render. Memoizing it would require wrapping all handlers in useCallback (~25 functions) or splitting the context into multiple small contexts. Will be addressed in a later phase if needed.
+- **CompendiumFilters**, **CompendiumPanel**, **CompendiumMpcOverlay**: UI components that render once or have their own internal state — memoization benefit is marginal.
 
-### Verificación final
-- `npm run lint` — **0 errores**, 23 warnings (sin nuevos)
+### Final verification
+- `npm run lint` — **0 errors**, 23 warnings (no new)
 - `npm test` — **117 passed**, 0 failed (12 files)
-- `npm run build` — exitoso (PWA generada)
+- `npm run build` — successful (PWA generated)
 
 ---
 
-## Fase 4 — Componentes Monolíticos ✅ Completada (12/06/2026)
+## Phase 4 — Monolithic Components ✅ Completed (12/06/2026)
 
-### Objetivo
-Reducir todos los componentes y context providers por debajo de 500 líneas, extrayendo lógica en hooks o subcomponentes dedicados.
+### Goal
+Reduce all components and context providers below 500 lines by extracting logic into hooks or dedicated sub-components.
 
-### Resultados por archivo
+### Results by file
 
-| Componente | Original | Actual | Extracción |
+| Component | Original | Current | Extraction |
 |-----------|---------|--------|------------|
 | `App.jsx` | 633 | **355** | `useCloudRestore`, `useProjectIO`, `WelcomeScreen` |
 | `Compendium.jsx` | 711 | **535** | `useCompendiumMerge`, `useCompendiumSave` |
-| `Nexus.jsx` | 622 | **295** | `NexusGraph` componente |
+| `Nexus.jsx` | 622 | **295** | `NexusGraph` component |
 | `Editor.jsx` | 595 | **501** | `useEditorMpc` hook |
 | `AIContext.jsx` | 499 | **~70** | `useOracle`, `useDebate` hooks |
 | `NovelContext.jsx` | 624 | **126** | `useNovelData`, `useNovelCrud`, `useNovelProgress` hooks |
 
-### Hooks creados (11 nuevos archivos)
+### Hooks created (11 new files)
 
-| Hook | Archivo | Líneas | Responsabilidad |
+| Hook | File | Lines | Responsibility |
 |------|---------|--------|-----------------|
-| `useCloudRestore` | `hooks/useCloudRestore.js` | ~60 | Restauración desde Google Drive |
-| `useProjectIO` | `hooks/useProjectIO.js` | ~85 | Importación/exportación de proyectos |
-| `useCompendiumMerge` | `views/compendium/useCompendiumMerge.js` | ~140 | Fusión de personajes/localizaciones/objetos/lore |
-| `useCompendiumSave` | `views/compendium/useCompendiumSave.js` | ~45 | Guardado individual por pestaña |
-| `useEditorMpc` | `views/editor/useEditorMpc.js` | 130 | Análisis MPC y propuestas |
-| `useOracle` | `context/useOracle.js` | ~175 | Estado del oráculo + detección de entidades + respuesta + historial |
-| `useDebate` | `context/useDebate.js` | ~245 | Agentes, sesiones, mensajes de debate |
-| `useNovelData` | `context/useNovelData.js` | 192 | Inicialización, reload/refresh, estado de datos cargados, navegación global |
-| `useNovelCrud` | `context/useNovelCrud.js` | 324 | CRUD completo: novelas, actos, capítulos, escenas, compendio |
-| `useNovelProgress` | `context/useNovelProgress.js` | 34 | Seguimiento diario (trackDailyProgress, getStreak) |
-| `NexusGraph` | `views/nexus/NexusGraph.jsx` | ~300 | Renderizado ForceGraph3D/2D |
+| `useCloudRestore` | `hooks/useCloudRestore.js` | ~60 | Restore from Google Drive |
+| `useProjectIO` | `hooks/useProjectIO.js` | ~85 | Project import/export |
+| `useCompendiumMerge` | `views/compendium/useCompendiumMerge.js` | ~140 | Character/location/object/lore merging |
+| `useCompendiumSave` | `views/compendium/useCompendiumSave.js` | ~45 | Individual tab saving |
+| `useEditorMpc` | `views/editor/useEditorMpc.js` | 130 | MPC analysis and proposals |
+| `useOracle` | `context/useOracle.js` | ~175 | Oracle state + entity detection + response + history |
+| `useDebate` | `context/useDebate.js` | ~245 | Agents, sessions, debate messages |
+| `useNovelData` | `context/useNovelData.js` | 192 | Initialization, reload/refresh, data loaded state, global navigation |
+| `useNovelCrud` | `context/useNovelCrud.js` | 324 | Full CRUD: novels, acts, chapters, scenes, compendium |
+| `useNovelProgress` | `context/useNovelProgress.js` | 34 | Daily tracking (trackDailyProgress, getStreak) |
+| `NexusGraph` | `views/nexus/NexusGraph.jsx` | ~300 | ForceGraph3D/2D rendering |
 
-### Errores corregidos durante la refactorización
+### Errors fixed during refactoring
 
-1. **`App.jsx`**: Se eliminó `ChevronDown` de los imports por error al limpiar código legacy — `EditorToolbar` lo necesita. Se restauró junto con `BookOpen` y `Plus`.
-2. **`useEditorMpc.js`**: El hook usaba `mpcStatus` internamente (`if (mpcStatus === 'analyzing') return`) pero no lo recibía como parámetro — causaba `ReferenceError: mpcStatus is not defined`. Se añadió a los parámetros y a la llamada en `Editor.jsx`.
+1. **`App.jsx`**: `ChevronDown` was removed from imports by accident while cleaning legacy code — `EditorToolbar` needs it. Restored along with `BookOpen` and `Plus`.
+2. **`useEditorMpc.js`**: The hook used `mpcStatus` internally (`if (mpcStatus === 'analyzing') return`) but didn't receive it as a parameter — caused `ReferenceError: mpcStatus is not defined`. Added to parameters and the call site in `Editor.jsx`.
 
-### Problemas conocidos
+### Known issues
 
-- **Windows case-insensitive FS**: `./editor`, `./compendium`, `./aipanel` resuelven a `Editor.jsx`, `Compendium.jsx`, `AIPanel.jsx` en lugar de los directorios. Se usa `'./editor/index'` como workaround.
-- **Context providers no memoizados**: AIProvider y NovelProvider tienen valores objeto que cambian en cada render. Se abordará como optimización separada si es necesaria.
+- **Windows case-insensitive FS**: `./editor`, `./compendium`, `./aipanel` resolve to `Editor.jsx`, `Compendium.jsx`, `AIPanel.jsx` instead of the directories. Use `'./editor/index'` as workaround.
+- **Context providers not memoized**: AIProvider and NovelProvider have object values that change on every render. Will be addressed as a separate optimization if needed.
 
-### Verificación final
-- `npm run lint` — **0 errores**, 23 warnings (sin nuevos)
+### Final verification
+- `npm run lint` — **0 errors**, 23 warnings (no new)
 - `npm test` — **117 passed**, 0 failed (12 files)
-- `npm run build` — exitoso (PWA generada)
+- `npm run build` — successful (PWA generated)
 
 ---
 
-## Fase 5 — CSS Monolítico ✅ Completada (12/06/2026)
+## Phase 5 — Monolithic CSS ✅ Completed (12/06/2026)
 
-### Objetivo
-Fragmentar todos los archivos CSS > 500 líneas en sub-archivos por componente o sección lógica.
+### Goal
+Fragment all CSS files > 500 lines into sub-files by component or logical section.
 
-### Resultados
+### Results
 
-| Archivo original | Líneas original | Archivos resultantes |
+| Original file | Original lines | Resulting files |
 |-----------------|----------------|---------------------|
-| `AIPanel.css` | 2.144 | `AIPanel.css` (388), `aipanel/RewriteTab.css` (210), `aipanel/DebateTab.css` (667), `aipanel/OracleTab.css` (463), `aipanel/Markdown.css` (82) |
-| `Editor.css` | 1.824 | `Editor.css` (266), `editor/EditorToolbar.css` (311), `editor/EditorStats.css` (302), `editor/EditorSortables.css` (389), `editor/EditorMobile.css` (331) |
-| `Compendium.css` | 1.244 | `Compendium.css` (276), `compendium/CompendiumCards.css` (290), `compendium/CompendiumPanel.css` (182), `compendium/CompendiumFilters.css` (60), `compendium/CompendiumMpcOverlay.css` (166), `compendium/CompendiumMobile.css` (188) |
-| `App.css` | 1.013 | `App.css` (640), `components/WelcomeScreen.css` (322) |
+| `AIPanel.css` | 2,144 | `AIPanel.css` (388), `aipanel/RewriteTab.css` (210), `aipanel/DebateTab.css` (667), `aipanel/OracleTab.css` (463), `aipanel/Markdown.css` (82) |
+| `Editor.css` | 1,824 | `Editor.css` (266), `editor/EditorToolbar.css` (311), `editor/EditorStats.css` (302), `editor/EditorSortables.css` (389), `editor/EditorMobile.css` (331) |
+| `Compendium.css` | 1,244 | `Compendium.css` (276), `compendium/CompendiumCards.css` (290), `compendium/CompendiumPanel.css` (182), `compendium/CompendiumFilters.css` (60), `compendium/CompendiumMpcOverlay.css` (166), `compendium/CompendiumMobile.css` (188) |
+| `App.css` | 1,013 | `App.css` (640), `components/WelcomeScreen.css` (322) |
 | `index.css` | 620 | `index.css` (~350), `utilities.css` (~270) |
 
-### Detalle de splits
+### Split details
 
-**AIPanel.css (2.144 → 5):** Se extrajeron las pestañas (RewriteTab, DebateTab, OracleTab) y el Markdown renderer en CSS independientes. Cada componente tab importa su propio CSS. El panel raíz conserva layout + responsive.
+**AIPanel.css (2,144 → 5):** Extracted tabs (RewriteTab, DebateTab, OracleTab) and Markdown renderer into independent CSS files. Each tab component imports its own CSS. Root panel retains layout + responsive.
 
-**Editor.css (1.824 → 5):** Se extrajeron toolbar, stats, sortables y mobile en CSS independientes. Editor raíz conserva el layout general.
+**Editor.css (1,824 → 5):** Extracted toolbar, stats, sortables and mobile into independent CSS files. Root Editor retains general layout.
 
-**Compendium.css (1.244 → 6):** Se extrajeron cards (4 variantes), panel, filtros, overlay MPC y responsive mobile.
+**Compendium.css (1,244 → 6):** Extracted cards (4 variants), panel, filters, MPC overlay and mobile responsive.
 
-**App.css (1.013 → 2):** Se extrajo WelcomeScreen.css (setup, proyectos recientes).
+**App.css (1,013 → 2):** Extracted WelcomeScreen.css (setup, recent projects).
 
-**index.css (620 → 2):** Se extrajeron clases de utilidad (.btn, .badge, .tag, .card, .search-bar, .tooltip, .error-boundary) a utilities.css.
+**index.css (620 → 2):** Extracted utility classes (.btn, .badge, .tag, .card, .search-bar, .tooltip, .error-boundary) to utilities.css.
 
-### Cambios en imports
-- Cada sub-componente CSS se importa desde su respectivo componente JSX
-- `main.jsx` ahora importa `index.css` + `utilities.css`
-- `WelcomeScreen.jsx` ahora importa `WelcomeScreen.css`
+### Import changes
+- Each sub-component CSS is imported from its respective JSX component
+- `main.jsx` now imports `index.css` + `utilities.css`
+- `WelcomeScreen.jsx` now imports `WelcomeScreen.css`
 
-### Post-Fase: DebateTab.css fragmentación + responsive overrides
-Después de la fase principal, se realizaron dos mejoras adicionales:
+### Post-Phase: DebateTab.css fragmentation + responsive overrides
+Two additional improvements were made after the main phase:
 
-**DebateTab.css (730 → dividido):**
-| Archivo | Líneas | Contenido |
+**DebateTab.css (730 → split):**
+| File | Lines | Content |
 |---------|--------|-----------|
-| `aipanel/DebateTab.css` | 260 | Layout principal, acciones, estados vacíos |
-| `aipanel/DebateTabParticipants.css` | 109 | Lista de participantes, selectores |
-| `aipanel/DebateTabMessages.css` | 255 | Burbujas de mensaje, animaciones |
-| `aipanel/DebateTabComposer.css` | 54 | Editor de prompts, envío |
+| `aipanel/DebateTab.css` | 260 | Main layout, actions, empty states |
+| `aipanel/DebateTabParticipants.css` | 109 | Participant list, selectors |
+| `aipanel/DebateTabMessages.css` | 255 | Message bubbles, animations |
+| `aipanel/DebateTabComposer.css` | 54 | Prompt editor, send |
 
-**App.css responsive → WelcomeScreen.css:** Se movieron ~140 líneas de overrides responsive de welcome-screen desde `App.css` hacia `WelcomeScreen.css`, reduciendo `App.css` de 640 → 500 líneas.
+**App.css responsive → WelcomeScreen.css:** Moved ~140 lines of welcome-screen responsive overrides from `App.css` into `WelcomeScreen.css`, reducing `App.css` from 640 → 500 lines.
 
-### Verificación
-- `npm run lint` — **0 errores**, 23 warnings (sin nuevos)
+### Verification
+- `npm run lint` — **0 errors**, 23 warnings (no new)
 - `npm test` — **117 passed**, 0 failed (12 files)
-- `npm run build` — exitoso (PWA generada)
+- `npm run build` — successful (PWA generated)
 
 ---
 
-## Fase 6 — Estilos inline → Clases CSS ✅ Completada (12/06/2026)
+## Phase 6 — Inline Styles → CSS Classes ✅ Completed (12/06/2026)
 
-### Objetivo
-Eliminar todos los estilos inline (`style={{ }}`) en componentes JSX, reemplazándolos por clases CSS en archivos `.css` existentes o de componente.
+### Goal
+Eliminate all inline styles (`style={{ }}`) in JSX components, replacing them with CSS classes in existing or component `.css` files.
 
-### Resultados
+### Results
 
-| Archivo | Inline removidos | Notas |
+| File | Inline removed | Notes |
 |---------|-----------------|-------|
-| `EditorToolbar.jsx` | ~60 | Migrados a clases globales + slot-based layout |
-| `EditorSortables.jsx` | ~55 | Reemplazados por clases en `EditorSortables.css` |
-| `CompendiumPanel.jsx` | ~17 | Migrados a `CompendiumPanel.css` |
-| `CompendiumCards.jsx` | ~2 | Mantenido `--entity-color` (CSS variable necesaria) |
-| `NexusGraph.jsx` | ~10 | Migrados a `Nexus.css` + clases inline en nodos/links |
-| `DebateTab.jsx` | ~15 | Migrados a `DebateTab.css` y archivos hijos |
-| `OracleTab.jsx` | ~10 | Migrados a `OracleTab.css` |
-| `RewriteTab.jsx` | ~10 | Migrados a `RewriteTab.css` |
-| `RichEditor.jsx` | ~15 | Migrados a `Editor.css` y `RichEditor.css` |
-| `AIPanel.jsx` | ~12 | Migrados a `AIPanel.css` |
-| `SettingsModal.jsx` | ~8 | Migrados a `SettingsModal.css` |
-| `SettingsAITab.jsx` | ~6 | Migrados a `SettingsAITab.css` |
-| `SettingsCloudTab.jsx` | ~5 | Migrados a `SettingsCloudTab.css` |
-| Otros 12 componentes | ~17 | Migraciones menores a CSS de componente |
+| `EditorToolbar.jsx` | ~60 | Migrated to global classes + slot-based layout |
+| `EditorSortables.jsx` | ~55 | Replaced by classes in `EditorSortables.css` |
+| `CompendiumPanel.jsx` | ~17 | Migrated to `CompendiumPanel.css` |
+| `CompendiumCards.jsx` | ~2 | Kept `--entity-color` (necessary CSS variable) |
+| `NexusGraph.jsx` | ~10 | Migrated to `Nexus.css` + inline classes on nodes/links |
+| `DebateTab.jsx` | ~15 | Migrated to `DebateTab.css` and children |
+| `OracleTab.jsx` | ~10 | Migrated to `OracleTab.css` |
+| `RewriteTab.jsx` | ~10 | Migrated to `RewriteTab.css` |
+| `RichEditor.jsx` | ~15 | Migrated to `Editor.css` and `RichEditor.css` |
+| `AIPanel.jsx` | ~12 | Migrated to `AIPanel.css` |
+| `SettingsModal.jsx` | ~8 | Migrated to `SettingsModal.css` |
+| `SettingsAITab.jsx` | ~6 | Migrated to `SettingsAITab.css` |
+| `SettingsCloudTab.jsx` | ~5 | Migrated to `SettingsCloudTab.css` |
+| Other 12 components | ~17 | Minor migrations to component CSS |
 
-**Total:** ~242 estilos inline eliminados en **26 archivos**.
+**Total:** ~242 inline styles eliminated across **26 files**.
 
-### Excepciones (mantenidas)
-- **CSS variables dinámicas** (`--entity-color`, `--bg-color`, `--avatar-color`): 4 casos donde el valor depende de datos en tiempo real (colores de entidad, avatar por iniciales)
-- **Alturas/anchuras calculadas dinámicamente** en `useCloudSync.js` y `useOracle.js` (3 casos)
-- **Estilos en gráficos ForceGraph3D/2D** (~10 en Nexo): dependen del estado del grafo y no son equivalentes a clases estáticas
+### Exceptions (kept)
+- **Dynamic CSS variables** (`--entity-color`, `--bg-color`, `--avatar-color`): 4 cases where the value depends on real-time data (entity colors, avatar by initials)
+- **Dynamically calculated heights/widths** in `useCloudSync.js` and `useOracle.js` (3 cases)
+- **ForceGraph3D/2D styles** (~10 in Nexus): depend on graph state and are not equivalent to static classes
 
-### Problemas conocidos
-- Los `style={{ '--entity-color': ... }}` en las 4 cartas de compendio ahora están en el componente genérico único tras Fase 8
-- No se implementó CSS Modules para mantener la compatibilidad con Vite build existente
+### Known issues
+- The `style={{ '--entity-color': ... }}` in the 4 compendium cards are now in the single generic component post-Phase 8
+- CSS Modules were not implemented to maintain compatibility with existing Vite build
 
-### Verificación
-- `npm run lint` — **0 errores**, 23 warnings (sin nuevos)
+### Verification
+- `npm run lint` — **0 errors**, 23 warnings (no new)
 - `npm test` — **117 passed**, 0 failed (12 files)
-- `npm run build` — exitoso (PWA generada)
+- `npm run build` — successful (PWA generated)
 
 ---
 
-## Fase 7 — dangerouslySetInnerHTML → MarkdownRenderer ✅ Completada (12/06/2026)
+## Phase 7 — dangerouslySetInnerHTML → MarkdownRenderer ✅ Completed (12/06/2026)
 
-### Objetivo
-Eliminar todos los usos de `dangerouslySetInnerHTML` en el código, migrando a un componente `MarkdownRenderer` que use DOMpurify.
+### Goal
+Eliminate all `dangerouslySetInnerHTML` usages in code, migrating to a `MarkdownRenderer` component using DOMPurify.
 
-### Instalado
-- `dompurify` 3.2.4 — sanitización HTML en cliente
-- `marked` 15.0.8 — parseo markdown a HTML
+### Installed
+- `dompurify` 3.2.4 — client-side HTML sanitization
+- `marked` 15.0.8 — markdown to HTML parsing
 
-### Creado
-- `components/MarkdownRenderer.jsx` — componente React que recibe contenido markdown, lo parsea con `marked`, sanitiza con `DOMPurify`, y renderiza con `className` configurable
-- `components/aipanel/Markdown.css` — estilos para contenido markdown renderizado
+### Created
+- `components/MarkdownRenderer.jsx` — React component that receives markdown content, parses with `marked`, sanitizes with `DOMPurify`, and renders with configurable `className`
+- `components/aipanel/Markdown.css` — styles for rendered markdown content
 
-### Reemplazos (9 → 0)
+### Replacements (9 → 0)
 
-| Archivo | Usos | Tipo de contenido |
+| File | Usages | Content type |
 |---------|------|-------------------|
-| `Resources.jsx` | 3 | 1 markdown + 2 traducciones HTML |
-| `OracleTab.jsx` | 1 | Traducción con HTML |
-| `DebateTab.jsx` | 3 | Mensajes markdown |
-| `RewriteTab.jsx` | 1 | Resultado markdown |
-| `SettingsCloudTab.jsx` | 1 | Traducción con HTML |
+| `Resources.jsx` | 3 | 1 markdown + 2 HTML translations |
+| `OracleTab.jsx` | 1 | Translation with HTML |
+| `DebateTab.jsx` | 3 | Markdown messages |
+| `RewriteTab.jsx` | 1 | Markdown result |
+| `SettingsCloudTab.jsx` | 1 | Translation with HTML |
 
-**Total:** 9 usos de `dangerouslySetInnerHTML` eliminados. El único que permanece está dentro de `MarkdownRenderer.jsx:13` (el punto de abstracción).
+**Total:** 9 `dangerouslySetInnerHTML` usages eliminated. The only remaining one is inside `MarkdownRenderer.jsx:13` (the abstraction point).
 
-### Verificación
-- `npm run lint` — **0 errores**, 27 warnings (sin nuevos)
-- `npm test` — **155 passed**, 0 failed (14 files) *(aumentado de 117 tras añadir tests de RichEditor + renderMarkdown en Fase 3 de Dependencias)*
-- `npm run build` — exitoso (PWA generada)
+### Verification
+- `npm run lint` — **0 errors**, 27 warnings (no new)
+- `npm test` — **155 passed**, 0 failed (14 files) *(increased from 117 after adding RichEditor + renderMarkdown tests in Dependency Phase 3)*
+- `npm run build` — successful (PWA generated)
 
 ---
 
-## Fase 8 — CompendiumCards Genérico ✅ Completada (12/06/2026)
+## Phase 8 — Generic CompendiumCards ✅ Completed (12/06/2026)
 
-### Objetivo
-Unificar los 4 componentes de tarjeta (CharacterCard, LocationCard, ObjectCard, LoreCard) en un solo componente genérico para eliminar código duplicado.
+### Goal
+Unify the 4 card components (CharacterCard, LocationCard, ObjectCard, LoreCard) into a single generic component to eliminate duplicated code.
 
-### Resultados
+### Results
 
-| Antes | Después |
+| Before | After |
 |-------|---------|
-| 332 líneas en 4 componentes | 265 líneas (1 genérico + 4 wrappers) |
-| 4 estructuras JSX casi idénticas | 1 `CompendiumCardInner` con `type` param |
-| 4 conjuntos de PropTypes | 1 genérico + 4 wrappers de compatibilidad |
+| 332 lines across 4 components | 265 lines (1 generic + 4 wrappers) |
+| 4 nearly identical JSX structures | 1 `CompendiumCardInner` with `type` param |
+| 4 sets of PropTypes | 1 generic + 4 compatibility wrappers |
 
-### Diseño
-- `CompendiumCardInner` — componente interno que recibe `entity`, `type`, y callbacks. Usa `type` para seleccionar:
-  - Prefijo CSS (`char-card`, `loc-card`, `obj-card`, `lore-card`)
-  - Clave de color (`ENTITY_COLORS[COLOR_KEY[type]]`)
-  - Render condicional de icono, subtítulo, etiquetas y campos del cuerpo expandido
-- 4 wrappers (`CharacterCard`, `LocationCard`, `ObjectCard`, `LoreCard`) normalizan los nombres de prop (`char`, `loc`, `obj`, `entry` → `entity`) y fijan el `type`
+### Design
+- `CompendiumCardInner` — internal component that receives `entity`, `type`, and callbacks. Uses `type` to select:
+  - CSS prefix (`char-card`, `loc-card`, `obj-card`, `lore-card`)
+  - Color key (`ENTITY_COLORS[COLOR_KEY[type]]`)
+  - Conditional rendering of icon, subtitle, tags and expanded body fields
+- 4 wrappers (`CharacterCard`, `LocationCard`, `ObjectCard`, `LoreCard`) normalize prop names (`char`, `loc`, `obj`, `entry` → `entity`) and fix the `type`
 
-### API backward-compatible
+### Backward-compatible API
 ```jsx
-// Los 4 usos existentes en Compendium.jsx siguen funcionando:
+// All 4 existing usages in Compendium.jsx continue to work:
 <CharacterCard char={c} onEdit={...} onDelete={...} onToggleIgnore={...} />
 <LocationCard loc={l} ... />
 <ObjectCard obj={o} ... />
 <LoreCard entry={e} ... />
 ```
 
-### CSS no modificado
-El archivo `CompendiumCards.css` (290 líneas, 7 secciones) se mantiene intacto. Los selectores usan los mismos prefijos (`char-card__*`, `loc-card__*`, etc.) que el componente genérico genera dinámicamente.
+### CSS unchanged
+The `CompendiumCards.css` file (290 lines, 7 sections) remains intact. Selectors use the same prefixes (`char-card__*`, `loc-card__*`, etc.) that the generic component generates dynamically.
 
-### Verificación
-- `npm run lint` — **0 errores**, 27 warnings (sin nuevos)
-- `npm test` — **155 passed**, 0 failed (14 files) *(aumentado de 117 tras añadir tests de RichEditor + renderMarkdown en Fase 3 de Dependencias)*
-- `npm run build` — exitoso (PWA generada)
-
----
-
-## Post-Fase: Correcciones post-refactor (13/06/2026)
-
-Tras completar las 8 fases, se detectaron y corrigieron dos regresiones causadas durante la refactorización:
-
-### Error 1 — `data-font` CSS borrado accidentalmente
-**Síntoma:** Al cambiar la fuente desde Configuración → Interfaz, el editor no aplicaba la fuente seleccionada. El tema oscuro por defecto sobrescribía la elección del usuario.
-
-**Causa raíz:** Durante la Fase 5 (CSS Monolítico), al extraer clases de utilidad de `index.css` a `utilities.css`, se eliminaron accidentalmente las reglas `:root[data-font="sans"]`, `:root[data-font="serif"]`, `:root[data-font="mono"]` y `:root[data-font="lora"]` que estaban al final del archivo (líneas 549-567 del original). Sin ellas, el atributo `data-font` en `<html>` no tenía efecto sobre `--font-editor` / `--font-editor-body`.
-
-**Fix:** Restauradas las 4 reglas en `app/src/index.css:333-348`.
-
-### Error 2 — Swatch de temas invisible
-**Síntoma:** Los cuadros de previsualización de temas (gradientes de color) en Configuración → Interfaz no se mostraban.
-
-**Causa raíz:** Durante la Fase 6 (Estilos inline → clases), el div `<div className="theme-option__swatch">` perdió sus propiedades inline `width: 28px`, `height: 28px` y `borderRadius: '50%'`. Se esperaba que estas pasaran a la clase `.theme-option__swatch`, pero dicha clase nunca se creó en ningún archivo CSS. El div quedó con dimensiones 0×0.
-
-**Fix:** Añadida clase `.theme-option__swatch` en `app/src/components/SettingsModal.css:625` con `width: 28px; height: 28px; border-radius: 50%;`
-
-### Lección aprendida
-Al migrar estilos inline → clases, es crítico verificar que **todas** las propiedades que se eliminan del inline tengan su equivalente exacto en la clase CSS creada. Las propiedades con valores estáticos (como `28px`, `50%`) son fáciles de pasar por alto al revisar.
+### Verification
+- `npm run lint` — **0 errors**, 27 warnings (no new)
+- `npm test` — **155 passed**, 0 failed (14 files) *(increased from 117 after adding RichEditor + renderMarkdown tests in Dependency Phase 3)*
+- `npm run build` — successful (PWA generated)
 
 ---
 
-# Plan de Actualización de Dependencias (Deuda Técnica Punto 3)
+## Post-Phase: Post-refactor fixes (13/06/2026)
 
-Este bloque cubre los 4 subpuntos del **Punto 3 (Dependencias)** de la auditoría original:
-1. Desactualizaciones importantes
-2. `onnxruntime-web` en versión dev
-3. `docs/` sin node_modules instalados
-4. Sin `.nvmrc`
+After completing all 8 phases, two regressions caused during refactoring were detected and fixed:
+
+### Error 1 — `data-font` CSS accidentally deleted
+**Symptom:** Changing the font from Settings → Interface had no effect on the editor. The default dark theme was overriding the user's choice.
+
+**Root cause:** During Phase 5 (Monolithic CSS), when extracting utility classes from `index.css` to `utilities.css`, the rules `:root[data-font="sans"]`, `:root[data-font="serif"]`, `:root[data-font="mono"]` and `:root[data-font="lora"]` at the end of the file (original lines 549-567) were accidentally removed. Without them, the `data-font` attribute on `<html>` had no effect on `--font-editor` / `--font-editor-body`.
+
+**Fix:** Restored the 4 rules in `app/src/index.css:333-348`.
+
+### Error 2 — Invisible theme swatches
+**Symptom:** Theme preview boxes (color gradients) in Settings → Interface were not showing up.
+
+**Root cause:** During Phase 6 (Inline styles → classes), the `<div className="theme-option__swatch">` div lost its inline properties `width: 28px`, `height: 28px` and `borderRadius: '50%'`. These were expected to be moved to the `.theme-option__swatch` class, but that class was never created in any CSS file. The div ended up with 0×0 dimensions.
+
+**Fix:** Added `.theme-option__swatch` class in `app/src/components/SettingsModal.css:625` with `width: 28px; height: 28px; border-radius: 50%;`
+
+### Lesson learned
+When migrating inline styles → classes, it's critical to verify that **all** properties removed from inline have their exact equivalent in the CSS class being created. Properties with static values (like `28px`, `50%`) are easy to miss when reviewing.
 
 ---
 
-## Fase 0 — Infraestructura ✅ Completada (13/06/2026)
+# Dependency Update Plan (Technical Debt Point 3)
 
-### 0.1 — Creado `.nvmrc`
-- **Archivo:** `LoneWriter/.nvmrc`
-- **Contenido:** `v24.16.0`
-- **Propósito:** Fijar la versión de Node.js (24.16.0 actual) para todos los entornos: desarrollo local, CI/CD, Vercel.
+This section covers the 4 sub-points of **Point 3 (Dependencies)** from the original audit:
+1. Major out-of-date packages
+2. `onnxruntime-web` on dev version
+3. `docs/` without node_modules installed
+4. No `.nvmrc`
 
-### 0.2 — Instaladas dependencias de `docs/`
-- **Comando:** `npm install` en `LoneWriter/docs/`
-- **Resultado:** 127 paquetes instalados, 128 auditados.
-- **Nota:** Aparecen 3 vulnerabilidades (2 moderate, 1 high) en dependencias transitivas de VitePress. No se interviene por ahora — son de VitePress, no del código propio.
+---
 
-### 0.3 — Verificación post-cambios
+## Phase 0 — Infrastructure ✅ Completed (13/06/2026)
 
-Se ejecutaron 4 comprobaciones para asegurar que nada se ha roto:
+### 0.1 — Created `.nvmrc`
+- **File:** `LoneWriter/.nvmrc`
+- **Content:** `v24.16.0`
+- **Purpose:** Pin Node.js version (24.16.0 current) for all environments: local dev, CI/CD, Vercel.
 
-| Comprobación | Resultado | Observaciones |
+### 0.2 — Installed `docs/` dependencies
+- **Command:** `npm install` in `LoneWriter/docs/`
+- **Result:** 127 packages installed, 128 audited.
+- **Note:** 3 vulnerabilities appear (2 moderate, 1 high) in VitePress transitive dependencies. Not addressed for now — they belong to VitePress, not our own code.
+
+### 0.3 — Post-change verification
+
+4 checks were run to ensure nothing broke:
+
+| Check | Result | Notes |
 |-------------|-----------|---------------|
-| `docs/` build (`vitepress build`) | ✅ | Build completado en 3.64s |
-| `app/` lint (`eslint src/`) | ⚠️ 2 errors, 30 warnings | Los 2 errors son **preexistentes** en `useNovelData.js` (ver nota abajo) |
+| `docs/` build (`vitepress build`) | ✅ | Build completed in 3.64s |
+| `app/` lint (`eslint src/`) | ⚠️ 2 errors, 30 warnings | Both errors are **pre-existing** in `useNovelData.js` (see note below) |
 | `app/` test (`vitest run`) | ✅ | 12 files, 117 passed, 0 failed |
-| `app/` build (`vite build`) | ✅ | PWA generada correctamente |
+| `app/` build (`vite build`) | ✅ | PWA generated correctly |
 
-#### Detalle de los 2 errores de lint (preexistentes, no causados por Fase 0)
+#### Details on the 2 lint errors (pre-existing, not caused by Phase 0)
 
-| Archivo | Línea | Error | Explicación |
+| File | Line | Error | Explanation |
 |---------|-------|-------|-------------|
-| `useNovelData.js` | 56 | `Cannot access 'refreshAllNovels' before declaration` | El hook `init` usa `refreshAllNovels()` antes de que la constante sea declarada (línea 65). **No causa error en runtime** porque ambas se ejecutan durante el render y el callback se invoca más tarde desde un efecto, pero la regla `react-hooks/immutability` lo marca. |
-| `useNovelData.js` | 65 | `Existing memoization could not be preserved` | Consecuencia del mismo problema — React Compiler no puede garantizar la memoización. |
+| `useNovelData.js` | 56 | `Cannot access 'refreshAllNovels' before declaration` | The `init` hook uses `refreshAllNovels()` before the constant is declared (line 65). **Doesn't cause a runtime error** because both execute during render and the callback is invoked later from an effect, but the `react-hooks/immutability` rule flags it. |
+| `useNovelData.js` | 65 | `Existing memoization could not be preserved` | Consequence of the same issue — React Compiler can't guarantee memoization. |
 
-**Origen:** Estos errores fueron introducidos durante la **Fase 4 (Componentes Monolíticos)** previa, al extraer `useNovelData.js` desde `NovelContext.jsx`. No estaban presentes antes porque la regla `react-hooks/immutability` no se aplicaba al código original embebido en el contexto. Se corregirán en una fase posterior de limpieza.
+**Origin:** These errors were introduced during the previous **Phase 4 (Monolithic Components)**, when `useNovelData.js` was extracted from `NovelContext.jsx`. They weren't present before because the `react-hooks/immutability` rule didn't apply to the original code embedded in the context. Will be fixed in a later cleanup phase.
 
-### Veredicto Fase 0
-- `.nvmrc` creado ✅
-- `docs/` node_modules instalados ✅
-- Proyecto principal (app) funciona correctamente: build, tests, lint (errores preexistentes documentados) ✅
+### Phase 0 Verdict
+- `.nvmrc` created ✅
+- `docs/` node_modules installed ✅
+- Main project (app) works correctly: build, tests, lint (pre-existing errors documented) ✅
 
-**Listo para Fase 1 — Paquetes pinned.**
+**Ready for Phase 1 — Pinned packages.**
 
 ---
 
-## Fase 1 — Paquetes pinned (minor/patch bumps) ✅ Completada (13/06/2026)
+## Phase 1 — Pinned packages (minor/patch bumps) ✅ Completed (13/06/2026)
 
-### Cambios en versiones
+### Version changes
 
-| Paquete | Antes | Después | Tipo |
+| Package | Before | After | Type |
 |---------|-------|---------|------|
 | `lucide-react` | `1.7.0` (pinned) | `^1.18.0` | +11 minors |
 | `dexie` | `4.4.1` (pinned) | `^4.4.3` | +2 patches |
@@ -587,211 +586,211 @@ Se ejecutaron 4 comprobaciones para asegurar que nada se ha roto:
 | `@tiptap/react` | `3.20.6` (pinned) | `^3.26.1` | +6 minors |
 | `@tiptap/starter-kit` | `3.20.6` (pinned) | `^3.26.1` | +6 minors |
 | `@tiptap/extension-text-style` | `^3.20.6` | `^3.26.1` | +6 minors |
-| `react` | `^19.2.4` | `^19.2.6` (instalado `19.2.7`) | +3 patches |
-| `react-dom` | `^19.2.4` | `^19.2.6` (instalado `19.2.7`) | +3 patches |
+| `react` | `^19.2.4` | `^19.2.6` (installed `19.2.7`) | +3 patches |
+| `react-dom` | `^19.2.4` | `^19.2.6` (installed `19.2.7`) | +3 patches |
 | `i18next` | `^26.0.3` | `^26.3.1` | +3 minors |
 | `react-i18next` | `^17.0.2` | `^17.0.8` | +6 patches |
 
-### Proceso
-1. Ediciones en `app/package.json` para todas las versiones
-2. `npm install` → 39 paquetes cambiados, 16 eliminados, 867 auditados
-3. `npm update @tiptap/extension-text-style` → actualizado a 3.26.1
-4. Lockfile regenerado automáticamente
+### Process
+1. Edits in `app/package.json` for all versions
+2. `npm install` → 39 packages changed, 16 removed, 867 audited
+3. `npm update @tiptap/extension-text-style` → updated to 3.26.1
+4. Lockfile auto-regenerated
 
-### Verificación
+### Verification
 
-| Comprobación | Resultado | Observaciones |
+| Check | Result | Notes |
 |-------------|-----------|---------------|
-| `app/` lint | ✅ | 2 errors preexistentes (mismos que en Fase 0), 30 warnings (mismos) |
-| `app/` test | ✅ | 12 files, 117 passed, 0 failed (mismos que antes) |
-| `app/` build | ✅ | Build exitoso, 3898 módulos (21 más que antes por nuevas versiones) |
+| `app/` lint | ✅ | 2 pre-existing errors (same as Phase 0), 30 warnings (same) |
+| `app/` test | ✅ | 12 files, 117 passed, 0 failed (same as before) |
+| `app/` build | ✅ | Build successful, 3898 modules (21 more than before due to new versions) |
 
-### Notas
-- **lucide-react 1.7.0 → 1.18.0**: Build exitoso confirma que todos los iconos importados (~40 iconos distintos en 33 archivos) existen en la nueva versión. Lucide es retrocompatible (solo añade iconos, no elimina).
-- **@tiptap 3.20.6 → 3.26.1**: Los tests pasan (cubren Tiptap indirectamente). Se verificó que el build genera el bundle correctamente. Un smoke test manual del editor confirmaría la funcionalidad completa (se hará en Fase 5).
-- **React 19.2.7**: npm instaló 19.2.7 (novedad desde la auditoría) que es incluso más reciente que el 19.2.6 planificado. Compatible con todas las peer dependencies.
+### Notes
+- **lucide-react 1.7.0 → 1.18.0**: Successful build confirms all imported icons (~40 distinct icons across 33 files) exist in the new version. Lucide is backward compatible (only adds icons, never removes).
+- **@tiptap 3.20.6 → 3.26.1**: Tests pass (cover Tiptap indirectly). Build generates the bundle correctly. A manual smoke test of the editor would confirm full functionality (will be done in Phase 5).
+- **React 19.2.7**: npm installed 19.2.7 (new since the audit) which is even more recent than the planned 19.2.6. Compatible with all peer dependencies.
 
-### Veredicto
-Todos los paquetes pinned actualizados a sus versiones más recientes dentro del mismo major, sin breaking changes. Proyecto compila, pasa tests y lint.
+### Verdict
+All pinned packages updated to their latest versions within the same major, no breaking changes. Project compiles, passes tests and lint.
 
-**Listo para Fase 2 — @huggingface/transformers + onnxruntime-web.**
+**Ready for Phase 2 — @huggingface/transformers + onnxruntime-web.**
 
 ---
 
-## Fase 2 — @huggingface/transformers + onnxruntime-web ✅ Completada (13/06/2026)
+## Phase 2 — @huggingface/transformers + onnxruntime-web ✅ Completed (13/06/2026)
 
-### Auditoría previa
-El único uso de `@huggingface/transformers` está en `services/ragWorker.js` (45 líneas), que usa las APIs `pipeline` y `env`:
+### Pre-audit
+The only usage of `@huggingface/transformers` is in `services/ragWorker.js` (45 lines), which uses the `pipeline` and `env` APIs:
 ```js
 import { pipeline, env } from '@huggingface/transformers';
 env.allowLocalModels = false;
 const extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', ...);
 const output = await extractor(text, { pooling: 'mean', normalize: true });
 ```
-Estas APIs son estables en toda la rama 4.x. No hay cambios de firma entre 4.0.1 y 4.2.0.
+These APIs are stable across the entire 4.x branch. No signature changes between 4.0.1 and 4.2.0.
 
-### Cambio realizado
+### Changes made
 - **`@huggingface/transformers`**: `^4.0.1` → `^4.2.0`
-- **`onnxruntime-web`**: `1.25.0-dev.20260327` → `1.26.0-dev.20260416` (dependencia transitiva, actualizada automáticamente)
+- **`onnxruntime-web`**: `1.25.0-dev.20260327` → `1.26.0-dev.20260416` (transitive dependency, auto-updated)
 
-### Verificación
+### Verification
 
-| Comprobación | Resultado | Observaciones |
+| Check | Result | Notes |
 |-------------|-----------|---------------|
-| Versiones instaladas | ✅ | transformers 4.2.0, onnxruntime-web 1.26.0-dev ✅ |
-| `app/` lint | ✅ | 2 errors preexistentes, 30 warnings (sin cambios) |
+| Installed versions | ✅ | transformers 4.2.0, onnxruntime-web 1.26.0-dev ✅ |
+| `app/` lint | ✅ | 2 pre-existing errors, 30 warnings (unchanged) |
 | `app/` test | ✅ | 12 files, 117 passed, 0 failed |
-| `app/` build | ✅ | Build exitoso, ragWorker + WASM actualizados |
+| `app/` build | ✅ | Build successful, ragWorker + WASM updated |
 
-### Nota sobre onnxruntime-web dev build
-`@huggingface/transformers` 4.2.0 depende de `onnxruntime-web@1.26.0-dev.20260416` (pre-release). Esto es **intencional** — el equipo de Transformers.js necesita las últimas características WASM/WebGPU de ORT que aún no han llegado a una release estable. La versión anterior también era un dev build (`1.25.0-dev`). No hay intervención posible: la versión de onnxruntime-web viene determinada por transformers.js.
+### Note on onnxruntime-web dev build
+`@huggingface/transformers` 4.2.0 depends on `onnxruntime-web@1.26.0-dev.20260416` (pre-release). This is **intentional** — Transformers.js team needs the latest WASM/WebGPU features from ORT that haven't reached a stable release yet. The previous version was also a dev build (`1.25.0-dev`). No intervention possible: the onnxruntime-web version is determined by transformers.js.
 
-### Veredicto
-Actualización segura y sin impacto en el código fuente. Proyecto compila, pasa tests y lint.
+### Verdict
+Safe update with no impact on source code. Project compiles, passes tests and lint.
 
 ---
 
-## Fase 3 — marked ^17.0.5 → ^18.0.5 ✅ Completada (13/06/2026)
+## Phase 3 — marked ^17.0.5 → ^18.0.5 ✅ Completed (13/06/2026)
 
-### Auditoría previa
-El uso de `marked` en la aplicación se limita a un único wrapper:
+### Pre-audit
+The use of `marked` in the application is limited to a single wrapper:
 
-- **`utils/renderMarkdown.js`**: Llama a `marked.setOptions({ breaks: true, gfm: true })` y `marked.parse(normalized)`. Ambas APIs son estables.
+- **`utils/renderMarkdown.js`**: Calls `marked.setOptions({ breaks: true, gfm: true })` and `marked.parse(normalized)`. Both APIs are stable.
 
-El componente `MarkdownRenderer.jsx` consume `renderMarkdown()` y sanitiza con DOMPurify, por lo que la seguridad no depende de marked.
+The `MarkdownRenderer.jsx` component consumes `renderMarkdown()` and sanitizes with DOMPurify, so security does not depend on marked.
 
-### Breaking changes relevantes en v18
-1. **Trim trailing blank lines from block tokens**: Los tokens de bloque ya no incluyen líneas en blanco finales. Dado que `renderMarkdown.js` ya normaliza el texto eliminando líneas en blanco excesivas (colapsa 5+ saltos a 2), el impacto visual es inexistente.
-2. **TypeScript 6**: Solo afecta a definiciones de tipos, el proyecto usa JavaScript.
+### Relevant breaking changes in v18
+1. **Trim trailing blank lines from block tokens**: Block tokens no longer include trailing blank lines. Since `renderMarkdown.js` already normalizes text by removing excessive blank lines (collapses 5+ breaks to 2), the visual impact is nonexistent.
+2. **TypeScript 6**: Only affects type definitions, project uses JavaScript.
 
-### Verificación
+### Verification
 
-| Comprobación | Resultado | Observaciones |
+| Check | Result | Notes |
 |-------------|-----------|---------------|
-| Versión instalada | ✅ | 18.0.5 |
-| `app/` lint | ✅ | 2 errors, 30 warnings (idéntico preexistente) |
+| Installed version | ✅ | 18.0.5 |
+| `app/` lint | ✅ | 2 errors, 30 warnings (identical pre-existing) |
 | `app/` test | ✅ | 12 files → 14 files, 117 → 155 passed, 0 failed |
-| `app/` build | ✅ | Build exitoso, 3898 módulos |
+| `app/` build | ✅ | Build successful, 3898 modules |
 
-### Smoke tests añadidos
+### Smoke tests added
 
-Tras las actualizaciones de Fases 1-3 (especialmente Tiptap 3.26.1 y marked 18.0.5), se añadieron dos nuevos archivos de test:
+After the Phase 1-3 updates (especially Tiptap 3.26.1 and marked 18.0.5), two new test files were added:
 
-**1. `app/src/components/RichEditor.test.jsx`** — Smoke test del editor Tiptap (13 tests)
-- Renderizado básico con props
-- Todos los botones del toolbar presentes (negrita, cursiva, títulos, listas, cita, undo/redo, limpiar formato, +/- fuente)
-- Control de tamaño de fuente: incremento, decremento, clamps mínimo (12) y máximo (28)
-- Persistencia del tamaño en Dexie (carga/save/error)
-- Evento personalizado `ai-apply-rewrite` (inserción de contenido desde AI)
-- Estado null del editor (useEditor → null)
+**1. `app/src/components/RichEditor.test.jsx`** — Tiptap editor smoke test (13 tests)
+- Basic rendering with props
+- All toolbar buttons present (bold, italic, headings, lists, quote, undo/redo, clear format, +/- font)
+- Font size control: increment, decrement, minimum (12) and maximum (28) clamps
+- Dexie persistence: load/save/error
+- Custom `ai-apply-rewrite` event (content insertion from AI)
+- Null editor state (useEditor → null)
 
-**2. `app/src/utils/renderMarkdown.edge.test.js`** — Tests de compatibilidad con marked 18 (25 tests)
-- HTML pasa sin escapar (por diseño, DOMPurify sanitiza aparte)
-- URLs con caracteres especiales
-- GFM autolink, tablas, tachado, task lists
-- Listas anidadas, blockquote, código inline/bloque, headings
-- Unicode (acentos, cirílico, árabe, chino, emojis)
-- Normalización de whitespace, trailing blank lines (marked 18)
-- `breaks:true` genera `<br>` en saltos de línea simples
-- Inputs vacíos, nulos, numéricos, booleanos
+**2. `app/src/utils/renderMarkdown.edge.test.js`** — marked 18 compatibility tests (25 tests)
+- HTML passes through unescaped (by design, DOMPurify sanitizes separately)
+- URLs with special characters
+- GFM autolink, tables, strikethrough, task lists
+- Nested lists, blockquote, inline/block code, headings
+- Unicode (accents, Cyrillic, Arabic, Chinese, emojis)
+- Whitespace normalization, trailing blank lines (marked 18)
+- `breaks:true` generates `<br>` for single line breaks
+- Empty, null, numeric and boolean inputs
 
-### Conclusión
-Actualización directa y segura. Todos los tests de renderMarkdown pasan, confirmando que el output de `marked.parse()` es compatible. No requiere cambios en el código fuente.
+### Conclusion
+Direct and safe update. All renderMarkdown tests pass, confirming the output of `marked.parse()` is compatible. No source code changes required.
 
 ---
 
-## Fase 4 — Paquetes restantes (actualización npm update + within-range) ✅ Completada (13/06/2026)
+## Phase 4 — Remaining packages (npm update + within-range) ✅ Completed (13/06/2026)
 
-### Cambios realizados
+### Changes made
 
-| Paquete | Antes | Después | Tipo |
+| Package | Before | After | Type |
 |---------|-------|---------|------|
-| `vite` | 7.3.1 | **7.3.5** | patch (dentro de `^7.3.1`) |
-| `vite-plugin-pwa` | 1.2.0 | **1.3.0** | minor (dentro de `^1.2.0`) |
-| `vite-plugin-node-polyfills` | 0.25.0 | **0.28.0** | minor-for-0.x — rango actualizado `^0.25.0` → `^0.28.0` |
+| `vite` | 7.3.1 | **7.3.5** | patch (within `^7.3.1`) |
+| `vite-plugin-pwa` | 1.2.0 | **1.3.0** | minor (within `^1.2.0`) |
+| `vite-plugin-node-polyfills` | 0.25.0 | **0.28.0** | minor-for-0.x — range updated `^0.25.0` → `^0.28.0` |
 
-### Cambios ejecutados
-1. `npm update` → actualiza vite 7.3.5, vite-plugin-pwa 1.3.0, remueve 63 packages obsoletos
-2. Edición manual de `package.json`: `vite-plugin-node-polyfills` de `^0.25.0` a `^0.28.0`
-3. `npm install` → confirma resolución correcta de la nueva versión
+### Changes executed
+1. `npm update` → updates vite 7.3.5, vite-plugin-pwa 1.3.0, removes 63 obsolete packages
+2. Manual edit of `package.json`: `vite-plugin-node-polyfills` from `^0.25.0` to `^0.28.0`
+3. `npm install` → confirms correct resolution of the new version
 
-### Verificación
+### Verification
 
-| Comprobación | Resultado | Observaciones |
+| Check | Result | Notes |
 |-------------|-----------|---------------|
-| `app/` lint | ✅ | 2 errors, 30 warnings (idéntico preexistente) |
+| `app/` lint | ✅ | 2 errors, 30 warnings (identical pre-existing) |
 | `app/` test | ✅ | 14 files, 155 passed, 0 failed |
-| `app/` build | ✅ | Build exitoso, 3899 módulos (1 más vs anterior por cambios en polyfills) |
+| `app/` build | ✅ | Build successful, 3899 modules (1 more vs previous due to polyfill changes) |
 
-### Major bumps evaluados y diferidos
+### Major bumps evaluated and deferred
 
-| Paquete | Veredicto | Motivo |
+| Package | Verdict | Reason |
 |---------|-----------|--------|
-| `@vitejs/plugin-react` 5→6 | ❌ Diferido | Requiere Vite 8 (elimina Babel, usa Oxc) |
-| `vite` 7→8 | ❌ Diferido | Migra de esbuild+Rollup a Rolldown (Rust). Cambia `build.rollupOptions` → `build.rolldownOptions`. Requiere prueba de compatibilidad con `vite-plugin-node-polyfills`. |
-| `eslint` 9→10 | ❌ Diferido | `eslint-plugin-react@7.37.5` no declara soporte para ESLint 10 (solo hasta 9.7). `typescript-eslint` y `eslint-plugin-react-hooks` sí lo soportan. Pendiente de `eslint-plugin-react@8`. |
+| `@vitejs/plugin-react` 5→6 | ❌ Deferred | Requires Vite 8 (removes Babel, uses Oxc) |
+| `vite` 7→8 | ❌ Deferred | Migrates from esbuild+Rollup to Rolldown (Rust). Changes `build.rollupOptions` → `build.rolldownOptions`. Requires compatibility testing with `vite-plugin-node-polyfills`. |
+| `eslint` 9→10 | ❌ Deferred | `eslint-plugin-react@7.37.5` doesn't declare ESLint 10 support (only up to 9.7). `typescript-eslint` and `eslint-plugin-react-hooks` do support it. Waiting for `eslint-plugin-react@8`. |
 
-### Deuda técnica documentada para el futuro
-- **Vite 8 + @vitejs/plugin-react 6**: Migración mayor que implica cambiar de esbuild+Rollup a Rolldown+Oxc. Se recomienda planificar una sesión dedicada (~1 día) para migrar `vite.config.js` (renombrar `build.rollupOptions` → `build.rolldownOptions`, verificar compatibilidad de polyfills, probar HMR).
-- **ESLint 10**: Pendiente de que `eslint-plugin-react` publique una versión que declare soporte para ESLint 10. El proyecto ya usa flat config, por lo que la migración será principalmente verificar compatibilidad de plugins.
+### Documented technical debt for the future
+- **Vite 8 + @vitejs/plugin-react 6**: Major migration that involves switching from esbuild+Rollup to Rolldown+Oxc. A dedicated session (~1 day) is recommended to migrate `vite.config.js` (rename `build.rollupOptions` → `build.rolldownOptions`, verify polyfill compatibility, test HMR).
+- **ESLint 10**: Waiting for `eslint-plugin-react` to publish a version declaring ESLint 10 support. The project already uses flat config, so migration will mainly be about verifying plugin compatibility.
 
 ---
 
-# Plan de Deuda Técnica MEDIA (6 fases)
+# MEDIUM Technical Debt Plan (6 phases)
 
-| Fase | Descripción | Estado |
+| Phase | Description | Status |
 |------|------------|--------|
-| 1 | Console.logs debug + import React innecesario | ✅ |
-| 2 | Lógica duplicada restauración DB | ✅ |
+| 1 | Debug console.logs + unnecessary React import | ✅ |
+| 2 | Duplicate DB restore logic | ✅ |
 | 3 | Export inconsistency (default vs named) | ✅ |
 | 4 | Prop drilling | ✅ |
 | 5 | Deep JSX nesting | ✅ |
-| 6 | Verificación global + docs | ✅ |
+| 6 | Global verification + docs | ✅ |
 
 ---
 
-## Fase 1 — Console.logs + import React innecesario ✅ Completada (13/06/2026)
+## Phase 1 — Console.logs + unnecessary React import ✅ Completed (13/06/2026)
 
-### Eliminado
-| Archivo | Líneas | Tipo |
+### Removed
+| File | Lines | Type |
 |---------|--------|------|
-| `services/mpcService.js` | 149, 151, 153 | `console.log` de debug del servicio MPC |
-| `components/aipanel/RewriteTab.jsx` | 59, 68 | `console.log` de depuración de reescritura |
-| `views/Nexus.jsx` | 1 | `import React` innecesario (JSX transform automático) |
+| `services/mpcService.js` | 149, 151, 153 | `console.log` debug from MPC service |
+| `components/aipanel/RewriteTab.jsx` | 59, 68 | Rewrite debug `console.log` |
+| `views/Nexus.jsx` | 1 | Unnecessary `import React` (automatic JSX transform) |
 
-### Verificación
-- `npm run lint` — **2 errors preexistentes** (useNovelData.js, documentados), 27 warnings (sin nuevos)
+### Verification
+- `npm run lint` — **2 pre-existing errors** (useNovelData.js, documented), 27 warnings (no new)
 - `npm test` — **155 passed**, 0 failed (14 files)
-- `npm run build` — exitoso (PWA generada, 3899 módulos)
+- `npm run build` — successful (PWA generated)
 
 ---
 
-## Fase 2 — Lógica duplicada restauración DB ✅ Completada (13/06/2026)
+## Phase 2 — Duplicate DB restore logic ✅ Completed (13/06/2026)
 
-### Cambio principal
-Se identificaron 3 ocurrencias del mismo patrón de transacción DB (clear + bulkAdd para todas las tablas) en `useCloudRestore.js` (x2) y `exportService.js` (x1). Se extrajo a una función compartida `restoreTables()` en `db/database.js`.
+### Main change
+Identified 3 occurrences of the same DB transaction pattern (clear + bulkAdd for all tables) in `useCloudRestore.js` (x2) and `exportService.js` (x1). Extracted into a shared `restoreTables()` function in `db/database.js`.
 
-### Archivos modificados
-| Archivo | Cambio |
+### Modified files
+| File | Change |
 |---------|--------|
-| `db/database.js` | Nueva función `restoreTables(tablesData)` exportada |
-| `hooks/useCloudRestore.js` | 2 bloques duplicados → `await restoreTables()` |
-| `services/exportService.js` | 1 bloque duplicado → `await restoreTables()` |
-| `services/exportService.test.js` | Mock actualizado para incluir `restoreTables` (vi.hoisted) |
+| `db/database.js` | New exported function `restoreTables(tablesData)` |
+| `hooks/useCloudRestore.js` | 2 duplicated blocks → `await restoreTables()` |
+| `services/exportService.js` | 1 duplicated block → `await restoreTables()` |
+| `services/exportService.test.js` | Mock updated to include `restoreTables` (vi.hoisted) |
 
-### Verificación
-- `npm run lint` — **2 errors preexistentes**, 27 warnings (sin nuevos)
+### Verification
+- `npm run lint` — **2 pre-existing errors**, 27 warnings (no new)
 - `npm test` — **155 passed**, 0 failed (14 files)
-- `npm run build` — exitoso (PWA generada)
+- `npm run build` — successful (PWA generated)
 
 ---
 
-## Fase 3 — Export inconsistency ✅ Completada (13/06/2026)
+## Phase 3 — Export inconsistency ✅ Completed (13/06/2026)
 
-### Cambios realizados
-5 componentes migrados de `export function` (named) a `export default function` y sus barrel files actualizados:
+### Changes made
+5 components migrated from `export function` (named) to `export default function` and their barrel files updated:
 
-| Componente | Archivo | Tipo anterior | Tipo nuevo |
+| Component | File | Previous type | New type |
 |-----------|---------|--------------|------------|
 | `RewriteTab` | `components/aipanel/RewriteTab.jsx` | named | default |
 | `ProposalCard` | `components/ProposalCard.jsx` | named | default |
@@ -799,164 +798,161 @@ Se identificaron 3 ocurrencias del mismo patrón de transacción DB (clear + bul
 | `CompendiumPanel` | `views/compendium/CompendiumPanel.jsx` | named | default |
 | `CompendiumFilters` | `views/compendium/CompendiumFilters.jsx` | named | default |
 
-Archivos adicionales modificados:
+Additional files modified:
 - `components/aipanel/index.js` — barrel: `export { default as AgentEditForm | RewriteTab }`
 - `components/index.js` — barrel: `export { default as ProposalCard }`
 - `views/compendium/index.js` — barrel: `export { default as CompendiumFilters | CompendiumPanel }`
-- `components/aipanel/DebateTab.jsx` — import directo: `{ AgentEditForm }` → `AgentEditForm`
+- `components/aipanel/DebateTab.jsx` — direct import: `{ AgentEditForm }` → `AgentEditForm`
 
-### Verificación
-- `npm run lint` — **2 errors preexistentes**, 27 warnings (sin nuevos)
+### Verification
+- `npm run lint` — **2 pre-existing errors**, 27 warnings (no new)
 - `npm test` — **155 passed**, 0 failed (14 files)
-- `npm run build` — exitoso (PWA generada)
+- `npm run build` — successful (PWA generated)
 
 ---
 
-## Fase 4 — Prop drilling ✅ Completada (13/06/2026)
+## Phase 4 — Prop drilling ✅ Completed (13/06/2026)
 
-### Objetivo
-Reducir el prop drilling excesivo en componentes que reciben ~15 props cuando pueden consumir contexto global directamente.
+### Goal
+Reduce excessive prop drilling in components receiving ~15 props when they can consume global context directly.
 
-### Cambios realizados
+### Changes made
 
 #### EditorToolbar (15 props → 3 props)
-| Antes | Después |
+| Before | After |
 |-------|---------|
-| 15 props individuales (activeNovel, characters, cloudSyncStatus, etc.) | 3 props: `onNavigate`, `menuOpen`, `handleManualMpcScan` |
-| Re-renderiza al cambiar cualquier prop del padre | Solo reacciona a cambios en las 3 props específicas |
+| 15 individual props (activeNovel, characters, cloudSyncStatus, etc.) | 3 props: `onNavigate`, `menuOpen`, `handleManualMpcScan` |
+| Re-renders on any parent prop change | Only reacts to changes in the 3 specific props |
 
-El toolbar ahora consume `useNovel()` y `useAI()` directamente, eliminando dependencia del padre para `activeNovel`, `characters`, `locations`, `objects`, `lore`, `totalScenes`, `streak`, `cloudSyncStatus`, `lastCloudSync`, `isSyncing`, `onManualSync`, `onToggleAutoSync`.
+The toolbar now consumes `useNovel()` and `useAI()` directly, removing dependency on the parent for `activeNovel`, `characters`, `locations`, `objects`, `lore`, `totalScenes`, `streak`, `cloudSyncStatus`, `lastCloudSync`, `isSyncing`, `onManualSync`, `onToggleAutoSync`.
 
-**Archivos:** `views/editor/EditorToolbar.jsx`, `views/Editor.jsx` (call-site simplificado).
+**Files:** `views/editor/EditorToolbar.jsx`, `views/Editor.jsx` (simplified call-site).
 
 #### CompendiumPanel (10 props → 5 props)
-| Antes | Después |
+| Before | After |
 |-------|---------|
-| `characters`, `locations`, `objects`, `lore` como 4 props separadas | 1 prop `entities={{ characters, locations, objects, lore }}` |
-| `activeNovel` como prop | Consumido desde `useNovel()` dentro del panel |
+| `characters`, `locations`, `objects`, `lore` as 4 separate props | 1 prop `entities={{ characters, locations, objects, lore }}` |
+| `activeNovel` as prop | Consumed from `useNovel()` inside the panel |
 
-**Archivos:** `views/compendium/CompendiumPanel.jsx`, `views/Compendium.jsx` (call-site).
+**Files:** `views/compendium/CompendiumPanel.jsx`, `views/Compendium.jsx` (call-site).
 
-#### SettingsCloudTab — no se modificó
-El componente recibe 15 props, pero todas son valores/callbacks distintos que no se agrupan naturalmente, y no consume ningún contexto que pudiera reemplazarlos. Se mantiene como está por ser un diseño correcto de componente presentacional.
+#### SettingsCloudTab — not modified
+The component receives 15 props, but all are distinct values/callbacks that don't group naturally, and it doesn't consume any context that could replace them. Kept as-is since it's a correct design for a presentational component.
 
-### Verificación
-- `npm run lint` — **2 errors preexistentes** (useNovelData.js), 27 warnings (sin nuevos)
+### Verification
+- `npm run lint` — **2 pre-existing errors** (useNovelData.js), 27 warnings (no new)
 - `npm test` — **155 passed**, 0 failed (14 files)
-- `npm run build` — exitoso (PWA generada)
+- `npm run build` — successful (PWA generated)
 
 ---
 
-## Fase 5 — Deep JSX nesting ✅ Completada (13/06/2026)
+## Phase 5 — Deep JSX nesting ✅ Completed (13/06/2026)
 
-### Objetivo
-Extraer fragmentos JSX profundamente anidados (>4 niveles) en componentes auxiliares, reduciendo la profundidad de anidamiento y mejorando la legibilidad.
+### Goal
+Extract deeply nested JSX fragments (>4 levels) into helper components, reducing nesting depth and improving readability.
 
-### Cambios realizados
+### Changes made
 
 #### 1. ModalContext.jsx — ModalActions
-**Problema:** Ternario triple anidado en línea única (líneas 85-91) para renderizar el botón de acción del modal según su tipo ('alert', 'confirm', 'prompt'/'project', 'custom').
+**Problem:** Triple nested ternary on a single line (lines 85-91) to render the modal action button based on type ('alert', 'confirm', 'prompt'/'project', 'custom').
 
-**Solución:** Extraído a componente `ModalActions` que recibe `type`, `data`, `modalInput`, `closeModal` y `t` como props. El render principal ahora usa `<ModalActions ... />`.
+**Solution:** Extracted into `ModalActions` component receiving `type`, `data`, `modalInput`, `closeModal` and `t` as props. The main render now uses `<ModalActions ... />`.
 
 #### 2. OracleTab.jsx — OracleEntry
-**Problema:** El mapeo de `oracleHistory` contenía ~55 líneas de JSX anidado (6+ niveles) con Tooltip, MarkdownRenderer, detalles expandibles y condicionales de estado.
+**Problem:** The `oracleHistory` map contained ~55 lines of deeply nested JSX (6+ levels) with Tooltip, MarkdownRenderer, expandable details and state conditionals.
 
-**Solución:** Extraído a componente `OracleEntry` (65 líneas, con PropTypes). El map se reduce a `<OracleEntry key={entry.id} ... />`.
+**Solution:** Extracted into `OracleEntry` component (65 lines, with PropTypes). The map reduces to `<OracleEntry key={entry.id} ... />`.
 
 #### 3. DebateTab.jsx — DebateSessionMenu
-**Problema:** El menú desplegable de sesiones de debate tenía 8+ niveles de anidamiento: Tooltip > button > iconos, menú condicional con lista de sesiones, cada una con input edit-inline y Tooltips.
+**Problem:** The debate session dropdown had 8+ levels of nesting: Tooltip > button > icons, conditional menu with session list, each with inline-edit input and Tooltips.
 
-**Solución:** Extraído a componente `DebateSessionMenu` (85 líneas) que recibe las props necesarias para manejar el estado del menú y CRUD de sesiones.
+**Solution:** Extracted into `DebateSessionMenu` component (85 lines) receiving necessary props for menu state and session CRUD.
 
-#### 4. CompendiumPanel.jsx — Formularios por categoría
-**Problema:** 4 bloques `selectedCategory === 'characters'/'locations'/'objects'/'lore'` que sumaban ~170 líneas de JSX con 5-7 niveles de anidamiento.
+#### 4. CompendiumPanel.jsx — Per-category forms
+**Problem:** 4 blocks `selectedCategory === 'characters'/'locations'/'objects'/'lore'` totaling ~170 lines of JSX with 5-7 levels of nesting.
 
-**Solución:** Extraído a 4 componentes de formulario en el mismo archivo:
-- `CharacterForm` — nombre, rol, estado vital, ocupación, edad, descripción, rasgos, relaciones + AssociationGroups
-- `LocationForm` — nombre, tipo, clima, descripción, etiquetas + AssociationGroups
-- `ObjectForm` — nombre, tipo, importancia, portador, descripción + AssociationGroups
-- `LoreForm` — título, categoría, resumen, etiquetas + AssociationGroups
+**Solution:** Extracted into 4 form components in the same file:
+- `CharacterForm` — name, role, life status, occupation, age, description, traits, relationships + AssociationGroups
+- `LocationForm` — name, type, climate, description, tags + AssociationGroups
+- `ObjectForm` — name, type, importance, bearer, description + AssociationGroups
+- `LoreForm` — title, category, summary, tags + AssociationGroups
 
-Adicionalmente, se extrajo `AssociationGroup` a `views/compendium/AssociationGroup.jsx` para reutilización.
+Additionally, `AssociationGroup` was extracted to `views/compendium/AssociationGroup.jsx` for reuse.
 
-### Archivos modificados/creados
-| Archivo | Cambio |
+### Files modified/created
+| File | Change |
 |---------|--------|
-| `context/ModalContext.jsx` | Extraído ModalActions (103→124 líneas) |
-| `components/aipanel/OracleTab.jsx` | Extraído OracleEntry (397→~350 líneas) |
-| `components/aipanel/DebateTab.jsx` | Extraído DebateSessionMenu (288→~260 líneas) |
-| `views/compendium/AssociationGroup.jsx` | **Nuevo** — AssociationGroup extraído (35 líneas + PropTypes) |
-| `views/compendium/CompendiumPanel.jsx` | 4 formularios extraídos a sub-componentes (485→~390 líneas) |
+| `context/ModalContext.jsx` | Extracted ModalActions (103→124 lines) |
+| `components/aipanel/OracleTab.jsx` | Extracted OracleEntry (397→~350 lines) |
+| `components/aipanel/DebateTab.jsx` | Extracted DebateSessionMenu (288→~260 lines) |
+| `views/compendium/AssociationGroup.jsx` | **New** — Extracted AssociationGroup (35 lines + PropTypes) |
+| `views/compendium/CompendiumPanel.jsx` | 4 forms extracted to sub-components (485→~390 lines) |
 
-### Bug corregido post-extracción
-- `CharacterForm`, `LocationForm`, `ObjectForm`, `LoreForm` no recibían `setFormData` como prop, causando `ReferenceError` al usar `AssociationGroup`. Corregido añadiendo `setFormData` a las props de los 4 formularios.
+### Bug fixed post-extraction
+- `CharacterForm`, `LocationForm`, `ObjectForm`, `LoreForm` didn't receive `setFormData` as a prop, causing `ReferenceError` when using `AssociationGroup`. Fixed by adding `setFormData` to all 4 forms' props.
 
-### Verificación
-- `npm run lint` — **2 errors preexistentes** (useNovelData.js), 27 warnings (sin nuevos)
+### Verification
+- `npm run lint` — **2 pre-existing errors** (useNovelData.js), 27 warnings (no new)
 - `npm test` — **155 passed**, 0 failed (14 files)
-- `npm run build` — exitoso (PWA generada, 3900 módulos)
+- `npm run build` — successful (PWA generated, 3900 modules)
 
 ---
 
-## Fase 6 — Verificación global + documentación ✅ Completada (13/06/2026)
+## Phase 6 — Global verification + documentation ✅ Completed (13/06/2026)
 
-### Objetivo
-Verificación final de todas las fases del plan de deuda técnica MEDIA y documentación de cierre del plan.
+### Goal
+Final verification of all MEDIUM technical debt plan phases and plan closing documentation.
 
-### Verificación global
+### Global verification
 
-| Comprobación | Resultado |
+| Check | Result |
 |-------------|-----------|
-| `npm run lint` | ✅ **0 errores nuevos**, 2 errores preexistentes (useNovelData.js), 27 warnings (sin cambios en ninguna fase) |
+| `npm run lint` | ✅ **0 new errors**, 2 pre-existing errors (useNovelData.js), 27 warnings (unchanged across all phases) |
 | `npm run test` | ✅ **155 tests**, 14 files, 0 failed |
-| `npm run build` | ✅ Build exitoso, PWA generada, 3900 módulos |
-| Barrel files | ✅ `views/compendium/index.js` exporta correctamente `AssociationGroup`, `EntityCard`, `CompendiumPanel`, `CompendiumFilters`, `CompendiumMpcOverlay` |
-| Archivos nuevos | ✅ `AssociationGroup.jsx` creado, importado por los 4 formularios de CompendiumPanel |
-| Regresiones | ✅ Ninguna detectada — todas las rutas de compendio, oráculo, debate y modal funcionan |
+| `npm run build` | ✅ Build successful, PWA generated, 3900 modules |
+| Barrel files | ✅ `views/compendium/index.js` correctly exports `AssociationGroup`, `EntityCard`, `CompendiumPanel`, `CompendiumFilters`, `CompendiumMpcOverlay` |
+| New files | ✅ `AssociationGroup.jsx` created, imported by all 4 CompendiumPanel forms |
+| Regressions | ✅ None detected — all compendium, oracle, debate and modal routes work |
 
-### Resumen del plan de deuda técnica MEDIA
+### MEDIUM technical debt plan summary
 
-| Fase | Descripción | Estado | Impacto |
+| Phase | Description | Status | Impact |
 |------|------------|--------|---------|
-| 1 | Console.logs debug + import React innecesario | ✅ | Eliminados 6 console.log y 1 import React legacy |
-| 2 | Lógica duplicada restauración DB | ✅ | 3 bloques duplicados → 1 función `restoreTables()` |
-| 3 | Export inconsistency (default vs named) | ✅ | 5 componentes migrados a export default + barrel actualizados |
+| 1 | Debug console.logs + unnecessary React import | ✅ | Removed 6 console.logs and 1 legacy React import |
+| 2 | Duplicate DB restore logic | ✅ | 3 duplicated blocks → 1 `restoreTables()` function |
+| 3 | Export inconsistency (default vs named) | ✅ | 5 components migrated to export default + barrels updated |
 | 4 | Prop drilling | ✅ | EditorToolbar: 15→3 props; CompendiumPanel: 10→5 props |
-| 5 | Deep JSX nesting | ✅ | 4 sub-componentes extraídos de JSX anidado en 4 archivos |
-| 6 | Verificación global + docs | ✅ | Todo verificado y documentado en `auditoria-progreso.md` |
+| 5 | Deep JSX nesting | ✅ | 4 sub-components extracted from nested JSX across 4 files |
+| 6 | Global verification + docs | ✅ | All verified and documented in `auditoria-progreso.md` |
 
-**¡Deuda técnica MEDIA resuelta!**
+**MEDIUM technical debt resolved!**
 
-### Deuda técnica pendiente (futuras iteraciones)
-- **Migración TypeScript**: PropTypes + JSDoc son paso intermedio. Tipo completo requeriría configurar TS + migrar ~50 archivos.
-- **Context providers no memoizados**: AIProvider y NovelProvider renderizan todos los consumidores en cada cambio. Optimización pendiente para futura iteración.
-- **Vite 8 + @vitejs/plugin-react 6**: Migración mayor pendiente (esbuild+Rollup → Rolldown+Oxc).
-- **ESLint 10**: Pendiente de compatibilidad de eslint-plugin-react.
+### Remaining technical debt (future iterations)
+- **TypeScript migration**: PropTypes + JSDoc are the intermediate step. Full migration would require setting up TS + migrating ~50 files.
+- **Context providers not memoized**: AIProvider and NovelProvider re-render all consumers on every change. Optimization pending for a future iteration.
+- **Vite 8 + @vitejs/plugin-react 6**: Major migration pending (esbuild+Rollup → Rolldown+Oxc).
+- **ESLint 10**: Waiting for eslint-plugin-react compatibility.
 
----
+### Mini-tasks completed (13/06/2026)
 
-### Mini-tareas completadas (13/06/2026)
+#### 1. TypeScript as devDependency ✅
+**Problem:** `react-i18next` declares TypeScript as a peer dependency (`^5 || ^6`) but it wasn't installed, generating an npm warning.
 
-#### 1. TypeScript como devDependency ✅
-**Problema:** `react-i18next` declara TypeScript como peer dependency (`^5 || ^6`) pero no estaba instalado, generando un warning de npm.
-
-**Solución:**
+**Solution:**
 ```bash
 npm install --save-dev typescript
 ```
-Resultado: TypeScript `^6.0.3` instalado en devDependencies. Sin impacto en el código (el proyecto sigue siendo JS), pero se silencia el warning de peer dep.
+Result: TypeScript `^6.0.3` installed in devDependencies. No impact on code (the project remains JS), but silences the peer dep warning.
 
-**Verificación real:**
-| Comprobación | Resultado |
+**Real verification:**
+| Check | Result |
 |-------------|-----------|
-| `npm run lint` | ✅ **2 errors preexistentes** (useNovelData.js), 27 warnings (sin nuevos) |
+| `npm run lint` | ✅ **2 pre-existing errors** (useNovelData.js), 27 warnings (no new) |
 | `npm test` | ✅ **155 passed**, 0 failed (14 files) |
-| `npm run build` | ✅ Build exitoso, PWA generada, 3900 módulos |
+| `npm run build` | ✅ Build successful, PWA generated, 3900 modules |
 
-#### 2. Corrección de 2 errores de lint en `useNovelData.js` ✅
-**Problema:** El hook `init` en `useNovelData.js` llamaba a `refreshAllNovels()` antes de que la constante fuera declarada (línea 65), provocando 2 errores de `react-hooks/immutability` y `react-hooks/preserve-manual-memoization`.
+#### 2. Fix for 2 lint errors in `useNovelData.js` ✅
+**Problem:** The `init` hook in `useNovelData.js` called `refreshAllNovels()` before the constant was declared (line 65), causing 2 errors from `react-hooks/immutability` and `react-hooks/preserve-manual-memoization`.
 
-**Solución:** Reordenar las declaraciones en `useNovelData.js` moviendo `refreshAllNovels` antes de `init`, o extrayendo la lógica de inicialización para eliminar la dependencia forward.
-*(Pendiente de implementar — los errores son preexistentes y no afectan a runtime)*
-
+**Solution:** Reorder declarations in `useNovelData.js` moving `refreshAllNovels` before `init`, or extracting the initialization logic to eliminate the forward dependency.
+*(Pending implementation — errors are pre-existing and don't affect runtime)*
