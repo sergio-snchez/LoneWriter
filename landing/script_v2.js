@@ -118,6 +118,9 @@ document.addEventListener('DOMContentLoaded', () => {
             link_doc: "https://lonewriter-docs.vercel.app/",
             link_change: "https://github.com/sergio-snchez/LoneWriter/blob/main/CHANGELOG.md",
             link_roadmap: "https://github.com/sergio-snchez/LoneWriter/blob/main/ROADMAP.md",
+            nav_localai: "Local AI",
+            nav_nexus: "Nexus",
+            nav_rag: "RAG Engine",
             nav_roadmap: "Roadmap",
             roadmap_sectitle: "Future Vision & Roadmap",
             roadmap_secsub: "LoneWriter is evolving every day based on the needs of the community. Here is what is being worked on next.",
@@ -239,6 +242,9 @@ document.addEventListener('DOMContentLoaded', () => {
             link_doc: "https://lonewriter-docs.vercel.app/es/",
             link_change: "https://github.com/sergio-snchez/LoneWriter/blob/main/CHANGELOG_ES.md",
             link_roadmap: "https://github.com/sergio-snchez/LoneWriter/blob/main/ROADMAP_ES.md",
+            nav_localai: "IA Local",
+            nav_nexus: "Nexus",
+            nav_rag: "Motor RAG",
             nav_roadmap: "Roadmap",
             roadmap_sectitle: "Visión de Futuro y Roadmap",
             roadmap_secsub: "LoneWriter evoluciona cada día basándose en las necesidades de la comunidad. Esto es en lo que se está trabajando.",
@@ -275,7 +281,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
             if (dictionary[key]) {
-                el.innerHTML = dictionary[key];
+                if (dictionary[key].includes('<')) {
+                    el.innerHTML = dictionary[key];
+                } else {
+                    el.textContent = dictionary[key];
+                }
             }
         });
         document.querySelectorAll('[data-i18n-href]').forEach(el => {
@@ -297,23 +307,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Apply translations initially to ensure everything is in sync
     applyTranslations(currentLang);
 
-    // Feature Cards Glow Effect
+    // Feature Cards Glow Effect (throttled with rAF)
     const featureCards = document.querySelectorAll('.feature-card');
     featureCards.forEach(card => {
+        let rafId = null;
         card.addEventListener('mousemove', e => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            card.style.setProperty('--mouse-x', `${x}px`);
-            card.style.setProperty('--mouse-y', `${y}px`);
+            if (rafId) return;
+            rafId = requestAnimationFrame(() => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+                rafId = null;
+            });
         });
     });
 
-    // Modal Interaction
+    // Modal Interaction + Focus Trap
     const modal = document.getElementById('feature-modal');
     const modalTitle = document.getElementById('modal-title');
     const modalDesc = document.getElementById('modal-desc');
     const closeModalBtn = document.getElementById('close-modal');
+    let lastFocusedElement = null;
+
+    const getFocusable = () => modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
 
     featureCards.forEach(card => {
         card.addEventListener('click', () => {
@@ -322,8 +340,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const featureId = card.getAttribute('data-feature-id');
 
             if (titleEl && descEl) {
-                modalTitle.innerHTML = titleEl.innerHTML;
-                modalDesc.innerHTML = descEl.innerHTML;
+                modalTitle.textContent = titleEl.textContent;
+                modalDesc.textContent = descEl.textContent;
 
                 // Hide all mockups
                 document.querySelectorAll('.mockup-ui').forEach(m => m.classList.remove('active'));
@@ -334,13 +352,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (activeMockup) activeMockup.classList.add('active');
                 }
 
+                lastFocusedElement = card;
                 modal.classList.add('active');
+
+                // Focus first focusable element inside modal
+                const focusable = getFocusable();
+                if (focusable.length) setTimeout(() => focusable[0].focus(), 50);
             }
         });
     });
 
     const closeFeatureModal = () => {
         modal.classList.remove('active');
+        if (lastFocusedElement) {
+            lastFocusedElement.focus();
+            lastFocusedElement = null;
+        }
     };
 
     closeModalBtn.addEventListener('click', closeFeatureModal);
@@ -353,6 +380,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal.classList.contains('active')) {
             closeFeatureModal();
+            return;
+        }
+        if (e.key === 'Tab' && modal.classList.contains('active')) {
+            const focusable = getFocusable();
+            if (focusable.length < 2) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
         }
     });
 
@@ -395,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentSession = typingSessionId;
         let lang = currentLang;
         let data = mpcAnimData[lang];
-        mpcTypingArea.innerHTML = '';
+        mpcTypingArea.textContent = '';
 
         let i = 0;
         let charIndex = 0;
@@ -477,6 +518,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Hamburger menu toggle
+    const hamburger = document.querySelector('.hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    if (hamburger && navLinks) {
+        hamburger.addEventListener('click', () => {
+            const isActive = navLinks.classList.toggle('active');
+            hamburger.classList.toggle('active');
+            hamburger.setAttribute('aria-expanded', isActive);
+        });
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                hamburger.classList.remove('active');
+                hamburger.setAttribute('aria-expanded', 'false');
+            });
+        });
+    }
 
     if (mpcTypingArea) window.runMPCTyping();
 });
