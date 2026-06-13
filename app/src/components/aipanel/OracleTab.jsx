@@ -4,21 +4,29 @@
  */
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import i18n from '../../i18n/i18n'
 import {
   Trash2, Check, AlertTriangle, Eye, CheckCheck, Loader2, ChevronDown, Copy, X, XCircle
 } from 'lucide-react'
-import { useAI } from '../../context/AIContext'
-import { useNovel } from '../../context/NovelContext'
-import { useModal } from '../../context/ModalContext'
-import { AIService } from '../../services/aiService'
-import { fetchDetectedEntityData } from '../../services/compendiumSearch'
-import { retrieveRelevantFragments } from '../../services/ragService'
-import { Tooltip } from '../Tooltip'
-import { renderMarkdown } from '../../utils/renderMarkdown'
+import './OracleTab.css'
+import './Markdown.css'
+import { useAI, useNovel, useModal } from '../../context'
+import { AIService, fetchDetectedEntityData, retrieveRelevantFragments } from '../../services'
+import { MarkdownRenderer, Tooltip } from '../'
 import { normalizeTextForDisplay } from './aiPanelHelpers'
 
 function OracleTab({ activeScene }) {
+  OracleTab.propTypes = {
+    activeScene: PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      title: PropTypes.string,
+      content: PropTypes.string,
+      pov: PropTypes.string,
+      chapterId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
+  };
+
   const { t } = useTranslation('ai')
   const {
     provider, apiKey, localBaseUrl, currentModel,
@@ -215,14 +223,13 @@ ${oracleAnswer}`
           <button
             className="oracle-coreference-section__header"
             onClick={() => setIsEntitiesExpanded(!isEntitiesExpanded)}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
           >
             <span className="oracle-coreference-section__label">{t('oraculo.coincidencias')}</span>
-            <ChevronDown size={14} style={{ color: 'var(--text-muted)', transform: isEntitiesExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+            <ChevronDown size={14} className={`oracle-expand-icon ${isEntitiesExpanded ? 'oracle-expand-icon--open' : ''}`} />
           </button>
 
           {isEntitiesExpanded && (
-            <div className="oracle-coreference-chips" style={{ marginTop: '2px' }}>
+            <div className="oracle-coreference-chips">
               {oracleStatus.detectedEntities.filter(e => e?.name).map((e) => (
                 <Tooltip key={e.name} content={
                   <div>
@@ -272,7 +279,7 @@ ${oracleAnswer}`
                       </button>
                     </Tooltip>
                   ) : (
-                    <button className="oracle-tab__check-btn" style={{ cursor: 'default', opacity: 0.8 }} disabled>
+                    <button className="oracle-tab__check-btn" disabled>
                       <CheckCheck size={14} />
                     </button>
                   )}
@@ -302,8 +309,7 @@ ${oracleAnswer}`
                   </Tooltip>
                 </div>
               </div>
-              <div className={`oracle-tab__entry-text ${isExpanded ? 'oracle-tab__entry-text--expanded' : 'oracle-tab__entry-text--clamped'}`} dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanText) }}>
-              </div>
+              <MarkdownRenderer className="oracle-tab__entry-text" content={cleanText} clamped={!isExpanded} />
               {cleanText.length > 200 && (
                 <button className="oracle-tab__read-more" onClick={() => toggleExpanded(entry.id)}>
                   {isExpanded ? t('oraculo.mostrar_menos') : t('oraculo.leer_mas')}

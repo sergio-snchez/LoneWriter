@@ -5,15 +5,17 @@
  * Exports: STATUS_MAP, STATUS_OPTIONS, StatusBadge, EditableTitle,
  *          SortableSceneRow, SortableChapterAccordion, SortableActSection
  */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import {
   ChevronDown, ChevronRight, Plus, CheckCircle2, Circle,
   AlertCircle, Trash2, GripVertical,
 } from 'lucide-react'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Tooltip } from '../../components/Tooltip'
+import { Tooltip } from '../../components'
+import './EditorSortables.css'
 
 // ─── Status Maps ──────────────────────────────────────────────────────────────
 
@@ -29,6 +31,10 @@ export const STATUS_OPTIONS = ['Sin comenzar', 'Borrador', 'En progreso', 'Final
 // ─── StatusBadge ─────────────────────────────────────────────────────────────
 
 export function StatusBadge({ status }) {
+  StatusBadge.propTypes = {
+    status: PropTypes.oneOf(['Sin comenzar', 'Borrador', 'En progreso', 'Finalizado']),
+  };
+
   const { t } = useTranslation('editor')
   const map = STATUS_MAP[status] || STATUS_MAP['Sin comenzar']
   const statusKey = status.toLowerCase().replace(/ /g, '_')
@@ -38,6 +44,14 @@ export function StatusBadge({ status }) {
 // ─── EditableTitle ────────────────────────────────────────────────────────────
 
 export function EditableTitle({ title, onSave, className, isPlayfair, isBold }) {
+  EditableTitle.propTypes = {
+    title: PropTypes.string.isRequired,
+    onSave: PropTypes.func.isRequired,
+    className: PropTypes.string,
+    isPlayfair: PropTypes.bool,
+    isBold: PropTypes.bool,
+  };
+
   const { t } = useTranslation('editor')
   const [isEditing, setIsEditing] = useState(false)
   const [val, setVal] = useState(title)
@@ -52,24 +66,18 @@ export function EditableTitle({ title, onSave, className, isPlayfair, isBold }) 
 
   if (isEditing) {
     return (
-      <input
-        className={`edit-input ${className}`}
-        value={val}
-        onChange={e => setVal(e.target.value)}
-        onBlur={save}
-        onKeyDown={e => {
-          if (e.key === 'Enter') save()
-          if (e.key === 'Escape') { setIsEditing(false); setVal(title) }
-        }}
-        autoFocus
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', padding: '2px 4px', border: '1px solid var(--accent)',
-          borderRadius: '4px', background: 'var(--bg-base)', color: 'var(--text-primary)',
-          outline: 'none', fontFamily: isPlayfair ? "'Playfair Display', serif" : "'Inter', sans-serif",
-          fontWeight: isBold ? 600 : 500, fontSize: 'inherit',
-        }}
-      />
+        <input
+          className={`edit-input ${className} ${isPlayfair ? 'edit-input--playfair' : 'edit-input--default'} ${isBold ? 'edit-input--bold' : ''}`}
+          value={val}
+          onChange={e => setVal(e.target.value)}
+          onBlur={save}
+          onKeyDown={e => {
+            if (e.key === 'Enter') save()
+            if (e.key === 'Escape') { setIsEditing(false); setVal(title) }
+          }}
+          autoFocus
+          onClick={e => e.stopPropagation()}
+        />
     )
   }
 
@@ -87,7 +95,17 @@ export function EditableTitle({ title, onSave, className, isPlayfair, isBold }) 
 
 // ─── SortableSceneRow ─────────────────────────────────────────────────────────
 
-export function SortableSceneRow({ scene, chapterIndex, sceneIndex, isActive, onSelect, onDelete, onUpdate }) {
+export const SortableSceneRow = memo(function SortableSceneRow({ scene, chapterIndex, sceneIndex, isActive, onSelect, onDelete, onUpdate }) {
+  SortableSceneRow.propTypes = {
+    scene: PropTypes.object.isRequired,
+    chapterIndex: PropTypes.number.isRequired,
+    sceneIndex: PropTypes.number.isRequired,
+    isActive: PropTypes.bool,
+    onSelect: PropTypes.func.isRequired,
+    onDelete: PropTypes.func.isRequired,
+    onUpdate: PropTypes.func.isRequired,
+  };
+
   const { t } = useTranslation('editor')
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `scene-${scene.id}` })
 
@@ -130,15 +148,30 @@ export function SortableSceneRow({ scene, chapterIndex, sceneIndex, isActive, on
       </div>
     </div>
   )
-}
+})
 
 // ─── SortableChapterAccordion ─────────────────────────────────────────────────
 
-export function SortableChapterAccordion({
+export const SortableChapterAccordion = memo(function SortableChapterAccordion({
   chapter, chapterIndex, actIndex, isOpen, onToggle,
   activeSceneId, onSelectScene, onAddScene, onDeleteScene,
   onDeleteChapter, onUpdateChapter, onUpdateScene,
 }) {
+  SortableChapterAccordion.propTypes = {
+    chapter: PropTypes.object.isRequired,
+    chapterIndex: PropTypes.number.isRequired,
+    actIndex: PropTypes.number.isRequired,
+    isOpen: PropTypes.bool,
+    onToggle: PropTypes.func.isRequired,
+    activeSceneId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    onSelectScene: PropTypes.func.isRequired,
+    onAddScene: PropTypes.func.isRequired,
+    onDeleteScene: PropTypes.func.isRequired,
+    onDeleteChapter: PropTypes.func.isRequired,
+    onUpdateChapter: PropTypes.func.isRequired,
+    onUpdateScene: PropTypes.func.isRequired,
+  };
+
   const { t } = useTranslation('editor')
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `ch-${chapter.id}` })
 
@@ -217,15 +250,35 @@ export function SortableChapterAccordion({
       )}
     </div>
   )
-}
+})
 
 // ─── SortableActSection ───────────────────────────────────────────────────────
 
-export function SortableActSection({
+export const SortableActSection = memo(function SortableActSection({
   act, actIndex, chapterOffset, isOpen, onToggle, activeSceneId, onSelectScene,
   onAddChapter, onAddScene, onDeleteScene, onDeleteChapter,
   onDeleteAct, onUpdateAct, onUpdateChapter, onUpdateScene, expandedIds, onSubToggle,
 }) {
+  SortableActSection.propTypes = {
+    act: PropTypes.object.isRequired,
+    actIndex: PropTypes.number.isRequired,
+    chapterOffset: PropTypes.number.isRequired,
+    isOpen: PropTypes.bool,
+    onToggle: PropTypes.func.isRequired,
+    activeSceneId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    onSelectScene: PropTypes.func.isRequired,
+    onAddChapter: PropTypes.func.isRequired,
+    onAddScene: PropTypes.func.isRequired,
+    onDeleteScene: PropTypes.func.isRequired,
+    onDeleteChapter: PropTypes.func.isRequired,
+    onDeleteAct: PropTypes.func.isRequired,
+    onUpdateAct: PropTypes.func.isRequired,
+    onUpdateChapter: PropTypes.func.isRequired,
+    onUpdateScene: PropTypes.func.isRequired,
+    expandedIds: PropTypes.object, // Set
+    onSubToggle: PropTypes.func.isRequired,
+  };
+
   const { t } = useTranslation('editor')
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `act-${act.id}` })
 
@@ -235,15 +288,24 @@ export function SortableActSection({
     zIndex: isDragging ? 25 : 1,
   }
 
-  const completedChapters = act.chapters?.filter(c =>
-    c.scenes?.length > 0 && c.scenes.every(s => s.status === 'Finalizado')
-  ).length || 0
+  const completedChapters = useMemo(() =>
+    act.chapters?.filter(c =>
+      c.scenes?.length > 0 && c.scenes.every(s => s.status === 'Finalizado')
+    ).length || 0,
+    [act.chapters]
+  )
 
-  const actWords = act.chapters?.reduce((acc, ch) =>
-    acc + (ch.scenes?.reduce((sAcc, s) => sAcc + (s.wordCount || 0), 0) || 0), 0
-  ) || 0
+  const actWords = useMemo(() =>
+    act.chapters?.reduce((acc, ch) =>
+      acc + (ch.scenes?.reduce((sAcc, s) => sAcc + (s.wordCount || 0), 0) || 0), 0
+    ) || 0,
+    [act.chapters]
+  )
 
-  const actProgress = act.chapters?.length > 0 ? (completedChapters / act.chapters.length) * 100 : 0
+  const actProgress = useMemo(() =>
+    act.chapters?.length > 0 ? (completedChapters / act.chapters.length) * 100 : 0,
+    [act.chapters, completedChapters]
+  )
 
   return (
     <div
@@ -315,4 +377,4 @@ export function SortableActSection({
       )}
     </div>
   )
-}
+})

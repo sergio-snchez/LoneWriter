@@ -1,20 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Users, MapPin, Package, BookOpen,
   Search, Plus,
   Zap, Sparkles, Loader2, CheckCircle2, Combine
 } from 'lucide-react'
-import { useNovel } from '../context/NovelContext'
-import { useAI } from '../context/AIContext'
-import { useModal } from '../context/ModalContext'
-import { extractKeywords, TABLE_CONFIG } from '../services/compendiumSearch'
-import { Tooltip } from '../components/Tooltip'
-import { CompendiumFilters, matchesFilters } from './compendium/CompendiumFilters'
-import { CompendiumMpcOverlay } from './compendium/CompendiumMpcOverlay'
-import { CompendiumPanel } from './compendium/CompendiumPanel'
-import { CharacterCard, LocationCard, ObjectCard, LoreCard } from './compendium/CompendiumCards'
+import { useNovel, useAI, useModal } from '../context'
+import { extractKeywords, TABLE_CONFIG } from '../services'
+import { Tooltip } from '../components'
+import { CompendiumFilters, matchesFilters, CompendiumMpcOverlay, CompendiumPanel, CharacterCard, LocationCard, ObjectCard, LoreCard, useCompendiumMerge, useCompendiumSave } from './compendium/index'
 import './Compendium.css'
+import './compendium/CompendiumMobile.css'
 
 export default function CompendiumView() {
   const { t } = useTranslation('compendium')
@@ -110,19 +106,19 @@ export default function CompendiumView() {
     return () => window.removeEventListener('navigate-to-compendium-item', handler);
   }, [characters, locations, objects, lore]);
 
-  const SECTIONS = [
+  const SECTIONS = useMemo(() => [
     { id: 'characters', label: t('tabs.personajes'), icon: Users, count: characters.length },
     { id: 'locations',  label: t('tabs.localizaciones'), icon: MapPin, count: locations.length },
     { id: 'objects',    label: t('tabs.objetos'), icon: Package, count: objects.length },
     { id: 'lore',       label: t('tabs.lore'), icon: BookOpen, count: lore.length },
-  ]
+  ], [t, characters.length, locations.length, objects.length, lore.length])
 
-  const handleEdit = (item) => {
+  const handleEdit = useCallback((item) => {
     setEditingItem(item);
     setIsPanelOpen(true);
-  };
+  }, []);
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     let sourceArray = [];
     if (activeSection === 'characters') sourceArray = characters;
     else if (activeSection === 'locations') sourceArray = locations;
@@ -144,12 +140,12 @@ export default function CompendiumView() {
         }
       }
     });
-  };
+  }, [activeSection, characters, locations, objects, lore, openModal, t, deleteCompendiumEntry, editingItem]);
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     setEditingItem(null);
     setIsPanelOpen(true);
-  };
+  }, []);
 
   const getTableForSection = (section) => {
     const map = {
@@ -161,52 +157,27 @@ export default function CompendiumView() {
     return map[section] || section;
   };
 
-  const handleToggleIgnore = async (item) => {
+  const handleToggleIgnore = useCallback(async (item) => {
     const table = getTableForSection(activeSection);
     const newValue = item.ignoredForOracle === 1 ? 0 : 1;
     await updateCompendiumEntry(table, item.id, { ignoredForOracle: newValue });
-  };
+  }, [activeSection, updateCompendiumEntry]);
 
-  // ---- Merge/Unify Functions ----
-  const handleScanMerge = async () => {
-    try {
-      await scanForMergeDuplicates(activeSection);
-    } catch (err) {
-      if (!apiKey && provider !== 'local') {
-        openModal('alert', { message: t('unificar.sin_ia') });
-      } else {
-        openModal('alert', { message: t('unificar.error_escaneo') });
-      }
-    }
-  };
-
-
-  const handleMergeSelection = async (entities) => {
-    if (!apiKey && provider !== 'local') {
-      openModal('alert', { message: t('unificar.sin_ia') });
-      return;
-    }
-
-    try {
-      const aiConfig = { provider, apiKey, model: currentModel, localBaseUrl };
-      await globalHandleMergeSelection(entities, activeSection, aiConfig, logAIUsage);
-    } catch (err) {
-      openModal('alert', { message: t('unificar.error_fusion', { error: err.message }) });
-    }
-  };
-
-  const handleConfirmMerge = async (finalData = null) => {
-    try {
-      await confirmMerge(activeSection, finalData);
-    } catch (err) {
-      openModal('alert', { message: t('unificar.error_confirmar', { error: err.message }) });
-    }
-  };
-
-  const handleSkipMerge = () => {
-    setSelectedMerge(null);
-    setMergeResult(null);
-  };
+  const { handleScanMerge, handleMergeSelection, handleConfirmMerge, handleSkipMerge } = useCompendiumMerge({
+    openModal,
+    activeSection,
+    scanForMergeDuplicates,
+    globalHandleMergeSelection,
+    confirmMerge,
+    setSelectedMerge,
+    setMergeResult,
+    provider,
+    apiKey,
+    currentModel,
+    localBaseUrl,
+    logAIUsage,
+    t,
+  })
 
   // ---- MPC Accordion Functions ----
   const buildMpcCompendiumData = (proposal) => {
@@ -273,172 +244,21 @@ export default function CompendiumView() {
     dismissMpcProposalPermanently(proposal);
   };
 
-  const syncCompendiumRelationships = async (data, category, isUpdate, oldItem) => {
-    const promises = [];
-    
-    // Generic bilateral sync
-    const syncBilateral = (entityA, oldEntityA, catA, catB, fieldA, fieldB, arrayB) => {
-      const newNamesB = entityA[fieldA] || [];
-      const oldNamesB = isUpdate ? (oldEntityA[fieldA] || []) : [];
-      const allNamesB = new Set([...newNamesB, ...oldNamesB]);
-      
-      const myNameA = entityA.name || entityA.title;
-      const oldNameA = isUpdate ? (oldEntityA.name || oldEntityA.title) : myNameA;
-      
-      allNamesB.forEach(nameB => {
-        const entityB = arrayB.find(x => (x.name || x.title) === nameB);
-        if (!entityB) return;
-        
-        let assocListAInB = [...(entityB[fieldB] || [])];
-        const isNowAssociated = newNamesB.includes(nameB);
-        
-        let changed = false;
-        if (isNowAssociated) {
-          if (oldNameA && oldNameA !== myNameA && assocListAInB.includes(oldNameA)) {
-            assocListAInB = assocListAInB.filter(n => n !== oldNameA);
-            changed = true;
-          }
-          if (!assocListAInB.includes(myNameA)) {
-            assocListAInB.push(myNameA);
-            changed = true;
-          }
-        } else {
-          if (assocListAInB.includes(oldNameA)) {
-            assocListAInB = assocListAInB.filter(n => n !== oldNameA);
-            changed = true;
-          }
-          if (assocListAInB.includes(myNameA)) {
-            assocListAInB = assocListAInB.filter(n => n !== myNameA);
-            changed = true;
-          }
-        }
-        if (changed) {
-          promises.push(updateCompendiumEntry(catB, entityB.id, { [fieldB]: assocListAInB }));
-        }
-      });
-    };
+  const { handleSavePanel } = useCompendiumSave({
+    activeSection,
+    editingItem,
+    characters,
+    locations,
+    objects,
+    lore,
+    addCompendiumEntry,
+    updateCompendiumEntry,
+    deleteCompendiumEntry,
+    dismissMpcProposal,
+    onClosePanel: () => setIsPanelOpen(false),
+  })
 
-    if (category === 'characters') {
-      syncBilateral(data, oldItem, 'characters', 'lore', 'associatedLore', 'associatedCharacters', lore);
-      syncBilateral(data, oldItem, 'characters', 'locations', 'associatedLocations', 'associatedCharacters', locations);
-      syncBilateral(data, oldItem, 'characters', 'objects', 'associatedObjects', 'associatedCharacters', objects);
-    } else if (category === 'locations') {
-      syncBilateral(data, oldItem, 'locations', 'lore', 'associatedLore', 'associatedLocations', lore);
-      syncBilateral(data, oldItem, 'locations', 'objects', 'associatedObjects', 'associatedLocations', objects);
-      syncBilateral(data, oldItem, 'locations', 'characters', 'associatedCharacters', 'associatedLocations', characters);
-    } else if (category === 'objects') {
-      syncBilateral(data, oldItem, 'objects', 'lore', 'associatedLore', 'associatedObjects', lore);
-      syncBilateral(data, oldItem, 'objects', 'locations', 'associatedLocations', 'associatedObjects', locations);
-      syncBilateral(data, oldItem, 'objects', 'characters', 'associatedCharacters', 'associatedObjects', characters);
-    } else if (category === 'lore') {
-      syncBilateral(data, oldItem, 'lore', 'characters', 'associatedCharacters', 'associatedLore', characters);
-      syncBilateral(data, oldItem, 'lore', 'locations', 'associatedLocations', 'associatedLore', locations);
-      syncBilateral(data, oldItem, 'lore', 'objects', 'associatedObjects', 'associatedLore', objects);
-    }
-    
-    await Promise.all(promises);
-  };
-
-  const handleSavePanel = async (data, newCategory) => {
-    const targetCategory = newCategory || activeSection;
-    const isFreshlyCreated = data._isNewlyCreated;
-    delete data._isNewlyCreated;
-    const isUpdate = !!editingItem && !isFreshlyCreated;
-    const isMpcProposal = !!data._mpcId;
-    const mpcId = data._mpcId;
-    const originalCategory = data._originalCategory || activeSection;
-    delete data._mpcId;
-    delete data._originalCategory;
-    
-    if (targetCategory === 'characters') {
-      let newRels = (data.relations || []).filter(r => r.name);
-      data.relations = newRels;
-
-      const oldName = isUpdate ? editingItem.name : data.name;
-      const c1Name = data.name;
-
-      const allCharNames = new Set();
-      if (isUpdate) {
-        (editingItem.relations || []).forEach(r => { if (r.name) allCharNames.add(r.name); });
-      }
-      newRels.forEach(r => { if (r.name) allCharNames.add(r.name); });
-
-      const promises = [];
-
-      for (const otherName of allCharNames) {
-        const otherChar = characters.find(c => c.name === otherName);
-        if (!otherChar) continue;
-
-        const existingRels = [...(otherChar.relations || [])];
-        const relToMeIdx = existingRels.findIndex(r => r.name === oldName);
-        const stillRelated = newRels.some(r => r.name === otherName);
-
-        if (stillRelated) {
-          const myRel = newRels.find(r => r.name === otherName);
-          const reverseRel = {
-            name: c1Name,
-            type: myRel.reverseType || '',
-            reverseType: myRel.type || ''
-          };
-          if (relToMeIdx >= 0) {
-            existingRels[relToMeIdx] = reverseRel;
-          } else {
-            existingRels.push(reverseRel);
-          }
-        } else {
-          if (relToMeIdx >= 0) {
-            existingRels.splice(relToMeIdx, 1);
-          }
-        }
-
-        promises.push(updateCompendiumEntry('characters', otherChar.id, { relations: existingRels }));
-      }
-
-      if (isUpdate) {
-        await updateCompendiumEntry(targetCategory, editingItem.id, data);
-      } else {
-        await addCompendiumEntry(targetCategory, data);
-      }
-
-      await Promise.all(promises);
-      await syncCompendiumRelationships(data, targetCategory, isUpdate, editingItem);
-      
-      if (isMpcProposal && mpcId) {
-        dismissMpcProposal(mpcId);
-      }
-      
-      setIsPanelOpen(false);
-      return;
-    } // -- Fin logica bidireccional
-
-    const categoryChanged = targetCategory !== originalCategory;
-    
-    if (isFreshlyCreated) {
-      if (isMpcProposal && mpcId) {
-        dismissMpcProposal(mpcId);
-      }
-      await syncCompendiumRelationships(data, targetCategory, false, null);
-    } else if (isUpdate) {
-      if (categoryChanged) {
-        await deleteCompendiumEntry(originalCategory, editingItem.id);
-        await addCompendiumEntry(targetCategory, data);
-      } else {
-        await updateCompendiumEntry(targetCategory, editingItem.id, data);
-      }
-      await syncCompendiumRelationships(data, targetCategory, true, editingItem);
-    } else {
-      await addCompendiumEntry(targetCategory, data);
-      await syncCompendiumRelationships(data, targetCategory, false, null);
-      
-      if (isMpcProposal && mpcId) {
-        dismissMpcProposal(mpcId);
-      }
-    }
-    
-    setIsPanelOpen(false);
-  };
-
-  const matchesQuery = (item) => {
+  const matchesQuery = useCallback((item) => {
     if (!query) return true;
     const config = TABLE_CONFIG[activeSection];
     if (!config) return true;
@@ -475,7 +295,24 @@ export default function CompendiumView() {
       }
     }
     return totalMatches > 0;
-  };
+  }, [query, activeSection]);
+
+  const filteredCharacters = useMemo(
+    () => characters.filter(matchesQuery).filter(i => matchesFilters(i, activeFilters, activeSection)),
+    [characters, matchesQuery, activeFilters, activeSection]
+  );
+  const filteredLocations = useMemo(
+    () => locations.filter(matchesQuery).filter(i => matchesFilters(i, activeFilters, activeSection)),
+    [locations, matchesQuery, activeFilters, activeSection]
+  );
+  const filteredObjects = useMemo(
+    () => objects.filter(matchesQuery).filter(i => matchesFilters(i, activeFilters, activeSection)),
+    [objects, matchesQuery, activeFilters, activeSection]
+  );
+  const filteredLore = useMemo(
+    () => lore.filter(matchesQuery).filter(i => matchesFilters(i, activeFilters, activeSection)),
+    [lore, matchesQuery, activeFilters, activeSection]
+  );
 
   return (
     <div className="compendium-view">
@@ -489,7 +326,7 @@ export default function CompendiumView() {
         {/* MPC Master Switch */}
         <div className="mpc-control">
           <span className="mpc-control__label">
-            <Zap size={10} style={{ fill: isMpcEnabled ? 'currentColor' : 'none' }} />
+            <Zap size={10} className={`mpc-toggle-icon ${!isMpcEnabled ? 'mpc-toggle-icon--disabled' : ''}`} />
             {t('mpc.interruptor_label')}
           </span>
           <label className="mpc-switch">
@@ -568,7 +405,7 @@ export default function CompendiumView() {
       <div className="compendium-view__content">
         {/* Toolbar */}
         <div className="compendium-toolbar">
-          <div className="search-bar" style={{ flex: 1, maxWidth: 320 }}>
+          <div className="search-bar">
             <Search size={14} color="var(--text-muted)" />
             <input
               placeholder={t('toolbar.buscar', { section: SECTIONS.find(s=>s.id===activeSection)?.label.toLowerCase() })}
@@ -591,17 +428,13 @@ export default function CompendiumView() {
           
           <Tooltip content={t('unificar.boton_tooltip')}>
             <button 
-              className={`btn ${isMerging || mergeResult ? 'btn-primary' : 'btn-ghost'}`} 
+              className={`btn ${isMerging || mergeResult ? 'btn-primary' : 'btn-ghost'} comp-merge-btn`}
               onClick={() => {
                 if (isMerging || mergeResult) setShowMergeOverlay(true);
                 else handleScanMerge();
               }}
               disabled={isScanningMerge || (characters.length + locations.length + objects.length + lore.length < 2 && !isMerging && !mergeResult)}
               id="compendium-merge-btn"
-              style={{
-                position: 'relative',
-                overflow: 'hidden'
-              }}
             >
               {isScanningMerge || isMerging ? (
                 <Loader2 size={13} className="spin" />
@@ -626,24 +459,16 @@ export default function CompendiumView() {
 
         {/* Cards */}
         <div className="compendium-cards">
-          {activeSection === 'characters' && characters
-            .filter(matchesQuery)
-            .filter(i => matchesFilters(i, activeFilters, activeSection))
+          {activeSection === 'characters' && filteredCharacters
             .map(c => <CharacterCard key={c.id} char={c} onEdit={handleEdit} onDelete={handleDelete} onToggleIgnore={handleToggleIgnore} />)}
 
-          {activeSection === 'locations' && locations
-            .filter(matchesQuery)
-            .filter(i => matchesFilters(i, activeFilters, activeSection))
+          {activeSection === 'locations' && filteredLocations
             .map(l => <LocationCard key={l.id} loc={l} onEdit={handleEdit} onDelete={handleDelete} onToggleIgnore={handleToggleIgnore} />)}
 
-          {activeSection === 'objects' && objects
-            .filter(matchesQuery)
-            .filter(i => matchesFilters(i, activeFilters, activeSection))
+          {activeSection === 'objects' && filteredObjects
             .map(o => <ObjectCard key={o.id} obj={o} onEdit={handleEdit} onDelete={handleDelete} onToggleIgnore={handleToggleIgnore} />)}
 
-          {activeSection === 'lore' && lore
-            .filter(matchesQuery)
-            .filter(i => matchesFilters(i, activeFilters, activeSection))
+          {activeSection === 'lore' && filteredLore
             .map(e => <LoreCard key={e.id} entry={e} onEdit={handleEdit} onDelete={handleDelete} onToggleIgnore={handleToggleIgnore} />)}
             
           {/* Empty state visual fallback */}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useModal } from '../../context/ModalContext'
+import PropTypes from 'prop-types'
+import { useModal } from '../../context'
 
 export function AgentEditForm({ agent, colors, onSave, onCancel, isNew, canDelete, onDelete }) {
   const { t } = useTranslation('ai')
@@ -11,7 +12,7 @@ export function AgentEditForm({ agent, colors, onSave, onCancel, isNew, canDelet
   return (
     <div className="agent-edit-form">
       <div className="agent-edit-form__row">
-        <div className="debate-agent-card__avatar" style={{ background: form.color + '30', color: form.color, fontSize: 14, width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
+        <div className="debate-agent-card__avatar" style={{ '--agent-color': form.color }}>
           {(form.initials || form.name?.slice(0, 2) || '??').toUpperCase()}
         </div>
         <input className="agent-edit-form__input" value={form.name} onChange={e => set('name', e.target.value)} placeholder={t('debate.nombre_placeholder')} />
@@ -19,7 +20,7 @@ export function AgentEditForm({ agent, colors, onSave, onCancel, isNew, canDelet
       <input className="agent-edit-form__input" value={form.desc} onChange={e => set('desc', e.target.value)} placeholder={t('debate.desc_placeholder')} />
       <div className="agent-edit-form__colors">
         {colors.map(c => (
-          <button key={c} className={`agent-color-dot ${form.color === c ? 'agent-color-dot--active' : ''}`} style={{ background: c, outlineColor: c }} onClick={() => set('color', c)} />
+          <button key={c} className={`agent-color-dot ${form.color === c ? 'agent-color-dot--active' : ''}`} style={{ '--swatch-color': c }} onClick={() => set('color', c)} />
         ))}
       </div>
       <label className="agent-edit-form__label">{t('debate.prompt_label')}</label>
@@ -46,3 +47,20 @@ export function AgentEditForm({ agent, colors, onSave, onCancel, isNew, canDelet
     </div>
   )
 }
+
+AgentEditForm.propTypes = {
+  agent: PropTypes.shape({
+    name: PropTypes.string,
+    desc: PropTypes.string,
+    color: PropTypes.string,
+    systemPrompt: PropTypes.string,
+    initials: PropTypes.string,
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  }).isRequired,
+  colors: PropTypes.arrayOf(PropTypes.string).isRequired,
+  onSave: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  isNew: PropTypes.bool,
+  canDelete: PropTypes.bool,
+  onDelete: PropTypes.func,
+};

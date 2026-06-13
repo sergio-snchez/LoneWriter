@@ -1,42 +1,24 @@
 import { useEffect, useRef } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import {
   Sparkles, Loader2, Download, Upload, FileDown,
   ChevronDown, BookOpen, CheckCircle2, Plus, Trash2, PenLine,
-  Settings, Heart, Menu, X, RotateCcw
+  Settings, Menu, X, RotateCcw
 } from 'lucide-react'
 import './i18n/i18n'
-import Sidebar from './components/Sidebar'
-import AIPanel from './components/AIPanel'
-import { MergeOverlay } from './components/MergeOverlay'
-import SettingsModal from './components/SettingsModal'
-import { Tooltip } from './components/Tooltip'
-import LanguageSelector from './components/LanguageSelector'
-import TypingEffect from './components/TypingEffect'
-import './components/TypingEffect.css'
-import EditorView from './views/Editor'
-import CompendiumView from './views/Compendium'
-import ResourcesView from './views/Resources'
-import NexusView from './views/Nexus'
-import { useNovel } from './context/NovelContext'
-import { useAI } from './context/AIContext'
-import { useModal } from './context/ModalContext'
-import { ExportService } from './services/exportService'
-import { GoogleDriveService } from './services/googleDriveService'
-import { db } from './db/database'
-import './App.css'
-import RagToast from './components/RagToast'
-import MeshBackground from './components/MeshBackground'
-import PwaUpdateModal from './components/PwaUpdateModal'
+import {
+  ErrorBoundary, Sidebar, AIPanel, MergeOverlay, SettingsModal,
+  Tooltip, RagToast, MeshBackground, PwaUpdateModal, WelcomeScreen
+} from './components'
+import { EditorView, CompendiumView, ResourcesView, NexusView } from './views'
+import { useNovel, useModal } from './context'
+import { useAppNavigation, useAppPreferences, useAppUI, useCloudRestore, useProjectIO } from './hooks'
 import { registerPWA, triggerUpdate } from './pwa'
-import { APP_VERSION } from './utils/version'
-import { useAppNavigation } from './hooks/useAppNavigation'
-import { useAppPreferences } from './hooks/useAppPreferences'
-import { useAppUI } from './hooks/useAppUI'
+import './components/TypingEffect.css'
+import './App.css'
 
 export default function App() {
   const { t, i18n } = useTranslation('app')
-  const { t: tc } = useTranslation('common')
 
   const { activeView, viewKey, sidebarCollapsed, setSidebarCollapsed,
           mobileDrawerOpen, setMobileDrawerOpen, handleViewChange } = useAppNavigation()
@@ -64,6 +46,16 @@ export default function App() {
     switchNovel, createNovel, deleteNovel, updateNovelTarget, updateNovel, refreshAfterRestore
   } = useNovel()
 
+  useCloudRestore({ openModal, refreshAfterRestore })
+
+  const {
+    handleExportProject,
+    handleExportFullWord,
+    handleImportClick,
+    handleFileChange,
+    handleCreateProject,
+  } = useProjectIO({ openModal, activeNovel, acts, createNovel, fileInputRef })
+
   // App title
   useEffect(() => { document.title = t('app_title') }, [t, i18n.language])
 
@@ -72,77 +64,6 @@ export default function App() {
 
   // Reset typing on language change
   useEffect(() => { setTypingComplete(false) }, [i18n?.language])
-
-  useEffect(() => {
-    let isRestoring = false;
-
-    const handleCloudVersion = (e) => {
-      const { date } = e.detail;
-      openModal('confirm', {
-        title: t('restaurar_nube.titulo'),
-        message: t('restaurar_nube.mensaje', { date: new Date(date).toLocaleString() }),
-        confirmLabel: t('restaurar_nube.boton'),
-        onConfirm: async () => {
-          if (isRestoring) return;
-          isRestoring = true;
-
-          try {
-            const cloudData = await GoogleDriveService.downloadBackup();
-            if (cloudData) {
-              await db.transaction('rw', db.tables, async () => {
-                for (const table of db.tables) {
-                  await table.clear();
-                  if (cloudData.tables[table.name]) {
-                    await table.bulkAdd(cloudData.tables[table.name]);
-                  }
-                }
-              });
-              localStorage.setItem('lw_last_cloud_sync', date);
-              await refreshAfterRestore();
-            }
-          } catch (err) {
-            console.error('[LoneWriter] Cloud restore error:', err);
-            openModal('alert', { title: t('error_titulo'), message: t('error_restaurar') + err.message });
-          } finally {
-            isRestoring = false;
-          }
-        }
-      });
-    };
-
-    const handleRestoreFromRevision = async (e) => {
-      const { data: cloudData, date } = e.detail;
-      if (isRestoring) return;
-      isRestoring = true;
-
-      try {
-        await db.transaction('rw', db.tables, async () => {
-          for (const table of db.tables) {
-            await table.clear();
-            if (cloudData.tables[table.name]) {
-              await table.bulkAdd(cloudData.tables[table.name]);
-            }
-          }
-        });
-        localStorage.setItem('lw_last_cloud_sync', date);
-        await refreshAfterRestore();
-      } catch (err) {
-        console.error('[LoneWriter] Revision restore error:', err);
-        openModal('alert', { title: t('error_titulo'), message: t('error_restaurar') + err.message });
-      } finally {
-        isRestoring = false;
-      }
-    };
-
-    window.addEventListener('cloud-version-available', handleCloudVersion);
-    window.addEventListener('restore-from-revision', handleRestoreFromRevision);
-    return () => {
-      window.removeEventListener('cloud-version-available', handleCloudVersion);
-      window.removeEventListener('restore-from-revision', handleRestoreFromRevision);
-    };
-  }, [openModal, refreshAfterRestore]);
-
-
 
   const handleDeleteProject = (e, id) => {
     e.stopPropagation();
@@ -159,239 +80,27 @@ export default function App() {
 
   const renderView = () => {
     if (!activeNovel) {
-      const recentNovels = allNovels.slice(0, 5);
-
       return (
-        <div className="welcome-screen">
-          <div className="welcome-screen__container">
-            <header className="welcome-screen__hero">
-              <div className="welcome-screen__icon">
-                <PenLine size={48} />
-              </div>
-              <h1 className="welcome-screen__title">{t('bienvenida.titulo')}</h1>
-              <p className="welcome-screen__subtitle">
-                <TypingEffect
-                  key={`welcome-typing-${i18n?.language || 'es'}`}
-                  text={'   ' + t('bienvenida.subtitulo')}
-                  speed={40}
-                  delay={800}
-                  onComplete={() => setTypingComplete(true)}
-                />
-              </p>
-              <button
-                className="btn btn-primary welcome-screen__btn"
-                onClick={handleCreateProject}
-              >
-                <Plus size={16} />
-                {t('bienvenida.boton_nueva')}
-              </button>
-            </header>
-
-            {allNovels.length > 0 && (
-              <section className="welcome-screen__recent">
-                <div className="recent-header">
-                  <h2 className="recent-title">{t('bienvenida.continuar')}</h2>
-                  <span className="recent-count">{t('bienvenida.proyectos_total', { count: allNovels.length })}</span>
-                </div>
-                <div className="recent-grid">
-                  {recentNovels.map(n => {
-                    const pct = Math.round(((n.wordCount || 0) / (n.targetWords || 100000)) * 100);
-                    const lastDate = new Date(n.lastEdited || 0).toLocaleDateString(undefined, {
-                      day: 'numeric', month: 'short', year: 'numeric'
-                    });
-
-                    return (
-                      <div key={n.id} className="project-card" onClick={() => switchNovel(n.id)}>
-                        <div className="project-card__header">
-                          <BookOpen size={20} className="project-card__icon" />
-                          <div className="project-card__meta">
-                            <h3 className="project-card__title">{n.title}</h3>
-                            <span className="project-card__date">{t('bienvenida.editado_el', { date: lastDate })}</span>
-                          </div>
-                        </div>
-                        <div className="project-card__stats">
-                          <div className="project-card__stat">
-                            <span className="stat-value">{n.wordCount?.toLocaleString() || 0}</span>
-                            <span className="stat-label">{t('bienvenida.palabras')}</span>
-                          </div>
-                          <div className="project-card__stat">
-                            <span className="stat-value">{pct}%</span>
-                            <span className="stat-label">{t('bienvenida.completado')}</span>
-                          </div>
-                        </div>
-                        <div className="project-card__progress">
-                          <div className="progress-bg">
-                            <div className="progress-fill" style={{ width: `${Math.min(pct, 100)}%` }} />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {allNovels.length > 5 && (
-                    <div className="project-card project-card--more" onClick={() => setMenuOpen(true)}>
-                      <div className="more-content">
-                        <span>{t('bienvenida.ver_todos')}</span>
-                        <ChevronDown size={14} />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {allNovels.length === 0 && (
-              <section className="welcome-screen__setup">
-                <div className="setup-header">
-                  <h2 className="setup-title">{t('bienvenida.configurar_titulo')}</h2>
-                  <p className="setup-subtitle">{t('bienvenida.configurar_subtitulo_line1')}</p>
-                  <p className="setup-subtitle-italic">{t('bienvenida.configurar_subtitulo_line2')}</p>
-                </div>
-                <div className="setup-options">
-                  <div className="setup-option">
-                    <span className="setup-option__label">{t('general.idioma')}</span>
-                    <div style={{ opacity: typingComplete ? 1 : 0.3, pointerEvents: typingComplete ? 'auto' : 'none', transition: 'opacity 0.3s' }}>
-                      <LanguageSelector />
-                    </div>
-                  </div>
-                  <div className="setup-divider" />
-                  <div className="setup-option">
-                    <div className="theme-toggle-modern" style={{ opacity: typingComplete ? 1 : 0.3, pointerEvents: typingComplete ? 'auto' : 'none', transition: 'opacity 0.3s' }}>
-                      <button
-                        className={`theme-btn-modern ${theme === 'light' ? 'active' : ''}`}
-                        onClick={() => typingComplete && setTheme('light')}
-                      >
-                        <div className="theme-preview theme-preview--light" />
-                        <span>{t('general.tema_claro')}</span>
-                      </button>
-                      <button
-                        className={`theme-btn-modern ${theme === 'dark' ? 'active' : ''}`}
-                        onClick={() => typingComplete && setTheme('dark')}
-                      >
-                        <div className="theme-preview theme-preview--dark" />
-                        <span>{t('general.tema_oscuro')}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            )}
-
-            <footer style={{ marginTop: 'auto', paddingTop: '60px', paddingBottom: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-              <p style={{ margin: 0, fontSize: '13px' }}>
-                {`LoneWriter v${APP_VERSION}`}
-              </p>
-              <p style={{ margin: '4px 0 0 0', fontSize: '12px', opacity: 0.7 }}>
-                <Trans i18nKey="bienvenida.creditos" ns="app" components={[<strong />]} />
-              </p>
-              <div style={{ marginTop: '20px' }}>
-                <a
-                  href="https://buymeacoffee.com/sergio.snchez"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-ghost"
-                  style={{ fontSize: '12px', gap: '8px', opacity: 0.8 }}
-                >
-                  <Heart size={14} />
-                  {t('bienvenida.apoyar')}
-                </a>
-              </div>
-            </footer>
-          </div>
-        </div>
-      );
+        <WelcomeScreen
+          allNovels={allNovels}
+          switchNovel={switchNovel}
+          onCreateProject={handleCreateProject}
+          onShowAllProjects={() => setMenuOpen(true)}
+          typingComplete={typingComplete}
+          setTypingComplete={setTypingComplete}
+          theme={theme}
+          setTheme={setTheme}
+        />
+      )
     }
     switch (activeView) {
-      case 'editor': return <EditorView menuOpen={menuOpen} onNavigate={handleViewChange} />
-      case 'compendium': return <CompendiumView />
-      case 'resources': return <ResourcesView />
-      case 'nexus': return <NexusView onNavigate={handleViewChange} />
-      default: return <EditorView />
+      case 'editor': return <ErrorBoundary name="editor"><EditorView menuOpen={menuOpen} onNavigate={handleViewChange} /></ErrorBoundary>
+      case 'compendium': return <ErrorBoundary name="compendio"><CompendiumView /></ErrorBoundary>
+      case 'resources': return <ErrorBoundary name="recursos"><ResourcesView /></ErrorBoundary>
+      case 'nexus': return <ErrorBoundary name="nexus"><NexusView onNavigate={handleViewChange} /></ErrorBoundary>
+      default: return <ErrorBoundary name="editor"><EditorView /></ErrorBoundary>
     }
   }
-
-  const handleExportProject = () => {
-    // Ask for optional encryption password
-    openModal('prompt', {
-      title: t('exportar.titulo_password'),
-      message: t('exportar.mensaje_password'),
-      placeholder: t('exportar.placeholder_password'),
-      confirmLabel: t('exportar.boton_exportar'),
-      allowEmpty: true, // blank = no encryption
-      onConfirm: async (password) => {
-        try {
-          await ExportService.exportProject(password || null);
-        } catch (error) {
-          console.error('Error exporting project:', error);
-        }
-      }
-    });
-    setMenuOpen(false);
-  }
-
-  const handleExportFullWord = () => {
-    if (activeNovel && acts) {
-      const strings = {
-        unknownAuthor: t('exportar.autor_desconocido'),
-        chapterLabel: t('exportar.capitulo'),
-        sceneLabel: t('exportar.escena'),
-        emptyScene: t('exportar.escena_vacia'),
-        generatedBy: t('exportar.generado_por'),
-      };
-      ExportService.exportFullNovel(activeNovel, acts, strings).catch(err => {
-        console.error('[LoneWriter] exportFullNovel error:', err);
-      });
-    }
-    setMenuOpen(false);
-  }
-
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-    setMenuOpen(false);
-  }
-
-  const handleCreateProject = () => {
-    openModal('project', {
-      onConfirm: (title) => createNovel(title)
-    });
-    setMenuOpen(false);
-  }
-
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    // Reset input so the same file can be re-selected
-    e.target.value = '';
-
-    const tryImport = (password = null) => {
-      ExportService.importProject(file, password).catch(err => {
-        if (err.message === 'ENCRYPTED') {
-          // File is encrypted — ask for password
-          openModal('prompt', {
-            title: t('importar.titulo_password'),
-            message: t('importar.mensaje_password'),
-            placeholder: t('exportar.placeholder_password'),
-            confirmLabel: t('importar.boton_desencriptar'),
-            onConfirm: (pw) => tryImport(pw)
-          });
-        } else if (err.message === 'WRONG_PASSWORD') {
-          // Wrong password — re-prompt with error message
-          openModal('prompt', {
-            title: t('importar.titulo_password_incorrecta'),
-            message: t('importar.mensaje_password_incorrecta'),
-            placeholder: t('exportar.placeholder_password'),
-            confirmLabel: t('importar.boton_desencriptar'),
-            onConfirm: (pw) => tryImport(pw)
-          });
-        } else {
-          console.error('[LoneWriter] Import error:', err);
-          openModal('alert', { title: t('importar.titulo_error'), message: err.message });
-        }
-      });
-    };
-
-    tryImport();
-  };
 
   const handleNovelRename = async () => {
     if (!activeNovel) return;
@@ -558,6 +267,7 @@ export default function App() {
       </header>
 
       {/* Modals */}
+      <ErrorBoundary name="configuración">
       <SettingsModal
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
@@ -577,6 +287,7 @@ export default function App() {
       />
 
       <MergeOverlay />
+      </ErrorBoundary>
 
       {/* Main layout */}
       <div className="app-body">
@@ -623,16 +334,18 @@ export default function App() {
           {renderView()}
         </main>
 
-        <AIPanel
-          open={aiPanelOpen}
-          onClose={() => setAiPanelOpen(false)}
-          activeScene={activeScene}
-          defaultTab={aiPanelTab}
-          onOpenSettings={(tab) => {
-            setSettingsTab(tab || 'ia');
-            setSettingsOpen(true);
-          }}
-        />
+        <ErrorBoundary name="panel IA">
+          <AIPanel
+            open={aiPanelOpen}
+            onClose={() => setAiPanelOpen(false)}
+            activeScene={activeScene}
+            defaultTab={aiPanelTab}
+            onOpenSettings={(tab) => {
+              setSettingsTab(tab || 'ia');
+              setSettingsOpen(true);
+            }}
+          />
+        </ErrorBoundary>
       </div>
 
       {/* RAG model download toast — appears once on first use */}

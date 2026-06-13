@@ -4,16 +4,15 @@
  */
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import {
   Users, MapPin, Package, BookOpen,
   Plus, Trash2, X, Sparkles
 } from 'lucide-react'
-import { useNovel } from '../../context/NovelContext'
-import { useAI } from '../../context/AIContext'
-import { useModal } from '../../context/ModalContext'
-import { Tooltip } from '../../components/Tooltip'
-import { AIService } from '../../services/aiService'
-import { retrieveRelevantFragments } from '../../services/ragService'
+import { useNovel, useAI, useModal } from '../../context'
+import { Tooltip } from '../../components'
+import { AIService, retrieveRelevantFragments } from '../../services'
+import './CompendiumPanel.css'
 
 /* ---- Shared constants (also used by CompendiumCards) ---- */
 export const ENTITY_COLORS = {
@@ -31,6 +30,19 @@ export const CATEGORIES = [
 ]
 
 export function CompendiumPanel({ isOpen, type, item, characters, locations, objects, lore, onClose, onSave, activeNovel }) {
+  CompendiumPanel.propTypes = {
+    isOpen: PropTypes.bool.isRequired,
+    type: PropTypes.oneOf(['characters', 'locations', 'objects', 'lore']).isRequired,
+    item: PropTypes.object,
+    characters: PropTypes.array,
+    locations: PropTypes.array,
+    objects: PropTypes.array,
+    lore: PropTypes.array,
+    onClose: PropTypes.func.isRequired,
+    onSave: PropTypes.func.isRequired,
+    activeNovel: PropTypes.object,
+  };
+
   const { t } = useTranslation('compendium')
   const { acts } = useNovel()
   const { provider, apiKey, currentModel, localBaseUrl, logAIUsage } = useAI()
@@ -214,9 +226,9 @@ export function CompendiumPanel({ isOpen, type, item, characters, locations, obj
     <div className={`compendium-view__panel ${isOpen ? 'compendium-view__panel--open' : ''}`}>
       <div className="compendium-panel__header">
         <span className="compendium-panel__title">{titleText}</span>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div className="comp-panel-header-actions">
           {isAiLoading && (
-            <span style={{ fontSize: '10px', color: 'var(--accent)', fontWeight: 600, animation: 'pulse 1.5s infinite' }}>
+            <span className="ai-loading-indicator">
               {t('formulario.completar_ia_cargando')}
             </span>
           )}
@@ -237,7 +249,7 @@ export function CompendiumPanel({ isOpen, type, item, characters, locations, obj
         {item && (
           <div className="compendium-form-group">
             <label>{t('formulario.seleccionar_categoria')}</label>
-            <div style={{ display: 'flex', gap: '6px' }}>
+            <div className="category-tab-group">
               {CATEGORIES.map(cat => {
                 const IconComp = cat.icon
                 return (
@@ -245,14 +257,7 @@ export function CompendiumPanel({ isOpen, type, item, characters, locations, obj
                     <button
                       type="button"
                       onClick={() => setSelectedCategory(cat.id)}
-                      style={{
-                        width: '36px', height: '36px', display: 'flex', alignItems: 'center',
-                        justifyContent: 'center', borderRadius: '8px',
-                        border: selectedCategory === cat.id ? '1px solid var(--accent)' : '1px solid var(--border)',
-                        background: selectedCategory === cat.id ? 'var(--accent-dim)' : 'transparent',
-                        color: selectedCategory === cat.id ? 'var(--accent)' : 'var(--text-muted)',
-                        cursor: 'pointer', transition: 'all 0.2s',
-                      }}
+                      className={`category-tab ${selectedCategory === cat.id ? 'category-tab--active' : ''}`}
                     >
                       <IconComp size={18} />
                     </button>
@@ -273,10 +278,10 @@ export function CompendiumPanel({ isOpen, type, item, characters, locations, obj
               <label>{t('formulario.personajes.rol')}</label>
               <input name="role" value={formData.role || ''} onChange={handleChange} placeholder={t('formulario.personajes.rol_placeholder')} />
             </div>
-            <div className="compendium-form-group" style={{ display: 'flex', gap: '16px' }}>
-              <div style={{ flex: 1 }}>
+            <div className="form-group-row">
+              <div className="form-group-inner">
                 <label>{t('formulario.personajes.estado_vital')}</label>
-                <select name="isAlive" value={formData.isAlive || 'Vivo'} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
+                <select name="isAlive" value={formData.isAlive || 'Vivo'} onChange={handleChange}>
                   <option value="Vivo">{t('formulario.personajes.estado_vivo')}</option>
                   <option value="Muerto">{t('formulario.personajes.estado_muerto')}</option>
                 </select>
@@ -301,7 +306,7 @@ export function CompendiumPanel({ isOpen, type, item, characters, locations, obj
             <div className="compendium-form-group">
               <label>{t('formulario.personajes.relaciones')}</label>
               {characters && characters.filter(c => c.name !== formData.name).length === 0 ? (
-                <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
+                <p className="empty-hint">
                   {t('formulario.personajes.sin_personajes')}
                 </p>
               ) : (
@@ -316,7 +321,7 @@ export function CompendiumPanel({ isOpen, type, item, characters, locations, obj
                       </select>
                       <div className="relation-row__fields">
                         <input name="type" placeholder={t('formulario.personajes.relacion_para_mi')} value={rel.type} onChange={e => handleRelationChange(i, 'type', e.target.value)} />
-                        <input name="reverseType" placeholder={t('formulario.personajes.relacion_para_el')} value={rel.reverseType} onChange={e => handleRelationChange(i, 'reverseType', e.target.value)} style={{ fontSize: '12px', opacity: 0.85 }} />
+                        <input name="reverseType" placeholder={t('formulario.personajes.relacion_para_el')} value={rel.reverseType} onChange={e => handleRelationChange(i, 'reverseType', e.target.value)} className="relation-input-reverse" />
                       </div>
                       <Tooltip content={t('formulario.personajes.eliminar_relacion')}>
                         <button className="btn btn-ghost btn-icon text-danger" onClick={() => removeRelation(i)}>
@@ -325,7 +330,7 @@ export function CompendiumPanel({ isOpen, type, item, characters, locations, obj
                       </Tooltip>
                     </div>
                   ))}
-                  <button className="btn btn-ghost" onClick={addRelation} style={{ alignSelf: 'flex-start', fontSize: 12, marginTop: '4px' }}>
+                  <button className="btn btn-ghost add-relation-btn" onClick={addRelation}>
                     <Plus size={13} /> {t('formulario.personajes.añadir_vinculo')}
                   </button>
                 </>
@@ -385,7 +390,7 @@ export function CompendiumPanel({ isOpen, type, item, characters, locations, obj
             </div>
             <div className="compendium-form-group">
               <label>{t('formulario.objetos.portador')}</label>
-              <select name="currentOwner" value={formData.currentOwner || 'Desconocido'} onChange={handleChange} style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--bg-base)', color: 'var(--text-primary)', width: '100%' }}>
+              <select name="currentOwner" value={formData.currentOwner || 'Desconocido'} onChange={handleChange}>
                 <option value="Desconocido">{t('formulario.objetos.portador_desconocido')}</option>
                 {(characters || []).map(c => (
                   <option key={c.id} value={c.name}>{c.name}</option>
@@ -418,7 +423,7 @@ export function CompendiumPanel({ isOpen, type, item, characters, locations, obj
             </div>
             <div className="compendium-form-group">
               <label>{t('formulario.lore.resumen')}</label>
-              <textarea name="summary" value={formData.summary || ''} onChange={handleChange} style={{ minHeight: '120px' }} />
+              <textarea name="summary" value={formData.summary || ''} onChange={handleChange} className="lore-textarea" />
             </div>
             <div className="compendium-form-group">
               <label>{t('formulario.lore.etiquetas')}</label>
@@ -452,7 +457,7 @@ function AssociationGroup({ label, items, field, nameKey, accentColor, formData,
   return (
     <div className="compendium-form-group">
       <label>{label}</label>
-      <div className="relation-chars-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+      <div className="relation-chars-grid" style={{ '--accent-color': accentColor }}>
         {items.map(item => {
           const name = item[nameKey]
           const isChecked = assoc.includes(name)
@@ -461,12 +466,6 @@ function AssociationGroup({ label, items, field, nameKey, accentColor, formData,
               key={item.id}
               type="button"
               className={`tag ${isChecked ? 'tag--active' : ''}`}
-              style={{
-                cursor: 'pointer', opacity: isChecked ? 1 : 0.5,
-                border: isChecked ? `1px solid ${accentColor}` : '1px solid var(--border)',
-                background: isChecked ? 'var(--accent-dim)' : 'transparent',
-                color: isChecked ? 'var(--accent)' : 'var(--text-primary)'
-              }}
               onClick={() => {
                 setFormData(prev => ({
                   ...prev,

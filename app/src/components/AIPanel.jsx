@@ -2,17 +2,16 @@
  * AIPanel — Main container for the AI side panel.
  * Tabs (RewriteTab, DebateTab, OracleTab) live in ./aipanel/
  */
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import { Sparkles, X, Wand2, MessageSquare, Eye, Key } from 'lucide-react'
-import { useAI } from '../context/AIContext'
-import { Tooltip } from './Tooltip'
-import { RewriteTab } from './aipanel/RewriteTab'
-import DebateTab from './aipanel/DebateTab'
-import OracleTab from './aipanel/OracleTab'
+import { useAI } from '../context'
+import { Tooltip } from './'
+import { RewriteTab, DebateTab, OracleTab } from './aipanel/index'
 import './AIPanel.css'
 
-export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewrite', onOpenSettings }) {
+const AIPanel = memo(function AIPanel({ open, onClose, activeScene, defaultTab = 'rewrite', onOpenSettings }) {
   const { t } = useTranslation('ai')
   const [activeTab, setActiveTab] = useState(defaultTab)
   const { apiKey, currentModel } = useAI()
@@ -45,14 +44,18 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
     }
   }, [])
 
-  const startDrag = (e) => {
+  const startDrag = useCallback((e) => {
     if (window.innerWidth <= 768) return
     dragRef.current = true
     setIsDragging(true)
     document.body.style.cursor = 'col-resize'
     document.body.classList.add('no-select')
     e.preventDefault()
-  }
+  }, [])
+
+  const handleTabChange = useCallback((tab) => {
+    setActiveTab(tab);
+  }, []);
 
   useEffect(() => {
     if (defaultTab) {
@@ -83,7 +86,7 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
                 onClick={() => onOpenSettings('ia')}
               >
                 <Key size={13} />
-                <span className="ai-panel__api-btn-text" style={{ maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span className="ai-panel__api-btn-text">
                   {currentModel || 'API'}
                 </span>
               </button>
@@ -99,7 +102,7 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
           <button
             id="ai-tab-rewrite"
             className={`ai-panel__tab ${activeTab === 'rewrite' ? 'ai-panel__tab--active' : ''}`}
-            onClick={() => setActiveTab('rewrite')}
+            onClick={() => handleTabChange('rewrite')}
           >
             <Wand2 size={13} />
             {t('tabs.reescribir')}
@@ -107,7 +110,7 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
           <button
             id="ai-tab-debate"
             className={`ai-panel__tab ${activeTab === 'debate' ? 'ai-panel__tab--active' : ''}`}
-            onClick={() => setActiveTab('debate')}
+            onClick={() => handleTabChange('debate')}
           >
             <MessageSquare size={13} />
             {t('tabs.debate')}
@@ -115,7 +118,7 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
           <button
             id="ai-tab-oracle"
             className={`ai-panel__tab ${activeTab === 'oracle' ? 'ai-panel__tab--active' : ''}`}
-            onClick={() => setActiveTab('oracle')}
+            onClick={() => handleTabChange('oracle')}
           >
             <Eye size={13} />
             {t('tabs.oraculo')}
@@ -131,4 +134,14 @@ export default function AIPanel({ open, onClose, activeScene, defaultTab = 'rewr
       </div>
     </>
   )
+})
+
+AIPanel.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  activeScene: PropTypes.object,
+  defaultTab: PropTypes.oneOf(['rewrite', 'debate', 'oracle']),
+  onOpenSettings: PropTypes.func.isRequired,
 }
+
+export default AIPanel

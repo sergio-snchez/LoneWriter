@@ -36,7 +36,7 @@ export function useAIUsage({ db, provider, currentModel }) {
     const today = new Date().toISOString().split('T')[0]
     try {
       await db.transaction('rw', db.aiUsage, async () => {
-        let entry = await db.aiUsage
+        const entry = await db.aiUsage
           .where('[date+provider+model]')
           .equals([today, provider, currentModel])
           .first()

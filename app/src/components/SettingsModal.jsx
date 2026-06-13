@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import { X, Cloud, Sparkles, Info, Palette } from 'lucide-react'
-import { useAI } from '../context/AIContext'
-import { useNovel } from '../context/NovelContext'
-import { GoogleDriveService } from '../services/googleDriveService'
-import { SettingsCloudTab } from './SettingsCloudTab'
-import { SettingsAITab } from './SettingsAITab'
-import { SettingsUITab } from './SettingsUITab'
+import { useAI, useNovel } from '../context'
+import { GoogleDriveService } from '../services'
+import { SettingsCloudTab, SettingsAITab, SettingsUITab } from './'
 import { SettingsGeneralTab } from './SettingsGeneralTab'
 import './SettingsModal.css'
 
@@ -202,5 +200,18 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
     </div>
   )
 }
+
+SettingsModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  initialTab: PropTypes.oneOf(['cloud', 'ia', 'ui', 'general']),
+  theme: PropTypes.string.isRequired,
+  setTheme: PropTypes.func.isRequired,
+  editorFont: PropTypes.string.isRequired,
+  setEditorFont: PropTypes.func.isRequired,
+  meshEnabled: PropTypes.bool.isRequired,
+  setMeshEnabled: PropTypes.func.isRequired,
+  openModal: PropTypes.func.isRequired,
+};
 
 export default SettingsModal

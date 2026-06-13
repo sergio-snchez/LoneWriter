@@ -1,0 +1,352 @@
+﻿/* ---- Shared expand chevron ---- */
+.char-card__chevron,
+.loc-card__chevron,
+.obj-card__chevron,
+.lore-card__chevron {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform var(--trans-fast);
+}
+.char-card__chevron--open,
+.loc-card__chevron--open,
+.obj-card__chevron--open,
+.lore-card__chevron--open {
+  transform: rotate(90deg);
+}
+
+/* ---- Shared section label inside cards ---- */
+.char-card__section-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-top: 14px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* ---- Card Actions (Edit/Delete) ---- */
+.compendium-card-actions {
+  position: absolute;
+  top: 12px;
+  right: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  opacity: 0;
+  transition: all var(--trans-fast);
+  pointer-events: none;
+  z-index: 10;
+}
+.char-card:hover .compendium-card-actions,
+.loc-card:hover .compendium-card-actions,
+.obj-card:hover .compendium-card-actions,
+.lore-card:hover .compendium-card-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Ajuste especÃ­fico para que el chevron no quede debajo */
+.char-card__chevron, .loc-card__chevron, .obj-card__chevron, .lore-card__chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.char-card__chevron--open, .loc-card__chevron--open, .obj-card__chevron--open, .lore-card__chevron--open {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+/* ============================================================
+   CHARACTER CARD
+   ============================================================ */
+.char-card {
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  border-left: 3px solid var(--entity-color, var(--accent));
+}
+.char-card__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 90px 14px 16px; /* Gutter de seguridad para botones */
+}
+
+.char-card__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+  font-family: 'Inter', sans-serif;
+  background: color-mix(in srgb, var(--entity-color, var(--accent)) 13%, transparent);
+  border-color: color-mix(in srgb, var(--entity-color, var(--accent)) 27%, transparent);
+  color: var(--entity-color, var(--accent));
+}
+
+.char-card__info {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.char-card__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'Playfair Display', serif;
+}
+.char-card__occupation {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.char-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.char-card__body {
+  padding: 4px 16px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-base);
+}
+.char-card__desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-top: 12px;
+}
+.char-card__traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 2px;
+}
+.char-relation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.char-relation:last-of-type { border-bottom: none; }
+.char-relation__name { color: var(--text-primary); font-weight: 500; }
+.char-relation__type { color: var(--text-muted); font-size: 11px; }
+.char-card__acts { display: flex; flex-wrap: wrap; gap: 5px; }
+
+/* ============================================================
+   LOCATION CARD
+   ============================================================ */
+.loc-card { cursor: pointer; padding: 0; overflow: hidden; position: relative; border-left: 3px solid var(--entity-color, var(--accent)); }
+.loc-card__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 90px 14px 16px;
+}
+.loc-card__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--entity-color, var(--accent));
+}
+.loc-card__info {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.loc-card__name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'Playfair Display', serif;
+}
+.loc-card__type {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.loc-card__tags { 
+  display: flex; 
+  flex-wrap: wrap;
+  gap: 4px; 
+  margin-top: 2px;
+}
+.loc-card__body {
+  padding: 4px 16px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-base);
+}
+.loc-card__desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-top: 12px;
+  margin-bottom: 10px;
+}
+.loc-card__climate { margin-bottom: 8px; }
+.loc-card__climate-val { font-size: 12px; color: var(--text-secondary); }
+.loc-card__all-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+
+/* ============================================================
+   OBJECT CARD
+   ============================================================ */
+.obj-card { cursor: pointer; padding: 0; overflow: hidden; position: relative; border-left: 3px solid var(--entity-color, var(--accent)); }
+.obj-card__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 90px 14px 16px;
+}
+.obj-card__icon { color: var(--entity-color, var(--accent)); flex-shrink: 0; }
+.obj-card__info { 
+  flex: 1; 
+  overflow: hidden; 
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.obj-card__name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'Playfair Display', serif;
+}
+.obj-card__type { display: block; font-size: 11px; color: var(--text-muted); }
+.obj-card__tags { 
+  display: flex; 
+  flex-wrap: wrap;
+  gap: 4px; 
+  margin-top: 2px;
+}
+.obj-card__body {
+  padding: 4px 16px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-base);
+}
+.obj-card__desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-top: 12px;
+  margin-bottom: 6px;
+}
+.obj-card__meta { margin-bottom: 8px; }
+.obj-card__origin { font-size: 12px; color: var(--text-secondary); }
+.obj-card__tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+
+/* ============================================================
+   LORE CARD
+   ============================================================ */
+.lore-card { cursor: pointer; padding: 0; overflow: hidden; position: relative; border-left: 3px solid var(--entity-color, var(--accent)); }
+.lore-card__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 90px 14px 16px;
+}
+.lore-card__cat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--entity-color, var(--accent));
+  flex-shrink: 0;
+}
+.lore-card__info { 
+  flex: 1; 
+  overflow: hidden; 
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.lore-card__title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'Playfair Display', serif;
+}
+.lore-card__cat { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.lore-card__tags { 
+  display: flex; 
+  flex-wrap: wrap;
+  gap: 4px; 
+  margin-top: 2px;
+}
+.lore-card__body {
+  padding: 4px 16px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-base);
+}
+.lore-card__summary {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-top: 12px;
+}
+.lore-card__all-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 14px; }
+
+.ai-context-badge-wrapper {
+  margin-top: 4px;
+}
+
+.ai-context-badge {
+  color: #d4a853;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(212, 168, 83, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ai-context-badge svg {
+  fill: currentColor;
+}
+
+.comp-zap-icon {
+  fill: currentColor;
+}
+
+.comp-zap-icon--disabled {
+  fill: none;
+}
+
+.obj-card__tags--expanded {
+  margin-bottom: 12px;
+}
+
+.obj-card__importance-badge {
+  margin-bottom: 8px;
+}
+
+.lore-card__all-tags--expanded {
+  margin-top: 8px;
+}
+
+.assoc-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 4px;
+}

@@ -1,0 +1,225 @@
+/* ── Override compendium-mpc-overlay for merge overlay ── */
+.compendium-mpc-overlay.merge-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  pointer-events: auto;
+  z-index: 9999;
+}
+.compendium-mpc-overlay.merge-overlay--merging {
+  cursor: wait;
+}
+
+/* ── Merge Result View ── */
+.merge-result {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.merge-result__label {
+  font-size: 11px;
+  color: #fff;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.merge-result__candidates {
+  display: flex;
+  gap: 8px;
+}
+
+.merge-candidate {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.merge-candidate--selected {
+  border: 2px solid var(--accent);
+  background: var(--accent-dim);
+}
+.merge-candidate__radio {
+  margin-right: 6px;
+}
+.merge-candidate__name {
+  font-weight: 600;
+  font-size: 13px;
+}
+.merge-candidate__preview {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.merge-result__preview {
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  max-height: 250px;
+  overflow-y: auto;
+}
+.merge-result__preview-name {
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: var(--accent);
+}
+.merge-result__preview-content {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+
+.merge-result__traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 12px;
+}
+.merge-result__trait {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-radius: 4px;
+}
+
+.merge-result__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.merge-result__btn-skip {
+  flex: 1;
+}
+.merge-result__btn-confirm {
+  flex: 2;
+}
+
+/* ── Merge Candidates View ── */
+.merge-candidates-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.merge-candidates-view__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.merge-candidates-view__label {
+  font-size: 11px;
+  color: #fff;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.merge-candidates-view__badge {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.merge-candidates-view__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.merge-entity {
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--bg-dim);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s;
+}
+.merge-entity--selected {
+  background: rgba(212, 168, 83, 0.15);
+  border-color: var(--accent);
+}
+.merge-entity--disabled {
+  cursor: default;
+}
+.merge-entity--merging {
+  opacity: 0.5;
+  pointer-events: none;
+  animation: mpc-pulse 2s infinite;
+}
+
+.merge-entity__checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 2px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: white;
+}
+.merge-entity__checkbox--selected {
+  background: var(--accent);
+}
+
+.merge-entity__info {
+  flex: 1;
+}
+.merge-entity__name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.merge-entity__desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  font-style: italic;
+  line-height: 1.4;
+  opacity: 1;
+}
+.merge-entity__desc--merging {
+  color: #fff;
+}
+
+.merge-candidates-view__btn-wrap {
+  padding: 0 4px;
+}
+.merge-candidates-view__merge-btn {
+  width: 100%;
+  gap: 8px;
+  height: 44px;
+}
+
+.merge-candidates-view__nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+.merge-nav__btn-prev {
+  transform: rotate(180deg);
+}
+.merge-candidates-view__page {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Misc ── */
+.merge-overlay__success-icon {
+  color: #5cb98a;
+}

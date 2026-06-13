@@ -12,8 +12,7 @@
  * @param {Function} deps.deleteCompendiumEntry
  */
 import { useState } from 'react'
-import { findSimilarEntities } from '../services/entityDetector'
-import { AIService } from '../services/aiService'
+import { findSimilarEntities, AIService } from '../services'
 
 export function useMergeEngine({ characters, locations, objects, lore, addCompendiumEntry, deleteCompendiumEntry }) {
   // ── State ──────────────────────────────────────────────────────────────────

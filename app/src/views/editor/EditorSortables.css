@@ -1,0 +1,458 @@
+/* ---- Scrollbar de la estructura narrativa ---- */
+.editor-view__acts::-webkit-scrollbar {
+  width: 5px;
+}
+.editor-view__acts::-webkit-scrollbar-track {
+  background: transparent;
+}
+.editor-view__acts::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 99px;
+}
+.editor-view__acts::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* ---- Act section ---- */
+.act-section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-glass-strong);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: border-color var(--trans-fast);
+}
+.act-section--open {
+  border-color: rgba(255,255,255,0.12);
+}
+
+.act-section__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: var(--text-primary);
+  transition: background var(--trans-fast);
+  font-family: 'Inter', sans-serif;
+}
+.act-section__header:hover { background: var(--bg-hover); }
+
+.act-section__chevron { color: var(--text-muted); flex-shrink: 0; }
+
+.act-section__title-group {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.act-section__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'Playfair Display', serif;
+}
+.act-section__summary {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.act-section__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+  padding-right: 4px;
+}
+.act-section__chapters, .act-section__words-total {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.act-section__words-total {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.act-section__progress-bar {
+  width: 90px;
+  height: 4px; /* Slightly thicker for better visibility */
+  background: var(--text-muted); /* More visible gray matching the text */
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 6px;
+  opacity: 0.4; /* Slightly transparent so it doesn't pop too much, but still visible */
+}
+.act-section__progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chapter-accordion__progress-bar {
+  width: 90px;
+  height: 3px;
+  background: var(--text-muted);
+  border-radius: 1.5px;
+  overflow: hidden;
+  margin-top: 4px;
+  opacity: 0.4;
+}
+.chapter-accordion__progress-fill {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 1.5px;
+  transition: width 0.6s ease;
+}
+
+.act-section__body {
+  border-top: 1px solid var(--border);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.act-section__add-ch {
+  width: 100%;
+  justify-content: center;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* ---- Chapter accordion ---- */
+.chapter-accordion {
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: border-color var(--trans-fast), background var(--trans-fast);
+}
+.chapter-accordion--open {
+  background: var(--bg-glass-strong);
+  border-color: var(--border);
+}
+
+.chapter-accordion__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  transition: background var(--trans-fast), color var(--trans-fast);
+  border-radius: var(--radius-sm);
+}
+.chapter-accordion__header:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.chapter-accordion__chevron { color: var(--text-muted); flex-shrink: 0; }
+.chapter-accordion__title-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+}
+
+.chapter-accordion__num-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.chapter-accordion__num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue); /* Distinct color for Chapters */
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chapter-accordion__words {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.chapter-accordion__status-icon {
+  color: var(--green);
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.chapter-accordion--completed .chapter-accordion__title {
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.chapter-accordion__title {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chapter-accordion__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.chapter-accordion__words, .chapter-accordion__scene-count {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.chapter-accordion__body {
+  padding: 4px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.chapter-accordion__add-scene {
+  width: 100%;
+  justify-content: center;
+  font-size: 11px;
+  padding: 5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ---- Scene row ---- */
+.scene-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  transition: all var(--trans-fast);
+  cursor: pointer;
+}
+.scene-row:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+}
+
+.scene-row__num {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  width: 30px;
+  flex-shrink: 0;
+}
+.scene-row__info {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.scene-row__title {
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scene-row__pov {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.scene-row__meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.scene-row__words { font-size: 10px; color: var(--text-muted); }
+
+.scene-row__btn {
+  opacity: 0;
+  padding: 4px 6px;
+  font-size: 11px;
+}
+.scene-row:hover .scene-row__btn { opacity: 1; }
+
+/* ---- Editor Tree Narrow Adjustments ---- */
+.editor-view__tree--narrow .scene-row {
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.editor-view__tree--narrow .scene-row__meta {
+  width: 100%;
+  padding-left: 38px; /* Alignment with title: num (30px) + gap (8px) */
+  margin-top: 1px;
+}
+
+.editor-view__tree--narrow .badge {
+  padding: 1px 6px;
+  height: 18px; /* Slightly smaller height */
+  line-height: 1;
+}
+
+.editor-view__tree--narrow .chapter-accordion__words {
+  display: block;
+  margin-top: 2px;
+}
+
+.editor-view__tree--narrow .chapter-accordion__num-row {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.editor-view__tree--narrow .act-section__meta {
+  display: none; /* Hide act meta in very narrow view to focus on title */
+}
+
+.editor-view__tree--narrow .act-section__header {
+  padding: 10px 14px;
+}
+
+.editor-view__tree--narrow .chapter-accordion__progress-bar,
+.editor-view__tree--narrow .act-section__progress-bar {
+  width: 60px; /* Narrower progress bars */
+}
+
+/* ---- Drag & Drop Grips ---- */
+.act-grip, .chapter-grip, .scene-row__grip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: grab;
+  padding: 4px;
+  opacity: 0.3;
+  transition: opacity 0.2s;
+}
+
+.act-section__header-wrap:hover .act-grip,
+.chapter-accordion__header-wrap:hover .chapter-grip,
+.scene-row:hover .scene-row__grip {
+  opacity: 1;
+}
+
+.act-grip:active, .chapter-grip:active, .scene-row__grip:active {
+  cursor: grabbing;
+}
+
+/* ---- Tree Actions ---- */
+.act-delete-btn, .chapter-delete-btn, .scene-row__btn {
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  transition: all 0.2s;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.act-delete-btn:hover, .chapter-delete-btn:hover, .scene-row__btn:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+
+.act-delete-btn svg, .chapter-delete-btn svg, .scene-row__btn svg {
+  display: block !important;
+}
+
+.act-section__header-wrap, .chapter-accordion__header-wrap {
+  display: flex;
+  align-items: center;
+  padding-left: 4px; /* Space for grip */
+}
+.act-section__header, .chapter-accordion__header {
+  flex: 1;
+}
+
+.act-delete-btn, .chapter-delete-btn {
+  opacity: 0;
+  margin-right: 8px;
+}
+.act-section:hover .act-delete-btn, 
+.chapter-accordion:hover .chapter-delete-btn {
+  opacity: 1;
+}
+
+.scene-row__actions {
+  opacity: 0;
+  display: flex;
+  gap: 4px;
+}
+.scene-row:hover .scene-row__actions {
+  opacity: 1;
+}
+
+/* ---- Component tweaks ---- */
+.scene-row--active {
+  background: var(--accent-dim) !important;
+  border-color: var(--border-accent) !important;
+}
+
+.scene-row--active .scene-row__title {
+  color: var(--accent-light);
+  font-weight: 600;
+}
+
+.edit-input {
+  width: 100%;
+  padding: 2px 4px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  outline: none;
+  font-size: inherit;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+.edit-input--playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+.edit-input--default {
+  font-family: 'Inter', sans-serif;
+}
+
+.edit-input--bold {
+  font-weight: 600;
+}

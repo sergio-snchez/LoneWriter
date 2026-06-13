@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import PropTypes from 'prop-types';
 import './CustomDatePicker.css';
 
 export function CustomDatePicker({ value, onChange }) {
@@ -174,3 +175,8 @@ export function CustomDatePicker({ value, onChange }) {
     </div>
   );
 }
+
+CustomDatePicker.propTypes = {
+  value: PropTypes.string,
+  onChange: PropTypes.func.isRequired,
+};

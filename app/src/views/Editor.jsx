@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import {
   BookOpen, Edit3, ChevronRight, Plus,
   FileText, Target, GripVertical,
@@ -7,28 +8,21 @@ import {
 } from 'lucide-react'
 import { DndContext, closestCenter, DragOverlay } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { useNovel } from '../context/NovelContext'
-import { useAI } from '../context/AIContext'
-import { useModal } from '../context/ModalContext'
-import { db } from '../db/database'
-import { Tooltip } from '../components/Tooltip'
-import RichEditor from '../components/RichEditor'
-import {
-  extractCandidates,
-  analyzeWithAI,
-  loadRegisteredEntityNames,
-  loadIgnoredNames,
-} from '../services/mpcService'
+import { useNovel, useAI, useModal } from '../context'
+import { Tooltip, RichEditor } from '../components'
+import { upsertVector } from '../services'
 import debounce from 'lodash/debounce'
-import { upsertVector } from '../services/ragService'
-import { SortableActSection } from './editor/EditorSortables'
-import { useEditorDnd } from './editor/useEditorDnd'
-import EditorToolbar from './editor/EditorToolbar'
-import EditorStats from './editor/EditorStats'
+import { SortableActSection, EditorToolbar, EditorStats, useEditorDnd, useEditorMpc } from './editor/index'
 import './Editor.css'
+import './editor/EditorMobile.css'
 import './MpcBadge.css'
 
 export default function EditorView({ menuOpen = false, onNavigate }) {
+  EditorView.propTypes = {
+    menuOpen: PropTypes.bool,
+    onNavigate: PropTypes.func,
+  };
+
   const { t } = useTranslation('editor')
   const {
     acts, activeNovel, characters, updateScene,
@@ -47,7 +41,6 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     isMpcEnabled
   } = useAI()
 
-  const mpcDebounceRef = useRef(null)
   const [mobileTreeOpen, setMobileTreeOpen] = useState(false)
   const [treeWidth, setTreeWidth] = useState(400)
   const [isTreeDragging, setIsTreeDragging] = useState(false)
@@ -82,28 +75,28 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     }
   }, [])
 
-  const startTreeDrag = (e) => {
+  const startTreeDrag = useCallback((e) => {
     if (window.innerWidth <= 768) return
     treeDragRef.current = true
     setIsTreeDragging(true)
     document.body.style.cursor = 'col-resize'
     document.body.classList.add('no-select')
     e.preventDefault()
-  }
+  }, [])
 
-  const toggleExpand = (id) => {
+  const toggleExpand = useCallback((id) => {
     setExpandedIds(prev => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
       return next
     })
-  }
+  }, [setExpandedIds])
 
   // Persistence is now managed in NovelContext
 
 
-  const handleExpandAll = () => {
+  const handleExpandAll = useCallback(() => {
     const allIds = new Set();
     acts.forEach(act => {
       allIds.add(`act-${act.id}`);
@@ -112,11 +105,11 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       });
     });
     setExpandedIds(allIds);
-  };
+  }, [acts, setExpandedIds]);
 
-  const handleCollapseAll = () => {
+  const handleCollapseAll = useCallback(() => {
     setExpandedIds(new Set());
-  };
+  }, [setExpandedIds]);
 
   // Sync activeScene with updated data from acts
   useEffect(() => {
@@ -149,6 +142,22 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     []
   )
 
+  const { triggerMpcAnalysis, handleManualMpcScan } = useEditorMpc({
+    activeNovel,
+    activeScene,
+    isMpcEnabled,
+    apiKey,
+    provider,
+    currentModel,
+    localBaseUrl,
+    mpcCooldownRef,
+    MPC_COOLDOWN_MS,
+    mpcStatus,
+    setMpcStatus,
+    addMpcProposals,
+    logAIUsage,
+  })
+
   const debouncedSave = useCallback(
     debounce(async (sceneId, novelId, html) => {
       setIsSaving(true)
@@ -169,107 +178,6 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     [updateScene, debouncedRagUpsert]
   )
 
-  const triggerMpcAnalysis = useCallback((html) => {
-    if (!isMpcEnabled) return
-    if (!apiKey && provider !== 'local') return
-    if (!activeNovel) return
-
-    if (mpcDebounceRef.current) clearTimeout(mpcDebounceRef.current)
-
-    mpcDebounceRef.current = setTimeout(async () => {
-      const now = Date.now()
-      if (mpcCooldownRef.current && (now - mpcCooldownRef.current) < MPC_COOLDOWN_MS) return
-
-      const plainText = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-      if (plainText.length < 20) return
-
-      const [registeredNames, ignoredNames] = await Promise.all([
-        loadRegisteredEntityNames(activeNovel.id),
-        loadIgnoredNames(activeNovel.id),
-      ])
-
-      const candidates = extractCandidates(plainText, registeredNames, ignoredNames)
-      if (candidates.length === 0) return
-
-      setMpcStatus('analyzing')
-      mpcCooldownRef.current = now
-
-      try {
-        const aiConfig = { provider, apiKey, model: currentModel, localBaseUrl }
-        const [chars, locs, objs, loreEntries] = await Promise.all([
-          db.characters.where('novelId').equals(activeNovel.id).toArray(),
-          db.locations.where('novelId').equals(activeNovel.id).toArray(),
-          db.objects.where('novelId').equals(activeNovel.id).toArray(),
-          db.lore.where('novelId').equals(activeNovel.id).toArray(),
-        ])
-        const compendiumByType = {
-          characters: chars.map(c => c.name).filter(Boolean),
-          locations: locs.map(l => l.name).filter(Boolean),
-          objects: objs.map(o => o.name).filter(Boolean),
-          lore: loreEntries.map(l => l.title).filter(Boolean),
-        }
-
-        const { proposals, usage } = await analyzeWithAI(candidates, plainText, registeredNames, ignoredNames, aiConfig, 5, compendiumByType)
-        logAIUsage(usage)
-        if (proposals.length > 0) addMpcProposals(proposals)
-      } catch (err) {
-      } finally {
-        setMpcStatus('idle')
-      }
-    }, 2000)
-  }, [activeNovel, apiKey, provider, currentModel, localBaseUrl, mpcCooldownRef, MPC_COOLDOWN_MS, setMpcStatus, addMpcProposals, isMpcEnabled, logAIUsage])
-
-  const handleManualMpcScan = useCallback(async () => {
-    if (mpcStatus === 'analyzing') return
-    if (!activeScene?.content) return
-    if (!activeNovel?.id) return
-
-    const html = activeScene.content
-    const plainText = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-    if (plainText.length < 10) return
-
-    setMpcStatus('analyzing')
-    try {
-      const [registeredNames, ignoredNames] = await Promise.all([
-        loadRegisteredEntityNames(activeNovel.id),
-        loadIgnoredNames(activeNovel.id),
-      ])
-      const candidates = extractCandidates(plainText, registeredNames, ignoredNames)
-      if (candidates.length === 0) { setMpcStatus('idle'); return }
-
-      const [chars, locs, objs, loreEntries] = await Promise.all([
-        db.characters.where('novelId').equals(activeNovel.id).toArray(),
-        db.locations.where('novelId').equals(activeNovel.id).toArray(),
-        db.objects.where('novelId').equals(activeNovel.id).toArray(),
-        db.lore.where('novelId').equals(activeNovel.id).toArray(),
-      ])
-      const compendiumByType = {
-        characters: chars.map(c => c.name).filter(Boolean),
-        locations: locs.map(l => l.name).filter(Boolean),
-        objects: objs.map(o => o.name).filter(Boolean),
-        lore: loreEntries.map(l => l.title).filter(Boolean),
-      }
-
-      const { proposals, usage } = await analyzeWithAI(candidates, plainText, registeredNames, ignoredNames, { provider, apiKey, model: currentModel, localBaseUrl }, 8, compendiumByType)
-      logAIUsage(usage)
-      if (proposals.length > 0) addMpcProposals(proposals)
-    } catch (err) {
-      console.error('[MPC] Error in handleManualMpcScan:', err)
-    } finally {
-      setMpcStatus('idle')
-    }
-  }, [activeScene, activeNovel, apiKey, provider, currentModel, localBaseUrl, mpcStatus, setMpcStatus, addMpcProposals, logAIUsage])
-
-  // MPC manual scan listener — placed AFTER handleManualMpcScan
-  useEffect(() => {
-    const handler = () => {
-      if (!activeScene || !activeNovel || mpcStatus === 'analyzing') return
-      handleManualMpcScan()
-    }
-    window.addEventListener('mpc-manual-scan', handler)
-    return () => window.removeEventListener('mpc-manual-scan', handler)
-  }, [activeScene, activeNovel, mpcStatus, handleManualMpcScan])
-
   const handleEditorChange = (html) => {
     if (activeScene) {
       debouncedSave(activeScene.id, activeNovel?.id, html)
@@ -287,12 +195,6 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     fetchStreak()
   }, [activeNovel, getStreak])
 
-  useEffect(() => {
-    return () => {
-      if (mpcDebounceRef.current) clearTimeout(mpcDebounceRef.current)
-    }
-  }, [])
-
   const handleAddAct = async () => {
     openModal('prompt', {
       title: t('nuevo.acto_titulo'),
@@ -303,7 +205,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     });
   }
 
-  const handleAddChapter = async (actId) => {
+  const handleAddChapter = useCallback(async (actId) => {
     openModal('prompt', {
       title: t('nuevo.capitulo_titulo'),
       message: t('nuevo.capitulo_mensaje'),
@@ -311,9 +213,9 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       confirmLabel: t('nuevo.capitulo_boton'),
       onConfirm: (title) => addChapter(actId, title)
     });
-  }
+  }, [openModal, t, addChapter])
 
-  const handleAddScene = async (chapterId) => {
+  const handleAddScene = useCallback(async (chapterId) => {
     openModal('prompt', {
       title: t('nuevo.escena_titulo'),
       message: t('nuevo.escena_mensaje'),
@@ -321,9 +223,9 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       confirmLabel: t('nuevo.escena_boton'),
       onConfirm: (title) => addScene(chapterId, title)
     });
-  }
+  }, [openModal, t, addScene])
 
-  const confirmDeleteAct = (id) => {
+  const confirmDeleteAct = useCallback((id) => {
     openModal('confirm', {
       title: t('acto.eliminar_titulo'),
       message: t('acto.eliminar_mensaje'),
@@ -331,9 +233,9 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       confirmLabel: t('acto.eliminar_boton'),
       onConfirm: () => deleteAct(id)
     });
-  }
+  }, [openModal, t, deleteAct])
 
-  const confirmDeleteChapter = (id) => {
+  const confirmDeleteChapter = useCallback((id) => {
     openModal('confirm', {
       title: t('capitulo.eliminar_titulo'),
       message: t('capitulo.eliminar_mensaje'),
@@ -341,9 +243,9 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       confirmLabel: t('capitulo.eliminar_boton'),
       onConfirm: () => deleteChapter(id)
     });
-  }
+  }, [openModal, t, deleteChapter])
 
-  const confirmDeleteScene = (id) => {
+  const confirmDeleteScene = useCallback((id) => {
     openModal('confirm', {
       title: t('eliminar_escena.titulo'),
       message: t('eliminar_escena.mensaje'),
@@ -351,7 +253,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
       confirmLabel: t('eliminar_escena.boton'),
       onConfirm: () => deleteScene(id)
     });
-  }
+  }, [openModal, t, deleteScene])
 
   const {
     activeDragId,
@@ -373,8 +275,8 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     expandedIds,
   })
 
-  const totalChapters = acts.reduce((acc, act) => acc + (act.chapters?.length || 0), 0)
-  const allScenes = acts.flatMap(act => (act.chapters || []).flatMap(ch => ch.scenes || []))
+  const totalChapters = useMemo(() => acts.reduce((acc, act) => acc + (act.chapters?.length || 0), 0), [acts])
+  const allScenes = useMemo(() => acts.flatMap(act => (act.chapters || []).flatMap(ch => ch.scenes || [])), [acts])
   const totalScenes = allScenes.length
 
   return (
@@ -553,8 +455,8 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                 localBaseUrl={localBaseUrl}
               />
 
-              <div className="editor-body" style={menuOpen ? { pointerEvents: 'none', userSelect: 'none' } : {}}>
-                <div style={menuOpen ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
+              <div className={`editor-body ${menuOpen ? 'editor-body--menu-open' : ''}`}>
+                <div className={`${menuOpen ? 'editor-content--dimmed' : ''}`}>
                   <RichEditor
                     key={activeScene.id}
                     content={activeScene.content || ''}
