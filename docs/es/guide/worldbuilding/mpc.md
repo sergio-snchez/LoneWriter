@@ -1,3 +1,8 @@
+---
+title: El MPC (Monitor de Propuestas)
+description: Detecta automáticamente nuevos personajes, lugares y objetos mientras escribes. Revisa, acepta o ignora propuestas de entidades con un clic.
+---
+
 # El MPC (Monitor de Propuestas)
 
 El Monitor de Propuestas del Compendio (MPC) es una herramienta de asistencia que opera durante el proceso de escritura. Su función es identificar automáticamente menciones de personajes, lugares u objetos en el borrador para sugerir su incorporación al **[Compendio](./compendium.md)**.

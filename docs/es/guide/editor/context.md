@@ -1,3 +1,8 @@
+---
+title: Contexto y Continuidad
+description: Mantén la coherencia narrativa con la ventana de contexto de LoneWriter, indexación RAG y validación automática de continuidad en tu novela.
+---
+
 # Contexto y Continuidad
 
 El mayor desafío al escribir una novela extensa es mantener la coherencia de los detalles. LoneWriter utiliza su arquitectura de inteligencia artificial para asegurar que cada nueva palabra sea fiel a lo que ya ha sido establecido.

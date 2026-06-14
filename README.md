@@ -61,7 +61,7 @@ LoneWriter is a **100% local, privacy-first** writing application. Your manuscri
 - **RAG Engine (all-MiniLM-L6-v2):** Semantic search powered by local embeddings (Transformers.js). Your entire novel is vectorized in the browser — contextual queries without external APIs, keeping your data private.
 - **Oracle Verdicts (Continuity Linter):** Real-time paragraph-by-paragraph coherence analysis. It acts as a "logic corrector" that detects contradictions with your established lore (e.g., a dead character reappearing or an object mistakenly changing owners).
 - **Oracle Stopwords:** Manage custom filtered words in the Resources section to fine-tune entity detection and coherence analysis.
-- **Saliency Engine (Anaphoras):** Real-time monitoring of characters and coreferences. It detects pronouns (he, she, they, etc.) and suggests which character they refer to, helping maintain consistency and solving ambiguities in long or complex scenes.
+- **Entity Detection:** Automatically scans your writing and detects mentions of characters, locations, objects, and lore from your Compendium, flagging them for continuity checks and Oracle queries.
 - **Selective Exclusion:** Control which Compendium entities participate in coherence analysis with one click to avoid false positives during dreams or flashbacks.
 
 ### 🧠 Advanced AI Assistant

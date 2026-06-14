@@ -1,3 +1,8 @@
+---
+title: API Keys Setup
+description: Get API keys for Google Gemini, Anthropic Claude, OpenAI GPT, and OpenRouter. Step-by-step setup for cloud AI providers in LoneWriter.
+---
+
 # API Keys Setup
 
 For LoneWriter to process information using AI, it needs to connect to a Language Model (LLM). The simplest way to do this is through an API Key.

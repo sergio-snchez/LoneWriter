@@ -1,3 +1,8 @@
+---
+title: Configuración de Claves API
+description: Obtén claves API para Google Gemini, Anthropic Claude, OpenAI GPT y OpenRouter. Configuración paso a paso para proveedores de IA en la nube.
+---
+
 # Configuración de Claves API
 
 Para que LoneWriter pueda procesar la información mediante IA, necesita conectarse a un modelo de lenguaje (LLM). La forma más sencilla de hacerlo es a través de una Clave API.

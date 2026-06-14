@@ -1,3 +1,8 @@
+---
+title: Primeros Pasos
+description: Configura LoneWriter, ajusta tus proveedores de IA y comienza tu primera novela con almacenamiento local y privacidad total.
+---
+
 # Primeros Pasos
 
 LoneWriter es una aplicación de escritura diseñada para autores que buscan potencia tecnológica sin comprometer su privacidad. Esta guía le acompañará en el proceso de configuración inicial para que pueda comenzar su primera novela en pocos minutos.

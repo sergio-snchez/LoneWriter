@@ -1,3 +1,8 @@
+---
+title: Relationships and Entities
+description: Define bidirectional relationships between entities. Hierarchical, geographical, emotional, and ownership links visualized in the Nexus.
+---
+
 # Relationships and Entities
 
 The depth of a narrative universe lies in the bonds that connect its elements. LoneWriter allows modeling these connections granularly, transforming a list of notes into a living ecosystem.

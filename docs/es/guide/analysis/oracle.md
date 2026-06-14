@@ -1,3 +1,8 @@
+---
+title: El Oráculo
+description: Consulta el lore de tu novela usando tecnología RAG. El Oráculo proporciona respuestas precisas basadas en tus manuscritos y el Compendio.
+---
+
 # El Oráculo
 
 El Oráculo es una herramienta de consulta narrativa avanzada. A diferencia de los modelos de lenguaje generales, el Oráculo dispone de acceso directo a los borradores y al **[Compendio](../worldbuilding/compendium.md)** de su proyecto.
