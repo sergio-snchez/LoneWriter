@@ -62,7 +62,7 @@ export default function RewriteTab({ activeScene }) {
         : null;
 
       const previousContext = includePreviousContext
-        ? extractPreviousContext(activeScene?.content, selection, 120)
+        ? extractPreviousContext(activeScene?.content, selection, 240)
         : null;
 
       const response = await AIService.rewrite(selection, activeGoal, instruction ? "" : (activeGoal ? prompts[activeGoal] : ""), {

@@ -87,7 +87,7 @@
   "general": {
     "seccion_titulo": "Application Information",
     "version": "Version",
-    "version_valor": "2.0-timeline",
+    "version_valor": "2.0.4",
     "base_datos": "Database",
     "base_datos_valor": "IndexedDB (Dexie.js)",
     "plataforma": "Platform",

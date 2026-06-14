@@ -34,6 +34,14 @@
   margin-top: 4px;
 }
 
+.oracle-tab .rewrite-context-toggle {
+  margin-top: 0;
+  padding-top: 0px;
+  padding-bottom: 10px;
+  border-top: none;
+  border-bottom: 1px solid var(--border);
+}
+
 .oracle-tab__error {
   display: flex;
   align-items: flex-start;
@@ -301,8 +309,15 @@
 }
 
 @keyframes oracleBtnPulse {
-  0%, 100% { box-shadow: 0 0 0 rgba(224, 183, 83, 0); }
-  50% { box-shadow: 0 0 8px rgba(224, 183, 83, 0.3); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(224, 183, 83, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 8px rgba(224, 183, 83, 0.3);
+  }
 }
 
 .oracle-tab__context-details {
@@ -428,8 +443,17 @@
 }
 
 @keyframes trafficPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
 }
 
 .oracle-entities-wrapper {
@@ -487,13 +511,13 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 10px 10px;
   background: var(--bg-glass-ui);
   backdrop-filter: var(--backdrop-blur);
   -webkit-backdrop-filter: var(--backdrop-blur);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  margin-bottom: 8px;
+  margin-bottom: 0px;
   transition: all var(--trans-fast);
 }
 
@@ -556,7 +580,7 @@
   font-weight: 700;
   line-height: 1;
   border-radius: 50%;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   color: inherit;
   opacity: 0.6;
 }
