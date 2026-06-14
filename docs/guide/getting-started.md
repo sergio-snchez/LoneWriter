@@ -1,3 +1,8 @@
+---
+title: Getting Started
+description: Set up LoneWriter, configure AI providers, and start your first novel with privacy-first local storage and optional cloud sync.
+---
+
 # Getting Started
 
 LoneWriter is a writing application designed for authors seeking technological power without compromising their privacy. This guide will walk you through the initial setup process so you can start your first novel in minutes.

@@ -16,7 +16,7 @@ import i18n from '../i18n/i18n';
 import { getSentenceStartWords, getGenericWords } from '../i18n/stopwords';
 
 // ─── Regex: detecta palabras que empiezan en mayúscula en cualquier posición ──
-const PROPER_NOUN_REGEX = /(?:^|(?<=[.!?¿¡\n\r—–""«‹()\[\] \t,;:]))([A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ][a-záéíóúàèìòùäëïöüâêîôûñ\u2019']{1,}(?:\s+[A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ][a-záéíóúàèìòùäëïöüâêîôûñ\u2019']{1,}){0,3})/gmu;
+const PROPER_NOUN_REGEX = /(?:^|(?<=[.!?¿¡\n\r—–""«‹()\] \t,;:]))([A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ][a-záéíóúàèìòùäëïöüâêîôûñ\u2019']{1,}(?:\s+[A-ZÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛÑ][a-záéíóúàèìòùäëïöüâêîôûñ\u2019']{1,}){0,3})/gmu;
 
 // ─── Carga los nombres ya registrados en el compendio ───────────────────────
 export async function loadRegisteredEntityNames(novelId) {
@@ -146,11 +146,8 @@ export async function analyzeWithAI(candidates, sceneText, registeredNames, igno
     : `You are an expert in worldbuilding and narrative universe construction.\n\nYour task is to analyze the literary fragment I provide and identify whether the DETECTED CANDIDATES are relevant narrative entities (characters, important places, objects, or lore concepts) that deserve to have an entry in the novel's compendium.\n\nCURRENT COMPENDIUM (these names are already registered, do NOT propose them as new):\n${compendiumSummary}${compendiumByTypeSection}\n\nDETECTED CANDIDATES (evaluate if they deserve an entry):\n${candidates.join(', ')}\n\nWORK FRAGMENT:\n"""\n${truncatedText}\n"""\n\nINSTRUCTIONS:\n- Analyze ONLY the listed candidates. Do not invent new entities.\n- Do NOT propose candidates that are variations, nicknames, or parts of names from the CURRENT COMPENDIUM.\n- For each candidate that DOES deserve an entry, generate a JSON entry.\n- Assign confidence: "high" if it clearly appears as a narrative entity, "medium" if probable, "low" if doubtful.\n- Infer ALL fields from the text context. If you cannot infer it, leave the field empty "".\n- For relationship fields (associatedCharacters, associatedLocations, etc.), use ONLY names that appear in the "EXISTING ENTITIES BY TYPE" list. Do not invent names.\n- Propose a maximum of ${maxProposals} entities. Prioritize those with highest confidence.\n- If no candidate deserves an entry, return an empty array [].\n\nRespond in the same language as the author uses in their text.\n\nRESPONSE SCHEMA (return ONLY the JSON, without additional text, without markdown):\n[\n  {\n    "type": "characters" | "locations" | "objects" | "lore",\n    "confidence": "high" | "medium" | "low",\n    "name": "Exact name as it appears in the text (for type != lore)",\n    "title": "Only if type is lore, the entry title",\n    "role": "If character: their narrative role (protagonist, antagonist, secondary...)",\n    "occupation": "If character: their occupation or profession",\n    "description": "Brief description inferred from context (max 150 characters)",\n    "type_detail": "For locations: type of place. For objects: type of object. For lore: category",\n    "tags": ["tag1", "tag2"],\n    "relations": [{ "name": "CharacterName", "type": "how this entity sees them", "reverseType": "how they see this entity" }],\n    "associatedCharacters": ["CharacterName"],\n    "associatedLocations": ["LocationName"],\n    "associatedObjects": ["ObjectName"],\n    "associatedLore": ["LoreTitle"],\n    "currentOwner": "CharacterName if it's an object and the owner can be inferred, else empty",\n    "reason": "Why you propose adding it to the compendium (brief sentence)"\n  }\n]`;
 
   try {
-    console.log('[MPC Service] Calling AI with provider:', aiConfig.provider, 'apiKey present:', !!aiConfig.apiKey);
     const response = await AIService._callWithConfig(prompt, aiConfig);
-    console.log('[MPC Service] Raw AI response:', response.text);
     const parsed = parseMpcResponse(response.text, maxProposals, registeredNames, ignoredNames);
-    console.log('[MPC Service] Parsed proposals:', parsed);
     return { 
       proposals: parsed, 
       usage: response.usage 

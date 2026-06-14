@@ -4,9 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { 
   Combine, X, CheckCircle2, Loader2, ChevronRight 
 } from 'lucide-react';
-import { useNovel } from '../context/NovelContext';
-import { useAI } from '../context/AIContext';
-import { useModal } from '../context/ModalContext';
+import { useNovel, useAI, useModal } from '../context';
+import './MergeOverlay.css';
 
 export function MergeOverlay() {
   const { t } = useTranslation('compendium');
@@ -58,22 +57,14 @@ export function MergeOverlay() {
 
   return createPortal(
     <div 
-      className={`compendium-mpc-overlay ${isMergeOverlayClosing ? 'compendium-mpc-overlay--closing' : ''}`} 
+      className={`compendium-mpc-overlay merge-overlay${isMergeOverlayClosing ? ' compendium-mpc-overlay--closing' : ''}${isMerging ? ' merge-overlay--merging' : ''}`} 
       onClick={() => {
         if (!isMerging) closeMergeOverlay();
-      }}
-      style={{ 
-        background: 'rgba(0, 0, 0, 0.5)', 
-        backdropFilter: 'blur(2px)', 
-        pointerEvents: 'auto', 
-        zIndex: 9999,
-        cursor: isMerging ? 'wait' : 'default'
       }}
     >
       <div 
         className={`compendium-mpc-overlay__panel ${isMergeOverlayClosing ? ' compendium-mpc-overlay__panel--closing' : ''}`} 
         onClick={(e) => e.stopPropagation()}
-        style={{ pointerEvents: 'auto', cursor: 'default' }}
       >
         <div className="compendium-mpc-overlay__header">
           <div className="compendium-mpc-overlay__title">
@@ -90,7 +81,7 @@ export function MergeOverlay() {
         <div className="compendium-mpc-overlay__body">
           {mergeGroups.length === 0 ? (
             <div className="compendium-mpc-overlay__empty">
-              <CheckCircle2 size={32} style={{ color: '#5cb98a' }} />
+              <CheckCircle2 size={32} className="merge-overlay__success-icon" />
               <p>{t('unificar.sin_candidatos')}</p>
             </div>
           ) : selectedMerge && mergeResult ? (
@@ -137,96 +128,69 @@ function MergeResultView({ candidate, result, onConfirm, onSkip, activeSection }
   };
   
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ fontSize: 11, color: '#fff', textTransform: 'uppercase', fontWeight: 600 }}>
+    <div className="merge-result">
+      <div className="merge-result__label">
         {t('unificar.fusion_preview')}
       </div>
       
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div className="merge-result__candidates">
         <label 
-          style={{ 
-            flex: 1, 
-            padding: 10, 
-            border: selectedName === candidate.name1 ? '2px solid var(--accent)' : '1px solid var(--border)', 
-            borderRadius: 8, 
-            background: selectedName === candidate.name1 ? 'var(--accent-dim)' : 'var(--bg-dim)',
-            cursor: 'pointer',
-            transition: 'all 0.15s'
-          }}
+          className={`merge-candidate${selectedName === candidate.name1 ? ' merge-candidate--selected' : ''}`}
         >
           <input 
             type="radio" 
             name="selectedName" 
             checked={selectedName === candidate.name1}
             onChange={() => handleNameSelect(candidate.name1)}
-            style={{ marginRight: 6 }}
+            className="merge-candidate__radio"
           />
-          <div style={{ fontWeight: 600, fontSize: 13 }}>{candidate.name1}</div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, fontStyle: 'italic' }}>
+          <div className="merge-candidate__name">{candidate.name1}</div>
+          <div className="merge-candidate__preview">
             "{getPreviewText(candidate.entity1)}"
           </div>
         </label>
         
         <label 
-          style={{ 
-            flex: 1, 
-            padding: 10, 
-            border: selectedName === candidate.name2 ? '2px solid var(--accent)' : '1px solid var(--border)', 
-            borderRadius: 8, 
-            background: selectedName === candidate.name2 ? 'var(--accent-dim)' : 'var(--bg-dim)',
-            cursor: 'pointer',
-            transition: 'all 0.15s'
-          }}
+          className={`merge-candidate${selectedName === candidate.name2 ? ' merge-candidate--selected' : ''}`}
         >
           <input 
             type="radio" 
             name="selectedName" 
             checked={selectedName === candidate.name2}
             onChange={() => handleNameSelect(candidate.name2)}
-            style={{ marginRight: 6 }}
+            className="merge-candidate__radio"
           />
-          <div style={{ fontWeight: 600, fontSize: 13 }}>{candidate.name2}</div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, fontStyle: 'italic' }}>
+          <div className="merge-candidate__name">{candidate.name2}</div>
+          <div className="merge-candidate__preview">
             "{getPreviewText(candidate.entity2)}"
           </div>
         </label>
       </div>
 
-      <div style={{ 
-        padding: 15, 
-        border: '1px solid var(--border)', 
-        borderRadius: 8, 
-        background: 'var(--bg-card)',
-        maxHeight: 250,
-        overflowY: 'auto'
-      }}>
-        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: 'var(--accent)' }}>{selectedName}</div>
-        <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
+      <div className="merge-result__preview">
+        <div className="merge-result__preview-name">{selectedName}</div>
+        <p className="merge-result__preview-content">
           {finalData.description || finalData.summary}
         </p>
         
         {finalData.traits && finalData.traits.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 12 }}>
+          <div className="merge-result__traits">
             {finalData.traits.map(t => (
-              <span key={t} style={{ fontSize: 10, padding: '2px 6px', background: 'var(--accent-dim)', color: 'var(--accent)', borderRadius: 4 }}>
-                {t}
-              </span>
+              <span key={t} className="merge-result__trait">{t}</span>
             ))}
           </div>
         ) || finalData.tags && finalData.tags.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 12 }}>
+          <div className="merge-result__traits">
             {finalData.tags.map(t => (
-              <span key={t} style={{ fontSize: 10, padding: '2px 6px', background: 'var(--accent-dim)', color: 'var(--accent)', borderRadius: 4 }}>
-                {t}
-              </span>
+              <span key={t} className="merge-result__trait">{t}</span>
             ))}
           </div>
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-        <button className="btn btn-ghost" onClick={onSkip} style={{ flex: 1 }}>{t('unificar.saltar')}</button>
-        <button className="btn btn-primary" onClick={() => onConfirm(finalData)} style={{ flex: 2 }}>
+      <div className="merge-result__actions">
+        <button className="btn btn-ghost merge-result__btn-skip" onClick={onSkip}>{t('unificar.saltar')}</button>
+        <button className="btn btn-primary merge-result__btn-confirm" onClick={() => onConfirm(finalData)}>
           <CheckCircle2 size={16} />
           {t('unificar.confirmar')}
         </button>
@@ -279,79 +243,35 @@ function MergeCandidatesView({ groups, selectedIdx, setSelectedIdx, onMerge, isM
   const selectedEntities = group.entities.filter(e => selectedIds.includes(e.id));
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 11, color: '#fff', textTransform: 'uppercase', fontWeight: 600 }}>
+    <div className="merge-candidates-view">
+      <div className="merge-candidates-view__header">
+        <span className="merge-candidates-view__label">
           {t('unificar.grupo')}
         </span>
-        <div style={{ 
-          background: 'var(--accent)', 
-          color: '#fff', 
-          fontWeight: 700, 
-          fontSize: 12, 
-          padding: '4px 10px', 
-          borderRadius: 12 
-        }}>
+        <div className="merge-candidates-view__badge">
           {group.size} {t('unificar.elementos')}
         </div>
       </div>
       
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: 8,
-        padding: 10, 
-        border: '1px solid var(--border)', 
-        borderRadius: 8, 
-        background: 'rgba(0,0,0,0.1)',
-        maxHeight: 320,
-        overflowY: 'auto'
-      }}>
+      <div className="merge-candidates-view__list">
         {group.entities.map((entity) => {
           const isSelected = selectedIds.includes(entity.id);
+          const isMergingEntity = mergingEntitiesIds.includes(entity.id);
           return (
             <div 
               key={entity.id}
               onClick={() => toggleEntity(entity.id)}
-              style={{ 
-                padding: 12,
-                borderRadius: 8,
-                background: isSelected ? 'rgba(212, 168, 83, 0.15)' : 'var(--bg-dim)',
-                border: isSelected ? '1px solid var(--accent)' : '1px solid var(--border)',
-                cursor: isMerging ? 'default' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                transition: 'all 0.2s',
-                animation: mergingEntitiesIds.includes(entity.id) ? 'mpc-pulse 2s infinite' : 'none'
-              }}
+              className={`merge-entity${isSelected ? ' merge-entity--selected' : ''}${isMerging ? ' merge-entity--disabled' : ''}${isMergingEntity ? ' merge-entity--merging' : ''}`}
             >
-              <div style={{ 
-                width: 18, 
-                height: 18, 
-                borderRadius: 4, 
-                border: '2px solid var(--accent)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: isSelected ? 'var(--accent)' : 'transparent',
-                color: 'white'
-              }}>
+              <div className={`merge-entity__checkbox${isSelected ? ' merge-entity__checkbox--selected' : ''}`}>
                 {isSelected && <CheckCircle2 size={12} strokeWidth={3} />}
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>
+              <div className="merge-entity__info">
+                <div className="merge-entity__name">
                   {entity.name || entity.title}
                 </div>
-                <div style={{ 
-                  fontSize: 11, 
-                  color: mergingEntitiesIds.includes(entity.id) ? '#fff' : 'var(--text-secondary)', 
-                  marginTop: 4, 
-                  fontStyle: 'italic',
-                  lineHeight: 1.4,
-                  opacity: 1
-                }}>
-                  {mergingEntitiesIds.includes(entity.id) 
+                <div className={`merge-entity__desc${isMergingEntity ? ' merge-entity__desc--merging' : ''}`}>
+                  {isMergingEntity 
                     ? t('unificar.fusionando_cargando') 
                     : `"${getPreviewText(entity)}"`
                   }
@@ -362,12 +282,11 @@ function MergeCandidatesView({ groups, selectedIdx, setSelectedIdx, onMerge, isM
         })}
       </div>
 
-      <div style={{ padding: '0 4px' }}>
+      <div className="merge-candidates-view__btn-wrap">
         <button 
-          className="btn btn-primary" 
+          className="btn btn-primary merge-candidates-view__merge-btn" 
           onClick={() => onMerge(selectedEntities)}
           disabled={selectedIds.length < 2 || isMerging}
-          style={{ width: '100%', gap: 8, height: 44 }}
         >
           {isMerging ? (
             <>
@@ -383,15 +302,15 @@ function MergeCandidatesView({ groups, selectedIdx, setSelectedIdx, onMerge, isM
         </button>
       </div>
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+      <div className="merge-candidates-view__nav">
         <button 
           className="btn btn-ghost" 
           disabled={selectedIdx === 0}
           onClick={() => setSelectedIdx(i => i - 1)}
         >
-          <ChevronRight size={14} style={{ transform: 'rotate(180deg)' }} />
+          <ChevronRight size={14} className="merge-nav__btn-prev" />
         </button>
-        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+        <span className="merge-candidates-view__page">
           {selectedIdx + 1} / {groups.length}
         </span>
         <button 

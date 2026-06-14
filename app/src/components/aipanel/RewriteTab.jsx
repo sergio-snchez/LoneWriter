@@ -4,20 +4,30 @@
  */
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import i18n from '../../i18n/i18n'
+import './RewriteTab.css'
+import './Markdown.css'
 import {
   Sparkles, Wand2, RefreshCw, Copy, Check, Trash2,
   Pencil, Zap, AlignLeft
 } from 'lucide-react'
-import { useAI } from '../../context/AIContext'
-import { useNovel } from '../../context/NovelContext'
-import { useModal } from '../../context/ModalContext'
-import { AIService } from '../../services/aiService'
-import { Tooltip } from '../Tooltip'
-import { renderMarkdown } from '../../utils/renderMarkdown'
+import { useAI, useNovel, useModal } from '../../context'
+import { AIService } from '../../services'
+import { MarkdownRenderer, Tooltip } from '../'
 import { QUICK_GOALS, normalizeHtmlForEditor, extractPreviousContext } from './aiPanelHelpers'
 
-export function RewriteTab({ activeScene }) {
+export default function RewriteTab({ activeScene }) {
+  RewriteTab.propTypes = {
+    activeScene: PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      title: PropTypes.string,
+      content: PropTypes.string,
+      pov: PropTypes.string,
+      chapterId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
+  };
+
   const { t } = useTranslation('ai')
   const {
     selection, provider, apiKey, localBaseUrl, prompts, currentModel,
@@ -46,18 +56,14 @@ export function RewriteTab({ activeScene }) {
 
     setIsGenerating(true);
     try {
-      console.log('[Rewrite] Reescribiendo escena', activeScene?.id, '— objetivo:', activeGoal);
       const activeRes = resources?.filter(r => r.activeForAI && r.content) || [];
       const knowledgeBase = activeRes.length > 0
         ? activeRes.map(r => `Archivo: [${r.name}]\nContenido:\n${r.content}`).join('\n\n')
         : null;
 
       const previousContext = includePreviousContext
-        ? extractPreviousContext(activeScene?.content, selection, 120)
+        ? extractPreviousContext(activeScene?.content, selection, 240)
         : null;
-
-      console.log('[Rewrite] previousContext:', previousContext ? `${previousContext.substring(0, 80)}...` : 'null');
-
 
       const response = await AIService.rewrite(selection, activeGoal, instruction ? "" : (activeGoal ? prompts[activeGoal] : ""), {
         provider,
@@ -224,14 +230,14 @@ export function RewriteTab({ activeScene }) {
               </Tooltip>
             </div>
           </div>
-          <div className="rewrite-result__text" dangerouslySetInnerHTML={{ __html: renderMarkdown(lastRewrite) }}></div>
+          <MarkdownRenderer className="rewrite-result__text" content={lastRewrite} />
           <div className="rewrite-result__footer">
             <span className="rewrite-result__goal-tag">
               <Zap size={10} /> {t('rewrite.aplicado', { goal: t(`objetivos.${QUICK_GOALS.find(g => g.id === activeGoal)?.label}`) })}
             </span>
           </div>
           <div className="rewrite-result__apply">
-            <button className="btn btn-ghost" style={{ flex: 1 }} id="rewrite-discard-btn" onClick={() => {
+            <button className="btn btn-ghost rewrite-result__apply-btn" id="rewrite-discard-btn" onClick={() => {
               openModal('confirm', {
                 title: t('rewrite.descartar_titulo'),
                 message: t('rewrite.descartar_mensaje'),
@@ -243,7 +249,7 @@ export function RewriteTab({ activeScene }) {
               <Trash2 size={12} />
               {t('rewrite.descartar')}
             </button>
-            <button className="btn btn-primary" style={{ flex: 1 }} id="rewrite-apply-btn" onClick={handleApply}>
+            <button className="btn btn-primary rewrite-result__apply-btn" id="rewrite-apply-btn" onClick={handleApply}>
               <Check size={13} />
               {t('rewrite.aplicar')}
             </button>

@@ -1,3 +1,8 @@
+---
+title: El Editor
+description: Escribe con el editor de texto enriquecido de LoneWriter, organiza tu novela en actos, capítulos y escenas, y accede a herramientas de IA integradas.
+---
+
 # El Editor
 
 El editor de LoneWriter ha sido diseñado para minimizar las distracciones y maximizar el flujo creativo, integrando las herramientas de inteligencia artificial de forma orgánica.

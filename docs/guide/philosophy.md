@@ -1,3 +1,8 @@
+---
+title: Why I Built LoneWriter
+description: The philosophy behind LoneWriter — privacy, data sovereignty, AI as an assistant, and total transparency as an open source project.
+---
+
 # Why I Built LoneWriter
 
 LoneWriter is not a corporate product. It is a personal project born from my own needs as a writing enthusiast and my interest in technology and privacy.

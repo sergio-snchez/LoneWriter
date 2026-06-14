@@ -37,7 +37,7 @@ export const normalizeTextForDisplay = (text) => {
     .replace(/^\s+|\s+$/g, '')
 }
 
-export function extractPreviousContext(content, selection, maxWords = 120) {
+export function extractPreviousContext(content, selection, maxWords = 240) {
   if (!content || !selection) return null
 
   const plainText = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()

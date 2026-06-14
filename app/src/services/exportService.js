@@ -1,4 +1,4 @@
-import { db } from '../db/database';
+import { db, restoreTables } from '../db/database';
 import { saveAs } from 'file-saver';
 import HTMLToDOCX from 'html-to-docx';
 import pako from 'pako';
@@ -210,14 +210,7 @@ export const ExportService = {
           const data = await decodeFromLwrt(e.target.result, password);
           if (!data.tables) throw new Error('INVALID_FORMAT');
 
-          await db.transaction('rw', db.tables, async () => {
-            for (const table of db.tables) {
-              await table.clear();
-              if (data.tables[table.name]) {
-                await table.bulkAdd(data.tables[table.name]);
-              }
-            }
-          });
+          await restoreTables(data.tables);
 
           window.location.reload();
           resolve(true);

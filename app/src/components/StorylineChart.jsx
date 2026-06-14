@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { useTranslation } from 'react-i18next';
+import PropTypes from 'prop-types';
 import './StorylineChart.css';
 
 // Curated premium palette for character tracks
@@ -29,6 +30,22 @@ const stringToColor = (str) => {
 let cachedCamera = null;
 
 export default function StorylineChart({ acts, characters, onNavigate, dimensions, themeCtx }) {
+  StorylineChart.propTypes = {
+    acts: PropTypes.array.isRequired,
+    characters: PropTypes.array,
+    onNavigate: PropTypes.func,
+    dimensions: PropTypes.shape({
+      width: PropTypes.number,
+      height: PropTypes.number,
+    }).isRequired,
+    themeCtx: PropTypes.shape({
+      textMain: PropTypes.string,
+      textMuted: PropTypes.string,
+      isLight: PropTypes.bool,
+      bgGraph: PropTypes.string,
+    }).isRequired,
+  };
+
   const { t } = useTranslation(['app']);
   const graphRef = useRef();
   

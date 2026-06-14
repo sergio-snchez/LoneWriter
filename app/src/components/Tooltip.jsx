@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import PropTypes from 'prop-types';
 
 export function Tooltip({ children, content, position = 'bottom' }) {
   const [visible, setVisible] = useState(false);
@@ -95,4 +96,10 @@ export function Tooltip({ children, content, position = 'bottom' }) {
     </span>
   );
 }
+
+Tooltip.propTypes = {
+  children: PropTypes.node.isRequired,
+  content: PropTypes.node,
+  position: PropTypes.oneOf(['bottom', 'auto']),
+};
 

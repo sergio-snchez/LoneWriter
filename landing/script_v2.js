@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             nav_features: "Features",
             nav_engine: "MPC Engine",
             nav_openapp: "Open App",
-            badge_version: "v2.0-timeline is Live",
+            badge_version: "v2.0.4 is Live",
             hero_title_1: "The Intelligent App<br/>for",
             hero_title_2: "Writers",
             hero_subtitle: "Compose, structure, and refine your masterwork in a distraction-free, privacy-first environment enhanced by local AI.",
@@ -118,6 +118,9 @@ document.addEventListener('DOMContentLoaded', () => {
             link_doc: "https://lonewriter-docs.vercel.app/",
             link_change: "https://github.com/sergio-snchez/LoneWriter/blob/main/CHANGELOG.md",
             link_roadmap: "https://github.com/sergio-snchez/LoneWriter/blob/main/ROADMAP.md",
+            nav_localai: "Local AI",
+            nav_nexus: "Nexus",
+            nav_rag: "RAG Engine",
             nav_roadmap: "Roadmap",
             roadmap_sectitle: "Future Vision & Roadmap",
             roadmap_secsub: "LoneWriter is evolving every day based on the needs of the community. Here is what is being worked on next.",
@@ -125,8 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
             roadmap_low: "Low Priority",
             roadmap_status_planned: "Planned",
             roadmap_status_backlog: "Backlog",
-            rd_1_title: "Mobile PWA Polish",
-            rd_1_desc: "Improved touch gestures and offline reliability.",
+            rd_1_title: "Pacing Analysis",
+            rd_1_desc: "Visual insights into the emotional arc and pacing of your scenes.",
             rd_2_title: "Interactive Timelines",
             rd_2_desc: "Visual mapping for events and character arcs.",
             rd_3_title: "3D Knowledge Graph",
@@ -141,6 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
             rd_7_desc: "Map/import MD files into narrative tree.",
             rd_8_title: "Enhanced RAG Memory",
             rd_8_desc: "Support for larger local models and better indexing.",
+            rd_9_title: "Mobile PWA Polish",
+            rd_10_title: "Technical Debt Audit",
             roadmap_completed: "Completed",
             roadmap_view_full: "View Full Roadmap"
         },
@@ -149,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             nav_features: "Características",
             nav_engine: "Motor MPC",
             nav_openapp: "Abrir App",
-            badge_version: "v2.0-timeline ya disponible",
+            badge_version: "v2.0.4 ya disponible",
             hero_title_1: "La App Inteligente<br/>para",
             hero_title_2: "Escritores",
             hero_subtitle: "Componer, estructurar y refinar tu obra maestra en un entorno sin distracciones, enfocado en la privacidad y potenciado por IA local.",
@@ -239,6 +244,9 @@ document.addEventListener('DOMContentLoaded', () => {
             link_doc: "https://lonewriter-docs.vercel.app/es/",
             link_change: "https://github.com/sergio-snchez/LoneWriter/blob/main/CHANGELOG_ES.md",
             link_roadmap: "https://github.com/sergio-snchez/LoneWriter/blob/main/ROADMAP_ES.md",
+            nav_localai: "IA Local",
+            nav_nexus: "Nexus",
+            nav_rag: "Motor RAG",
             nav_roadmap: "Roadmap",
             roadmap_sectitle: "Visión de Futuro y Roadmap",
             roadmap_secsub: "LoneWriter evoluciona cada día basándose en las necesidades de la comunidad. Esto es en lo que se está trabajando.",
@@ -246,8 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
             roadmap_low: "Prioridad Baja",
             roadmap_status_planned: "Planificado",
             roadmap_status_backlog: "Pendiente",
-            rd_1_title: "Pulido de la PWA Móvil",
-            rd_1_desc: "Mejora de gestos táctiles y fiabilidad offline.",
+            rd_1_title: "Análisis de Ritmo",
+            rd_1_desc: "Información visual sobre el arco emocional y el ritmo de tus escenas.",
             rd_2_title: "Líneas de Tiempo",
             rd_2_desc: "Mapeo visual de eventos y arcos cronológicos.",
             rd_3_title: "Grafo de Conocimiento 3D",
@@ -262,6 +270,8 @@ document.addEventListener('DOMContentLoaded', () => {
             rd_7_desc: "Mapear archivos MD en el árbol narrativo.",
             rd_8_title: "Memoria RAG Mejorada",
             rd_8_desc: "Soporte para modelos locales mayores y mejor indexación.",
+            rd_9_title: "Pulido de la PWA Móvil",
+            rd_10_title: "Auditoría de Deuda Técnica",
             roadmap_completed: "Completado",
             roadmap_view_full: "Ver Roadmap Completo"
         }
@@ -275,7 +285,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
             if (dictionary[key]) {
-                el.innerHTML = dictionary[key];
+                if (dictionary[key].includes('<')) {
+                    el.innerHTML = dictionary[key];
+                } else {
+                    el.textContent = dictionary[key];
+                }
             }
         });
         document.querySelectorAll('[data-i18n-href]').forEach(el => {
@@ -297,23 +311,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Apply translations initially to ensure everything is in sync
     applyTranslations(currentLang);
 
-    // Feature Cards Glow Effect
+    // Feature Cards Glow Effect (throttled with rAF)
     const featureCards = document.querySelectorAll('.feature-card');
     featureCards.forEach(card => {
+        let rafId = null;
         card.addEventListener('mousemove', e => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            card.style.setProperty('--mouse-x', `${x}px`);
-            card.style.setProperty('--mouse-y', `${y}px`);
+            if (rafId) return;
+            rafId = requestAnimationFrame(() => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+                rafId = null;
+            });
         });
     });
 
-    // Modal Interaction
+    // Modal Interaction + Focus Trap
     const modal = document.getElementById('feature-modal');
     const modalTitle = document.getElementById('modal-title');
     const modalDesc = document.getElementById('modal-desc');
     const closeModalBtn = document.getElementById('close-modal');
+    let lastFocusedElement = null;
+
+    const getFocusable = () => modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
 
     featureCards.forEach(card => {
         card.addEventListener('click', () => {
@@ -322,8 +344,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const featureId = card.getAttribute('data-feature-id');
 
             if (titleEl && descEl) {
-                modalTitle.innerHTML = titleEl.innerHTML;
-                modalDesc.innerHTML = descEl.innerHTML;
+                modalTitle.textContent = titleEl.textContent;
+                modalDesc.textContent = descEl.textContent;
 
                 // Hide all mockups
                 document.querySelectorAll('.mockup-ui').forEach(m => m.classList.remove('active'));
@@ -334,13 +356,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (activeMockup) activeMockup.classList.add('active');
                 }
 
+                lastFocusedElement = card;
                 modal.classList.add('active');
+
+                // Focus first focusable element inside modal
+                const focusable = getFocusable();
+                if (focusable.length) setTimeout(() => focusable[0].focus(), 50);
             }
         });
     });
 
     const closeFeatureModal = () => {
         modal.classList.remove('active');
+        if (lastFocusedElement) {
+            lastFocusedElement.focus();
+            lastFocusedElement = null;
+        }
     };
 
     closeModalBtn.addEventListener('click', closeFeatureModal);
@@ -353,6 +384,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal.classList.contains('active')) {
             closeFeatureModal();
+            return;
+        }
+        if (e.key === 'Tab' && modal.classList.contains('active')) {
+            const focusable = getFocusable();
+            if (focusable.length < 2) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
         }
     });
 
@@ -395,7 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentSession = typingSessionId;
         let lang = currentLang;
         let data = mpcAnimData[lang];
-        mpcTypingArea.innerHTML = '';
+        mpcTypingArea.textContent = '';
 
         let i = 0;
         let charIndex = 0;
@@ -477,6 +522,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Hamburger menu toggle
+    const hamburger = document.querySelector('.hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    if (hamburger && navLinks) {
+        hamburger.addEventListener('click', () => {
+            const isActive = navLinks.classList.toggle('active');
+            hamburger.classList.toggle('active');
+            hamburger.setAttribute('aria-expanded', isActive);
+        });
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                hamburger.classList.remove('active');
+                hamburger.setAttribute('aria-expanded', 'false');
+            });
+        });
+    }
 
     if (mpcTypingArea) window.runMPCTyping();
 });

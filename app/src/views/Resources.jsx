@@ -5,13 +5,9 @@ import {
   ExternalLink, Trash2, Eye, Filter, Plus, Zap, AlertCircle, X, Lock,
   Pin, Edit, ChevronDown, ChevronUp
 } from 'lucide-react'
-import { useNovel } from '../context/NovelContext'
-import { useAI } from '../context/AIContext'
-import { useModal } from '../context/ModalContext'
-import { Tooltip } from '../components/Tooltip';
-import { renderMarkdown } from '../utils/renderMarkdown';
-import { getAllCustomStopwords } from '../i18n/stopwords';
-import StopwordsModal from '../components/StopwordsModal';
+import { useNovel, useAI, useModal } from '../context'
+import { MarkdownRenderer, Tooltip, StopwordsModal } from '../components'
+import { getAllCustomStopwords } from '../i18n/stopwords'
 import './Resources.css';
 
 const ALLOWED_EXTENSIONS = ['txt', 'md', 'json', 'csv']
@@ -19,19 +15,19 @@ const ALLOWED_EXTENSIONS = ['txt', 'md', 'json', 'csv']
 
 function ViewerContent({ res, t, onClose }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '85vh' }}>
-      <div className="modal-header" style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ margin: 0, fontSize: 16 }}>{res.name}</h3>
+    <div className="resource-viewer">
+      <div className="modal-header resource-viewer__header">
+        <h3 className="resource-viewer__title">{res.name}</h3>
         <button className="btn btn-ghost btn-icon" onClick={onClose}><X size={16} /></button>
       </div>
-      <div className="modal-body" style={{ padding: 20, overflowY: 'auto', flex: 1 }}>
+      <div className="modal-body resource-viewer__body">
         {res.content ? (
-          <div className="resource-viewer__content" dangerouslySetInnerHTML={{ __html: renderMarkdown(res.content) }} />
+          <MarkdownRenderer className="resource-viewer__content" content={res.content} />
         ) : (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-            <Eye size={32} style={{ opacity: 0.5, marginBottom: 12 }} />
-            <p style={{ margin: 0 }}>{t('vista_previa_no_disponible')}</p>
-            <p style={{ fontSize: 13, marginTop: 8 }}>{t('formato', { type: res.type })}</p>
+          <div className="resource-viewer__empty">
+            <Eye size={32} className="resource-viewer__empty-icon" />
+            <p className="resource-viewer__empty-text">{t('vista_previa_no_disponible')}</p>
+            <p className="resource-viewer__empty-sub">{t('formato', { type: res.type })}</p>
           </div>
         )}
       </div>
@@ -56,18 +52,18 @@ function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
 
   return (
     <div className="res-row" id={`resource-${res.id}`}>
-      <div className="res-row__icon-wrap" style={{ background: 'rgba(212,168,83,0.12)' }}>
-        <FileText size={18} style={{ color: 'var(--accent)' }} />
+      <div className="res-row__icon-wrap res-row__icon-bg">
+        <FileText size={18} className="res-row__icon-color" />
       </div>
 
       <div className="res-row__info">
         <div className="res-row__title-wrap">
-          <span className="res-row__name" style={{ flexShrink: 1 }}>{res.name}</span>
+          <span className="res-row__name res-row__name-flex">{res.name}</span>
         </div>
         {res.ignoredForOracle !== 1 && (
-          <div style={{ marginTop: '4px' }}>
-            <span style={{ color: '#d4a853', fontSize: '10px', fontWeight: 600, background: 'rgba(212, 168, 83, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <Zap size={10} style={{ fill: 'currentColor' }} /> {t('contexto_ia')}
+          <div className="res-row__badge-wrap">
+            <span className="res-row__badge">
+              <Zap size={10} className="resource-icon--active" /> {t('contexto_ia')}
             </span>
           </div>
         )}
@@ -96,7 +92,7 @@ function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
             aria-label="Ignorar en coherencia del Oráculo" 
             onClick={() => onToggleIgnore(res)}
           >
-            <Zap size={14} style={{ fill: res.ignoredForOracle !== 1 ? 'currentColor' : 'none' }} />
+            <Zap size={14} className={res.ignoredForOracle !== 1 ? 'resource-icon--active' : 'resource-icon--ignored'} />
           </button>
         </Tooltip>
         <Tooltip content={t('ver')}>
@@ -190,7 +186,7 @@ export default function ResourcesView() {
       <input 
         type="file" 
         ref={fileInputRef} 
-        style={{ display: 'none' }} 
+        className="resources-hidden-input"
         onChange={handleFileChange}
         accept=".txt,.md,.json,.csv" 
       />
@@ -204,15 +200,14 @@ export default function ResourcesView() {
         </div>
         <div className="resources-view__header-actions">
           <button
-            className={`btn btn-ghost ${showFilters ? 'active' : ''}`}
+            className={`btn btn-ghost${showFilters ? ' active' : ''}${hasActiveFilters ? ' filter-btn--active' : ''}`}
             id="resources-filter-btn"
             onClick={() => setShowFilters(v => !v)}
-            style={hasActiveFilters ? { borderColor: 'var(--accent)', color: 'var(--accent-light)' } : {}}
           >
             <Filter size={13} />
             {t('filtros')}
             {hasActiveFilters && (
-              <span style={{ background: 'var(--accent)', color: '#1a1710', borderRadius: '99px', fontSize: '10px', fontWeight: 700, padding: '0 5px', lineHeight: '16px' }}>
+              <span className="filter-btn__badge">
                 {(activeTag ? 1 : 0) + (query ? 1 : 0)}
               </span>
             )}
@@ -231,16 +226,16 @@ export default function ResourcesView() {
             <span className="resource-alert__badge">Beta</span>
           </span>
           <div className="resource-alert__content">
-            <strong style={{ color: 'var(--red)', display: 'block', marginBottom: '4px' }}>{t('beta_titulo')}</strong>
-            <span className="resource-alert__text" dangerouslySetInnerHTML={{ __html: t('beta_texto') }}></span>
+            <strong className="resource-alert__strong-red">{t('beta_titulo')}</strong>
+            <MarkdownRenderer className="resource-alert__text" content={t('beta_texto')} />
           </div>
         </div>
         
         <div className="resource-alert resource-alert--warning">
           <Zap size={16} className="resource-alert__icon" />
           <div className="resource-alert__content">
-            <strong style={{ color: 'var(--accent-light)', display: 'block', marginBottom: '4px' }}>{t('tokens_titulo')}</strong>
-            <span className="resource-alert__text" dangerouslySetInnerHTML={{ __html: t('tokens_texto') }}></span>
+            <strong className="resource-alert__strong-accent">{t('tokens_titulo')}</strong>
+            <MarkdownRenderer className="resource-alert__text" content={t('tokens_texto')} />
           </div>
         </div>
 
@@ -254,10 +249,10 @@ export default function ResourcesView() {
 
       {/* Filter panel */}
       {showFilters && (
-        <div style={{ margin: '0 26px 16px', padding: '14px 16px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('filtros_activos')}</span>
+        <div className="resources-filter-panel">
+          <span className="resources-filter-panel__label">{t('filtros_activos')}</span>
           {hasActiveFilters && (
-            <button className="btn btn-ghost" style={{ fontSize: '11px', padding: '2px 8px', height: 'auto' }} onClick={clearFilters}>
+            <button className="btn btn-ghost resources-filter-panel__clear" onClick={clearFilters}>
               <X size={11} /> {t('limpiar_filtros')}
             </button>
           )}
@@ -266,7 +261,7 @@ export default function ResourcesView() {
 
       {/* Toolbar */}
       <div className="resources-toolbar">
-        <div className="search-bar" style={{ flex: 1, maxWidth: 380 }}>
+        <div className="search-bar">
           <Search size={14} color="var(--text-muted)" />
           <input
             placeholder={t('buscar')}
@@ -302,17 +297,17 @@ export default function ResourcesView() {
       {/* File list */}
       <div className="resources-list">
         {/* Stopwords Fictional Card - Always Pinned at Top */}
-        <div className="res-row" style={{ border: '2px solid var(--accent)' }}>
-          <div className="res-row__icon-wrap" style={{ background: 'rgba(212,168,83,0.12)' }}>
-            <Pin size={18} style={{ color: 'var(--accent)' }} />
+        <div className="res-row res-row--pinned">
+          <div className="res-row__icon-wrap res-row__icon-bg">
+            <Pin size={18} className="res-row__icon-color" />
           </div>
           <div className="res-row__info">
             <div className="res-row__title-wrap">
-              <span className="res-row__name" style={{ flexShrink: 1 }}>{t('stopwords_titulo')}</span>
+              <span className="res-row__name res-row__name-flex">{t('stopwords_titulo')}</span>
             </div>
-            <div style={{ marginTop: '4px' }}>
-              <span style={{ color: 'var(--accent-light)', fontSize: '10px', fontWeight: 600, background: 'rgba(212, 168, 83, 0.15)', padding: '2px 6px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <Pin size={10} style={{ fill: 'currentColor' }} /> {t('stopwords_pinned')}
+            <div className="res-row__badge-wrap">
+              <span className="res-row__badge-light">
+                <Pin size={10} className="resource-icon--active" /> {t('stopwords_pinned')}
               </span>
             </div>
             <span className="res-row__desc">{t('archivo_sistema')}</span>
@@ -353,7 +348,6 @@ export default function ResourcesView() {
         className="resources-dropzone" 
         id="resources-dropzone"
         onClick={() => fileInputRef.current?.click()}
-        style={{ cursor: 'pointer' }}
       >
         <Upload size={20} />
         <span>{t('dropzone')}</span>

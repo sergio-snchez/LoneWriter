@@ -4,7 +4,8 @@ import {
   X, CheckCircle2, PenLine, Users, MapPin, Package,
   BookOpen, ChevronDown, ChevronUp, Loader2, XCircle
 } from 'lucide-react'
-import { Tooltip } from './Tooltip'
+import PropTypes from 'prop-types'
+import { Tooltip } from './'
 import './MpcProposalDrawer.css'
 
 const CONFIDENCE_META = {
@@ -20,7 +21,24 @@ const TYPE_TRANSLATION_KEYS = {
   lore: 'mpc.tipo_lore',
 }
 
-export function ProposalCard({ proposal, onAccept, onEdit, onDismiss, onDismissPermanently, isAccepting }) {
+export default function ProposalCard({ proposal, onAccept, onEdit, onDismiss, onDismissPermanently, isAccepting }) {
+  ProposalCard.propTypes = {
+    proposal: PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      type: PropTypes.oneOf(['characters', 'locations', 'objects', 'lore']),
+      name: PropTypes.string,
+      title: PropTypes.string,
+      description: PropTypes.string,
+      reason: PropTypes.string,
+      confidence: PropTypes.oneOf(['high', 'medium', 'low']),
+    }).isRequired,
+    onAccept: PropTypes.func.isRequired,
+    onEdit: PropTypes.func.isRequired,
+    onDismiss: PropTypes.func.isRequired,
+    onDismissPermanently: PropTypes.func.isRequired,
+    isAccepting: PropTypes.bool,
+  };
+
   const { t } = useTranslation('compendium')
   const [expanded, setExpanded] = useState(false)
 
@@ -37,9 +55,9 @@ export function ProposalCard({ proposal, onAccept, onEdit, onDismiss, onDismissP
   const displayName = proposal.name || proposal.title || '—'
 
   return (
-    <div className="mpc-card" style={{ borderLeft: `3px solid ${meta.color}` }}>
+    <div className="mpc-card" style={{ '--proposal-color': meta.color }}>
       <div className="mpc-card__header" onClick={() => setExpanded(e => !e)}>
-        <div className="mpc-card__type-badge" style={{ background: meta.bg, color: meta.color }}>
+        <div className="mpc-card__type-badge">
           <Icon size={12} />
           <span>{t(TYPE_TRANSLATION_KEYS[proposal.type] || 'mpc.tipo_personaje').toUpperCase()}</span>
         </div>

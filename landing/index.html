@@ -6,16 +6,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title data-i18n="page_title">LoneWriter - The Intelligent App for Writers</title>
 
+  <!-- SEO Meta -->
+  <meta name="description" content="LoneWriter — The Intelligent App for Writers. Compose, structure, and refine your masterwork in a distraction-free, privacy-first environment enhanced by local AI." />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="LoneWriter - The Intelligent App for Writers" />
+  <meta property="og:description" content="Compose, structure, and refine your masterwork in a distraction-free, privacy-first environment enhanced by local AI." />
+  <meta property="og:url" content="https://getlonewriter.vercel.app" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://lonewriter.vercel.app/banner-en.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="LoneWriter - The Intelligent App for Writers" />
+  <meta name="twitter:description" content="Compose, structure, and refine your masterwork in a distraction-free, privacy-first environment enhanced by local AI." />
+  <meta name="twitter:image" content="https://lonewriter.vercel.app/banner-en.png" />
+
+  <!-- Canonical + Hreflang -->
+  <link rel="canonical" href="https://getlonewriter.vercel.app" />
+  <link rel="alternate" hreflang="en" href="https://getlonewriter.vercel.app" />
+  <link rel="alternate" hreflang="es" href="https://getlonewriter.vercel.app" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#d4a853" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=2" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@latest" defer></script>
 </head>
 
 <body>
@@ -26,23 +50,29 @@
     <div class="mesh-blob mesh-blob--4"></div>
   </div>
 
-  <nav class="navbar glass-panel">
+  <nav class="navbar glass-panel" aria-label="Main navigation">
     <div class="nav-container">
       <div class="brand">
         <div class="brand-icon">
-          <i data-lucide="pen-line"></i>
+          <i aria-hidden="true" data-lucide="pen-line"></i>
         </div>
         <span class="brand-text">LoneWriter</span>
       </div>
       <div class="nav-links">
         <a href="#features" data-i18n="nav_features">Features</a>
+        <a href="#local-ai" data-i18n="nav_localai">Local AI</a>
         <a href="#engine" data-i18n="nav_engine">MPC System</a>
+        <a href="#nexus" data-i18n="nav_nexus">Nexus</a>
+        <a href="#rag" data-i18n="nav_rag">RAG Engine</a>
         <a href="#roadmap" data-i18n="nav_roadmap">Roadmap</a>
-        <button id="lang-toggle" class="btn btn-ghost" style="padding: 6px 10px; font-weight: 700;">ES</button>
+        <button id="lang-toggle" class="btn btn-ghost btn-lang" aria-label="Switch language">ES</button>
         <a href="https://lonewriter.vercel.app" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-          <i data-lucide="pen-line"></i> <span data-i18n="nav_openapp">Open App</span>
+          <i aria-hidden="true" data-lucide="pen-line"></i> <span data-i18n="nav_openapp">Open App</span>
         </a>
       </div>
+      <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
 
@@ -50,7 +80,7 @@
     <header class="hero">
       <div class="hero-content fade-in-up">
         <div class="badge-pill mb-4">
-          <i data-lucide="sparkles"></i>
+          <i aria-hidden="true" data-lucide="sparkles"></i>
           <span data-i18n="badge_version">v1.8-glassmorphism is Live</span>
         </div>
         <h1 class="hero-title"><span data-i18n="hero_title_1">The Intelligent App<br />for</span> <span
@@ -60,13 +90,12 @@
         <div class="hero-cta">
           <a href="https://lonewriter.vercel.app" target="_blank" rel="noopener noreferrer"
             class="btn btn-primary btn-lg">
-            <i data-lucide="pen-line"></i> <span data-i18n="hero_launch">Open App</span>
+            <i aria-hidden="true" data-lucide="pen-line"></i> <span data-i18n="hero_launch">Open App</span>
           </a>
           <a href="#features" class="btn btn-ghost btn-lg" data-i18n="hero_discover">Discover Features</a>
         </div>
-        <div class="hero-microcopy fade-in-up delay-2"
-          style="margin-top: 16px; font-size: 13px; color: var(--text-muted);">
-          <i data-lucide="focus" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i>
+        <div class="hero-microcopy fade-in-up delay-2">
+          <i aria-hidden="true" data-lucide="focus"></i>
           <span data-i18n="hero_micro">Designed for Deep Work. Zero distractions.</span>
         </div>
       </div>
@@ -86,15 +115,15 @@
                   <div class="mock-line short"></div>
                   <div class="mock-line"></div>
                   <div class="mock-line half"></div>
+                  <div class="mpc-floating-badge glass-panel">
+                    <i aria-hidden="true" data-lucide="sparkles"></i> <span data-i18n="mock_mpc">3 Entities Detected</span>
+                  </div>
                 </div>
                 <div class="mockup-editor">
                   <h2 class="mock-heading" data-i18n="mock_heading">Prologue: The Obsidian Spire</h2>
                   <p class="mock-p" data-i18n="mock_p">The storm howled against the jagged obsidian glass, but inside
                     the Spire, Archmage Vaelen only smiled. He traced the glowing runes on the monolith; the convergence
                     was finally at hand...</p>
-                  <div class="mpc-floating-badge glass-panel">
-                    <i data-lucide="sparkles"></i> <span data-i18n="mock_mpc">3 Entities Detected</span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -105,14 +134,13 @@
                 <span class="dot red"></span>
                 <span class="dot yellow"></span>
                 <span class="dot green"></span>
-                <span style="margin-left:auto; font-size: 13px; font-weight: 500; color: var(--text-muted);"
-                  data-i18n="back_title">Detected Entities</span>
+                <span class="back-title" data-i18n="back_title">Detected Entities</span>
               </div>
               <div class="mockup-body back-body">
                 <ul class="entities-list">
-                  <li><i data-lucide="user"></i> <span data-i18n="ent_1">Archmage Vaelen (Character)</span></li>
-                  <li><i data-lucide="map-pin"></i> <span data-i18n="ent_2">The Obsidian Spire (Location)</span></li>
-                  <li><i data-lucide="box"></i> <span data-i18n="ent_3">The Monolith (Object)</span></li>
+                  <li><i aria-hidden="true" data-lucide="user"></i> <span data-i18n="ent_1">Archmage Vaelen (Character)</span></li>
+                  <li><i aria-hidden="true" data-lucide="map-pin"></i> <span data-i18n="ent_2">The Obsidian Spire (Location)</span></li>
+                  <li><i aria-hidden="true" data-lucide="box"></i> <span data-i18n="ent_3">The Monolith (Object)</span></li>
                 </ul>
               </div>
             </div>
@@ -121,46 +149,46 @@
       </div>
     </header>
 
-    <section id="features" class="section">
+    <section id="features" class="section" aria-labelledby="features-title">
       <div class="section-header fade-in">
-        <h2 class="section-title" data-i18n="features_sectitle">Professional Tools for Writers</h2>
+        <h2 id="features-title" class="section-title" data-i18n="features_sectitle">Professional Tools for Writers</h2>
         <p class="section-subtitle" data-i18n="features_secsub">A granular suite of tools to handle everything from
           scene drafting to entire world-building bibles.</p>
       </div>
 
       <div class="feature-grid">
         <div class="feature-card glass-panel fade-in-up" data-feature-id="feat-1">
-          <div class="feature-icon"><i data-lucide="book-open"></i></div>
+          <div class="feature-icon"><i aria-hidden="true" data-lucide="book-open"></i></div>
           <h3 data-i18n="feat_1_title">Narrative Structure</h3>
           <p data-i18n="feat_1_desc">Organize your novel into Acts, Chapters, and Scenes. Reorder your manuscript with
             fluid drag-and-drop mechanics.</p>
         </div>
         <div class="feature-card glass-panel fade-in-up delay-1" data-feature-id="feat-2">
-          <div class="feature-icon"><i data-lucide="target"></i></div>
+          <div class="feature-icon"><i aria-hidden="true" data-lucide="target"></i></div>
           <h3 data-i18n="feat_2_title">Goal Tracking</h3>
           <p data-i18n="feat_2_desc">Set custom word counts, chapter targets, and visually track your progress. Keep
             your writing streak alive.</p>
         </div>
         <div class="feature-card glass-panel fade-in-up delay-2" data-feature-id="feat-3">
-          <div class="feature-icon"><i data-lucide="folder-open"></i></div>
+          <div class="feature-icon"><i aria-hidden="true" data-lucide="folder-open"></i></div>
           <h3 data-i18n="feat_3_title">Knowledge Base</h3>
           <p data-i18n="feat_3_desc">Upload your world-building lore, specific chapter notes, and context files. Toggle
             them instantly for the Oracle to review.</p>
         </div>
         <div class="feature-card glass-panel fade-in-up" data-feature-id="feat-4">
-          <div class="feature-icon"><i data-lucide="cloud"></i></div>
+          <div class="feature-icon"><i aria-hidden="true" data-lucide="cloud"></i></div>
           <h3 data-i18n="feat_4_title">Cloud Sync</h3>
           <p data-i18n="feat_4_desc">Local-first storage with optional Google Drive syncing and continuous backups to
             ensure your manuscript is never lost.</p>
         </div>
         <div class="feature-card glass-panel fade-in-up delay-1" data-feature-id="feat-5">
-          <div class="feature-icon"><i data-lucide="moon"></i></div>
+          <div class="feature-icon"><i aria-hidden="true" data-lucide="moon"></i></div>
           <h3 data-i18n="feat_5_title">Flow State Environment</h3>
           <p data-i18n="feat_5_desc">A distraction-free, minimalist UI with dynamic glassmorphism and deep dark mode
             designed psychologically to anchor you in your flow state.</p>
         </div>
         <div class="feature-card glass-panel fade-in-up delay-2" data-feature-id="feat-6">
-          <div class="feature-icon"><i data-lucide="file-down"></i></div>
+          <div class="feature-icon"><i aria-hidden="true" data-lucide="file-down"></i></div>
           <h3 data-i18n="feat_6_title">Frictionless Export</h3>
           <p data-i18n="feat_6_desc">Compile your entire project into a standard Document (.docx) with one click,
             perfectly formatted for publishing.</p>
@@ -169,11 +197,11 @@
     </section>
 
     <!-- Local Models Section -->
-    <section id="local-ai" class="section section-alt local-ai-section">
+    <section id="local-ai" class="section section-alt local-ai-section" aria-labelledby="local-title">
       <div class="section-header fade-in">
-        <div class="badge-pill mb-4"><i data-lucide="shield-check"></i> <span data-i18n="local_badge">Local-First
+        <div class="badge-pill mb-4"><i aria-hidden="true" data-lucide="shield-check"></i> <span data-i18n="local_badge">Local-First
             Sovereignty</span></div>
-        <h2 class="section-title" data-i18n="local_title">Your Work. Your Rules.</h2>
+        <h2 id="local-title" class="section-title" data-i18n="local_title">Your Work. Your Rules.</h2>
         <p class="section-subtitle" data-i18n="local_sub">A privacy-first manifesto for writers. Connect LoneWriter with
           Ollama or LM Studio to run AI completely locally. No scraping, no corporate surveillance, and absolute IP
           protection. Your manuscript stays on your machine.</p>
@@ -181,7 +209,7 @@
       <div class="local-ai-visual fade-in-up delay-1">
         <div class="hw-container glass-panel">
           <div class="hw-header">
-            <i data-lucide="monitor"></i> <span>Your Local Hardware</span>
+            <i aria-hidden="true" data-lucide="monitor"></i> <span>Your Local Hardware</span>
           </div>
           <div class="hw-body">
 
@@ -190,7 +218,7 @@
                 <div class="hw-dots"><span></span><span></span><span></span></div>
               </div>
               <div class="hw-app-content">
-                <i data-lucide="pen-tool"></i>
+                <i aria-hidden="true" data-lucide="pen-tool"></i>
                 <span>LoneWriter App</span>
               </div>
             </div>
@@ -200,7 +228,7 @@
                 <div class="bridge-particle left-to-right"></div>
                 <div class="bridge-particle right-to-left"></div>
               </div>
-              <div class="bridge-lock"><i data-lucide="lock"></i></div>
+              <div class="bridge-lock"><i aria-hidden="true" data-lucide="lock"></i></div>
               <div class="bridge-label">localhost:11434</div>
             </div>
 
@@ -211,7 +239,7 @@
                 <span class="light blink-slow"></span>
               </div>
               <div class="hw-server-content">
-                <i data-lucide="server"></i>
+                <i aria-hidden="true" data-lucide="server"></i>
                 <span>Ollama / LM Studio</span>
               </div>
             </div>
@@ -220,32 +248,31 @@
         </div>
       </div>
     </section>
-    <section id="engine" class="section section-alt">
+    <section id="engine" class="section section-alt" aria-labelledby="engine-title">
       <div class="split-layout">
         <div class="split-content fade-in-up">
-          <div class="badge-pill mb-4"><i data-lucide="zap"></i> <span data-i18n="engine_badge">MPC Entity
+          <div class="badge-pill mb-4"><i aria-hidden="true" data-lucide="zap"></i> <span data-i18n="engine_badge">MPC Entity
               Management</span></div>
-          <h2 class="section-title" data-i18n="engine_title">Monitoring Proposals for Compendium</h2>
-          <p class="section-subtitle" style="margin-left:0; text-align:left; margin-bottom: 24px;"
+          <h2 id="engine-title" class="section-title" data-i18n="engine_title">Monitoring Proposals for Compendium</h2>
+          <p class="section-subtitle section-subtitle-left"
             data-i18n="engine_sub">LoneWriter silently processes your world in the background. No annoying autocomplete.
             No unsolicited suggestions. The AI organizes your lore so you can focus solely on writing.</p>
-          <div class="badge-pill mb-4"
-            style="margin: 0 auto 24px auto; width: fit-content; display: flex; background: rgba(91, 180, 196, 0.1); color: #5bb4c4; border-color: rgba(91, 180, 196, 0.2);">
-            <i data-lucide="ghost"></i> <span data-i18n="engine_ghost">Invisible AI Assistance</span></div>
+          <div class="badge-pill badge-pill-ghost">
+            <i aria-hidden="true" data-lucide="ghost"></i> <span data-i18n="engine_ghost">Invisible AI Assistance</span></div>
           <ul class="check-list">
-            <li><i data-lucide="check-circle-2"></i>
+            <li><i aria-hidden="true" data-lucide="check-circle-2"></i>
               <div><strong data-i18n="eng_1_label">Characters:</strong> <span data-i18n="eng_1">Tracks character traits
                   and appearances dynamically.</span></div>
             </li>
-            <li><i data-lucide="check-circle-2"></i>
+            <li><i aria-hidden="true" data-lucide="check-circle-2"></i>
               <div><strong data-i18n="eng_2_label">Locations:</strong> <span data-i18n="eng_2">Connects scenes directly
                   to your custom world map locales.</span></div>
             </li>
-            <li><i data-lucide="check-circle-2"></i>
+            <li><i aria-hidden="true" data-lucide="check-circle-2"></i>
               <div><strong data-i18n="eng_3_label">Lore & Objects:</strong> <span data-i18n="eng_3">Contextual awareness
                   of your magical or sci-fi systems.</span></div>
             </li>
-            <li><i data-lucide="check-circle-2"></i>
+            <li><i aria-hidden="true" data-lucide="check-circle-2"></i>
               <div><strong data-i18n="eng_4_label">Saliency Scoring:</strong> <span data-i18n="eng_4">Injects only the
                   most relevant lore into your AI prompts.</span></div>
             </li>
@@ -263,16 +290,16 @@
               </div>
             </div>
             <div class="mpc-compendium">
-              <div class="c-header"><i data-lucide="database"></i> <span data-i18n="comp_head">Compendium</span></div>
+              <div class="c-header"><i aria-hidden="true" data-lucide="database"></i> <span data-i18n="comp_head">Compendium</span></div>
               <div class="c-tabs">
-                <div class="c-tab" id="c-tab-char"><i data-lucide="users"></i> <span
+                <div class="c-tab" id="c-tab-char"><i aria-hidden="true" data-lucide="users"></i> <span
                     data-i18n="comp_char">Characters</span> <span class="c-count" id="c-count-char">24</span></div>
-                <div class="c-tab" id="c-tab-loc"><i data-lucide="map-pin"></i> <span
+                <div class="c-tab" id="c-tab-loc"><i aria-hidden="true" data-lucide="map-pin"></i> <span
                     data-i18n="comp_loc">Locations</span> <span class="c-count" id="c-count-loc">12</span></div>
-                <div class="c-tab" id="c-tab-obj"><i data-lucide="box"></i> <span data-i18n="comp_obj">Objects</span>
+                <div class="c-tab" id="c-tab-obj"><i aria-hidden="true" data-lucide="box"></i> <span data-i18n="comp_obj">Objects</span>
                   <span class="c-count" id="c-count-obj">5</span>
                 </div>
-                <div class="c-tab" id="c-tab-lore"><i data-lucide="book"></i> <span data-i18n="comp_lore">Lore</span>
+                <div class="c-tab" id="c-tab-lore"><i aria-hidden="true" data-lucide="book"></i> <span data-i18n="comp_lore">Lore</span>
                   <span class="c-count" id="c-count-lore">8</span>
                 </div>
               </div>
@@ -283,24 +310,24 @@
     </section>
 
     <!-- Constellation Nexus Section -->
-    <section id="nexus" class="section">
+    <section id="nexus" class="section" aria-labelledby="nexus-title">
       <div class="split-layout">
         <div class="split-content fade-in-up">
-          <div class="badge-pill mb-4"><i data-lucide="network"></i> <span data-i18n="nexus_badge">Nexus</span></div>
-          <h2 class="section-title" data-i18n="nexus_title">Constellation Nexus</h2>
-          <p class="section-subtitle" style="margin-left:0; text-align:left; margin-bottom: 24px;"
+          <div class="badge-pill mb-4"><i aria-hidden="true" data-lucide="network"></i> <span data-i18n="nexus_badge">Nexus</span></div>
+          <h2 id="nexus-title" class="section-title" data-i18n="nexus_title">Constellation Nexus</h2>
+          <p class="section-subtitle section-subtitle-left"
             data-i18n="nexus_sub">Transform your raw Compendium data into a living, breathing 3D knowledge graph and
             interactive timeline. Discover the hidden connections in your story.</p>
           <ul class="check-list">
-            <li><i data-lucide="check-circle-2"></i>
+            <li><i aria-hidden="true" data-lucide="check-circle-2"></i>
               <div><strong data-i18n="nex_1_label">3D Knowledge Graph:</strong> <span data-i18n="nex_1">Visualize
                   complex relationships of characters and locations interactively.</span></div>
             </li>
-            <li><i data-lucide="check-circle-2"></i>
+            <li><i aria-hidden="true" data-lucide="check-circle-2"></i>
               <div><strong data-i18n="nex_2_label">Interactive Timeline:</strong> <span data-i18n="nex_2">Map
                   chronological events intuitively alongside your manuscript.</span></div>
             </li>
-            <li><i data-lucide="check-circle-2"></i>
+            <li><i aria-hidden="true" data-lucide="check-circle-2"></i>
               <div><strong data-i18n="nex_3_label">Interactive Codex Export:</strong> <span data-i18n="nex_3">Share a
                   standalone HTML hyperlinked wiki of your world with beta readers.</span></div>
             </li>
@@ -310,10 +337,10 @@
           <div class="nexus-container glass-panel">
             <div class="nexus-header">
               <div class="nexus-tabs">
-                <div class="nexus-tab active" data-view="graph"><i data-lucide="share-2"></i> <span
-                    data-i18n="nexus_menu_graph" style="font-weight:normal;">Grafo 3D</span></div>
-                <div class="nexus-tab" data-view="timeline"><i data-lucide="clock"></i> <span
-                    data-i18n="nexus_menu_timeline" style="font-weight:normal;">Linea de Tiempo</span></div>
+                <div class="nexus-tab active" data-view="graph"><i aria-hidden="true" data-lucide="share-2"></i> <span
+                    data-i18n="nexus_menu_graph">Grafo 3D</span></div>
+                <div class="nexus-tab" data-view="timeline"><i aria-hidden="true" data-lucide="clock"></i> <span
+                    data-i18n="nexus_menu_timeline">Linea de Tiempo</span></div>
               </div>
             </div>
             <div class="nexus-body" id="nexus-body">
@@ -321,23 +348,20 @@
               <div class="nexus-view-graph active">
                 <div class="nexus-node center-node">
                   <div class="node-core accent-glow"></div>
-                  <span style="font-size: 11px; white-space: nowrap; margin-top: 4px; color: var(--text-primary);">The
+                  <span>The
                     Obsidian Spire</span>
                 </div>
                 <div class="nexus-node n-1">
                   <div class="node-core green-glow"></div>
-                  <span
-                    style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-secondary);">Vaelen</span>
+                  <span>Vaelen</span>
                 </div>
                 <div class="nexus-node n-2">
                   <div class="node-core green-glow"></div>
-                  <span
-                    style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-secondary);">Elara</span>
+                  <span>Elara</span>
                 </div>
                 <div class="nexus-node n-3">
                   <div class="node-core purple-glow"></div>
-                  <span
-                    style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-secondary);">Amulet
+                  <span>Amulet
                     of Kael</span>
                 </div>
                 <svg class="nexus-lines" xmlns="http://www.w3.org/2000/svg">
@@ -349,25 +373,21 @@
               </div>
 
               <!-- Timeline View -->
-              <div class="nexus-view-timeline"
-                style="display:none; height: 100%; width: 100%; position: absolute; top: 0; left: 0;">
-                <div
-                  style="position: absolute; top: 50%; left: 10%; right: 10%; height: 2px; background: rgba(255,255,255,0.1); transform: translateY(-50%);">
-                </div>
-                <div class="nexus-node" style="top: 50%; left: 20%; transform: translate(-50%, -100%);">
+              <div class="nexus-view-timeline">
+                <div class="nexus-timeline-line"></div>
+                <div class="nexus-node tl-node-1">
                   <div class="node-core accent-glow"></div>
-                  <span style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-primary);">The
+                  <span class="tl-label-primary">The
                     Gathering</span>
                 </div>
-                <div class="nexus-node" style="top: 50%; left: 50%; transform: translate(-50%, 0); margin-top: 20px;">
+                <div class="nexus-node tl-node-2">
                   <div class="node-core green-glow"></div>
-                  <span
-                    style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-secondary);">First
+                  <span>First
                     Contact</span>
                 </div>
-                <div class="nexus-node" style="top: 50%; left: 80%; transform: translate(-50%, -100%);">
+                <div class="nexus-node tl-node-3">
                   <div class="node-core purple-glow"></div>
-                  <span style="font-size: 10px; white-space: nowrap; margin-top: 4px; color: var(--text-secondary);">The
+                  <span>The
                     Fall</span>
                 </div>
               </div>
@@ -378,46 +398,46 @@
     </section>
 
     <!-- RAG Section -->
-    <section id="rag" class="section">
+    <section id="rag" class="section" aria-labelledby="rag-title">
       <div class="split-layout reverse">
         <div class="split-visual fade-in-up">
           <div class="rag-container glass-panel">
             <div class="rag-horizontal-flow">
               <div class="rag-node-group">
-                <div class="rag-icon-bubble"><i data-lucide="file-text"></i></div>
+                <div class="rag-icon-bubble"><i aria-hidden="true" data-lucide="file-text"></i></div>
                 <span data-i18n="rag_manuscript">Manuscript</span>
               </div>
 
               <div class="rag-connection">
                 <div class="data-particle"></div>
-                <div class="data-particle" style="animation-delay: 1s;"></div>
+                <div class="data-particle data-particle-delayed"></div>
               </div>
 
               <div class="rag-node-group highlight">
-                <div class="rag-icon-bubble"><i data-lucide="database"></i></div>
+                <div class="rag-icon-bubble"><i aria-hidden="true" data-lucide="database"></i></div>
                 <span data-i18n="rag_vectordb">Vector DB</span>
               </div>
 
               <div class="rag-connection">
                 <div class="data-particle"></div>
-                <div class="data-particle" style="animation-delay: 1s;"></div>
+                <div class="data-particle data-particle-delayed"></div>
               </div>
 
               <div class="rag-node-group accent">
-                <div class="rag-icon-bubble"><i data-lucide="brain-circuit"></i></div>
+                <div class="rag-icon-bubble"><i aria-hidden="true" data-lucide="brain-circuit"></i></div>
                 <span>Context</span>
               </div>
             </div>
             <div class="rag-model-label">
-              <i data-lucide="cpu"></i> <span>Powered by all-MiniLM-L6-v2 locally</span>
+              <i aria-hidden="true" data-lucide="cpu"></i> <span>Powered by all-MiniLM-L6-v2 locally</span>
             </div>
           </div>
         </div>
         <div class="split-content fade-in-up delay-1">
-          <div class="badge-pill mb-4"><i data-lucide="search"></i> <span data-i18n="rag_badge">Local Semantic
+          <div class="badge-pill mb-4"><i aria-hidden="true" data-lucide="search"></i> <span data-i18n="rag_badge">Local Semantic
               Intelligence</span></div>
-          <h2 class="section-title" data-i18n="rag_title">Local RAG Engine</h2>
-          <p class="section-subtitle" style="margin-left:0; text-align:left;" data-i18n="rag_sub">LoneWriter
+          <h2 id="rag-title" class="section-title" data-i18n="rag_title">Local RAG Engine</h2>
+          <p class="section-subtitle section-subtitle-left" data-i18n="rag_sub">LoneWriter
             incorporates a Retrieval-Augmented Generation engine directly in your browser. It instantly retrieves
             fragments of your novel and relevant lore to provide perfect context for the AI, all without sending your
             data to the cloud.</p>
@@ -427,9 +447,9 @@
 
 
     <!-- Roadmap Section -->
-    <section id="roadmap" class="section">
+    <section id="roadmap" class="section" aria-labelledby="roadmap-title">
       <div class="section-header fade-in">
-        <h2 class="section-title" data-i18n="roadmap_sectitle">Future Vision & Roadmap</h2>
+        <h2 id="roadmap-title" class="section-title" data-i18n="roadmap_sectitle">Future Vision & Roadmap</h2>
         <p class="section-subtitle" data-i18n="roadmap_secsub">LoneWriter is evolving every day based on the needs of
           our community. Here is what we are working on next.</p>
       </div>
@@ -442,21 +462,21 @@
           </div>
           <div class="pane-items">
             <div class="roadmap-card-v4">
-              <div class="card-icon-v4"><i data-lucide="smartphone"></i></div>
+              <div class="card-icon-v4"><i aria-hidden="true" data-lucide="activity"></i></div>
               <div class="card-content-v4">
-                <h5 data-i18n="rd_1_title">Mobile PWA Polish</h5>
-                <p data-i18n="rd_1_desc">Improved touch gestures and offline reliability.</p>
+                <h5 data-i18n="rd_1_title">Pacing Analysis</h5>
+                <p data-i18n="rd_1_desc">Visual insights into the emotional arc and pacing of your scenes.</p>
               </div>
             </div>
             <div class="roadmap-card-v4">
-              <div class="card-icon-v4"><i data-lucide="brain-circuit"></i></div>
+              <div class="card-icon-v4"><i aria-hidden="true" data-lucide="brain-circuit"></i></div>
               <div class="card-content-v4">
                 <h5 data-i18n="rd_4_title">Anaphora Optimization</h5>
                 <p data-i18n="rd_4_desc">Refined coherence for long narrative texts.</p>
               </div>
             </div>
             <div class="roadmap-card-v4">
-              <div class="card-icon-v4"><i data-lucide="hard-drive"></i></div>
+              <div class="card-icon-v4"><i aria-hidden="true" data-lucide="hard-drive"></i></div>
               <div class="card-content-v4">
                 <h5 data-i18n="rd_8_title">Enhanced RAG Memory</h5>
                 <p data-i18n="rd_8_desc">Support for larger local models and better indexing.</p>
@@ -472,21 +492,21 @@
           </div>
           <div class="pane-items">
             <div class="roadmap-card-v4">
-              <div class="card-icon-v4"><i data-lucide="file-plus"></i></div>
+              <div class="card-icon-v4"><i aria-hidden="true" data-lucide="file-plus"></i></div>
               <div class="card-content-v4">
                 <h5 data-i18n="rd_5_title">Extended Import</h5>
                 <p data-i18n="rd_5_desc">Direct parsing for .pdf and .docx documents.</p>
               </div>
             </div>
             <div class="roadmap-card-v4">
-              <div class="card-icon-v4"><i data-lucide="database"></i></div>
+              <div class="card-icon-v4"><i aria-hidden="true" data-lucide="database"></i></div>
               <div class="card-content-v4">
                 <h5 data-i18n="rd_6_title">MCP Integration</h5>
                 <p data-i18n="rd_6_desc">Auto-extract lore from reference files via MCP.</p>
               </div>
             </div>
             <div class="roadmap-card-v4">
-              <div class="card-icon-v4"><i data-lucide="zap"></i></div>
+              <div class="card-icon-v4"><i aria-hidden="true" data-lucide="zap"></i></div>
               <div class="card-content-v4">
                 <h5 data-i18n="rd_7_title">Smart Bootstrap</h5>
                 <p data-i18n="rd_7_desc">Map/import MD files into narrative tree.</p>
@@ -497,20 +517,22 @@
       </div>
 
       <!-- Completed Banner -->
-      <div class="roadmap-completed fade-in-up"
-        style="width: 80%; margin: 24px auto 0; padding: 12px 24px; background: rgba(74, 222, 128, 0.05); border: 1px solid rgba(74, 222, 128, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
-        <h4
-          style="color: #4ade80; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; margin: 0; font-weight: 600;">
-          <i data-lucide="check-circle-2" style="width: 18px; height: 18px;"></i> <span
+      <div class="roadmap-completed fade-in-up">
+        <h4>
+          <i aria-hidden="true" data-lucide="check-circle-2"></i> <span
             data-i18n="roadmap_completed">Completed</span></h4>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-          <div
-            style="background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2); padding: 4px 12px; border-radius: 20px; color: #4ade80; font-size: 0.85rem; font-weight: 500;">
+        <div class="completed-badges">
+          <div class="completed-badge">
             <span data-i18n="rd_2_title">Interactive Timelines</span>
           </div>
-          <div
-            style="background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2); padding: 4px 12px; border-radius: 20px; color: #4ade80; font-size: 0.85rem; font-weight: 500;">
+          <div class="completed-badge">
             <span data-i18n="rd_3_title">3D Knowledge Graph</span>
+          </div>
+          <div class="completed-badge">
+            <span data-i18n="rd_9_title">Mobile PWA Polish</span>
+          </div>
+          <div class="completed-badge">
+            <span data-i18n="rd_10_title">Technical Debt Audit</span>
           </div>
         </div>
       </div>
@@ -518,16 +540,16 @@
       <div class="roadmap-footer fade-in">
         <a href="https://github.com/sergio-snchez/LoneWriter/blob/main/ROADMAP.md" target="_blank"
           rel="noopener noreferrer" class="btn btn-ghost" data-i18n-href="link_roadmap">
-          <i data-lucide="map"></i> <span data-i18n="roadmap_view_full">View Full Roadmap</span>
+          <i aria-hidden="true" data-lucide="map"></i> <span data-i18n="roadmap_view_full">View Full Roadmap</span>
         </a>
       </div>
     </section>
   </main>
 
   <!-- Feature Modal -->
-  <div id="feature-modal" class="feature-modal-overlay">
+  <div id="feature-modal" class="feature-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="feature-modal-content glass-panel">
-      <button id="close-modal" class="btn btn-ghost btn-icon modal-close-btn"><i data-lucide="x"></i></button>
+      <button id="close-modal" class="btn btn-ghost btn-icon modal-close-btn" aria-label="Close modal"><i aria-hidden="true" data-lucide="x"></i></button>
       <div class="modal-body">
         <h3 id="modal-title" class="modal-title">Feature Title</h3>
         <p id="modal-desc" class="modal-desc">Feature description goes here.</p>
@@ -535,14 +557,14 @@
           <!-- Mockup 1: Narrative Structure -->
           <div id="mockup-feat-1" class="mockup-ui">
             <div class="mockup-ui-sidebar glass-panel">
-              <div class="mockup-ui-tree-item"><i data-lucide="chevron-down"></i> <strong data-i18n="mu_act1">Act I: The
+              <div class="mockup-ui-tree-item"><i aria-hidden="true" data-lucide="chevron-down"></i> <strong data-i18n="mu_act1">Act I: The
                   Call</strong></div>
-              <div class="mockup-ui-tree-item indented"><i data-lucide="grip-vertical" class="drag-handle"></i> <i
+              <div class="mockup-ui-tree-item indented"><i aria-hidden="true" data-lucide="grip-vertical" class="drag-handle"></i> <i
                   data-lucide="file-text"></i> <span data-i18n="mu_ch1">Chapter 1</span></div>
-              <div class="mockup-ui-tree-item indented active"><i data-lucide="grip-vertical" class="drag-handle"></i>
-                <i data-lucide="file-text"></i> <span data-i18n="mu_ch2">Chapter 2</span>
+              <div class="mockup-ui-tree-item indented active"><i aria-hidden="true" data-lucide="grip-vertical" class="drag-handle"></i>
+                <i aria-hidden="true" data-lucide="file-text"></i> <span data-i18n="mu_ch2">Chapter 2</span>
               </div>
-              <div class="mockup-ui-tree-item"><i data-lucide="chevron-right"></i> <strong data-i18n="mu_act2">Act II:
+              <div class="mockup-ui-tree-item"><i aria-hidden="true" data-lucide="chevron-right"></i> <strong data-i18n="mu_act2">Act II:
                   The Descent</strong></div>
             </div>
           </div>
@@ -551,7 +573,7 @@
           <div id="mockup-feat-2" class="mockup-ui mockup-ui-center">
             <div class="mockup-stats-card glass-panel">
               <div class="stats-header">
-                <i data-lucide="flame" class="streak-icon"></i> <strong data-i18n="mu_streak">12 Day Streak!</strong>
+                <i aria-hidden="true" data-lucide="flame" class="streak-icon"></i> <strong data-i18n="mu_streak">12 Day Streak!</strong>
               </div>
               <div class="stats-progress-container">
                 <div class="stats-labels">
@@ -559,7 +581,7 @@
                   <span>49%</span>
                 </div>
                 <div class="stats-progress-bar">
-                  <div class="stats-progress-fill" style="width: 49%"></div>
+                  <div class="stats-progress-fill w-49"></div>
                 </div>
               </div>
             </div>
@@ -569,19 +591,19 @@
           <div id="mockup-feat-3" class="mockup-ui mockup-ui-center">
             <div class="mockup-kb-grid">
               <div class="kb-folder glass-panel">
-                <div class="kb-header"><i data-lucide="users"></i> <span data-i18n="mu_chars">Characters</span></div>
+                <div class="kb-header"><i aria-hidden="true" data-lucide="users"></i> <span data-i18n="mu_chars">Characters</span></div>
                 <div class="kb-toggle active">
                   <div class="toggle-knob"></div>
                 </div>
               </div>
               <div class="kb-folder glass-panel">
-                <div class="kb-header"><i data-lucide="map-pin"></i> <span data-i18n="mu_locs">Locations</span></div>
+                <div class="kb-header"><i aria-hidden="true" data-lucide="map-pin"></i> <span data-i18n="mu_locs">Locations</span></div>
                 <div class="kb-toggle">
                   <div class="toggle-knob"></div>
                 </div>
               </div>
               <div class="kb-folder glass-panel">
-                <div class="kb-header"><i data-lucide="box"></i> <span data-i18n="mu_magic">Objects</span></div>
+                <div class="kb-header"><i aria-hidden="true" data-lucide="box"></i> <span data-i18n="mu_magic">Objects</span></div>
                 <div class="kb-toggle active">
                   <div class="toggle-knob"></div>
                 </div>
@@ -593,14 +615,14 @@
           <div id="mockup-feat-4" class="mockup-ui mockup-ui-center">
             <div class="mockup-sync-card glass-panel">
               <div class="sync-header-horizontal">
-                <div class="sync-icon-container"><i data-lucide="cloud" class="sync-cloud"></i></div>
+                <div class="sync-icon-container"><i aria-hidden="true" data-lucide="cloud" class="sync-cloud"></i></div>
                 <div class="sync-text-container">
                   <h4 data-i18n="mu_synced">Changes saved</h4>
                   <p data-i18n="mu_synced_time">Last synced: Just now</p>
                 </div>
               </div>
               <div class="sync-drive glass-panel">
-                <i data-lucide="hard-drive"></i> <span data-i18n="mu_drive">Google Drive</span>
+                <i aria-hidden="true" data-lucide="hard-drive"></i> <span data-i18n="mu_drive">Google Drive</span>
                 <div class="kb-toggle active">
                   <div class="toggle-knob"></div>
                 </div>
@@ -614,10 +636,10 @@
             <div class="theme-card glass-panel card-middle"></div>
             <div class="theme-card glass-panel card-top">
               <div class="theme-switch-container glass-panel">
-                <div class="theme-option"><i data-lucide="sun"></i></div>
-                <div class="theme-option active"><i data-lucide="moon"></i></div>
-                <div class="theme-option active"><i data-lucide="monitor"></i></div>
-                <div class="theme-option"><i data-lucide="smartphone"></i></div>
+                <div class="theme-option"><i aria-hidden="true" data-lucide="sun"></i></div>
+                <div class="theme-option active"><i aria-hidden="true" data-lucide="moon"></i></div>
+                <div class="theme-option active"><i aria-hidden="true" data-lucide="monitor"></i></div>
+                <div class="theme-option"><i aria-hidden="true" data-lucide="smartphone"></i></div>
               </div>
             </div>
           </div>
@@ -626,14 +648,14 @@
           <div id="mockup-feat-6" class="mockup-ui mockup-ui-center">
             <div class="export-card glass-panel">
               <div class="export-option">
-                <i data-lucide="check-square" class="checked"></i> <span data-i18n="mu_format">Standard Manuscript
+                <i aria-hidden="true" data-lucide="check-square" class="checked"></i> <span data-i18n="mu_format">Standard Manuscript
                   Format</span>
               </div>
               <div class="export-option">
-                <i data-lucide="check-square" class="checked"></i> <span data-i18n="mu_titlepage">Include Title
+                <i aria-hidden="true" data-lucide="check-square" class="checked"></i> <span data-i18n="mu_titlepage">Include Title
                   Page</span>
               </div>
-              <button class="btn btn-primary export-btn"><i data-lucide="file-down"></i> <span
+              <button class="btn btn-primary export-btn"><i aria-hidden="true" data-lucide="file-down"></i> <span
                   data-i18n="mu_exportbtn">Export .DOCX</span></button>
             </div>
           </div>
@@ -646,7 +668,7 @@
     <div class="footer-content">
       <div class="footer-brand">
         <div class="brand-icon">
-          <i data-lucide="pen-line"></i>
+          <i aria-hidden="true" data-lucide="pen-line"></i>
         </div>
         <span class="brand-text">LoneWriter</span>
         <p data-i18n="footer_quote">Your masterpiece, structured intelligently.</p>
@@ -671,7 +693,12 @@
     </div>
   </footer>
 
-  <script src="script_v2.js"></script>
+  <script src="script_v2.js" defer></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
 </body>
 
 </html>

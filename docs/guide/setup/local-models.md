@@ -1,3 +1,8 @@
+---
+title: Local Models
+description: Run AI models locally with Ollama or LM Studio for complete privacy. Step-by-step setup for offline AI assistance in LoneWriter.
+---
+
 # Local Models
 
 One of the most powerful features of LoneWriter is its ability to operate privately using models that run on your own computer.

@@ -1,3 +1,8 @@
+---
+title: The Editor
+description: Write with LoneWriter's rich text editor, organize your novel into acts, chapters, and scenes, and access integrated AI writing tools.
+---
+
 # The Editor
 
 The LoneWriter editor has been designed to minimize distractions and maximize creative flow, integrating artificial intelligence tools organically.

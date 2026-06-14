@@ -1,16 +1,32 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import {
   BookOpen, ChevronDown, ChevronRight, Eye, FileDown, Clock, Sparkles, Loader2
 } from 'lucide-react'
-import { AIService } from '../../services/aiService'
-import { ExportService } from '../../services/exportService'
-import { Tooltip } from '../../components/Tooltip'
-import { CustomDatePicker } from '../../components/CustomDatePicker'
+import { AIService, ExportService } from '../../services'
+import { Tooltip, CustomDatePicker } from '../../components'
 import { STATUS_OPTIONS } from './EditorSortables'
+import { useNovel, useAI } from '../../context'
 import debounce from 'lodash/debounce'
+import './EditorToolbar.css'
 
-export default function EditorToolbar({ activeScene, activeNovel, characters, updateScene, onNavigate, oracleStatus, mpcProposals, mpcStatus, handleManualMpcScan, menuOpen, logAIUsage, apiKey, provider, currentModel, localBaseUrl }) {
+const EditorToolbar = memo(function EditorToolbar({ onNavigate, menuOpen, handleManualMpcScan }) {
+  EditorToolbar.propTypes = {
+    onNavigate: PropTypes.func,
+    menuOpen: PropTypes.bool,
+    handleManualMpcScan: PropTypes.func,
+  };
+
+  const {
+    activeScene, activeNovel, characters, updateScene,
+  } = useNovel();
+
+  const {
+    oracleStatus, mpcProposals, mpcStatus, logAIUsage,
+    apiKey, provider, currentModel, localBaseUrl,
+  } = useAI();
+
   const { t } = useTranslation('editor')
   const [isHeaderExpanded, setIsHeaderExpanded] = useState(false)
   const [generatingSynopsis, setGeneratingSynopsis] = useState(false)
@@ -97,7 +113,7 @@ export default function EditorToolbar({ activeScene, activeNovel, characters, up
               className="header-toggle"
               onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
             >
-              {isHeaderExpanded ? <ChevronDown size={20} style={{ transform: 'rotate(180deg)' }} /> : <ChevronDown size={20} />}
+              {isHeaderExpanded ? <ChevronDown size={20} className="toggle-icon--rotated" /> : <ChevronDown size={20} />}
             </button>
           </div>
 
@@ -212,4 +228,6 @@ export default function EditorToolbar({ activeScene, activeNovel, characters, up
       </div>
     </div>
   )
-}
+})
+
+export default EditorToolbar

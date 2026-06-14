@@ -1,3 +1,8 @@
+---
+title: Reescritura Inteligente
+description: Pule tu prosa con 8 modos de reescritura — estilo, tono, ritmo, claridad, POV y más. Compara sugerencias de IA lado a lado.
+---
+
 # Reescritura Inteligente
 
 LoneWriter no solo guarda tus palabras; te ayuda a esculpirlas. El sistema de reescritura actúa como un editor profesional disponible las 24 horas, permitiéndote pulir el estilo, ajustar el tono o transformar la estructura de tu prosa sin salir del editor.

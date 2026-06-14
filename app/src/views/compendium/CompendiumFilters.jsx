@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import { Filter } from 'lucide-react'
+import './CompendiumFilters.css'
 
 function getAvailableFilters(activeSection, characters, locations, objects, lore) {
   const list = new Set()
@@ -30,7 +32,19 @@ function matchesFilters(item, activeFilters, activeSection) {
   return activeFilters.some(f => itemTags.includes(f))
 }
 
-export function CompendiumFilters({ isFilterOpen, activeFilters, activeSection, characters, locations, objects, lore, onToggle, onSetActiveFilters }) {
+export default function CompendiumFilters({ isFilterOpen, activeFilters, activeSection, characters, locations, objects, lore, onToggle, onSetActiveFilters }) {
+  CompendiumFilters.propTypes = {
+    isFilterOpen: PropTypes.bool.isRequired,
+    activeFilters: PropTypes.arrayOf(PropTypes.string).isRequired,
+    activeSection: PropTypes.string.isRequired,
+    characters: PropTypes.array,
+    locations: PropTypes.array,
+    objects: PropTypes.array,
+    lore: PropTypes.array,
+    onToggle: PropTypes.func.isRequired,
+    onSetActiveFilters: PropTypes.func.isRequired,
+  };
+
   const { t } = useTranslation('compendium')
 
   const toggleFilter = (f) => {

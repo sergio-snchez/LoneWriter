@@ -2,7 +2,7 @@
  * useAIConfig.js — Provider selection, model config, API keys, and rewrite prompts.
  * Extracted from AIContext to isolate settings changes from live AI interactions.
  */
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import i18n from '../i18n/i18n'
 import { db } from '../db/database'
 import { loadUserStopwords } from '../i18n/stopwords'
@@ -120,7 +120,7 @@ export function useAIConfig() {
   const resetPrompt  = (id)        => setPrompts(prev => ({ ...prev, [id]: DEFAULT_PROMPTS()[id] }))
 
   // ── Exports ────────────────────────────────────────────────────────────────
-  return {
+  return useMemo(() => ({
     provider, setProvider,
     allConfigs, configsLoaded,
     apiKey, setApiKey,
@@ -128,5 +128,10 @@ export function useAIConfig() {
     setModelForProvider,
     currentModel, selectedModel,
     prompts, updatePrompt, resetPrompt,
-  }
+  }), [
+    provider, allConfigs, configsLoaded, apiKey, localBaseUrl,
+    currentModel, selectedModel, prompts,
+    setProvider, setApiKey, setLocalBaseUrl,
+    setModelForProvider, updatePrompt, resetPrompt,
+  ])
 }

@@ -147,6 +147,7 @@
 .mpc-card {
   background: var(--bg-card, rgba(255,255,255,0.03));
   border: 1px solid var(--border, rgba(255,255,255,0.07));
+  border-left: 3px solid var(--proposal-color);
   border-radius: 10px;
   padding: 12px;
   display: flex;
@@ -184,6 +185,8 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   flex-shrink: 0;
+  background: color-mix(in srgb, var(--proposal-color) 10%, transparent);
+  color: var(--proposal-color);
 }
 
 .mpc-confidence-badge {

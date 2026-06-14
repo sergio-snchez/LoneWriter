@@ -1,3 +1,8 @@
+---
+title: The Nexus and the Timeline
+description: Explore your narrative universe with the 3D/2D Knowledge Graph (Nexus) and the interactive Timeline for chronological event visualization.
+---
+
 # The Nexus and the Timeline
 
 LoneWriter provides advanced visualization tools to analyze your work's structure from perspectives that linear text does not allow you to appreciate.

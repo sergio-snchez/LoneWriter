@@ -1,3 +1,8 @@
+---
+title: Sincronización con Google Drive
+description: Activa la sincronización con Google Drive para copias de seguridad automáticas y acceso multi-dispositivo manteniendo tus datos en tu almacenamiento personal.
+---
+
 # Sincronización con Google Drive
 
 Aunque LoneWriter prioriza el almacenamiento local para garantizar la privacidad, la sincronización con la nube es una herramienta esencial para asegurar la disponibilidad de sus proyectos en diferentes dispositivos y disponer de copias de seguridad automáticas.

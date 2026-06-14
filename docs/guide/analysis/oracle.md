@@ -1,3 +1,8 @@
+---
+title: The Oracle
+description: Query your novel's lore using RAG technology. The Oracle provides accurate answers based on your manuscripts and Compendium entries.
+---
+
 # The Oracle
 
 The Oracle is an advanced narrative query tool. Unlike general language models, the Oracle has direct access to the drafts and the **[Compendium](../worldbuilding/compendium.md)** of your project.

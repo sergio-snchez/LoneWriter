@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import { Sparkles, RefreshCw, ExternalLink, Zap } from 'lucide-react'
-import { Tooltip } from './Tooltip'
-import { useAI } from '../context/AIContext'
+import { Tooltip } from './'
+import { useAI } from '../context'
 
 const PROVIDER_LIMITS = {
   google: { tokens: 1000000, requests: 1500 },
@@ -21,7 +22,7 @@ function UsageMeter({ label, value, max, unit }) {
         <span className="usage-meter__value">{value.toLocaleString()} / {max.toLocaleString()} {unit}</span>
       </div>
       <div className="usage-meter__bar">
-        <div className="usage-meter__fill" style={{ width: `${pct}%`, backgroundColor: pct > 90 ? '#e07070' : '#6b9fd4' }} />
+        <div className={`usage-meter__fill ${pct > 90 ? 'usage-meter__fill--high' : 'usage-meter__fill--normal'}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   )
@@ -61,6 +62,12 @@ const AI_PROVIDER_LINKS = (t) => ({
 })
 
 export function SettingsAITab({ testConnStatus, testConnResult, onTestConnection }) {
+  SettingsAITab.propTypes = {
+    testConnStatus: PropTypes.string,
+    testConnResult: PropTypes.string,
+    onTestConnection: PropTypes.func.isRequired,
+  };
+
   const { t } = useTranslation('settings')
   const {
     provider, setProvider, apiKey, setApiKey,
@@ -73,7 +80,7 @@ export function SettingsAITab({ testConnStatus, testConnResult, onTestConnection
   return (
     <div className="settings-tab">
       <div className="settings-section">
-        <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span className="settings-section__title settings-section__title-row">
           <Sparkles size={14} />{t('ia.seccion_titulo')}
         </span>
 
@@ -127,26 +134,26 @@ export function SettingsAITab({ testConnStatus, testConnResult, onTestConnection
           </div>
         )}
 
-        <div className="settings-section settings-section--usage" style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="settings-section settings-section--usage">
+          <div className="usage-header">
+            <span className="settings-section__title settings-section__title-row">
               <RefreshCw size={14} />{t('ia.consumo_titulo')}
             </span>
             <Tooltip content={t('ia.test_conexion') || 'Probar conexión'}>
-              <button className="btn btn-ghost btn-sm" onClick={onTestConnection} disabled={testConnStatus === 'testing'} style={{ color: testConnStatus === 'success' ? 'var(--green)' : testConnStatus === 'error' ? 'var(--red)' : 'var(--text-muted)', padding: '4px 8px', minWidth: 'auto' }}>
+              <button className={`btn btn-ghost btn-sm conn-test-btn ${testConnStatus === 'success' ? 'conn-status--success' : testConnStatus === 'error' ? 'conn-status--error' : ''}`} onClick={onTestConnection} disabled={testConnStatus === 'testing'}>
                 {testConnStatus === 'testing' ? <RefreshCw size={14} className="spinner" /> : <Zap size={14} />}
               </button>
             </Tooltip>
           </div>
 
           {testConnStatus && testConnStatus !== 'testing' && (
-            <p style={{ fontSize: '11px', color: testConnStatus === 'success' ? 'var(--green)' : 'var(--red)', marginBottom: '8px', background: testConnStatus === 'success' ? 'rgba(92, 185, 138, 0.1)' : 'rgba(224, 112, 112, 0.1)', padding: '4px 8px', borderRadius: 'var(--radius-sm)' }}>
+            <p className={`conn-status-message ${testConnStatus === 'success' ? 'conn-status-message--success' : 'conn-status-message--error'}`}>
               {testConnStatus === 'success' ? t('ia.test_conexion_ok') : `${t('ia.test_conexion_error')}: ${testConnResult || 'Error'}`}
             </p>
           )}
 
           {provider === 'local' ? (
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>✨ {t('ia.consumo_ilimitado')}</p>
+            <p className="usage-unlimited-hint">✨ {t('ia.consumo_ilimitado')}</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <UsageMeter label={t('ia.consumo_tokens')} value={usageStats?.tokens || 0} max={PROVIDER_LIMITS[provider]?.tokens || 500000} unit="tokens" />

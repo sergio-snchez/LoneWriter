@@ -1,9 +1,25 @@
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import { Sparkles, X, Loader2, CheckCircle2, Trash2 } from 'lucide-react'
-import { ProposalCard } from '../../components/ProposalCard'
+import { ProposalCard } from '../../components'
+import './CompendiumMpcOverlay.css'
 
 export function CompendiumMpcOverlay({ isOpen, isClosing, proposals, mpcStatus, acceptingMpcId, onClose, onAccept, onEdit, onDismiss, onDismissPermanently, onClearAll }) {
+  CompendiumMpcOverlay.propTypes = {
+    isOpen: PropTypes.bool.isRequired,
+    isClosing: PropTypes.bool,
+    proposals: PropTypes.array.isRequired,
+    mpcStatus: PropTypes.string,
+    acceptingMpcId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    onClose: PropTypes.func.isRequired,
+    onAccept: PropTypes.func.isRequired,
+    onEdit: PropTypes.func.isRequired,
+    onDismiss: PropTypes.func.isRequired,
+    onDismissPermanently: PropTypes.func.isRequired,
+    onClearAll: PropTypes.func.isRequired,
+  };
+
   const { t } = useTranslation('compendium')
 
   if (!isOpen) return null
@@ -18,12 +34,10 @@ export function CompendiumMpcOverlay({ isOpen, isClosing, proposals, mpcStatus, 
     <div
       className={`compendium-mpc-overlay${isClosing ? ' compendium-mpc-overlay--closing' : ''}`}
       onClick={onClose}
-      style={{ background: 'transparent', backdropFilter: 'none', pointerEvents: 'none' }}
     >
       <div
         className={`compendium-mpc-overlay__panel${isClosing ? ' compendium-mpc-overlay__panel--closing' : ''}`}
         onClick={(e) => e.stopPropagation()}
-        style={{ pointerEvents: 'auto' }}
       >
         <div className="compendium-mpc-overlay__header">
           <div className="compendium-mpc-overlay__title">
@@ -41,16 +55,16 @@ export function CompendiumMpcOverlay({ isOpen, isClosing, proposals, mpcStatus, 
             <div className="compendium-mpc-overlay__empty">
               {mpcStatus === 'analyzing' ? (
                 <>
-                  <Loader2 size={32} className="spin" style={{ color: 'var(--accent)' }} />
+                  <Loader2 size={32} className="spin compendium-mpc-overlay__loading-icon" />
                   <p>{t('ai:oraculo.consultando')}</p>
                 </>
               ) : (
                 <>
-                  <Sparkles size={32} style={{ opacity: 0.3, color: '#9b72cf' }} />
+                  <Sparkles size={32} className="compendium-mpc-overlay__empty-icon" />
                   <p>
                     {t('mpc.empty_desc_1')}
                     <br /><br />
-                    <span style={{ color: 'var(--gold)', opacity: 0.7, fontStyle: 'italic' }}>
+                    <span className="compendium-mpc-overlay__empty-quote">
                       {t('mpc.empty_desc_2')}
                     </span>
                   </p>

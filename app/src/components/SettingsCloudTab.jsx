@@ -1,17 +1,36 @@
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import { Cloud, RefreshCw, LogIn, LogOut, X, Shield, ExternalLink, Heart, History, AlertTriangle } from 'lucide-react'
-import { Tooltip } from './Tooltip'
+import { MarkdownRenderer, Tooltip } from './'
 
 export function SettingsCloudTab({ isCloudLinked, isSyncing, cloudSyncStatus, lastCloudSync, isCloudSyncEnabled, showRevisions, revisions, onLink, onSignOut, onManualSync, onShowRevisions, onRestoreRevision, onCloseRevisions, onToggleAutoSync, onClearCache }) {
+  SettingsCloudTab.propTypes = {
+    isCloudLinked: PropTypes.bool.isRequired,
+    isSyncing: PropTypes.bool.isRequired,
+    cloudSyncStatus: PropTypes.string,
+    lastCloudSync: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    isCloudSyncEnabled: PropTypes.bool.isRequired,
+    showRevisions: PropTypes.bool.isRequired,
+    revisions: PropTypes.array,
+    onLink: PropTypes.func.isRequired,
+    onSignOut: PropTypes.func.isRequired,
+    onManualSync: PropTypes.func.isRequired,
+    onShowRevisions: PropTypes.func.isRequired,
+    onRestoreRevision: PropTypes.func.isRequired,
+    onCloseRevisions: PropTypes.func.isRequired,
+    onToggleAutoSync: PropTypes.func.isRequired,
+    onClearCache: PropTypes.func.isRequired,
+  };
+
   const { t } = useTranslation('settings')
 
   return (
     <div className="settings-tab">
       <div className="settings-section">
-        <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span className="settings-section__title settings-section__title--row">
           <Cloud size={14} />{t('nube.seccion_titulo')}
         </span>
-        <p className="settings-section__hint" style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '10px' }}>
+        <p className="settings-section__hint">
           {t('nube.seccion_hint')}
         </p>
 
@@ -32,7 +51,7 @@ export function SettingsCloudTab({ isCloudLinked, isSyncing, cloudSyncStatus, la
                 {t('nube.vincular_cuenta')}
               </button>
             ) : (
-              <button className="btn btn-ghost btn-sm" onClick={onSignOut} style={{ color: 'var(--red)' }}>
+              <button className="btn btn-ghost btn-sm cloud-sign-out-btn" onClick={onSignOut}>
                 <LogOut size={14} />{t('nube.desconectar')}
               </button>
             )}
@@ -40,7 +59,7 @@ export function SettingsCloudTab({ isCloudLinked, isSyncing, cloudSyncStatus, la
 
           {isCloudLinked && (
             <div className="cloud-sync-card__footer">
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginRight: 'auto' }}>
+              <span className="cloud-sync-status">
                 {cloudSyncStatus === 'syncing' ? t('nube.sincronizando') :
                   cloudSyncStatus === 'error' ? t('nube.error_guardar') :
                     `${t('nube.ultima_copia', { date: lastCloudSync ? new Date(lastCloudSync).toLocaleString() : t('nube.nunca') })}`}
@@ -61,18 +80,18 @@ export function SettingsCloudTab({ isCloudLinked, isSyncing, cloudSyncStatus, la
         </div>
 
         {showRevisions && (
-          <div style={{ marginTop: '12px', padding: '12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 600 }}>{t('nube.historial_titulo')}</span>
+          <div className="cloud-revisions">
+            <div className="cloud-revisions__header">
+              <span className="cloud-revisions__title">{t('nube.historial_titulo')}</span>
               <button className="btn btn-ghost btn-sm" onClick={onCloseRevisions}><X size={14} /></button>
             </div>
             {revisions.length === 0 ? (
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t('nube.sin_revisiones')}</p>
+              <p className="cloud-revisions__empty">{t('nube.sin_revisiones')}</p>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto' }}>
+              <div className="cloud-revisions__list">
                 {revisions.slice().reverse().map((rev) => (
-                  <div key={rev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-sm)' }}>
-                    <span style={{ fontSize: '12px' }}>{new Date(rev.modifiedTime).toLocaleString()}</span>
+                  <div key={rev.id} className="cloud-revisions__item">
+                    <span className="cloud-revisions__date">{new Date(rev.modifiedTime).toLocaleString()}</span>
                     <button className="btn btn-primary btn-sm" onClick={() => onRestoreRevision(rev.id, rev.modifiedTime)} disabled={isSyncing}>
                       {t('nube.restaurar')}
                     </button>
@@ -84,27 +103,27 @@ export function SettingsCloudTab({ isCloudLinked, isSyncing, cloudSyncStatus, la
         )}
 
         {isCloudLinked && (
-          <div style={{ padding: '12px', background: 'var(--accent-dim)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-accent)', display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <label style={{ fontSize: '13px' }}>{t('nube.sincronizacion_automatica')}</label>
-                <span style={{ fontSize: '11px', color: 'var(--accent-light)' }}>{t('nube.proteccion_cache')}</span>
+          <div className="cloud-auto-sync">
+            <div className="cloud-auto-sync__row">
+              <div className="cloud-auto-sync__info">
+                <label className="cloud-auto-sync__label">{t('nube.sincronizacion_automatica')}</label>
+                <span className="cloud-auto-sync__hint">{t('nube.proteccion_cache')}</span>
               </div>
-              <input type="checkbox" className="form-toggle" checked={isCloudSyncEnabled} onChange={(e) => onToggleAutoSync(e.target.checked)} style={{ height: '20px', width: '20px', cursor: 'pointer', accentColor: 'var(--accent)' }} />
+              <input type="checkbox" className="form-toggle form-toggle--cloud" checked={isCloudSyncEnabled} onChange={(e) => onToggleAutoSync(e.target.checked)} />
             </div>
-            <div style={{ display: 'flex', gap: '10px', paddingTop: '8px', borderTop: '1px solid var(--border-accent)' }}>
-              <Shield size={16} style={{ color: 'var(--accent-light)', flexShrink: 0 }} />
-              <p style={{ fontSize: '11px', color: 'var(--accent-light)', margin: 0 }} dangerouslySetInnerHTML={{ __html: t('nube.seguridad_hint', { interpolation: { escapeValue: false } }) }} />
+            <div className="cloud-auto-sync__security">
+              <Shield size={16} className="cloud-auto-sync__shield" />
+              <MarkdownRenderer className="cloud-auto-sync__security-text" content={t('nube.seguridad_hint', { interpolation: { escapeValue: false } })} />
             </div>
           </div>
         )}
 
-        <div className="settings-section" style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--border)' }}>
-          <span className="settings-section__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="settings-section settings-section--separated">
+          <span className="settings-section__title settings-section__title--row">
             <RefreshCw size={14} />{t('nube.recargar_app')}
           </span>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>{t('nube.recargar_app_hint')}</p>
-          <button className="btn btn-primary" onClick={onClearCache} style={{ maxWidth: '300px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <p className="cloud-reload-hint">{t('nube.recargar_app_hint')}</p>
+          <button className="btn btn-primary cloud-reload-btn" onClick={onClearCache}>
             <AlertTriangle size={16} />
             <span>{t('nube.recargar_app_boton')}</span>
             <AlertTriangle size={16} />

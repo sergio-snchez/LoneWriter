@@ -89,4 +89,22 @@ db.version(14).stores({
   scenes: '++id, chapterId, title, order, status, pov, inGameDate'
 });
 
+/**
+ * Restaura datos en todas las tablas de la base de datos.
+ * Vacía cada tabla y la rellena con los datos proporcionados.
+ *
+ * @param {Object} tablesData - Objeto con nombre de tabla como clave y array de registros como valor
+ * @returns {Promise<void>}
+ */
+export async function restoreTables(tablesData) {
+  await db.transaction('rw', db.tables, async () => {
+    for (const table of db.tables) {
+      await table.clear();
+      if (tablesData[table.name]) {
+        await table.bulkAdd(tablesData[table.name]);
+      }
+    }
+  });
+}
+
 export default db;

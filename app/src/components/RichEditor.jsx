@@ -7,8 +7,9 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAI } from '../context/AIContext';
-import { Tooltip } from './Tooltip';
+import PropTypes from 'prop-types';
+import { useAI } from '../context';
+import { Tooltip } from './'
 import { db } from '../db/database';
 import './RichEditor.css';
 
@@ -154,12 +155,11 @@ export default function RichEditor({ content, onChange, placeholder }) {
 
   if (editorError) {
     return (
-      <div className="rich-editor" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+      <div className="rich-editor rich-editor--error">
         <p>Error cargando el editor: {editorError}</p>
         <button 
-          className="btn btn-primary" 
+          className="btn btn-primary rich-editor__reload-btn" 
           onClick={() => window.location.reload()}
-          style={{ marginTop: '16px' }}
         >
           Recargar página
         </button>
@@ -269,7 +269,7 @@ export default function RichEditor({ content, onChange, placeholder }) {
               <Minus size={16} />
             </button>
           </Tooltip>
-          <span style={{ fontSize: '11px', padding: '0 4px', color: 'var(--text-muted)', minWidth: '28px', textAlign: 'center' }}>
+          <span className="editor-font-size-display">
             {fontSize}
           </span>
           <Tooltip content={t('editor_toolbar.aumentar_fuente')}>
@@ -286,3 +286,9 @@ export default function RichEditor({ content, onChange, placeholder }) {
     </div>
   );
 }
+
+RichEditor.propTypes = {
+  content: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
+};
