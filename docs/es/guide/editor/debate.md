@@ -1,3 +1,8 @@
+---
+title: Foro de Debate
+description: Invoca múltiples agentes de IA para discutir tus escenas desde diferentes perspectivas. Personaliza participantes y gestiona sesiones de debate.
+---
+
 # Foro de Debate
 
 ¿Alguna vez has deseado poder discutir un giro de guion o la coherencia de un personaje con un equipo de profesionales? El Foro de Debate de LoneWriter permite invocar a diferentes agentes de IA para analizar tu obra desde múltiples perspectivas.

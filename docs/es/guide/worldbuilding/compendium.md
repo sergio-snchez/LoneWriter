@@ -1,3 +1,8 @@
+---
+title: El Compendio
+description: Construye la base de conocimiento de tu mundo con personajes, lugares, objetos y lore. Autocompletado IA, gestión de contexto y referencias cruzadas.
+---
+
 # El Compendio
 
 El Compendio constituye la base de conocimiento de su mundo. Se trata de una base de datos inteligente que LoneWriter utiliza para mantener la coherencia narrativa y proporcionar información precisa al **[Oráculo](../analysis/oracle.md)**.

@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "LoneWriter",
   description: "Official Documentation for LoneWriter",
-  ignoreDeadLinks: true,
+  ignoreDeadLinks: false,
   head: [
     ['link', { rel: 'icon', href: '/favicon.svg' }]
   ],

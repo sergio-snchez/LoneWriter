@@ -1,3 +1,8 @@
+---
+title: Por qué construí LoneWriter
+description: La filosofía detrás de LoneWriter — privacidad, soberanía de datos, IA como asistente y transparencia total como proyecto open source.
+---
+
 # Por qué construí LoneWriter
 
 LoneWriter no es un producto corporativo. Es un proyecto personal nacido de mi propia necesidad como entusiasta de la escritura y de mi interés por la tecnología y la privacidad.

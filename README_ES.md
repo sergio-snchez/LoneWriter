@@ -61,7 +61,7 @@ LoneWriter es una aplicación de escritura **100% local y con privacidad absolut
 - **Motor RAG (all-MiniLM-L6-v2):** Búsqueda semántica potenciada por embeddings locales (Transformers.js). Tu novela completa se vectoriza en el navegador — consultas contextuales sin APIs externas, manteniendo tus datos privados.
 - **Veredictos del Oráculo (Continuity Linter):** Análisis de coherencia párrafo a párrafo. Actúa como un "corrector de lógica" en tiempo real que detecta contradicciones con tu lore establecido (ej: un personaje muerto que reaparece o un objeto que cambia de dueño por error).
 - **Palabras Filtradas (Stopwords):** Gestiona términos personalizados en la sección Recursos para refinar la detección de entidades y el análisis de coherencia.
-- **Motor de Saliencia (Anáforas):** Monitorización en tiempo real de personajes y correferencias. Detecta pronombres (él, ella, ellos, etc.) y sugiere a qué personaje se refieren, ayudando a mantener la consistencia y resolver ambigüedades en escenas largas o complejas.
+- **Detección de Entidades:** Escanea automáticamente tu escritura y detecta menciones de personajes, lugares, objetos y lore de tu Compendio, marcándolos para verificaciones de continuidad y consultas del Oráculo.
 - **Exclusión Selectiva:** Controla qué entidades del Compendio participan en el análisis de coherencia con un clic para evitar falsos positivos en sueños o flashbacks.
 
 ### 🧠 Asistente de IA Avanzado

@@ -1,4 +1,6 @@
 ---
+title: LoneWriter
+description: Documentación oficial de LoneWriter, una aplicación de escritura que prioriza la privacidad con asistencia IA, RAG local, herramientas de worldbuilding y sincronización con Google Drive.
 layout: home
 
 hero:

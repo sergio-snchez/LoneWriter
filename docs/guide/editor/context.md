@@ -1,3 +1,8 @@
+---
+title: Context and Continuity
+description: Maintain narrative consistency with LoneWriter's context window, RAG indexing, and automatic continuity validation across your novel.
+---
+
 # Context and Continuity
 
 The biggest challenge in writing a long novel is maintaining consistency of details. LoneWriter uses its artificial intelligence architecture to ensure that every new word is faithful to what has already been established.

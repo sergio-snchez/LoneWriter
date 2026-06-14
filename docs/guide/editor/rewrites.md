@@ -1,3 +1,8 @@
+---
+title: Smart Rewriting
+description: Polish your prose with 8 rewriting modes — style, tone, pace, clarity, POV, and more. Compare AI suggestions side by side.
+---
+
 # Smart Rewriting
 
 LoneWriter doesn't just save your words; it helps you sculpt them. The rewriting system acts as a professional editor available 24/7, allowing you to polish the style, adjust the tone, or transform the structure of your prose without leaving the editor.

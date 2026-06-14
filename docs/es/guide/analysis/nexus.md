@@ -1,3 +1,8 @@
+---
+title: El Nexus y la Línea de Tiempo
+description: Explora tu universo narrativo con el grafo de conocimiento 3D/2D (Nexus) y la Línea de Tiempo interactiva para visualización cronológica.
+---
+
 # El Nexus y la Línea de Tiempo
 
 LoneWriter proporciona herramientas de visualización avanzada para analizar la estructura de su obra desde perspectivas que el texto lineal no permite apreciar.

@@ -1,3 +1,8 @@
+---
+title: Guía de Selección de Modelos
+description: Elige el modelo de IA adecuado para tus tareas de escritura — nube vs local. Recomendaciones para el Oráculo, borradores y MPC según el uso.
+---
+
 # Guía de Selección de Modelos
 
 La elección del modelo de lenguaje es determinante para la experiencia de escritura. LoneWriter permite alternar entre diferentes motores según las necesidades de potencia, coste o privacidad.
