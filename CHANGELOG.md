@@ -6,6 +6,69 @@
 
 </div>
 
+## [LoneWriter v2.0.4] - 2026-06-14
+### Added
+- **Oracle continuity toggle**: New checkbox "Include previous scene as continuity context" below detected entities, letting users control token usage.
+- **Chronological predecessor injection**: The Oracle now always receives the immediately preceding scene text (not just RAG semantic fragments), catching attribute inconsistencies (material, color, size) even without Compendium entries.
+
+### Changed
+- **Oracle prompt relaxed**: Golden Rule now defers to Previous Context when Compendium data is sparse; "completely opposite" threshold removed — any attribute change is reportable.
+- **Oracle prompt — explicit attribute instruction**: Added directive to watch physical attributes (material, color, size, shape, possession, location, state).
+- **Rewrite context doubled**: `extractPreviousContext` word limit increased from 120 to 240 (~1,000 tokens) for richer rewriting context.
+
+### Fixed
+- **Duplicate DB restore logic**: 3 identical blocks extracted into a shared `restoreTables()` function.
+- **Export inconsistency**: 5 components migrated from named to `export default`.
+- **Console.log removal**: 6 debug logs removed across MPC, RewriteTab, and Nexus.
+- **Deep JSX nesting**: 4 subcomponents extracted (ModalActions, OracleEntry, DebateSessionMenu, per-category forms).
+- **Prop drilling reduced**: EditorToolbar: 15→3 props; CompendiumPanel restructured.
+
+### Removed
+- Unnecessary `import React` from `Nexus.jsx` (automatic JSX transform).
+
+## [LoneWriter v2.0.3] - 2026-06-10
+### Changed
+- **Dependencies updated**: 11 pinned packages moved to caret ranges (lucide-react, dexie, lodash, @tiptap/*, react, i18next).
+- **marked 17→18**: Major bump with 25 new compatibility smoke tests.
+- **@huggingface/transformers**: Updated 4.0.1→4.2.0 (transitive onnxruntime-web dev).
+- **vite**: Patched 7.3.1→7.3.5; `vite-plugin-pwa` 1.2.0→1.3.0; `vite-plugin-node-polyfills` 0.25.0→0.28.0.
+
+### Added
+- **`.nvmrc`**: Created with Node.js 24.16.0 to pin runtime version.
+- **2 new test files** (RichEditor + renderMarkdown edge cases): total 155 tests across 14 files.
+
+### Deferred
+- Vite 8 (Rolldown migration), ESLint 10 compatibility, `@vitejs/plugin-react` 6 — require major build toolchain changes.
+
+## [LoneWriter v2.0.2] - 2026-06-07
+### Added
+- **Error Boundaries**: New `ErrorBoundary.jsx` component with 8 wrappers (global + per-view + per-panel) for granular crash recovery.
+- **Barrel files**: 10 `index.js` files created across components, services, context, hooks, views, and sub-views — clean, decoupled imports.
+- **Memoization**: `useCallback` on 20+ handlers, `useMemo` on 6 computations, `React.memo` on 10 components — reduced unnecessary re-renders.
+
+### Changed
+- **Monolithic components split**: 6 components reduced below 500 lines — 11 new hooks extracted (`useCloudRestore`, `useProjectIO`, `useCompendiumMerge`, `useCompendiumSave`, `useEditorMpc`, `useOracle`, `useDebate`, `useNovelData`, `useNovelCrud`, `useNovelProgress`, `NexusGraph`). ~2,800→~1,600 total lines.
+
+### Fixed
+- **`data-font` CSS accidentally deleted**: Restored 4 `:root[data-font="..."]` rules in `index.css`.
+- **Invisible theme swatches**: Added `.theme-option__swatch` class with `width: 28px; height: 28px; border-radius: 50%`.
+
+## [LoneWriter v2.0.1] - 2026-06-04
+### Added
+- **ESLint 9 + Prettier**: Flat config, React 19 JSX rules, browser/worker globals. 5 pre-existing code bugs fixed.
+- **Vitest test suite**: 117 tests across 12 files — providers, AI service, export, entity detection, compendium search, markdown rendering.
+- **PropTypes + JSDoc**: Types on 34 components; `AIConfig` type and JSDoc on all public methods in `aiService.js`.
+- **MarkdownRenderer + DOMPurify**: Safe HTML rendering replacing 9 `dangerouslySetInnerHTML` usages.
+- **Generic CompendiumCards**: Unified 4 card types into 1 generic component (332→265 lines).
+
+### Changed
+- **AI Providers refactored**: ~35 if/else conditionals eliminated — replaced with 2 lookup tables (`PROVIDER_COMPLETION`, `PROVIDER_CHAT`). Centralized `getProvider()`, `t(es, en)`, and `requireApiKey()` helpers.
+- **Monolithic CSS fragmented**: ~7,300 lines split into ~2,500 across specialized files. 4 master files broken into 18 focused stylesheets.
+- **Inline styles eliminated**: ~242 occurrences across 26 files migrated to CSS classes. Only 4 dynamic CSS variable cases kept.
+
+### Removed
+- **dangerouslySetInnerHTML**: 9 usages reduced to 1 (inside MarkdownRenderer, sanitized by DOMPurify).
+
 ## [LoneWriter v2.0-timeline] - 2026-05-16
 ### Added
 - **New Links section in Settings**: Centralized access to Official Documentation, Website, and Support (Buy Me a Coffee).

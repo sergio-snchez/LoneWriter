@@ -44,6 +44,7 @@ function OracleTab({ activeScene }) {
   const [compContextUsed, setCompContextUsed] = useState('')
   const [expandedEntries, setExpandedEntries] = useState(new Set())
   const [isEntitiesExpanded, setIsEntitiesExpanded] = useState(true)
+  const [includePrevScene, setIncludePrevScene] = useState(true)
   const historyEndRef = useRef(null)
 
   const getChapterInfo = (chapterId) => {
@@ -114,12 +115,38 @@ function OracleTab({ activeScene }) {
       if (ragResult.status === 'rejected') {
         console.warn('[RAG] Retrieval failed (proceeding without it):', ragResult.reason)
       }
-      const ragContext = fragments.length > 0
-        ? fragments.map((f, i) => `[Fragmento ${i + 1}]: ${f}`).join('\n\n')
-        : ''
+
+      // Include chronologically previous scene for continuity validation
+      let prevSceneText = ''
+      if (includePrevScene && acts?.length > 0 && activeScene?.id != null) {
+        const allScenes = acts.flatMap(act =>
+          act.chapters?.flatMap(ch =>
+            ch.scenes || []
+          ) || []
+        )
+        const currentIdx = allScenes.findIndex(s => s.id === activeScene.id)
+        if (currentIdx > 0) {
+          const prev = allScenes[currentIdx - 1]
+          if (prev?.content) {
+            const plain = prev.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+            if (plain.length >= 10) prevSceneText = plain
+          }
+        }
+      }
 
       const oraclePrompt = t('oracle_prompt')
       const isSpanish = i18n.language === 'es'
+
+      const tagLabel = isSpanish ? 'Fragmento' : 'Fragment'
+      const prevSceneLabel = isSpanish ? '--- ESCENA INMEDIATAMENTE ANTERIOR ---' : '--- IMMEDIATELY PRECEDING SCENE ---'
+      let ragContext = ''
+      if (prevSceneText) {
+        ragContext += `${prevSceneLabel}\n${prevSceneText}`
+      }
+      if (fragments.length > 0) {
+        if (ragContext) ragContext += '\n\n---\n\n'
+        ragContext += fragments.map((f, i) => `[${tagLabel} ${i + 1}]: ${f}`).join('\n\n')
+      }
 
       const oracleCompendium = isSpanish ? '--- TEXTO DEL COMPENDIO (FUENTE DE VERDAD ABSOLUTA) ---' : '--- COMPENDIUM TEXT (ABSOLUTE SOURCE OF TRUTH) ---';
       const oraclePrevCtx = isSpanish ? '--- CONTEXTO ANTERIOR DEL MANUSCRITO (SOLO COMO REFERENCIA, NUNCA DESMIENTE AL COMPENDIO) ---' : '--- PREVIOUS MANUSCRIPT CONTEXT (ONLY AS REFERENCE, NEVER DISPUTE THE COMPENDIUM) ---';
@@ -247,6 +274,17 @@ ${oracleAnswer}`
           )}
         </div>
       )}
+
+      <div className="rewrite-context-toggle">
+        <label className="context-toggle-label">
+          <input
+            type="checkbox"
+            checked={includePrevScene}
+            onChange={(e) => setIncludePrevScene(e.target.checked)}
+          />
+          <span>{t('oraculo.include_prev_scene')}</span>
+        </label>
+      </div>
 
       {activeScene && (
         <span className="oracle-tab__scene-tag">

@@ -4,4 +4,4 @@
  * The fallback string is only used if the build define is unavailable (e.g. in tests).
  */
  
-export const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '2.0.0-timeline';
+export const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '2.0.4';

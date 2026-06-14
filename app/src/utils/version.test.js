@@ -14,6 +14,6 @@ describe('APP_VERSION', () => {
 
   it('should be the project version', () => {
     // In tests the fallback is used since __APP_VERSION__ is a Vite define
-    expect(APP_VERSION).toBe('2.0.0-timeline');
+    expect(APP_VERSION).toBe('2.0.4');
   });
 });

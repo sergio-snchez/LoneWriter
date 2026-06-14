@@ -6,7 +6,7 @@
 
 </div>
 
-# LoneWriter v2.0-timeline 🖋️
+# LoneWriter v2.0.4 🖋️
 
 > **Tu "Sistema Operativo Narrativo": La IA que te escucha, organiza tu caos y vigila la coherencia de tu mundo mientras tú solo te preocupas de escribir.**
 >
@@ -127,7 +127,7 @@ Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
 
 ---
 
-*LoneWriter v2.0-timeline - Tu espacio personal para dar vida a grandes historias.*
+*LoneWriter v2.0.4 - Tu espacio personal para dar vida a grandes historias.*
 
 ---
 
