@@ -23,12 +23,12 @@ self.addEventListener('message', async (event) => {
     try {
         const { id, text } = event.data;
         
-        let extractor = await PipelineSingleton.getInstance(x => {
+        const extractor = await PipelineSingleton.getInstance(x => {
             self.postMessage({ status: 'progress', data: x });
         });
         
         // Output is a Tensor (pool over tokens)
-        let output = await extractor(text, { pooling: 'mean', normalize: true });
+        const output = await extractor(text, { pooling: 'mean', normalize: true });
         
         self.postMessage({
             id,

@@ -1,0 +1,15 @@
+{
+  "name": "LoneWriter",
+  "short_name": "LoneWriter",
+  "description": "The Intelligent App for Writers — Compose, structure, and refine your masterwork in a distraction-free, privacy-first environment enhanced by local AI.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1710",
+  "theme_color": "#d4a853",
+  "orientation": "any",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "categories": ["productivity", "writing", "books"]
+}

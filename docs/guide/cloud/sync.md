@@ -1,3 +1,8 @@
+---
+title: Google Drive Synchronization
+description: Enable Google Drive sync for automatic backups and cross-device access while keeping your data in your own personal storage.
+---
+
 # Google Drive Synchronization
 
 Although LoneWriter prioritizes local storage to ensure privacy, cloud synchronization is an essential tool to ensure the availability of your projects across different devices and to have automatic backups.

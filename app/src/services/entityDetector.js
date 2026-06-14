@@ -29,7 +29,7 @@ function normalizeText(text) {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[.,;:!¡?¿"'"()\[\]{}—–\-]/g, ' ')
+    .replace(/[.,;:!¡?¿"'"()\]{}—–-]/g, ' ')
     .trim();
 }
 
@@ -168,7 +168,7 @@ export function createDebouncedEntityDetector(callback, delay = 3000) {
       lastResolve = null;
     }
 
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       lastResolve = resolve;
       lastReject = reject;
 
@@ -234,7 +234,8 @@ export function parseOracleResponse(text) {
         message: parsed.message || text,
       };
     }
-  } catch (e) {
+  } catch {
+    // Fall through to keyword-based detection below
   }
 
   if (!text) {
@@ -273,7 +274,7 @@ function jaroWinklerSimilarity(s1, s2) {
   
   if (len1 === 0 || len2 === 0) return 0;
   
-  const matchWindow = Math.floor(Math.max(len1, len2) / 2) - 1;
+  let matchWindow = Math.floor(Math.max(len1, len2) / 2) - 1;
   if (matchWindow < 0) matchWindow = 0;
   
   const matches1 = new Array(len1).fill(false);

@@ -1,3 +1,8 @@
+---
+title: The Compendium
+description: Build your world's knowledge base with characters, locations, objects, and lore. AI autocomplete, context management, and cross-referencing.
+---
+
 # The Compendium
 
 The Compendium constitutes the knowledge base of your world. It is an intelligent database that LoneWriter uses to maintain narrative consistency and provide accurate information to **[The Oracle](../analysis/oracle.md)**.

@@ -1,3 +1,8 @@
+---
+title: Exporting Your Work
+description: Export your LoneWriter projects in .lwrt (encrypted) or .docx format. Full backups of your manuscript, Compendium, and Nexus data.
+---
+
 # Exporting Your Work
 
 Author sovereignty implies the ability to move your work to any other platform without restrictions. LoneWriter facilitates the export of your texts and lore data in standard and open formats.
@@ -8,7 +13,7 @@ Author sovereignty implies the ability to move your work to any other platform w
 ### Projects and Drafts
 LoneWriter uses optimized formats to ensure that no information is lost during the process:
 
-- **Project File (.lwrt)**: This is LoneWriter's native format. It contains a full export of the local database: manuscript, **[Compendium](./worldbuilding/compendium.md)**, Nexus **[relationships and links](./worldbuilding/entities.md)**, AI settings, and search vectors. This file can be compressed and optionally protected with a password (AES-GCM encryption).
+- **Project File (.lwrt)**: This is LoneWriter's native format. It contains a full export of the local database: manuscript, **[Compendium](../worldbuilding/compendium.md)**, Nexus **[relationships and links](../worldbuilding/entities.md)**, AI settings, and search vectors. This file can be compressed and optionally protected with a password (AES-GCM encryption).
 - **Manuscript (.docx)**: Exports the full work in Microsoft Word format, organized by Acts, Chapters, and Scenes. Ideal for professional typesetting or sharing with editors.
 
 
@@ -23,5 +28,4 @@ LoneWriter uses optimized formats to ensure that no information is lost during t
 ## Manual Backups
 It is recommended to perform a full export in JSON format after important work sessions. This file contains the entire structure of your universe and can be imported back into LoneWriter at any time, even on a clean browser installation.
 
-> [!TIP]
-> If you plan to typeset your novel for publication, exporting in Markdown is the most efficient option for importing text into professional typesetting tools or advanced word processors.
+

@@ -1,3 +1,8 @@
+---
+title: Relaciones y Entidades
+description: Define relaciones bidireccionales entre entidades. Vínculos jerárquicos, geográficos, emocionales y de propiedad visualizados en el Nexus.
+---
+
 # Relaciones y Entidades
 
 La profundidad de un universo narrativo reside en los vínculos que conectan a sus elementos. LoneWriter permite modelar estas conexiones de forma granular, transformando una lista de notas en un ecosistema vivo.

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { RefreshCw } from 'lucide-react';
+import PropTypes from 'prop-types';
 import './PwaUpdateModal.css';
 
 const PwaUpdateModal = ({ isOpen, onUpdate }) => {
@@ -21,14 +22,19 @@ const PwaUpdateModal = ({ isOpen, onUpdate }) => {
         <div className="pwa-update-modal__body">
           <p>{t('actualizacion.mensaje')}</p>
         </div>
-        <div className="pwa-update-modal__footer" style={{ justifyContent: 'center' }}>
-          <button className="btn btn-primary" onClick={handleUpdate} style={{ width: '100%' }}>
+        <div className="pwa-update-modal__footer pwa-update-modal__footer--centered">
+          <button className="btn btn-primary pwa-update-modal__action-btn" onClick={handleUpdate}>
             {t('actualizacion.boton_aceptar')}
           </button>
         </div>
       </div>
     </div>
   );
+};
+
+PwaUpdateModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onUpdate: PropTypes.func,
 };
 
 export default PwaUpdateModal;

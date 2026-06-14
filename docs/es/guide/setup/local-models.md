@@ -1,3 +1,8 @@
+---
+title: Modelos Locales
+description: Ejecuta modelos de IA localmente con Ollama o LM Studio para máxima privacidad. Configuración paso a paso para asistencia IA sin conexión.
+---
+
 # Modelos Locales
 
 Una de las características más potentes de LoneWriter es su capacidad para funcionar de forma privada utilizando modelos que se ejecutan en su propio ordenador.

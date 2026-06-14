@@ -6,6 +6,69 @@
 
 </div>
 
+## [LoneWriter v2.0.4] - 2026-06-14
+### Añadido
+- **Interruptor de continuidad del Oráculo**: Nueva casilla "Incluir escena anterior como contexto de continuidad" debajo de las entidades detectadas, permitiendo al usuario controlar el consumo de tokens.
+- **Inyección de predecesor cronológico**: El Oráculo ahora recibe siempre el texto de la escena inmediatamente anterior (no solo fragmentos semánticos de RAG), detectando inconsistencias de atributos (material, color, tamaño) incluso sin entradas en el Compendio.
+
+### Cambiado
+- **Prompt del Oráculo relajado**: La Regla de Oro ahora se aplaza al Contexto Previo cuando los datos del Compendio son escasos; se eliminó el umbral "completamente opuesta" — cualquier cambio de atributo es reportable.
+- **Prompt del Oráculo — instrucción explícita de atributos**: Añadida directiva para vigilar atributos físicos (material, color, tamaño, forma, posesión, ubicación, estado).
+- **Contexto de reescritura duplicado**: Límite de palabras de `extractPreviousContext` aumentado de 120 a 240 (~1.000 tokens) para un contexto de reescritura más rico.
+
+### Corregido
+- **Lógica de restauración duplicada**: 3 bloques idénticos extraídos en una función `restoreTables()` compartida.
+- **Inconsistencia de exportaciones**: 5 componentes migrados de exportación nombrada a `export default`.
+- **Eliminación de console.log**: 6 logs de depuración eliminados en MPC, RewriteTab y Nexus.
+- **Anidamiento JSX profundo**: 4 subcomponentes extraídos (ModalActions, OracleEntry, DebateSessionMenu, formularios por categoría).
+- **Prop drilling reducido**: EditorToolbar: 15→3 props; CompendiumPanel reestructurado.
+
+### Eliminado
+- `import React` innecesario de `Nexus.jsx` (transformación JSX automática).
+
+## [LoneWriter v2.0.3] - 2026-06-10
+### Cambiado
+- **Dependencias actualizadas**: 11 paquetes fijados migrados a rangos caret (lucide-react, dexie, lodash, @tiptap/*, react, i18next).
+- **marked 17→18**: Salto mayor con 25 nuevas pruebas de compatibilidad.
+- **@huggingface/transformers**: Actualizado 4.0.1→4.2.0 (onnxruntime-web dev transitivo).
+- **vite**: Parche 7.3.1→7.3.5; `vite-plugin-pwa` 1.2.0→1.3.0; `vite-plugin-node-polyfills` 0.25.0→0.28.0.
+
+### Añadido
+- **`.nvmrc`**: Creado con Node.js 24.16.0 para fijar la versión del runtime.
+- **2 nuevos archivos de prueba** (casos extremos de RichEditor + renderMarkdown): total 155 pruebas en 14 archivos.
+
+### Diferido
+- Vite 8 (migración a Rolldown), compatibilidad con ESLint 10, `@vitejs/plugin-react` 6 — requieren cambios mayores en la cadena de herramientas.
+
+## [LoneWriter v2.0.2] - 2026-06-07
+### Añadido
+- **Límites de Error**: Nuevo componente `ErrorBoundary.jsx` con 8 envoltorios (global + por vista + por panel) para recuperación granular ante caídas.
+- **Archivos Barrel**: 10 archivos `index.js` creados en componentes, servicios, contexto, hooks, vistas y subvistas — importaciones limpias y desacopladas.
+- **Memoización**: `useCallback` en 20+ manejadores, `useMemo` en 6 cómputos, `React.memo` en 10 componentes — reducción de re-renderizados innecesarios.
+
+### Cambiado
+- **Componentes monolíticos divididos**: 6 componentes reducidos por debajo de 500 líneas — 11 nuevos hooks extraídos (`useCloudRestore`, `useProjectIO`, `useCompendiumMerge`, `useCompendiumSave`, `useEditorMpc`, `useOracle`, `useDebate`, `useNovelData`, `useNovelCrud`, `useNovelProgress`, `NexusGraph`). ~2.800→~1.600 líneas totales.
+
+### Corregido
+- **CSS `data-font` eliminado accidentalmente**: Restauradas 4 reglas `:root[data-font="..."]` en `index.css`.
+- **Muestras de tema invisibles**: Añadida clase `.theme-option__swatch` con `width: 28px; height: 28px; border-radius: 50%`.
+
+## [LoneWriter v2.0.1] - 2026-06-04
+### Añadido
+- **ESLint 9 + Prettier**: Configuración plana, reglas JSX React 19, globales de navegador/worker. 5 errores preexistentes corregidos.
+- **Suite de pruebas Vitest**: 117 pruebas en 12 archivos — proveedores, servicio de IA, exportación, detección de entidades, búsqueda en compendio, renderizado Markdown.
+- **PropTypes + JSDoc**: Tipos en 34 componentes; tipo `AIConfig` y JSDoc en todos los métodos públicos de `aiService.js`.
+- **MarkdownRenderer + DOMPurify**: Renderizado HTML seguro reemplazando 9 usos de `dangerouslySetInnerHTML`.
+- **CompendiumCards genéricas**: Unificados 4 tipos de tarjeta en 1 componente genérico (332→265 líneas).
+
+### Cambiado
+- **Proveedores de IA refactorizados**: ~35 condicionales if/else eliminados — reemplazados con 2 tablas de búsqueda (`PROVIDER_COMPLETION`, `PROVIDER_CHAT`). Centralizados `getProvider()`, `t(es, en)` y `requireApiKey()`.
+- **CSS monolítico fragmentado**: ~7.300 líneas divididas en ~2.500 en archivos especializados. 4 archivos maestros divididos en 18 hojas de estilo enfocadas.
+- **Estilos en línea eliminados**: ~242 ocurrencias en 26 archivos migradas a clases CSS. Solo se mantuvieron 4 casos dinámicos de variables CSS.
+
+### Eliminado
+- **dangerouslySetInnerHTML**: 9 usos reducidos a 1 (dentro de MarkdownRenderer, sanitizado por DOMPurify).
+
 ## [LoneWriter v2.0-timeline] - 2026-05-16
 ### Añadido
 - **Nueva sección de Enlaces en Configuración**: Acceso centralizado a la Documentación Oficial, Página Web y Soporte (Buy Me a Coffee).

@@ -4,21 +4,29 @@
  */
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 import i18n from '../../i18n/i18n'
 import {
   Trash2, Check, AlertTriangle, Eye, CheckCheck, Loader2, ChevronDown, Copy, X, XCircle
 } from 'lucide-react'
-import { useAI } from '../../context/AIContext'
-import { useNovel } from '../../context/NovelContext'
-import { useModal } from '../../context/ModalContext'
-import { AIService } from '../../services/aiService'
-import { fetchDetectedEntityData } from '../../services/compendiumSearch'
-import { retrieveRelevantFragments } from '../../services/ragService'
-import { Tooltip } from '../Tooltip'
-import { renderMarkdown } from '../../utils/renderMarkdown'
+import './OracleTab.css'
+import './Markdown.css'
+import { useAI, useNovel, useModal } from '../../context'
+import { AIService, fetchDetectedEntityData, retrieveRelevantFragments } from '../../services'
+import { MarkdownRenderer, Tooltip } from '../'
 import { normalizeTextForDisplay } from './aiPanelHelpers'
 
 function OracleTab({ activeScene }) {
+  OracleTab.propTypes = {
+    activeScene: PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      title: PropTypes.string,
+      content: PropTypes.string,
+      pov: PropTypes.string,
+      chapterId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
+  };
+
   const { t } = useTranslation('ai')
   const {
     provider, apiKey, localBaseUrl, currentModel,
@@ -36,6 +44,7 @@ function OracleTab({ activeScene }) {
   const [compContextUsed, setCompContextUsed] = useState('')
   const [expandedEntries, setExpandedEntries] = useState(new Set())
   const [isEntitiesExpanded, setIsEntitiesExpanded] = useState(true)
+  const [includePrevScene, setIncludePrevScene] = useState(true)
   const historyEndRef = useRef(null)
 
   const getChapterInfo = (chapterId) => {
@@ -106,12 +115,38 @@ function OracleTab({ activeScene }) {
       if (ragResult.status === 'rejected') {
         console.warn('[RAG] Retrieval failed (proceeding without it):', ragResult.reason)
       }
-      const ragContext = fragments.length > 0
-        ? fragments.map((f, i) => `[Fragmento ${i + 1}]: ${f}`).join('\n\n')
-        : ''
+
+      // Include chronologically previous scene for continuity validation
+      let prevSceneText = ''
+      if (includePrevScene && acts?.length > 0 && activeScene?.id != null) {
+        const allScenes = acts.flatMap(act =>
+          act.chapters?.flatMap(ch =>
+            ch.scenes || []
+          ) || []
+        )
+        const currentIdx = allScenes.findIndex(s => s.id === activeScene.id)
+        if (currentIdx > 0) {
+          const prev = allScenes[currentIdx - 1]
+          if (prev?.content) {
+            const plain = prev.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+            if (plain.length >= 10) prevSceneText = plain
+          }
+        }
+      }
 
       const oraclePrompt = t('oracle_prompt')
       const isSpanish = i18n.language === 'es'
+
+      const tagLabel = isSpanish ? 'Fragmento' : 'Fragment'
+      const prevSceneLabel = isSpanish ? '--- ESCENA INMEDIATAMENTE ANTERIOR ---' : '--- IMMEDIATELY PRECEDING SCENE ---'
+      let ragContext = ''
+      if (prevSceneText) {
+        ragContext += `${prevSceneLabel}\n${prevSceneText}`
+      }
+      if (fragments.length > 0) {
+        if (ragContext) ragContext += '\n\n---\n\n'
+        ragContext += fragments.map((f, i) => `[${tagLabel} ${i + 1}]: ${f}`).join('\n\n')
+      }
 
       const oracleCompendium = isSpanish ? '--- TEXTO DEL COMPENDIO (FUENTE DE VERDAD ABSOLUTA) ---' : '--- COMPENDIUM TEXT (ABSOLUTE SOURCE OF TRUTH) ---';
       const oraclePrevCtx = isSpanish ? '--- CONTEXTO ANTERIOR DEL MANUSCRITO (SOLO COMO REFERENCIA, NUNCA DESMIENTE AL COMPENDIO) ---' : '--- PREVIOUS MANUSCRIPT CONTEXT (ONLY AS REFERENCE, NEVER DISPUTE THE COMPENDIUM) ---';
@@ -215,14 +250,13 @@ ${oracleAnswer}`
           <button
             className="oracle-coreference-section__header"
             onClick={() => setIsEntitiesExpanded(!isEntitiesExpanded)}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
           >
             <span className="oracle-coreference-section__label">{t('oraculo.coincidencias')}</span>
-            <ChevronDown size={14} style={{ color: 'var(--text-muted)', transform: isEntitiesExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+            <ChevronDown size={14} className={`oracle-expand-icon ${isEntitiesExpanded ? 'oracle-expand-icon--open' : ''}`} />
           </button>
 
           {isEntitiesExpanded && (
-            <div className="oracle-coreference-chips" style={{ marginTop: '2px' }}>
+            <div className="oracle-coreference-chips">
               {oracleStatus.detectedEntities.filter(e => e?.name).map((e) => (
                 <Tooltip key={e.name} content={
                   <div>
@@ -241,6 +275,17 @@ ${oracleAnswer}`
         </div>
       )}
 
+      <div className="rewrite-context-toggle">
+        <label className="context-toggle-label">
+          <input
+            type="checkbox"
+            checked={includePrevScene}
+            onChange={(e) => setIncludePrevScene(e.target.checked)}
+          />
+          <span>{t('oraculo.include_prev_scene')}</span>
+        </label>
+      </div>
+
       {activeScene && (
         <span className="oracle-tab__scene-tag">
           <Eye size={11} /> {t('oraculo.escena', { title: activeScene.title })}
@@ -257,67 +302,21 @@ ${oracleAnswer}`
 
       {/* History */}
       <div className="oracle-tab__history">
-        {oracleHistory.map(entry => {
-          const isExpanded = expandedEntries.has(entry.id)
-          const isChecked = checkedEntries.has(entry.id)
-          const cleanText = stripJsonBlock(entry.text)
-          return (
-            <div key={entry.id} className={`oracle-tab__entry ${isChecked ? 'oracle-tab__entry--checked' : ''} ${entry.hasContradiction ? 'oracle-tab__entry--contradiction' : ''}`}>
-              <div className="oracle-tab__entry-header">
-                <div className="oracle-tab__entry-left">
-                  {entry.hasContradiction ? (
-                    <Tooltip content={isChecked ? t('oraculo.marcar_pendiente') : t('oraculo.marcar_corregido')}>
-                      <button className={`oracle-tab__check-btn ${!isChecked ? 'oracle-tab__check-btn--error' : ''}`} onClick={() => toggleChecked(entry.id)}>
-                        {isChecked ? <Check size={14} /> : <X size={14} />}
-                      </button>
-                    </Tooltip>
-                  ) : (
-                    <button className="oracle-tab__check-btn" style={{ cursor: 'default', opacity: 0.8 }} disabled>
-                      <CheckCheck size={14} />
-                    </button>
-                  )}
-                  <div className="oracle-tab__entry-info">
-                    <div className="oracle-tab__entry-label">
-                      <Eye size={12} />
-                      {t('oraculo.titulo')}
-                    </div>
-                    {(entry.chapterNumber || entry.sceneTitle) && (
-                      <span className="oracle-tab__entry-location">
-                        {entry.chapterNumber ? `Cap. ${entry.chapterNumber}` : t('oraculo.sin_cap')} / {entry.sceneTitle || t('oraculo.sin_escena')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="oracle-tab__entry-meta">
-                  <span className="oracle-tab__entry-time">{entry.time}</span>
-                  <Tooltip content={t('oraculo.copiar')}>
-                    <button className="oracle-tab__action-btn" onClick={() => handleCopy(entry.id)}>
-                      {copiedId === entry.id ? <Check size={12} /> : <Copy size={12} />}
-                    </button>
-                  </Tooltip>
-                  <Tooltip content={t('oraculo.eliminar')}>
-                    <button className="oracle-tab__action-btn oracle-tab__action-btn--delete" onClick={() => handleDeleteEntry(entry.id)}>
-                      <Trash2 size={12} />
-                    </button>
-                  </Tooltip>
-                </div>
-              </div>
-              <div className={`oracle-tab__entry-text ${isExpanded ? 'oracle-tab__entry-text--expanded' : 'oracle-tab__entry-text--clamped'}`} dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanText) }}>
-              </div>
-              {cleanText.length > 200 && (
-                <button className="oracle-tab__read-more" onClick={() => toggleExpanded(entry.id)}>
-                  {isExpanded ? t('oraculo.mostrar_menos') : t('oraculo.leer_mas')}
-                </button>
-              )}
-              {entry.compendiumUsed && isExpanded && (
-                <details className="oracle-tab__entry-context-details">
-                  <summary>{t('oraculo.contexto_compendio')}</summary>
-                  <pre className="oracle-tab__context-pre">{entry.compendiumUsed}</pre>
-                </details>
-              )}
-            </div>
-          )
-        })}
+        {oracleHistory.map(entry => (
+          <OracleEntry
+            key={entry.id}
+            entry={entry}
+            isExpanded={expandedEntries.has(entry.id)}
+            isChecked={checkedEntries.has(entry.id)}
+            copiedId={copiedId}
+            stripJsonBlock={stripJsonBlock}
+            onToggleChecked={toggleChecked}
+            onCopy={handleCopy}
+            onDelete={handleDeleteEntry}
+            onToggleExpanded={toggleExpanded}
+            t={t}
+          />
+        ))}
 
         {/* Loading */}
         {isChecking && (
@@ -386,6 +385,79 @@ ${oracleAnswer}`
       </div>
     </div>
   )
+}
+
+/* ---- Sub-component: a single oracle history entry ---- */
+function OracleEntry({ entry, isExpanded, isChecked, copiedId, stripJsonBlock, onToggleChecked, onCopy, onDelete, onToggleExpanded, t }) {
+  const cleanText = stripJsonBlock(entry.text)
+  return (
+    <div className={`oracle-tab__entry ${isChecked ? 'oracle-tab__entry--checked' : ''} ${entry.hasContradiction ? 'oracle-tab__entry--contradiction' : ''}`}>
+      <div className="oracle-tab__entry-header">
+        <div className="oracle-tab__entry-left">
+          {entry.hasContradiction ? (
+            <Tooltip content={isChecked ? t('oraculo.marcar_pendiente') : t('oraculo.marcar_corregido')}>
+              <button className={`oracle-tab__check-btn ${!isChecked ? 'oracle-tab__check-btn--error' : ''}`} onClick={() => onToggleChecked(entry.id)}>
+                {isChecked ? <Check size={14} /> : <X size={14} />}
+              </button>
+            </Tooltip>
+          ) : (
+            <button className="oracle-tab__check-btn" disabled>
+              <CheckCheck size={14} />
+            </button>
+          )}
+          <div className="oracle-tab__entry-info">
+            <div className="oracle-tab__entry-label">
+              <Eye size={12} />
+              {t('oraculo.titulo')}
+            </div>
+            {(entry.chapterNumber || entry.sceneTitle) && (
+              <span className="oracle-tab__entry-location">
+                {entry.chapterNumber ? `Cap. ${entry.chapterNumber}` : t('oraculo.sin_cap')} / {entry.sceneTitle || t('oraculo.sin_escena')}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="oracle-tab__entry-meta">
+          <span className="oracle-tab__entry-time">{entry.time}</span>
+          <Tooltip content={t('oraculo.copiar')}>
+            <button className="oracle-tab__action-btn" onClick={() => onCopy(entry.id)}>
+              {copiedId === entry.id ? <Check size={12} /> : <Copy size={12} />}
+            </button>
+          </Tooltip>
+          <Tooltip content={t('oraculo.eliminar')}>
+            <button className="oracle-tab__action-btn oracle-tab__action-btn--delete" onClick={() => onDelete(entry.id)}>
+              <Trash2 size={12} />
+            </button>
+          </Tooltip>
+        </div>
+      </div>
+      <MarkdownRenderer className="oracle-tab__entry-text" content={cleanText} clamped={!isExpanded} />
+      {cleanText.length > 200 && (
+        <button className="oracle-tab__read-more" onClick={() => onToggleExpanded(entry.id)}>
+          {isExpanded ? t('oraculo.mostrar_menos') : t('oraculo.leer_mas')}
+        </button>
+      )}
+      {entry.compendiumUsed && isExpanded && (
+        <details className="oracle-tab__entry-context-details">
+          <summary>{t('oraculo.contexto_compendio')}</summary>
+          <pre className="oracle-tab__context-pre">{entry.compendiumUsed}</pre>
+        </details>
+      )}
+    </div>
+  )
+}
+
+OracleEntry.propTypes = {
+  entry: PropTypes.object.isRequired,
+  isExpanded: PropTypes.bool.isRequired,
+  isChecked: PropTypes.bool.isRequired,
+  copiedId: PropTypes.any,
+  stripJsonBlock: PropTypes.func.isRequired,
+  onToggleChecked: PropTypes.func.isRequired,
+  onCopy: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onToggleExpanded: PropTypes.func.isRequired,
+  t: PropTypes.func.isRequired,
 }
 
 export default OracleTab

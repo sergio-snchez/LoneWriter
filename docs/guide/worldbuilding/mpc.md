@@ -1,3 +1,8 @@
+---
+title: The MPC (Compendium Proposal Monitor)
+description: Automatically detect new characters, locations, and objects while you write. Review, accept, or ignore entity proposals with one click.
+---
+
 # The MPC (Compendium Proposal Monitor)
 
 The Compendium Proposal Monitor (MPC) is an assistance tool that operates during the writing process. Its function is to automatically identify mentions of characters, places, or objects in the draft to suggest their incorporation into the **[Compendium](./compendium.md)**.

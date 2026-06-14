@@ -8,10 +8,11 @@ const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
 
 /**
  * fetch() wrapper with exponential backoff retry.
- * @param {string} url
- * @param {RequestInit} options
- * @param {number} maxRetries - default 3
- * @returns {Promise<Response>}
+ * @param {string} url - The URL to fetch
+ * @param {RequestInit} options - Fetch options (method, headers, body, etc.)
+ * @param {number} [maxRetries=3] - Maximum number of retry attempts
+ * @returns {Promise<Response>} The fetch Response object
+ * @throws {Error} If all retries fail with a non-retryable error
  */
 export async function fetchWithRetry(url, options, maxRetries = 3) {
   let lastError;

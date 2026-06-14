@@ -1,3 +1,8 @@
+---
+title: Debate Forum
+description: Invoke multiple AI agents to discuss your scenes from different perspectives. Customize participants and manage debate sessions.
+---
+
 # Debate Forum
 
 Have you ever wished you could discuss a plot twist or character consistency with a team of professionals? LoneWriter's Debate Forum allows you to invoke different AI agents to analyze your work from multiple perspectives.

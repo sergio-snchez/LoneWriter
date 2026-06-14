@@ -7,7 +7,7 @@
  * @param {string} deps.provider - active AI provider key
  * @param {string} deps.currentModel - active model identifier
  */
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 
 export function useAIUsage({ db, provider, currentModel }) {
   // ── State ──────────────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ export function useAIUsage({ db, provider, currentModel }) {
     const today = new Date().toISOString().split('T')[0]
     try {
       await db.transaction('rw', db.aiUsage, async () => {
-        let entry = await db.aiUsage
+        const entry = await db.aiUsage
           .where('[date+provider+model]')
           .equals([today, provider, currentModel])
           .first()
@@ -62,5 +62,5 @@ export function useAIUsage({ db, provider, currentModel }) {
   }, [provider, currentModel, refreshUsage])
 
   // ── Exports ────────────────────────────────────────────────────────────────
-  return { usageStats, logAIUsage, refreshUsage }
+  return useMemo(() => ({ usageStats, logAIUsage, refreshUsage }), [usageStats, logAIUsage, refreshUsage])
 }

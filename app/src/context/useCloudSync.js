@@ -5,8 +5,8 @@
  * @param {object} deps
  * @param {object} deps.db - Dexie database instance (for full export)
  */
-import { useState, useRef, useEffect } from 'react'
-import { GoogleDriveService } from '../services/googleDriveService'
+import { useState, useRef, useEffect, useMemo } from 'react'
+import { GoogleDriveService } from '../services'
 
 export function useCloudSync({ db }) {
   // ── State ──────────────────────────────────────────────────────────────────
@@ -124,7 +124,7 @@ export function useCloudSync({ db }) {
   }, [pendingSync, isCloudSyncEnabled])
 
   // ── Exports ────────────────────────────────────────────────────────────────
-  return {
+  return useMemo(() => ({
     isCloudSyncEnabled,
     cloudSyncStatus,
     lastCloudSync,
@@ -133,5 +133,8 @@ export function useCloudSync({ db }) {
     toggleCloudSync,
     performCloudSync,
     checkCloudBackupStatus,
-  }
+  }), [
+    isCloudSyncEnabled, cloudSyncStatus, lastCloudSync, pendingSync,
+    setPendingSync, toggleCloudSync, performCloudSync, checkCloudBackupStatus,
+  ])
 }

@@ -1,8 +1,9 @@
 import { BookOpen, BookMarked, FolderOpen, PenLine, ChevronLeft, ChevronRight, Network } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useNovel } from '../context/NovelContext'
-import { Tooltip } from './Tooltip'
-import { APP_VERSION } from '../utils/version'
+import PropTypes from 'prop-types'
+import { useNovel } from '../context'
+import { Tooltip } from './'
+import { APP_VERSION } from '../utils'
 import './Sidebar.css'
 
 export default function Sidebar({ active, onNavigate, collapsed, onToggle }) {
@@ -103,4 +104,11 @@ export default function Sidebar({ active, onNavigate, collapsed, onToggle }) {
       )}
     </aside>
   )
+}
+
+Sidebar.propTypes = {
+  active: PropTypes.string.isRequired,
+  onNavigate: PropTypes.func.isRequired,
+  collapsed: PropTypes.bool.isRequired,
+  onToggle: PropTypes.func.isRequired,
 }

@@ -11,9 +11,8 @@
  * @param {Function} deps.addCompendiumEntry
  * @param {Function} deps.deleteCompendiumEntry
  */
-import { useState } from 'react'
-import { findSimilarEntities } from '../services/entityDetector'
-import { AIService } from '../services/aiService'
+import { useState, useMemo } from 'react'
+import { findSimilarEntities, AIService } from '../services'
 
 export function useMergeEngine({ characters, locations, objects, lore, addCompendiumEntry, deleteCompendiumEntry }) {
   // ── State ──────────────────────────────────────────────────────────────────
@@ -163,7 +162,7 @@ export function useMergeEngine({ characters, locations, objects, lore, addCompen
   }
 
   // ── Exports ────────────────────────────────────────────────────────────────
-  return {
+  return useMemo(() => ({
     mergeGroups, setMergeGroups,
     selectedMerge, setSelectedMerge,
     mergeResult, setMergeResult,
@@ -179,5 +178,14 @@ export function useMergeEngine({ characters, locations, objects, lore, addCompen
     confirmMerge,
     skipMerge,
     closeMergeOverlay,
-  }
+  }), [
+    mergeGroups, selectedMerge, mergeResult,
+    isMerging, mergingEntitiesIds, isScanningMerge,
+    selectedMergeIdx, showMergeOverlay, isMergeOverlayClosing, mergeSection,
+    setMergeGroups, setSelectedMerge, setMergeResult,
+    setIsMerging, setMergingEntitiesIds, setIsScanningMerge,
+    setSelectedMergeIdx, setShowMergeOverlay, setIsMergeOverlayClosing, setMergeSection,
+    scanForMergeDuplicates, handleMergeSelection,
+    confirmMerge, skipMerge, closeMergeOverlay,
+  ])
 }

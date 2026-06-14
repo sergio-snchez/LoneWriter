@@ -1,8 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AIService } from '../../services/aiService'
-import { createDebouncedSearch } from '../../services/compendiumSearch'
-import { retrieveRelevantFragments } from '../../services/ragService'
+import { AIService, createDebouncedSearch, retrieveRelevantFragments } from '../../services'
 
 export function useDebateOrchestrator({ activeScene, debateAgents, debateHistory, activeSessionId, activeSessionTitle, addDebateMessage, renameDebateSession, activeNovel, acts, resources, provider, apiKey, currentModel, localBaseUrl, logAIUsage }) {
   const { t } = useTranslation('ai')

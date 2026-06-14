@@ -1,3 +1,8 @@
+---
+title: Model Selection Guide
+description: Choose the right AI model for your writing tasks — cloud vs local. Recommendations for Oracle, drafting, and MPC by use case.
+---
+
 # Model Selection Guide
 
 The choice of language model is decisive for the writing experience. LoneWriter allows you to switch between different engines according to your needs for power, cost, or privacy.
