@@ -64,7 +64,7 @@ export async function callGeminiChat(systemPrompt, messages, apiKey, model) {
     parts: [{ text: m.content }],
   }));
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithRetry(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

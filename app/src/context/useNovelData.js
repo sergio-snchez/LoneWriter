@@ -43,6 +43,7 @@ export function useNovelData() {
     setLore([])
     setResources([])
     setNexusLinks([])
+    localStorage.removeItem('activeNovelId')
   }, [refreshAllNovels])
 
   const syncNovelWordCount = useCallback(async (novelId) => {

@@ -7,7 +7,7 @@ import {
 import { useNovel, useAI, useModal } from '../context';
 import './MergeOverlay.css';
 
-export function MergeOverlay() {
+export default function MergeOverlay() {
   const { t } = useTranslation('compendium');
   const { provider, apiKey, currentModel, localBaseUrl, logAIUsage } = useAI();
   const { openModal } = useModal();

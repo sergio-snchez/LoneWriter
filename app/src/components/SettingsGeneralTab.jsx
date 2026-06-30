@@ -1,12 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
-import { Info, RefreshCw, AlertTriangle, ExternalLink, Globe, Heart } from 'lucide-react'
+import { Info, ExternalLink, Globe, Heart } from 'lucide-react'
+import { APP_VERSION } from '../utils/version'
 
-export function SettingsGeneralTab({ onClearCache }) {
-  SettingsGeneralTab.propTypes = {
-    onClearCache: PropTypes.func.isRequired,
-  };
-
+export default function SettingsGeneralTab({ onClearCache }) {
   const { t } = useTranslation('settings')
   const { t: tc } = useTranslation('common')
 
@@ -18,7 +15,7 @@ export function SettingsGeneralTab({ onClearCache }) {
         </span>
         <div className="settings-info-grid">
           <span className="settings-info-label">{t('general.version')}</span>
-          <span className="settings-info-value">{t('general.version_valor')}</span>
+          <span className="settings-info-value">{APP_VERSION}</span>
           <span className="settings-info-label">{t('general.base_datos')}</span>
           <span className="settings-info-value">{t('general.base_datos_valor')}</span>
           <span className="settings-info-label">{t('general.plataforma')}</span>
@@ -53,3 +50,6 @@ export function SettingsGeneralTab({ onClearCache }) {
     </div>
   )
 }
+SettingsGeneralTab.propTypes = {
+  onClearCache: PropTypes.func.isRequired,
+};

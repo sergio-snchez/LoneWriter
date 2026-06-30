@@ -15,17 +15,12 @@ import { useAI, useNovel, useModal } from '../../context'
 import { AIService, fetchDetectedEntityData, retrieveRelevantFragments } from '../../services'
 import { MarkdownRenderer, Tooltip } from '../'
 import { normalizeTextForDisplay } from './aiPanelHelpers'
+import { copyToClipboard } from '../../utils/clipboard'
 
 function OracleTab({ activeScene }) {
-  OracleTab.propTypes = {
-    activeScene: PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      title: PropTypes.string,
-      content: PropTypes.string,
-      pov: PropTypes.string,
-      chapterId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    }),
-  };
+  useEffect(() => {
+    localStorage.setItem('lw_oracle_visited', 'true')
+  }, [])
 
   const { t } = useTranslation('ai')
   const {
@@ -90,7 +85,8 @@ function OracleTab({ activeScene }) {
         return
       }
 
-      const ragTimeout = new Promise(resolve => setTimeout(() => resolve([]), 15000))
+      const ragController = new AbortController()
+      const ragTimeout = new Promise(resolve => setTimeout(() => { ragController.abort(); resolve([]) }, 15000))
 
       const [compResult, ragResult] = await Promise.allSettled([
         (activeNovel && oracleStatus.detectedEntities?.length > 0)
@@ -104,7 +100,7 @@ function OracleTab({ activeScene }) {
           })()
           : Promise.resolve(''),
         activeNovel?.id
-          ? Promise.race([retrieveRelevantFragments(plainText, activeNovel.id, 4, activeScene?.id), ragTimeout])
+          ? Promise.race([retrieveRelevantFragments(plainText, activeNovel.id, 4, activeScene?.id, ragController.signal), ragTimeout])
           : Promise.resolve([])
       ])
 
@@ -187,7 +183,7 @@ ${oracleAnswer}`
 
       addOracleEntry({
         text: response.text,
-        time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+        time: new Date().toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' }),
         sceneId: activeScene.id,
         sceneTitle: activeScene.title,
         chapterId: activeScene.chapterId || null,
@@ -197,7 +193,7 @@ ${oracleAnswer}`
       })
     } catch (err) {
       console.error('[Oracle] Full error:', err);
-      setError(t('oraculo.error_consulta', { error: err.message + ' - ' + err.stack }))
+      setError(t('oraculo.error_consulta', { error: err.message }))
     } finally {
       setIsChecking(false)
     }
@@ -206,7 +202,7 @@ ${oracleAnswer}`
   const handleCopy = (id) => {
     const entry = oracleHistory.find(e => e.id === id)
     if (!entry) return
-    navigator.clipboard.writeText(stripJsonBlock(entry.text))
+    copyToClipboard(stripJsonBlock(entry.text))
     setCopiedId(id)
     setTimeout(() => setCopiedId(null), 2000)
   }
@@ -446,6 +442,16 @@ function OracleEntry({ entry, isExpanded, isChecked, copiedId, stripJsonBlock, o
     </div>
   )
 }
+
+OracleTab.propTypes = {
+  activeScene: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    title: PropTypes.string,
+    content: PropTypes.string,
+    pov: PropTypes.string,
+    chapterId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  }),
+};
 
 OracleEntry.propTypes = {
   entry: PropTypes.object.isRequired,

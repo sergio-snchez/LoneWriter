@@ -77,5 +77,11 @@
     "listo_subtitulo": "Oracle now uses semantic context ✨",
     "error_subtitulo": "Oracle will work without RAG"
   },
-  "selector_idioma": "Select language"
+  "selector_idioma": "Select language",
+  "error_boundary": {
+    "title": "Something went wrong in {{name}}",
+    "unknown": "Unexpected error",
+    "retry": "Retry",
+    "component": "component"
+  }
 }

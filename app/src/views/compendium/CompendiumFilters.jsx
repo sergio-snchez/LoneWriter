@@ -33,18 +33,6 @@ function matchesFilters(item, activeFilters, activeSection) {
 }
 
 export default function CompendiumFilters({ isFilterOpen, activeFilters, activeSection, characters, locations, objects, lore, onToggle, onSetActiveFilters }) {
-  CompendiumFilters.propTypes = {
-    isFilterOpen: PropTypes.bool.isRequired,
-    activeFilters: PropTypes.arrayOf(PropTypes.string).isRequired,
-    activeSection: PropTypes.string.isRequired,
-    characters: PropTypes.array,
-    locations: PropTypes.array,
-    objects: PropTypes.array,
-    lore: PropTypes.array,
-    onToggle: PropTypes.func.isRequired,
-    onSetActiveFilters: PropTypes.func.isRequired,
-  };
-
   const { t } = useTranslation('compendium')
 
   const toggleFilter = (f) => {
@@ -90,5 +78,16 @@ export default function CompendiumFilters({ isFilterOpen, activeFilters, activeS
     </div>
   )
 }
+CompendiumFilters.propTypes = {
+  isFilterOpen: PropTypes.bool.isRequired,
+  activeFilters: PropTypes.arrayOf(PropTypes.string).isRequired,
+  activeSection: PropTypes.string.isRequired,
+  characters: PropTypes.array,
+  locations: PropTypes.array,
+  objects: PropTypes.array,
+  lore: PropTypes.array,
+  onToggle: PropTypes.func.isRequired,
+  onSetActiveFilters: PropTypes.func.isRequired,
+};
 
 export { getAvailableFilters, matchesFilters }

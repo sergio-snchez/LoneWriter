@@ -196,6 +196,17 @@
   line-height: 1.5;
 }
 
+.agent-edit-form__error {
+  display: block;
+  font-size: 11px;
+  color: var(--danger, #e74c3c);
+  margin-top: 4px;
+}
+
+.agent-edit-form__prompt--error {
+  border-color: var(--danger, #e74c3c);
+}
+
 .agent-edit-form__footer {
   display: flex;
   gap: 8px;

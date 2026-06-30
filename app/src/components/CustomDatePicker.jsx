@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import './CustomDatePicker.css';
 
-export function CustomDatePicker({ value, onChange }) {
+export default function CustomDatePicker({ value, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentView, setCurrentView] = useState(new Date());
   const [yearInput, setYearInput] = useState('');

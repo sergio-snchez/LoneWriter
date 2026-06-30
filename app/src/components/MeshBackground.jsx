@@ -1,9 +1,10 @@
-import PropTypes from 'prop-types';
 import './MeshBackground.css';
+import { useThemeContext } from '../context';
 
-const MeshBackground = ({ animate = true }) => {
+const MeshBackground = () => {
+  const { meshEnabled } = useThemeContext();
   return (
-    <div className={`mesh-background ${animate ? 'is-animated' : ''}`}>
+    <div className={`mesh-background ${meshEnabled ? 'is-animated' : ''}`}>
       <div className="mesh-blob mesh-blob--1" />
       <div className="mesh-blob mesh-blob--2" />
       <div className="mesh-blob mesh-blob--3" />
@@ -11,10 +12,6 @@ const MeshBackground = ({ animate = true }) => {
       <div className="mesh-blob mesh-blob--center" />
     </div>
   );
-};
-
-MeshBackground.propTypes = {
-  animate: PropTypes.bool,
 };
 
 export default MeshBackground;

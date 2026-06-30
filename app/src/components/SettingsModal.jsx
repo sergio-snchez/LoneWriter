@@ -5,10 +5,10 @@ import { X, Cloud, Sparkles, Info, Palette } from 'lucide-react'
 import { useAI, useNovel } from '../context'
 import { GoogleDriveService } from '../services'
 import { SettingsCloudTab, SettingsAITab, SettingsUITab } from './'
-import { SettingsGeneralTab } from './SettingsGeneralTab'
+import SettingsGeneralTab from './SettingsGeneralTab'
 import './SettingsModal.css'
 
-const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme, editorFont, setEditorFont, meshEnabled, setMeshEnabled, openModal }) => {
+const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', openModal }) => {
   const { t, i18n } = useTranslation('settings')
   const { t: tc } = useTranslation('common')
   const [activeTab, setActiveTab] = useState(initialTab)
@@ -182,14 +182,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', theme, setTheme,
               />
             )}
             {activeTab === 'ui' && (
-              <SettingsUITab
-                theme={theme}
-                setTheme={setTheme}
-                editorFont={editorFont}
-                setEditorFont={setEditorFont}
-                meshEnabled={meshEnabled}
-                setMeshEnabled={setMeshEnabled}
-              />
+              <SettingsUITab />
             )}
             {activeTab === 'general' && (
               <SettingsGeneralTab onClearCache={handleClearCache} />
@@ -205,12 +198,6 @@ SettingsModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   initialTab: PropTypes.oneOf(['cloud', 'ia', 'ui', 'general']),
-  theme: PropTypes.string.isRequired,
-  setTheme: PropTypes.func.isRequired,
-  editorFont: PropTypes.string.isRequired,
-  setEditorFont: PropTypes.func.isRequired,
-  meshEnabled: PropTypes.bool.isRequired,
-  setMeshEnabled: PropTypes.func.isRequired,
   openModal: PropTypes.func.isRequired,
 };
 

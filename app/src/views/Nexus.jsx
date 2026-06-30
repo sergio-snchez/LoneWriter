@@ -1,7 +1,7 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import { useNovel } from '../context';
+import { useNovel, useThemeContext } from '../context';
 import { Clock, AlertCircle, Box, Square, Share2 } from 'lucide-react';
 import { StorylineChart } from '../components';
 import NexusGraph from './nexus/NexusGraph';
@@ -15,29 +15,12 @@ const ENTITY_COLORS = {
 };
 
 export default function Nexus({ onNavigate }) {
-  Nexus.propTypes = {
-    onNavigate: PropTypes.func,
-  };
-
   const { t } = useTranslation(['app', 'compendium']);
   const { activeNovel, acts, characters, locations, objects, lore, nexusLinks, setActiveScene, setExpandedIds } = useNovel();
-  
-  const [currentTheme, setCurrentTheme] = useState(() => document.documentElement.getAttribute('data-theme') || 'dark');
-
-  useEffect(() => {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'data-theme') {
-          setCurrentTheme(document.documentElement.getAttribute('data-theme') || 'dark');
-        }
-      });
-    });
-    observer.observe(document.documentElement, { attributes: true });
-    return () => observer.disconnect();
-  }, []);
+  const { theme } = useThemeContext();
 
   const themeCtx = useMemo(() => {
-    const isLight = currentTheme === 'light' || currentTheme === 'sepia';
+    const isLight = theme === 'light' || theme === 'sepia';
     return {
       isLight,
       textMain: isLight ? '#1a1a1f' : '#ffffff',
@@ -45,7 +28,7 @@ export default function Nexus({ onNavigate }) {
       linkPrimary: isLight ? 'rgba(26, 26, 31, 0.55)' : 'rgba(255, 255, 255, 0.45)',
       bgGraph: isLight ? 'rgba(0, 0, 0, 0.22)' : 'rgba(0, 0, 0, 0)'
     };
-  }, [currentTheme]);
+  }, [theme]);
 
   // Resize handling
   const containerRef = useRef(null);
@@ -281,7 +264,7 @@ export default function Nexus({ onNavigate }) {
             graphData={graphData}
             dimensions={dimensions}
             themeCtx={themeCtx}
-            currentTheme={currentTheme}
+            currentTheme={theme}
             graphMode={graphMode}
             setGraphMode={setGraphMode}
             t={t}
@@ -293,3 +276,6 @@ export default function Nexus({ onNavigate }) {
     </div>
   );
 }
+Nexus.propTypes = {
+  onNavigate: PropTypes.func,
+};

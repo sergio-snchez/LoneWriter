@@ -58,11 +58,19 @@ function getWorker() {
 /**
  * Generate an embedding for a single text string.
  * Returns Float32Array-like plain JS number array.
+ * Throws if the worker does not respond within 30 seconds.
  */
 export async function getEmbedding(text) {
   return new Promise((resolve, reject) => {
     const id = ++_msgId;
-    _pendingResolvers[id] = { resolve, reject };
+    const timer = setTimeout(() => {
+      delete _pendingResolvers[id];
+      reject(new Error('Embedding timed out after 30s'));
+    }, 30000);
+    _pendingResolvers[id] = {
+      resolve: (val) => { clearTimeout(timer); resolve(val); },
+      reject: (err) => { clearTimeout(timer); reject(err); },
+    };
     getWorker().postMessage({ id, text });
   });
 }
@@ -196,11 +204,14 @@ export async function deleteVectorsForNovel(novelId) {
  * @param {number} topK      - How many fragments to return (default 4)
  * @returns {string[]} Array of plain-text fragments, sorted by relevance
  */
-export async function retrieveRelevantFragments(query, novelId, topK = 4, excludeSceneId = null) {
+export async function retrieveRelevantFragments(query, novelId, topK = 4, excludeSceneId = null, signal = null) {
   if (!query || query.trim().length < 3) return [];
+  if (signal?.aborted) return [];
 
   try {
     const queryEmbedding = await getEmbedding(query.trim());
+    if (signal?.aborted) return [];
+
     let allVectors = await db.vectors.where('novelId').equals(novelId).toArray();
 
     if (excludeSceneId != null) {
@@ -221,6 +232,7 @@ export async function retrieveRelevantFragments(query, novelId, topK = 4, exclud
       .filter(s => s.score > 0.2) // discard irrelevant noise
       .map(s => s.text);
   } catch (err) {
+    if (err.name === 'AbortError') return [];
     console.error('[RAG] Retrieval error:', err);
     return [];
   }

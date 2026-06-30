@@ -30,22 +30,6 @@ const stringToColor = (str) => {
 let cachedCamera = null;
 
 export default function StorylineChart({ acts, characters, onNavigate, dimensions, themeCtx }) {
-  StorylineChart.propTypes = {
-    acts: PropTypes.array.isRequired,
-    characters: PropTypes.array,
-    onNavigate: PropTypes.func,
-    dimensions: PropTypes.shape({
-      width: PropTypes.number,
-      height: PropTypes.number,
-    }).isRequired,
-    themeCtx: PropTypes.shape({
-      textMain: PropTypes.string,
-      textMuted: PropTypes.string,
-      isLight: PropTypes.bool,
-      bgGraph: PropTypes.string,
-    }).isRequired,
-  };
-
   const { t } = useTranslation(['app']);
   const graphRef = useRef();
   
@@ -482,3 +466,18 @@ export default function StorylineChart({ acts, characters, onNavigate, dimension
     </div>
   );
 }
+StorylineChart.propTypes = {
+  acts: PropTypes.array.isRequired,
+  characters: PropTypes.array,
+  onNavigate: PropTypes.func,
+  dimensions: PropTypes.shape({
+    width: PropTypes.number,
+    height: PropTypes.number,
+  }).isRequired,
+  themeCtx: PropTypes.shape({
+    textMain: PropTypes.string,
+    textMuted: PropTypes.string,
+    isLight: PropTypes.bool,
+    bgGraph: PropTypes.string,
+  }).isRequired,
+};

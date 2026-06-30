@@ -141,7 +141,7 @@ export default function RichEditor({ content, onChange, placeholder }) {
 
   useEffect(() => {
     const handleApply = (e) => {
-      if (editor && e.detail) {
+      if (editor && typeof e.detail === 'string' && e.detail.trim()) {
         editor.chain().focus().insertContent(e.detail).run();
       }
     };

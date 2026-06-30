@@ -18,7 +18,7 @@ export default function StopwordsModal({ onClose }) {
     const trimmed = newWord.trim().toLowerCase()
     if (!trimmed) return
     const result = await addCustomStopword(trimmed)
-    if (result) {
+    if (result && !result.existing) {
       setCustomWords(prev => [...prev, result])
     }
     setNewWord('')

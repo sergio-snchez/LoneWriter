@@ -3,25 +3,7 @@ import PropTypes from 'prop-types'
 import { Cloud, RefreshCw, LogIn, LogOut, X, Shield, ExternalLink, Heart, History, AlertTriangle } from 'lucide-react'
 import { MarkdownRenderer, Tooltip } from './'
 
-export function SettingsCloudTab({ isCloudLinked, isSyncing, cloudSyncStatus, lastCloudSync, isCloudSyncEnabled, showRevisions, revisions, onLink, onSignOut, onManualSync, onShowRevisions, onRestoreRevision, onCloseRevisions, onToggleAutoSync, onClearCache }) {
-  SettingsCloudTab.propTypes = {
-    isCloudLinked: PropTypes.bool.isRequired,
-    isSyncing: PropTypes.bool.isRequired,
-    cloudSyncStatus: PropTypes.string,
-    lastCloudSync: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    isCloudSyncEnabled: PropTypes.bool.isRequired,
-    showRevisions: PropTypes.bool.isRequired,
-    revisions: PropTypes.array,
-    onLink: PropTypes.func.isRequired,
-    onSignOut: PropTypes.func.isRequired,
-    onManualSync: PropTypes.func.isRequired,
-    onShowRevisions: PropTypes.func.isRequired,
-    onRestoreRevision: PropTypes.func.isRequired,
-    onCloseRevisions: PropTypes.func.isRequired,
-    onToggleAutoSync: PropTypes.func.isRequired,
-    onClearCache: PropTypes.func.isRequired,
-  };
-
+export default function SettingsCloudTab({ isCloudLinked, isSyncing, cloudSyncStatus, lastCloudSync, isCloudSyncEnabled, showRevisions, revisions, onLink, onSignOut, onManualSync, onShowRevisions, onRestoreRevision, onCloseRevisions, onToggleAutoSync, onClearCache }) {
   const { t } = useTranslation('settings')
 
   return (
@@ -133,3 +115,20 @@ export function SettingsCloudTab({ isCloudLinked, isSyncing, cloudSyncStatus, la
     </div>
   )
 }
+SettingsCloudTab.propTypes = {
+  isCloudLinked: PropTypes.bool.isRequired,
+  isSyncing: PropTypes.bool.isRequired,
+  cloudSyncStatus: PropTypes.string,
+  lastCloudSync: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isCloudSyncEnabled: PropTypes.bool.isRequired,
+  showRevisions: PropTypes.bool.isRequired,
+  revisions: PropTypes.array,
+  onLink: PropTypes.func.isRequired,
+  onSignOut: PropTypes.func.isRequired,
+  onManualSync: PropTypes.func.isRequired,
+  onShowRevisions: PropTypes.func.isRequired,
+  onRestoreRevision: PropTypes.func.isRequired,
+  onCloseRevisions: PropTypes.func.isRequired,
+  onToggleAutoSync: PropTypes.func.isRequired,
+  onClearCache: PropTypes.func.isRequired,
+};

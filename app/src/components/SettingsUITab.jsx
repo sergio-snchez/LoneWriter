@@ -1,19 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import { Languages, Zap, Info, Palette } from 'lucide-react'
 import LanguageSelector from './LanguageSelector'
+import { useThemeContext } from '../context'
 
-export function SettingsUITab({ theme, setTheme, editorFont, setEditorFont, meshEnabled, setMeshEnabled }) {
-  SettingsUITab.propTypes = {
-    theme: PropTypes.string.isRequired,
-    setTheme: PropTypes.func.isRequired,
-    editorFont: PropTypes.string.isRequired,
-    setEditorFont: PropTypes.func.isRequired,
-    meshEnabled: PropTypes.bool.isRequired,
-    setMeshEnabled: PropTypes.func.isRequired,
-  };
-
+export default function SettingsUITab() {
   const { t } = useTranslation('settings')
+  const { theme, setTheme, editorFont, setEditorFont, meshEnabled, setMeshEnabled } = useThemeContext()
 
   return (
     <div className="settings-tab">
@@ -78,3 +70,4 @@ export function SettingsUITab({ theme, setTheme, editorFont, setEditorFont, mesh
     </div>
   )
 }
+SettingsUITab.propTypes = {};

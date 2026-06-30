@@ -6,20 +6,6 @@ import { ProposalCard } from '../../components'
 import './CompendiumMpcOverlay.css'
 
 export function CompendiumMpcOverlay({ isOpen, isClosing, proposals, mpcStatus, acceptingMpcId, onClose, onAccept, onEdit, onDismiss, onDismissPermanently, onClearAll }) {
-  CompendiumMpcOverlay.propTypes = {
-    isOpen: PropTypes.bool.isRequired,
-    isClosing: PropTypes.bool,
-    proposals: PropTypes.array.isRequired,
-    mpcStatus: PropTypes.string,
-    acceptingMpcId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    onClose: PropTypes.func.isRequired,
-    onAccept: PropTypes.func.isRequired,
-    onEdit: PropTypes.func.isRequired,
-    onDismiss: PropTypes.func.isRequired,
-    onDismissPermanently: PropTypes.func.isRequired,
-    onClearAll: PropTypes.func.isRequired,
-  };
-
   const { t } = useTranslation('compendium')
 
   if (!isOpen) return null
@@ -113,3 +99,16 @@ export function CompendiumMpcOverlay({ isOpen, isClosing, proposals, mpcStatus, 
     document.body
   )
 }
+CompendiumMpcOverlay.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  isClosing: PropTypes.bool,
+  proposals: PropTypes.array.isRequired,
+  mpcStatus: PropTypes.string,
+  acceptingMpcId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onClose: PropTypes.func.isRequired,
+  onAccept: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDismiss: PropTypes.func.isRequired,
+  onDismissPermanently: PropTypes.func.isRequired,
+  onClearAll: PropTypes.func.isRequired,
+};

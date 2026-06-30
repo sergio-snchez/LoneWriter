@@ -130,7 +130,7 @@ export function useDebate({ activeNovel }) {
   const renameDebateSession = async (id, title) => {
     const date = new Date().toISOString()
     await db.debateSessions.update(id, { title, updatedAt: date })
-    setDebateSessions(prev => prev.map(s => s.id === id ? { ...s, title, updatedAt: date } : s).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)))
+    setDebateSessions(prev => [...prev.map(s => s.id === id ? { ...s, title, updatedAt: date } : s)].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)))
   }
 
   const deleteDebateSession = async (id) => {
@@ -163,7 +163,7 @@ export function useDebate({ activeNovel }) {
       const date = new Date().toISOString()
       const newSessions = prev.map(s => {
         if (s.id === activeSessionId) {
-          const updatedMessages = [...s.messages, { ...msg, id: Date.now() + Math.random() }]
+          const updatedMessages = [...s.messages, { ...msg, id: crypto.randomUUID() }]
           db.debateSessions.update(activeSessionId, { messages: updatedMessages, updatedAt: date })
           return { ...s, messages: updatedMessages, updatedAt: date }
         }

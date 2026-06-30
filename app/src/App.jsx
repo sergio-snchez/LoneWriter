@@ -11,8 +11,8 @@ import {
   Tooltip, RagToast, MeshBackground, PwaUpdateModal, WelcomeScreen
 } from './components'
 import { EditorView, CompendiumView, ResourcesView, NexusView } from './views'
-import { useNovel, useModal } from './context'
-import { useAppNavigation, useAppPreferences, useAppUI, useCloudRestore, useProjectIO } from './hooks'
+import { useNovel, useModal, ThemeProvider } from './context'
+import { useAppNavigation, useAppUI, useCloudRestore, useProjectIO } from './hooks'
 import { registerPWA, triggerUpdate } from './pwa'
 import './components/TypingEffect.css'
 import './App.css'
@@ -22,9 +22,6 @@ export default function App() {
 
   const { activeView, viewKey, sidebarCollapsed, setSidebarCollapsed,
           mobileDrawerOpen, setMobileDrawerOpen, handleViewChange } = useAppNavigation()
-
-  const { theme, setTheme, editorFont, setEditorFont,
-          meshEnabled, setMeshEnabled } = useAppPreferences()
 
   const {
     aiPanelOpen, setAiPanelOpen, aiPanelTab, setAiPanelTab,
@@ -88,8 +85,6 @@ export default function App() {
           onShowAllProjects={() => setMenuOpen(true)}
           typingComplete={typingComplete}
           setTypingComplete={setTypingComplete}
-          theme={theme}
-          setTheme={setTheme}
         />
       )
     }
@@ -123,8 +118,9 @@ export default function App() {
   const wordPct = activeNovel ? Math.round((activeNovel.wordCount / (activeNovel.targetWords || 100000)) * 100) : 0;
 
   return (
+    <ThemeProvider>
     <div className="app-shell">
-      <MeshBackground animate={meshEnabled} />
+      <MeshBackground />
       <input
         type="file"
         ref={fileInputRef}
@@ -272,12 +268,6 @@ export default function App() {
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         initialTab={settingsTab}
-        theme={theme}
-        setTheme={setTheme}
-        editorFont={editorFont}
-        setEditorFont={setEditorFont}
-        meshEnabled={meshEnabled}
-        setMeshEnabled={setMeshEnabled}
         openModal={openModal}
       />
 
@@ -351,5 +341,6 @@ export default function App() {
       {/* RAG model download toast — appears once on first use */}
       <RagToast />
     </div>
+    </ThemeProvider>
   )
 }
