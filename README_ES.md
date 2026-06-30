@@ -6,7 +6,7 @@
 
 </div>
 
-# LoneWriter v2.0.4 🖋️
+# LoneWriter v2.1.0 🖋️
 
 > **Tu "Sistema Operativo Narrativo": La IA que te escucha, organiza tu caos y vigila la coherencia de tu mundo mientras tú solo te preocupas de escribir.**
 >
@@ -29,6 +29,7 @@ LoneWriter es una aplicación de escritura **100% local y con privacidad absolut
 - **Cero recopilación de datos**: No enviamos nada a nuestros servidores. Tu novela vive exclusivamente en el IndexedDB de tu navegador.
 - **Motor de IA local (RAG)**: La búsqueda semántica y la detección de entidades se ejecutan por completo en tu navegador mediante Transformers.js — ningún servicio externo procesa el contexto de tu historia.
 - **Tú pones la clave, tú mandas**: Cuando conectas un proveedor de IA (Gemini, GPT-4o, Claude…), tu clave API va directamente a ese proveedor. LoneWriter nunca actua de intermediario, ni guarda ni lee tus prompts.
+- **Claves API cifradas**: Las claves API se cifran en reposo usando AES-GCM 256 con derivación PBKDF2 y huella del dispositivo — los archivos de base de datos copiados no se descifrarán en otro dispositivo.
 - **Nube opcional, tu propio espacio**: La sincronización con Google Drive es completamente opcional y se conecta únicamente a *tu propia* cuenta de Google — no a nuestros servidores. Tú eres el único dueño de tus copias de seguridad.
 - **Funciona sin conexión**: Una vez instalada como PWA, LoneWriter funciona sin internet. Sin suscripción, sin cuenta obligatoria.
 
@@ -88,7 +89,7 @@ LoneWriter es una aplicación de escritura **100% local y con privacidad absolut
 ## 🛠️ Tecnologías
 
 - **Core:** React + Vite
-- **Base de Datos:** Dexie.js (IndexedDB)
+- **Base de Datos:** Dexie.js (IndexedDB) — rollback automático en fallo de restauración
 - **Motor RAG:** Transformers.js (all-MiniLM-L6-v2) — embeddings locales en navegador
 - **Grafo de Conocimiento:** react-force-graph-2d / react-force-graph-3d + Three.js
 - **Cronología:** vis-timeline
@@ -127,7 +128,7 @@ Diseñado y desarrollado con ♥ por **Sergio Sánchez** con Antigravity.
 
 ---
 
-*LoneWriter v2.0.4 - Tu espacio personal para dar vida a grandes historias.*
+*LoneWriter v2.1.0 - Tu espacio personal para dar vida a grandes historias.*
 
 ---
 

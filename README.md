@@ -6,7 +6,7 @@
 
 </div>
 
-# LoneWriter v2.0.4 🖋️
+# LoneWriter v2.1.0 🖋️
 
 > **Your "Narrative Operating System": The AI that listens to you, organizes your chaos, and monitors your world's coherence while you only worry about writing.**
 >
@@ -29,6 +29,7 @@ LoneWriter is a **100% local, privacy-first** writing application. Your manuscri
 - **Zero data collection**: Nothing is ever sent to our servers. Your novel lives exclusively in your browser's IndexedDB.
 - **Local AI engine (RAG)**: Semantic search and entity detection run fully in your browser via Transformers.js — no cloud API call is made to understand your story's context.
 - **Bring your own key**: When you connect an AI provider (Gemini, GPT-4o, Claude…), your API key goes directly to that provider. LoneWriter never proxies, stores, or reads your prompts.
+- **Encrypted API keys**: API keys are encrypted at rest using AES-GCM 256 with PBKDF2 key derivation and device fingerprinting — copied database files will not decrypt on another device.
 - **Optional cloud, your own space**: Google Drive sync is fully optional and connects only to *your own* Google account — not our servers. You are the sole owner of your backups.
 - **Works fully offline**: Once installed as a PWA, LoneWriter works without an internet connection. No subscription, no account required.
 
@@ -88,7 +89,7 @@ LoneWriter is a **100% local, privacy-first** writing application. Your manuscri
 ## 🛠️ Technologies
 
 - **Core:** React + Vite
-- **Database:** Dexie.js (IndexedDB)
+- **Database:** Dexie.js (IndexedDB) — automatic rollback on restore failure
 - **RAG Engine:** Transformers.js (all-MiniLM-L6-v2) — local embeddings in browser
 - **Knowledge Graph:** react-force-graph-2d / react-force-graph-3d + Three.js
 - **Timeline:** vis-timeline
@@ -127,7 +128,7 @@ Designed and developed with ♥ by **Sergio Sánchez** with Antigravity.
 
 ---
 
-*LoneWriter v2.0.4 - Your personal space to bring great stories to life.*
+*LoneWriter v2.1.0 - Your personal space to bring great stories to life.*
 
 ---
 
