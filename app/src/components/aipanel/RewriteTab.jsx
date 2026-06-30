@@ -16,18 +16,9 @@ import { useAI, useNovel, useModal } from '../../context'
 import { AIService } from '../../services'
 import { MarkdownRenderer, Tooltip } from '../'
 import { QUICK_GOALS, normalizeHtmlForEditor, extractPreviousContext } from './aiPanelHelpers'
+import { copyToClipboard } from '../../utils/clipboard'
 
 export default function RewriteTab({ activeScene }) {
-  RewriteTab.propTypes = {
-    activeScene: PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      title: PropTypes.string,
-      content: PropTypes.string,
-      pov: PropTypes.string,
-      chapterId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    }),
-  };
-
   const { t } = useTranslation('ai')
   const {
     selection, provider, apiKey, localBaseUrl, prompts, currentModel,
@@ -98,7 +89,7 @@ export default function RewriteTab({ activeScene }) {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(lastRewrite);
+    copyToClipboard(lastRewrite);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -259,3 +250,12 @@ export default function RewriteTab({ activeScene }) {
     </div>
   )
 }
+RewriteTab.propTypes = {
+  activeScene: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    title: PropTypes.string,
+    content: PropTypes.string,
+    pov: PropTypes.string,
+    chapterId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  }),
+};

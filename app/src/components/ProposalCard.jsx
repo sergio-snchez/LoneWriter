@@ -22,23 +22,6 @@ const TYPE_TRANSLATION_KEYS = {
 }
 
 export default function ProposalCard({ proposal, onAccept, onEdit, onDismiss, onDismissPermanently, isAccepting }) {
-  ProposalCard.propTypes = {
-    proposal: PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      type: PropTypes.oneOf(['characters', 'locations', 'objects', 'lore']),
-      name: PropTypes.string,
-      title: PropTypes.string,
-      description: PropTypes.string,
-      reason: PropTypes.string,
-      confidence: PropTypes.oneOf(['high', 'medium', 'low']),
-    }).isRequired,
-    onAccept: PropTypes.func.isRequired,
-    onEdit: PropTypes.func.isRequired,
-    onDismiss: PropTypes.func.isRequired,
-    onDismissPermanently: PropTypes.func.isRequired,
-    isAccepting: PropTypes.bool,
-  };
-
   const { t } = useTranslation('compendium')
   const [expanded, setExpanded] = useState(false)
 
@@ -109,3 +92,19 @@ export default function ProposalCard({ proposal, onAccept, onEdit, onDismiss, on
     </div>
   )
 }
+ProposalCard.propTypes = {
+  proposal: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    type: PropTypes.oneOf(['characters', 'locations', 'objects', 'lore']),
+    name: PropTypes.string,
+    title: PropTypes.string,
+    description: PropTypes.string,
+    reason: PropTypes.string,
+    confidence: PropTypes.oneOf(['high', 'medium', 'low']),
+  }).isRequired,
+  onAccept: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDismiss: PropTypes.func.isRequired,
+  onDismissPermanently: PropTypes.func.isRequired,
+  isAccepting: PropTypes.bool,
+};

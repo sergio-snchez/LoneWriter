@@ -7,7 +7,7 @@ const SEEN_KEY = 'lw_rag_model_ready';
 
 export default function RagToast() {
   const { t } = useTranslation('common');
-  const [state, setState] = useState('idle'); // 'idle' | 'loading' | 'ready' | 'error'
+  const [state, setState] = useState('idle');
   const [progress, setProgress] = useState(null);
   const [visible, setVisible] = useState(false);
   const hideTimerRef = useRef(null);

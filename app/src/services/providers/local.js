@@ -49,7 +49,7 @@ export async function callLocal(prompt, model, baseUrl) {
       usage: data.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
     };
   } catch (error) {
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+    if (error instanceof TypeError) {
       throw new Error(`No se pudo conectar con el servidor local en ${url}. Asegúrate de que LM Studio u Ollama está en ejecución.`, { cause: error });
     }
     throw error;
@@ -91,7 +91,7 @@ export async function callLocalChat(systemPrompt, messages, model, baseUrl) {
       },
     };
   } catch (error) {
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+    if (error instanceof TypeError) {
       throw new Error(`No se pudo conectar con el servidor local en ${url}.`, { cause: error });
     }
     console.error('Error in callLocalChat:', error);

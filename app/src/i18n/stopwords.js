@@ -86,9 +86,15 @@ export async function getAllCustomStopwords() {
 
 export async function addCustomStopword(word) {
   try {
+    const lang = i18n.language || 'es';
+    const existing = await db.customStopwords.where({ word, language: lang }).first();
+    if (existing) {
+      await loadUserStopwords();
+      return { id: existing.id, word: existing.word, existing: true };
+    }
     const id = await db.customStopwords.add({
       word,
-      language: i18n.language || 'es',
+      language: lang,
       createdAt: new Date().toISOString()
     });
     await loadUserStopwords();

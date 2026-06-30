@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import i18n from '../../i18n/i18n'
 import { AIService, createDebouncedSearch, retrieveRelevantFragments } from '../../services'
 
 export function useDebateOrchestrator({ activeScene, debateAgents, debateHistory, activeSessionId, activeSessionTitle, addDebateMessage, renameDebateSession, activeNovel, acts, resources, provider, apiKey, currentModel, localBaseUrl, logAIUsage }) {
@@ -45,7 +46,7 @@ export function useDebateOrchestrator({ activeScene, debateAgents, debateHistory
     const userMsg = {
       role: 'user',
       text,
-      time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+      time: new Date().toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' }),
     }
     addDebateMessage(userMsg)
 
@@ -53,8 +54,9 @@ export function useDebateOrchestrator({ activeScene, debateAgents, debateHistory
     let ragInfo = ''
     if (activeNovel) {
       try {
-        const ragTimeout = new Promise(resolve => setTimeout(() => resolve([]), 8000))
-        const ragPromise = retrieveRelevantFragments(text, activeNovel.id, 4)
+        const ragController = new AbortController()
+        const ragTimeout = new Promise(resolve => setTimeout(() => { ragController.abort(); resolve([]) }, 8000))
+        const ragPromise = retrieveRelevantFragments(text, activeNovel.id, 4, null, ragController.signal)
 
         let compendiumPromise = Promise.resolve(null)
         if (useCompendiumContext) {
@@ -119,7 +121,7 @@ export function useDebateOrchestrator({ activeScene, debateAgents, debateHistory
             agentColor: agent.color,
             agentInitials: agent.initials,
             text: response.text,
-            time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+            time: new Date().toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' }),
           }
           addDebateMessage(agentMsg)
           historyWithUser.push(agentMsg)
@@ -129,14 +131,14 @@ export function useDebateOrchestrator({ activeScene, debateAgents, debateHistory
             agent: agent.id,
             agentName: agent.name,
             text: `Error: ${err.message}`,
-            time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+            time: new Date().toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' }),
           })
         } finally {
           setLoadingAgents(prev => ({ ...prev, [agent.id]: false }))
         }
       }
     }
-  }, [input, isAnyLoading, activeSessionTitle, activeSessionId, debateHistory, activeScene, activeNovel, acts, resources, provider, apiKey, currentModel, localBaseUrl, logAIUsage, addDebateMessage, renameDebateSession, rounds, activeAgents, useSceneContext, useCompendiumContext, t])
+  }, [input, isAnyLoading, activeSessionTitle, activeSessionId, debateHistory, activeScene, activeNovel, acts, resources, provider, apiKey, currentModel, localBaseUrl, logAIUsage, addDebateMessage, renameDebateSession, rounds, activeAgents, useSceneContext, useCompendiumContext, t, getSceneChapterLabel])
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }

@@ -77,13 +77,14 @@ export async function callClaudeChat(systemPrompt, messages, apiKey, model) {
     normalized.unshift({ role: 'user', content: '.' });
   }
 
-  try {
-    const response = await fetch(CLAUDE_API_URL, {
+    try {
+    const response = await fetchWithRetry(CLAUDE_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
         model: model || 'claude-3-haiku-20240307',

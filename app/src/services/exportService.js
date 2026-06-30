@@ -74,7 +74,7 @@ async function deriveKey(password, salt) {
  * Encrypts a compressed LWRT_V1 payload with AES-GCM.
  * Returns "LWRT_V1_ENC" + base64(salt[16] + iv[12] + ciphertext).
  */
-async function encryptPayload(compressedPayload, password) {
+export async function encryptPayload(compressedPayload, password) {
   const salt = window.crypto.getRandomValues(new Uint8Array(16));
   const iv = window.crypto.getRandomValues(new Uint8Array(12));
   const key = await deriveKey(password, salt);
@@ -101,7 +101,7 @@ async function encryptPayload(compressedPayload, password) {
  * Decrypts an LWRT_V1_ENC payload back to a plain LWRT_V1 string.
  * Throws if the password is wrong (AES-GCM auth tag mismatch).
  */
-async function decryptPayload(encPayload, password) {
+export async function decryptPayload(encPayload, password) {
   const base64 = encPayload.slice(LWRT_HEADER_ENC.length);
   const combined = base64ToArrayBuffer(base64);
 
@@ -207,7 +207,8 @@ export const ExportService = {
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
-          const data = await decodeFromLwrt(e.target.result, password);
+          const content = new TextDecoder().decode(e.target.result);
+          const data = await decodeFromLwrt(content, password);
           if (!data.tables) throw new Error('INVALID_FORMAT');
 
           await restoreTables(data.tables);
@@ -220,7 +221,7 @@ export const ExportService = {
         }
       };
       reader.onerror = reject;
-      reader.readAsText(file, 'utf-8');
+      reader.readAsArrayBuffer(file);
     });
   },
 

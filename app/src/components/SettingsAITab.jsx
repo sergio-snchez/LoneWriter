@@ -27,6 +27,11 @@ function UsageMeter({ label, value, max, unit }) {
     </div>
   )
 }
+SettingsAITab.propTypes = {
+  testConnStatus: PropTypes.string,
+  testConnResult: PropTypes.string,
+  onTestConnection: PropTypes.func.isRequired,
+};
 
 const AI_PROVIDER_LINKS = (t) => ({
   google: {
@@ -61,13 +66,7 @@ const AI_PROVIDER_LINKS = (t) => ({
   },
 })
 
-export function SettingsAITab({ testConnStatus, testConnResult, onTestConnection }) {
-  SettingsAITab.propTypes = {
-    testConnStatus: PropTypes.string,
-    testConnResult: PropTypes.string,
-    onTestConnection: PropTypes.func.isRequired,
-  };
-
+export default function SettingsAITab({ testConnStatus, testConnResult, onTestConnection }) {
   const { t } = useTranslation('settings')
   const {
     provider, setProvider, apiKey, setApiKey,

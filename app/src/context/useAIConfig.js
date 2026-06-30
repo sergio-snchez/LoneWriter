@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import i18n from '../i18n/i18n'
 import { db } from '../db/database'
 import { loadUserStopwords } from '../i18n/stopwords'
+import { encryptValue, decryptValue } from '../utils/crypto'
 
 const AI_PROVIDERS = ['google', 'openai', 'anthropic', 'openrouter', 'local']
 const emptyProviderConfig = { model: '', apiKey: '', localBaseUrl: '' }
@@ -55,7 +56,7 @@ export function useAIConfig() {
           if (loaded[row.provider]) {
             loaded[row.provider] = {
               model:        loaded[row.provider].model        || row.model        || '',
-              apiKey:       loaded[row.provider].apiKey       || row.apiKey       || '',
+              apiKey:       loaded[row.provider].apiKey       || (row.apiKey ? await decryptValue(row.apiKey) : ''),
               localBaseUrl: loaded[row.provider].localBaseUrl || row.localBaseUrl || '',
             }
           }
@@ -87,11 +88,17 @@ export function useAIConfig() {
   const saveProviderConfig = async (prov, updates) => {
     try {
       const existing = await db.aiProviderConfigs.where('provider').equals(prov).first()
+      const hasApiKeyUpdate = Object.hasOwn(updates, 'apiKey')
+      let apiKeyToStore
+      if (hasApiKeyUpdate) {
+        apiKeyToStore = updates.apiKey ? await encryptValue(updates.apiKey) : ''
+      }
       const data = { provider: prov, ...updates, updatedAt: new Date().toISOString() }
+      if (apiKeyToStore !== undefined) data.apiKey = apiKeyToStore
       if (existing) {
         data.id = existing.id
         if (!updates.model        && existing.model)        data.model        = existing.model
-        if (!updates.apiKey       && existing.apiKey)       data.apiKey       = existing.apiKey
+        if (!hasApiKeyUpdate       && existing.apiKey)      data.apiKey       = existing.apiKey
         if (!updates.localBaseUrl && existing.localBaseUrl) data.localBaseUrl = existing.localBaseUrl
       }
       await db.aiProviderConfigs.put(data)

@@ -5,13 +5,14 @@ import {
 import { useTranslation, Trans } from 'react-i18next'
 import { LanguageSelector, TypingEffect } from './'
 import { APP_VERSION } from '../utils'
+import { useThemeContext } from '../context'
 import './WelcomeScreen.css'
 
 export default function WelcomeScreen({
   allNovels, switchNovel, onCreateProject,
   onShowAllProjects, typingComplete, setTypingComplete,
-  theme, setTheme,
 }) {
+  const { theme, setTheme } = useThemeContext()
   const { t, i18n } = useTranslation('app')
 
   const recentNovels = allNovels.slice(0, 5)
@@ -163,6 +164,4 @@ WelcomeScreen.propTypes = {
   onShowAllProjects: PropTypes.func.isRequired,
   typingComplete: PropTypes.bool.isRequired,
   setTypingComplete: PropTypes.func.isRequired,
-  theme: PropTypes.string.isRequired,
-  setTheme: PropTypes.func.isRequired,
 }

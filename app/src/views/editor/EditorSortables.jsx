@@ -31,27 +31,18 @@ export const STATUS_OPTIONS = ['Sin comenzar', 'Borrador', 'En progreso', 'Final
 // ─── StatusBadge ─────────────────────────────────────────────────────────────
 
 export function StatusBadge({ status }) {
-  StatusBadge.propTypes = {
-    status: PropTypes.oneOf(['Sin comenzar', 'Borrador', 'En progreso', 'Finalizado']),
-  };
-
   const { t } = useTranslation('editor')
   const map = STATUS_MAP[status] || STATUS_MAP['Sin comenzar']
   const statusKey = status.toLowerCase().replace(/ /g, '_')
   return <span className={`badge ${map.badge}`}>{t(`estado.${statusKey}`)}</span>
 }
+StatusBadge.propTypes = {
+  status: PropTypes.oneOf(['Sin comenzar', 'Borrador', 'En progreso', 'Finalizado']),
+};
 
 // ─── EditableTitle ────────────────────────────────────────────────────────────
 
 export function EditableTitle({ title, onSave, className, isPlayfair, isBold }) {
-  EditableTitle.propTypes = {
-    title: PropTypes.string.isRequired,
-    onSave: PropTypes.func.isRequired,
-    className: PropTypes.string,
-    isPlayfair: PropTypes.bool,
-    isBold: PropTypes.bool,
-  };
-
   const { t } = useTranslation('editor')
   const [isEditing, setIsEditing] = useState(false)
   const [val, setVal] = useState(title)
@@ -92,20 +83,17 @@ export function EditableTitle({ title, onSave, className, isPlayfair, isBold }) 
     </Tooltip>
   )
 }
+EditableTitle.propTypes = {
+  title: PropTypes.string.isRequired,
+  onSave: PropTypes.func.isRequired,
+  className: PropTypes.string,
+  isPlayfair: PropTypes.bool,
+  isBold: PropTypes.bool,
+};
 
 // ─── SortableSceneRow ─────────────────────────────────────────────────────────
 
 export const SortableSceneRow = memo(function SortableSceneRow({ scene, chapterIndex, sceneIndex, isActive, onSelect, onDelete, onUpdate }) {
-  SortableSceneRow.propTypes = {
-    scene: PropTypes.object.isRequired,
-    chapterIndex: PropTypes.number.isRequired,
-    sceneIndex: PropTypes.number.isRequired,
-    isActive: PropTypes.bool,
-    onSelect: PropTypes.func.isRequired,
-    onDelete: PropTypes.func.isRequired,
-    onUpdate: PropTypes.func.isRequired,
-  };
-
   const { t } = useTranslation('editor')
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `scene-${scene.id}` })
 
@@ -149,29 +137,23 @@ export const SortableSceneRow = memo(function SortableSceneRow({ scene, chapterI
     </div>
   )
 })
+SortableSceneRow.propTypes = {
+  scene: PropTypes.object.isRequired,
+  chapterIndex: PropTypes.number.isRequired,
+  sceneIndex: PropTypes.number.isRequired,
+  isActive: PropTypes.bool,
+  onSelect: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onUpdate: PropTypes.func.isRequired,
+};
 
-// ─── SortableChapterAccordion ─────────────────────────────────────────────────
+// ─── SortableChapterAccordion
 
 export const SortableChapterAccordion = memo(function SortableChapterAccordion({
   chapter, chapterIndex, actIndex, isOpen, onToggle,
   activeSceneId, onSelectScene, onAddScene, onDeleteScene,
   onDeleteChapter, onUpdateChapter, onUpdateScene,
 }) {
-  SortableChapterAccordion.propTypes = {
-    chapter: PropTypes.object.isRequired,
-    chapterIndex: PropTypes.number.isRequired,
-    actIndex: PropTypes.number.isRequired,
-    isOpen: PropTypes.bool,
-    onToggle: PropTypes.func.isRequired,
-    activeSceneId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    onSelectScene: PropTypes.func.isRequired,
-    onAddScene: PropTypes.func.isRequired,
-    onDeleteScene: PropTypes.func.isRequired,
-    onDeleteChapter: PropTypes.func.isRequired,
-    onUpdateChapter: PropTypes.func.isRequired,
-    onUpdateScene: PropTypes.func.isRequired,
-  };
-
   const { t } = useTranslation('editor')
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `ch-${chapter.id}` })
 
@@ -251,6 +233,20 @@ export const SortableChapterAccordion = memo(function SortableChapterAccordion({
     </div>
   )
 })
+SortableChapterAccordion.propTypes = {
+  chapter: PropTypes.object.isRequired,
+  chapterIndex: PropTypes.number.isRequired,
+  actIndex: PropTypes.number.isRequired,
+  isOpen: PropTypes.bool,
+  onToggle: PropTypes.func.isRequired,
+  activeSceneId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onSelectScene: PropTypes.func.isRequired,
+  onAddScene: PropTypes.func.isRequired,
+  onDeleteScene: PropTypes.func.isRequired,
+  onDeleteChapter: PropTypes.func.isRequired,
+  onUpdateChapter: PropTypes.func.isRequired,
+  onUpdateScene: PropTypes.func.isRequired,
+};
 
 // ─── SortableActSection ───────────────────────────────────────────────────────
 
@@ -259,26 +255,6 @@ export const SortableActSection = memo(function SortableActSection({
   onAddChapter, onAddScene, onDeleteScene, onDeleteChapter,
   onDeleteAct, onUpdateAct, onUpdateChapter, onUpdateScene, expandedIds, onSubToggle,
 }) {
-  SortableActSection.propTypes = {
-    act: PropTypes.object.isRequired,
-    actIndex: PropTypes.number.isRequired,
-    chapterOffset: PropTypes.number.isRequired,
-    isOpen: PropTypes.bool,
-    onToggle: PropTypes.func.isRequired,
-    activeSceneId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    onSelectScene: PropTypes.func.isRequired,
-    onAddChapter: PropTypes.func.isRequired,
-    onAddScene: PropTypes.func.isRequired,
-    onDeleteScene: PropTypes.func.isRequired,
-    onDeleteChapter: PropTypes.func.isRequired,
-    onDeleteAct: PropTypes.func.isRequired,
-    onUpdateAct: PropTypes.func.isRequired,
-    onUpdateChapter: PropTypes.func.isRequired,
-    onUpdateScene: PropTypes.func.isRequired,
-    expandedIds: PropTypes.object, // Set
-    onSubToggle: PropTypes.func.isRequired,
-  };
-
   const { t } = useTranslation('editor')
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `act-${act.id}` })
 
@@ -378,3 +354,22 @@ export const SortableActSection = memo(function SortableActSection({
     </div>
   )
 })
+SortableActSection.propTypes = {
+  act: PropTypes.object.isRequired,
+  actIndex: PropTypes.number.isRequired,
+  chapterOffset: PropTypes.number.isRequired,
+  isOpen: PropTypes.bool,
+  onToggle: PropTypes.func.isRequired,
+  activeSceneId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onSelectScene: PropTypes.func.isRequired,
+  onAddChapter: PropTypes.func.isRequired,
+  onAddScene: PropTypes.func.isRequired,
+  onDeleteScene: PropTypes.func.isRequired,
+  onDeleteChapter: PropTypes.func.isRequired,
+  onDeleteAct: PropTypes.func.isRequired,
+  onUpdateAct: PropTypes.func.isRequired,
+  onUpdateChapter: PropTypes.func.isRequired,
+  onUpdateScene: PropTypes.func.isRequired,
+  expandedIds: PropTypes.object,
+  onSubToggle: PropTypes.func.isRequired,
+};

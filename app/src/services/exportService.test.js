@@ -43,7 +43,7 @@ vi.mock('../db/database', () => ({
   restoreTables: mockRestoreTables,
 }));
 
-import { compressToJson, decodeFromLwrt, ExportService } from './exportService';
+import { compressToJson, decodeFromLwrt, encryptPayload, decryptPayload, ExportService } from './exportService';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -91,6 +91,48 @@ describe('decodeFromLwrt', () => {
     await expect(decodeFromLwrt(fakeEncrypted, 'wrong-password')).rejects.toThrow('WRONG_PASSWORD');
 
     window.crypto.subtle.decrypt = originalDecrypt;
+  });
+});
+
+describe('encryptPayload / decryptPayload', () => {
+  const PASSWORD = 'my-secret-password';
+  const PLAINTEXT = JSON.stringify({ name: 'Known Answer Test', value: 42 });
+
+  it('roundtrips encrypt then decrypt', async () => {
+    const encrypted = await encryptPayload(PLAINTEXT, PASSWORD);
+    expect(encrypted).toMatch(/^LWRT_V1_ENC/);
+
+    const decrypted = await decryptPayload(encrypted, PASSWORD);
+    expect(decrypted).toBe(PLAINTEXT);
+  });
+
+  it('produces different ciphertexts on each call (random salt/iv)', async () => {
+    const a = await encryptPayload(PLAINTEXT, PASSWORD);
+    const b = await encryptPayload(PLAINTEXT, PASSWORD);
+    expect(a).not.toBe(b);
+  });
+
+  it('throws WRONG_PASSWORD with incorrect password', async () => {
+    const encrypted = await encryptPayload(PLAINTEXT, PASSWORD);
+    await expect(decryptPayload(encrypted, 'wrong-password')).rejects.toThrow('WRONG_PASSWORD');
+  });
+
+  it('throws WRONG_PASSWORD on corrupted ciphertext', async () => {
+    const encrypted = await encryptPayload(PLAINTEXT, PASSWORD);
+    const corrupted = encrypted.slice(0, -4); // truncate last 4 bytes (auth tag)
+    await expect(decryptPayload(corrupted, PASSWORD)).rejects.toThrow('WRONG_PASSWORD');
+  });
+
+  it('handles empty string as plaintext', async () => {
+    const encrypted = await encryptPayload('', PASSWORD);
+    const decrypted = await decryptPayload(encrypted, PASSWORD);
+    expect(decrypted).toBe('');
+  });
+
+  it('handles empty password', async () => {
+    const encrypted = await encryptPayload(PLAINTEXT, '');
+    const decrypted = await decryptPayload(encrypted, '');
+    expect(decrypted).toBe(PLAINTEXT);
   });
 });
 

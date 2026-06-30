@@ -20,16 +20,6 @@ import AgentEditForm from './AgentEditForm'
 const AGENT_COLORS = ['#6b9fd4', '#e07070', '#5cb98a', '#c59de0', '#e0b870', '#70d4e0', '#e070b8']
 
 function DebateTab({ activeScene }) {
-  DebateTab.propTypes = {
-    activeScene: PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      title: PropTypes.string,
-      content: PropTypes.string,
-      pov: PropTypes.string,
-      chapterId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    }),
-  };
-
   const { t } = useTranslation('ai')
   const {
     provider, apiKey, localBaseUrl, currentModel,
@@ -319,6 +309,16 @@ function DebateSessionMenu({
     </div>
   )
 }
+
+DebateTab.propTypes = {
+  activeScene: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    title: PropTypes.string,
+    content: PropTypes.string,
+    pov: PropTypes.string,
+    chapterId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  }),
+};
 
 DebateSessionMenu.propTypes = {
   dropdownRef: PropTypes.object.isRequired,

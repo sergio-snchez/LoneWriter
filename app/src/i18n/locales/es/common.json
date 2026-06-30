@@ -77,5 +77,11 @@
     "listo_subtitulo": "El Oráculo ya usa contexto semántico ✨",
     "error_subtitulo": "El Oráculo funcionará sin RAG"
   },
-  "selector_idioma": "Seleccionar idioma"
+  "selector_idioma": "Seleccionar idioma",
+  "error_boundary": {
+    "title": "Algo salió mal en {{name}}",
+    "unknown": "Error inesperado",
+    "retry": "Reintentar",
+    "component": "componente"
+  }
 }

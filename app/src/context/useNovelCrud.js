@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import i18n from '../i18n/i18n'
 import { db } from '../db/database'
-import { deleteVectorsForScene, deleteVectorsForNovel, indexPendingScenes } from '../services'
+import { deleteVectorsForScene, deleteVectorsForNovel } from '../services'
 
 /**
  * Hook that provides all CRUD operations for novels, acts, chapters,
@@ -26,7 +26,9 @@ export function useNovelCrud({
       setActiveNovel({ ...novel, wordCount: realWords })
       setActiveScene(null)
       localStorage.setItem('activeNovelId', id)
-      indexPendingScenes(id)
+      if (localStorage.getItem('lw_oracle_visited') === 'true') {
+        import('../services').then(({ indexPendingScenes }) => indexPendingScenes(id))
+      }
     }
   }, [syncNovelWordCount, reloadData, setActiveNovel, setActiveScene])
 

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 
-export function Tooltip({ children, content, position = 'bottom' }) {
+export default function Tooltip({ children, content, position = 'bottom' }) {
   const [visible, setVisible] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
   const wrapperRef = useRef(null);

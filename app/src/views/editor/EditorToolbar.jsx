@@ -12,12 +12,6 @@ import debounce from 'lodash/debounce'
 import './EditorToolbar.css'
 
 const EditorToolbar = memo(function EditorToolbar({ onNavigate, menuOpen, handleManualMpcScan }) {
-  EditorToolbar.propTypes = {
-    onNavigate: PropTypes.func,
-    menuOpen: PropTypes.bool,
-    handleManualMpcScan: PropTypes.func,
-  };
-
   const {
     activeScene, activeNovel, characters, updateScene,
   } = useNovel();
@@ -229,5 +223,10 @@ const EditorToolbar = memo(function EditorToolbar({ onNavigate, menuOpen, handle
     </div>
   )
 })
+EditorToolbar.propTypes = {
+  onNavigate: PropTypes.func,
+  menuOpen: PropTypes.bool,
+  handleManualMpcScan: PropTypes.func,
+};
 
 export default EditorToolbar

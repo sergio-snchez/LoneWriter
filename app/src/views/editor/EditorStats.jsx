@@ -37,16 +37,6 @@ function ProgressBar({ value, max, label, sublabel, color }) {
 }
 
 const EditorStats = memo(function EditorStats({ activeNovel, acts, streak, t, updateNovelTarget, isStatsExpanded, setIsStatsExpanded }) {
-  EditorStats.propTypes = {
-    activeNovel: PropTypes.object,
-    acts: PropTypes.array,
-    streak: PropTypes.number,
-    t: PropTypes.func.isRequired,
-    updateNovelTarget: PropTypes.func,
-    isStatsExpanded: PropTypes.bool,
-    setIsStatsExpanded: PropTypes.func,
-  };
-
   const [showGoalEditor, setShowGoalEditor] = useState(false)
   const goalEditorRef = useRef(null)
 
@@ -192,5 +182,14 @@ const EditorStats = memo(function EditorStats({ activeNovel, acts, streak, t, up
     </div>
   )
 })
+EditorStats.propTypes = {
+  activeNovel: PropTypes.object,
+  acts: PropTypes.array,
+  streak: PropTypes.number,
+  t: PropTypes.func.isRequired,
+  updateNovelTarget: PropTypes.func,
+  isStatsExpanded: PropTypes.bool,
+  setIsStatsExpanded: PropTypes.func,
+};
 
 export default EditorStats

@@ -59,8 +59,8 @@ export async function callOpenRouter(prompt, apiKey, model) {
  * @returns {Promise<{text: string, usage: object}>}
  */
 export async function callOpenRouterChat(systemPrompt, messages, apiKey, model) {
-  try {
-    const response = await fetch(OPENROUTER_API_URL, {
+    try {
+    const response = await fetchWithRetry(OPENROUTER_API_URL, {
       method: 'POST',
       headers: { ...OPENROUTER_HEADERS, 'Authorization': `Bearer ${apiKey}` },
       body: JSON.stringify({

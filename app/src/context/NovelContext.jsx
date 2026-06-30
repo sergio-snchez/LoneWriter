@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useNovelData, useNovelCrud, useNovelProgress, useCloudSync, useMergeEngine } from './';
 import { db } from '../db/database';
@@ -68,6 +68,22 @@ export const NovelProvider = ({ children }) => {
       checkCloudBackupStatus()
     }
   }, [loading, checkCloudBackupStatus])
+
+  // Restore last active novel from localStorage after DB initialization
+  const restoredRef = useRef(false)
+  useEffect(() => {
+    if (loading || activeNovel || restoredRef.current) return
+    restoredRef.current = true
+    const savedId = localStorage.getItem('activeNovelId')
+    if (!savedId) return
+    db.novels.get(Number(savedId)).then(novel => {
+      if (novel) {
+        switchNovel(novel.id)
+      } else {
+        localStorage.removeItem('activeNovelId')
+      }
+    })
+  }, [loading, activeNovel, switchNovel])
 
   const merge = useMergeEngine({
     characters,

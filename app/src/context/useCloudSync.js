@@ -42,7 +42,7 @@ export function useCloudSync({ db }) {
           }))
         }
       }
-    } catch (e) {
+    } catch {
       console.warn('[useCloudSync] Error checking backup on startup')
     } finally {
       cloudCheckInProgress.current = false

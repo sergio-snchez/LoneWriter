@@ -31,20 +31,6 @@ export const CATEGORIES = [
 ]
 
 export default function CompendiumPanel({ isOpen, type, item, entities, onClose, onSave }) {
-  CompendiumPanel.propTypes = {
-    isOpen: PropTypes.bool.isRequired,
-    type: PropTypes.oneOf(['characters', 'locations', 'objects', 'lore']).isRequired,
-    item: PropTypes.object,
-    entities: PropTypes.shape({
-      characters: PropTypes.array,
-      locations: PropTypes.array,
-      objects: PropTypes.array,
-      lore: PropTypes.array,
-    }),
-    onClose: PropTypes.func.isRequired,
-    onSave: PropTypes.func.isRequired,
-  };
-
   const { t } = useTranslation('compendium')
   const { acts, activeNovel } = useNovel()
   const { provider, apiKey, currentModel, localBaseUrl, logAIUsage } = useAI()
@@ -503,3 +489,16 @@ function LoreForm({ formData, setFormData, handleChange, characters, objects, lo
     </>
   )
 }
+CompendiumPanel.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  type: PropTypes.oneOf(['characters', 'locations', 'objects', 'lore']).isRequired,
+  item: PropTypes.object,
+  entities: PropTypes.shape({
+    characters: PropTypes.array,
+    locations: PropTypes.array,
+    objects: PropTypes.array,
+    lore: PropTypes.array,
+  }),
+  onClose: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+};

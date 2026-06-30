@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import { AlertTriangle, RotateCcw } from 'lucide-react'
+import i18n from '../i18n/i18n'
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -22,32 +23,30 @@ export default class ErrorBoundary extends Component {
 
   render() {
     if (this.state.hasError) {
-      const { name = 'componente', fallback } = this.props
+      const { name = i18n.t('common:error_boundary.component'), fallback } = this.props
 
-      // If a custom fallback is provided, render it
       if (fallback) {
         return typeof fallback === 'function'
           ? fallback({ error: this.state.error, retry: this.handleRetry })
           : fallback
       }
 
-      // Default fallback UI
       return (
         <div className="error-boundary">
           <div className="error-boundary__content">
             <AlertTriangle size={32} className="error-boundary__icon" />
             <h3 className="error-boundary__title">
-              Algo salió mal en {name}
+              {i18n.t('common:error_boundary.title', { name })}
             </h3>
             <p className="error-boundary__message">
-              {this.state.error?.message || 'Error inesperado'}
+              {this.state.error?.message || i18n.t('common:error_boundary.unknown')}
             </p>
             <button
               className="btn btn-primary error-boundary__btn"
               onClick={this.handleRetry}
             >
               <RotateCcw size={14} />
-              Reintentar
+              {i18n.t('common:error_boundary.retry')}
             </button>
           </div>
         </div>

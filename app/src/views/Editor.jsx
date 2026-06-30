@@ -18,11 +18,6 @@ import './editor/EditorMobile.css'
 import './MpcBadge.css'
 
 export default function EditorView({ menuOpen = false, onNavigate }) {
-  EditorView.propTypes = {
-    menuOpen: PropTypes.bool,
-    onNavigate: PropTypes.func,
-  };
-
   const { t } = useTranslation('editor')
   const {
     acts, activeNovel, characters, updateScene,
@@ -489,3 +484,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
     </div>
   )
 }
+EditorView.propTypes = {
+  menuOpen: PropTypes.bool,
+  onNavigate: PropTypes.func,
+};

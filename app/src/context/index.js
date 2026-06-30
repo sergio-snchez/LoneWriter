@@ -1,5 +1,6 @@
 export { AIProvider, useAI } from './AIContext'
 export { NovelProvider, useNovel } from './NovelContext'
+export { ThemeProvider, useThemeContext } from './ThemeContext'
 export { ModalProvider, useModal } from './ModalContext'
 export { useAIConfig, DEFAULT_MODELS } from './useAIConfig'
 export { useAIMpc, MPC_COOLDOWN_MS } from './useAIMpc'

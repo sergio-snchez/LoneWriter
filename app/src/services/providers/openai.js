@@ -57,8 +57,8 @@ export async function callOpenAI(prompt, apiKey, model) {
  * @returns {Promise<{text: string, usage: object}>}
  */
 export async function callOpenAIChat(systemPrompt, messages, apiKey, model) {
-  try {
-    const response = await fetch(OPENAI_API_URL, {
+    try {
+    const response = await fetchWithRetry(OPENAI_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

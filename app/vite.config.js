@@ -15,7 +15,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    nodePolyfills({ include: ['buffer', 'stream', 'zlib', 'crypto', 'path', 'http', 'https', 'fs', 'os', 'util', 'assert', 'events', 'process', 'url'] }),
+    nodePolyfills({ include: ['buffer', 'stream', 'zlib', 'crypto', 'path', 'http', 'https', 'fs', 'os', 'util', 'assert', 'events', 'url'] }),
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['favicon.svg'],
