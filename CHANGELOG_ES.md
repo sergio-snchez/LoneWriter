@@ -6,6 +6,48 @@
 
 </div>
 
+## [LoneWriter v2.1.0] - 2026-06-30
+### Añadido
+- **ThemeContext**: Nuevo contexto de React envolviendo `useAppPreferences()` que elimina el prop-drilling de `theme`, `setTheme`, `editorFont`, `setEditorFont`, `meshEnabled`, `setMeshEnabled` en 6 componentes (App, WelcomeScreen, MeshBackground, SettingsUITab, SettingsModal, Nexus).
+- **Reactividad de tema en Nexus**: Reemplazado MutationObserver sobre `<html data-theme>` por `useThemeContext().theme` — la detección de tema pasa de observación imperativa del DOM a reactiva vía contexto de React.
+- **UI de recuperación de BD**: Nuevo componente `Boot` en `main.jsx` con 3 estados (loading→error→ready). Panel `DbRecovery` con botones Retry/Reset Database ante fallo de apertura de Dexie. `restoreTables()` ahora incluye rollback automático con backup previo y restauración en caso de error.
+- **Cifrado de claves API**: Nuevo `utils/crypto.js` con `encryptValue`/`decryptValue` usando AES-GCM 256 + derivación PBKDF2 + huella del dispositivo (userAgent, language, screen). Las claves API se cifran antes de persistir en IndexedDB y se descifran al cargar.
+- **Portapapeles con fallback**: Nuevo `utils/clipboard.js` (`copyToClipboard` con `navigator.clipboard.writeText` → `document.execCommand('copy')` como fallback). Migrados OracleTab y RewriteTab.
+- **Validación en AgentEditForm**: Validación de campos (nombre ≤100 chars, prompt ≤4000 chars, ambos obligatorios), errores visuales, y escape HTML via `escapeHtml()` antes de guardar.
+- **i18n en ErrorBoundary**: Textos hardcodeados en español reemplazados por `i18n.t()` y nuevas claves `error_boundary` en `en/common.json` / `es/common.json`.
+- **Auto-restauración de novela activa**: `NovelContext.jsx` restaura la última novela activa desde `localStorage('activeNovelId')` tras la inicialización de la BD. `clearNovelData()` limpia la clave.
+- **Carga diferida de RAG**: `switchNovel` solo ejecuta `indexPendingScenes()` si la flag `lw_oracle_visited` está activa, usando `import()` dinámico. Evita cargar el worker de embeddings si el usuario nunca ha visitado el Oráculo.
+- **3 nuevos archivos de test**: `useAIConfig.test.js` (13 tests), `useNovelCrud.test.js` (12 tests), `useCloudSync.test.js` (10 tests). 6 tests de validación conocida para `encryptPayload`/`decryptPayload` en `exportService.test.js`.
+
+### Cambiado
+- **fetchWithRetry**: Nuevo parámetro `timeoutMs` (por defecto 30s) con `AbortController` + `setTimeout` por intento. Limpieza correcta de timeout en todas las ramas. Todos los proveedores migrados de `fetch()` directo a `fetchWithRetry()` (claude, gemini, openai, openrouter).
+- **Proveedor Claude**: Añadido header `anthropic-dangerous-direct-browser-access: 'true'` requerido por Anthropic para acceso desde navegador.
+- **Marcas de hora localizadas**: OracleTab y useDebateOrchestrator cambiados de `'es-ES'` fijo a `i18n.language` para las marcas de tiempo.
+- **Stopwords sin duplicados**: `addCustomStopword()` verifica si la palabra+idioma ya existe antes de insertar; retorna `{ existing: true }` en duplicados. `StopwordsModal` ignora entradas existentes.
+- **OracleTab**: El error mostrado al usuario ya no incluye `err.stack` (solo `err.message`), evitando exposición de la traza de pila.
+- **useDebate**: `renameDebateSession` ahora clona el array con spread antes de ordenar. Los IDs de mensaje usan `crypto.randomUUID()` en lugar de `Date.now() + Math.random()`.
+- **Exportación refactorizada**: `encryptPayload`/`decryptPayload` promovidas de privadas a exportadas.
+- **SettingsGeneralTab**: Clave i18n fija `general.version_valor` reemplazada por `APP_VERSION` dinámico.
+- **version.test.js**: Cambiado de `toBe('2.0.4')` a `toMatch(/^\d+\.\d+\.\d+/)` flexible.
+- **Proveedor local**: Detección de TypeError simplificada de verificación de cadena a `error instanceof TypeError`.
+- **Exports unificados**: 7 componentes migrados de exportación nombrada a `export default` (CustomDatePicker, MergeOverlay, SettingsAITab, SettingsCloudTab, SettingsGeneralTab, SettingsUITab, Tooltip). Barrel `components/index.js` actualizado.
+- **PropTypes movidos**: Definiciones de `propTypes` movidas fuera del cuerpo de 17 componentes para evitar reevaluación en cada render.
+
+### Corregido
+- **Importación `.lwrt` binaria** (`exportService.js`): Cambiado de `readAsText()` a `readAsArrayBuffer()` con `TextDecoder().decode()` para manejo correcto de UTF-8.
+- **RichEditor**: El manejador `handleApply` ahora valida `typeof e.detail === 'string'` antes de insertar contenido.
+- **RagToast**: Eliminado comentario de estado obsoleto en `useState('idle')`.
+- **entityDetector**: Eliminado import no utilizado de `getEntityStopWords`.
+
+### Eliminado
+- **Polyfill `process`**: Eliminado de `nodePolyfills` en `vite.config.js`.
+- **Prop-drilling**: 6 props de tema eliminadas de SettingsModal y App.jsx.
+
+### Seguridad
+- **Claves API en reposo**: Cifradas con AES-GCM 256 + derivación PBKDF2. Cada clave usa un salt aleatorio y la huella del dispositivo — datos copiados de IndexedDB no se descifrarán en otro dispositivo.
+- **Sanitización HTML**: AgentEditForm escapa la entrada del usuario antes de guardar nombre/prompt del agente.
+- **Seguridad del portapapeles**: Fallback seguro usando `document.execCommand('copy')` cuando la API asíncrona Clipboard no está disponible.
+
 ## [LoneWriter v2.0.4] - 2026-06-14
 ### Añadido
 - **Interruptor de continuidad del Oráculo**: Nueva casilla "Incluir escena anterior como contexto de continuidad" debajo de las entidades detectadas, permitiendo al usuario controlar el consumo de tokens.
