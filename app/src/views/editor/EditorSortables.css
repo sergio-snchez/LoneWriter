@@ -277,6 +277,19 @@
   flex-direction: column;
   gap: 1px;
 }
+.scene-row__title-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+}
+.scene-row__import-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  color: var(--red);
+  opacity: 0.7;
+}
 .scene-row__title {
   font-size: 12px;
   color: var(--text-primary);

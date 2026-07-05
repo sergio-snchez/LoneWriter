@@ -117,11 +117,18 @@ export const SortableSceneRow = memo(function SortableSceneRow({ scene, chapterI
       </div>
       <div className="scene-row__num">{chapterIndex + 1}.{sceneIndex + 1}</div>
       <div className="scene-row__info">
-        <EditableTitle
-          title={scene.title}
-          className="scene-row__title"
-          onSave={(newTitle) => onUpdate(scene.id, { title: newTitle })}
-        />
+        <div className="scene-row__title-row">
+          {scene.status === 'Importado' && (
+            <span className="scene-row__import-icon">
+              <FileDown size={12} />
+            </span>
+          )}
+          <EditableTitle
+            title={scene.title}
+            className="scene-row__title"
+            onSave={(newTitle) => onUpdate(scene.id, { title: newTitle })}
+          />
+        </div>
         <span className="scene-row__pov">{scene.pov ? `POV: ${scene.pov}` : t('escena.sin_pov')}</span>
       </div>
       <div className="scene-row__meta">

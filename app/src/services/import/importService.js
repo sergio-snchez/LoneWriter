@@ -121,7 +121,7 @@ function buildChapters(lines, rangeStart, rangeEnd, h2List, h3List) {
     if (orphanText) {
       chapters[0].scenes.unshift({
         type: 'scene',
-        title: '📥 Preludio',
+        title: 'Preludio',
         text: orphanText,
       })
     }
@@ -155,7 +155,7 @@ function buildScenes(lines, rangeStart, rangeEnd, h3List) {
     if (orphanText) {
       scenes.unshift({
         type: 'scene',
-        title: '📥 Preludio',
+        title: 'Preludio',
         text: orphanText,
       })
     }
@@ -234,7 +234,7 @@ export async function confirmImport(analysis, file, options) {
 
         const sceneId = await db.scenes.add({
           chapterId,
-          title: `📥 ${sc.title || `Escena ${sceneOrder}`}`,
+          title: sc.title || `Escena ${sceneOrder}`,
           order: sceneOrder,
           status: 'Importado',
           wordCount: sc.text.split(/\s+/).filter(Boolean).length,
@@ -254,7 +254,7 @@ export async function confirmImport(analysis, file, options) {
     }
   }
 
-  // Save original file as resource (rawContent for text, or extracted text)
+  // Save original file as resource with re-download capability
   try {
     const displayContent = rawContent || metadata.fileName
     await db.resources.add({
@@ -270,6 +270,7 @@ export async function confirmImport(analysis, file, options) {
       activeForAI: true,
       ignoredForOracle: 0,
       content: displayContent,
+      fileData: file,
     })
   } catch (err) {
     console.error('[Import] Error saving resource:', err)
