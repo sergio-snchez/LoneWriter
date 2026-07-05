@@ -4,11 +4,13 @@
     "en_progreso": "In progress",
     "borrador": "Draft",
     "sin_comenzar": "Not started",
+    "importado": "Imported",
     "opciones": [
       "Not started",
       "Draft",
       "In progress",
-      "Completed"
+      "Completed",
+      "Imported"
     ]
   },
   "editable": {

@@ -1,16 +1,13 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  FileText, Upload, Search, FolderOpen, Tag, Calendar, HardDrive,
-  ExternalLink, Trash2, Eye, Filter, Plus, Zap, AlertCircle, X, Lock,
-  Pin, Edit, ChevronDown, ChevronUp
+  FileText, Upload, Search, FolderOpen, Calendar, HardDrive,
+  Trash2, Eye, Filter, Plus, Zap, X, Pin, Edit, ChevronDown, ChevronUp
 } from 'lucide-react'
 import { useNovel, useAI, useModal } from '../context'
-import { MarkdownRenderer, Tooltip, StopwordsModal } from '../components'
+import { MarkdownRenderer, Tooltip, StopwordsModal, ImportWizard } from '../components'
 import { getAllCustomStopwords } from '../i18n/stopwords'
-import './Resources.css';
-
-const ALLOWED_EXTENSIONS = ['txt', 'md', 'json', 'csv']
+import './Resources.css'
 
 
 function ViewerContent({ res, t, onClose }) {
@@ -112,7 +109,7 @@ function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
 
 export default function ResourcesView() {
   const { t } = useTranslation('resources')
-  const { resources, addCompendiumEntry, deleteCompendiumEntry, updateCompendiumEntry } = useNovel()
+  const { activeNovel, resources, addCompendiumEntry, deleteCompendiumEntry, updateCompendiumEntry } = useNovel()
   const { forceEntityRecheck } = useAI()
   const { openModal } = useModal()
   const [query, setQuery] = useState('')
@@ -120,7 +117,7 @@ export default function ResourcesView() {
   const [showFilters, setShowFilters] = useState(false)
   const [alertsExpanded, setAlertsExpanded] = useState(false)
   const [wordCount, setWordCount] = useState(0)
-  const fileInputRef = useRef(null)
+  const [importOpen, setImportOpen] = useState(false)
 
   useEffect(() => {
     getAllCustomStopwords().then(w => setWordCount(w.length)).catch(() => {})
@@ -144,53 +141,12 @@ export default function ResourcesView() {
   const totalBytes = resources.reduce((acc, r) => acc + (r.sizeRaw || 0), 0)
   const totalSize = formatBytes(totalBytes)
 
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    const ext = file.name.split('.').pop().toLowerCase()
-    if (!ALLOWED_EXTENSIONS.includes(ext)) {
-      openModal('alert', { message: t('formato_no_soportado', { ext }) });
-      if (fileInputRef.current) fileInputRef.current.value = ''
-      return
-    }
-
-    const typeMap = { txt: 'TXT', md: 'Markdown', json: 'JSON', csv: 'CSV' }
-
-    const newRes = {
-      name: file.name,
-      description: 'Archivo importado',
-      type: typeMap[ext],
-      icon: 'file-text',
-      size: formatBytes(file.size),
-      sizeRaw: file.size,
-      dateAdded: new Date().toISOString(),
-      tags: [],
-      activeForAI: true,
-      content: null
-    }
-
-    const reader = new FileReader()
-    reader.onload = async (event) => {
-      newRes.content = event.target.result
-      await addCompendiumEntry('resources', newRes)
-    }
-    reader.readAsText(file)
-    
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
+  const handleImportComplete = useCallback(() => {
+    setImportOpen(false)
+  }, [])
 
   return (
     <div className="resources-view">
-      {/* Hidden File Input */}
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        className="resources-hidden-input"
-        onChange={handleFileChange}
-        accept=".txt,.md,.json,.csv" 
-      />
-
       <div className="resources-top-glass">
         {/* Header */}
       <div className="resources-view__header">
@@ -212,9 +168,9 @@ export default function ResourcesView() {
               </span>
             )}
           </button>
-          <button className="btn btn-primary" id="resources-upload-btn" onClick={() => fileInputRef.current?.click()}>
+          <button className="btn btn-primary" id="resources-import-btn" onClick={() => setImportOpen(true)}>
             <Upload size={13} />
-            {t('cargar')}
+            {t('importar_documento')}
           </button>
         </div>
       </div>
@@ -294,7 +250,15 @@ export default function ResourcesView() {
       </div>
       </div>
 
-      {/* File list */}
+      {importOpen ? (
+        <ImportWizard
+          novelId={activeNovel?.id}
+          onComplete={handleImportComplete}
+          onCancel={() => setImportOpen(false)}
+        />
+      ) : (
+        <>
+        {/* File list */}
       <div className="resources-list">
         {/* Stopwords Fictional Card - Always Pinned at Top */}
         <div className="res-row res-row--pinned">
@@ -347,16 +311,17 @@ export default function ResourcesView() {
       <div 
         className="resources-dropzone" 
         id="resources-dropzone"
-        onClick={() => fileInputRef.current?.click()}
+        onClick={() => setImportOpen(true)}
       >
         <Upload size={20} />
         <span>{t('dropzone')}</span>
-        <button className="btn btn-ghost">
+        <span className="btn btn-ghost">
           <Plus size={13} />
-          {t('seleccionar')}
-        </button>
+          {t('importar_documento')}
+        </span>
       </div>
-
+      </>
+      )}
 
     </div>
   )

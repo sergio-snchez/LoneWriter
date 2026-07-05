@@ -110,7 +110,7 @@ export const NovelProvider = ({ children }) => {
     addCompendiumEntry, updateCompendiumEntry, deleteCompendiumEntry,
     isCloudSyncEnabled, cloudSyncStatus, lastCloudSync,
     toggleCloudSync, performCloudSync,
-    refreshAfterRestore,
+    refreshAllNovels, reloadData, refreshAfterRestore,
     ...merge,
     expandedIds, setExpandedIds,
   }), [
@@ -129,7 +129,7 @@ export const NovelProvider = ({ children }) => {
     addCompendiumEntry, updateCompendiumEntry, deleteCompendiumEntry,
     isCloudSyncEnabled, cloudSyncStatus, lastCloudSync,
     toggleCloudSync, performCloudSync,
-    refreshAfterRestore,
+    refreshAllNovels, reloadData, refreshAfterRestore,
     merge.mergeGroups, merge.selectedMerge, merge.mergeResult,
     merge.isMerging, merge.mergingEntitiesIds, merge.isScanningMerge,
     merge.selectedMergeIdx, merge.showMergeOverlay, merge.isMergeOverlayClosing,

@@ -4,11 +4,13 @@
     "en_progreso": "En progreso",
     "borrador": "Borrador",
     "sin_comenzar": "Sin comenzar",
+    "importado": "Importado",
     "opciones": [
       "Sin comenzar",
       "Borrador",
       "En progreso",
-      "Finalizado"
+      "Finalizado",
+      "Importado"
     ]
   },
   "editable": {

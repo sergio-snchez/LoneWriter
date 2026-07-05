@@ -22,3 +22,4 @@ export {
 } from './compendiumSearch'
 export { ExportService, compressToJson, decodeFromLwrt } from './exportService'
 export { GoogleDriveService } from './googleDriveService'
+export { analyzeFile, confirmImport, supportsFile, ALLOWED_EXTENSIONS } from './import'
