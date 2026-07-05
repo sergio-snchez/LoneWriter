@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import {
   ChevronDown, ChevronRight, Plus, CheckCircle2, Circle,
-  AlertCircle, Trash2, GripVertical,
+  AlertCircle, Trash2, GripVertical, FileDown,
 } from 'lucide-react'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -20,13 +20,14 @@ import './EditorSortables.css'
 // ─── Status Maps ──────────────────────────────────────────────────────────────
 
 export const STATUS_MAP = {
-  'Finalizado':   { icon: CheckCircle2, cls: 'status-done',  badge: 'badge-green' },
-  'En progreso':  { icon: AlertCircle,  cls: 'status-wip',   badge: 'badge-gold'  },
-  'Borrador':     { icon: Circle,       cls: 'status-draft',  badge: 'badge-muted' },
-  'Sin comenzar': { icon: Circle,       cls: 'status-none',   badge: 'badge-muted' },
+  'Finalizado':   { icon: CheckCircle2, cls: 'status-done',     badge: 'badge-green' },
+  'En progreso':  { icon: AlertCircle,  cls: 'status-wip',      badge: 'badge-gold'  },
+  'Borrador':     { icon: Circle,       cls: 'status-draft',    badge: 'badge-muted' },
+  'Sin comenzar': { icon: Circle,       cls: 'status-none',     badge: 'badge-muted' },
+  'Importado':    { icon: FileDown,     cls: 'status-imported', badge: 'badge-red'   },
 }
 
-export const STATUS_OPTIONS = ['Sin comenzar', 'Borrador', 'En progreso', 'Finalizado']
+export const STATUS_OPTIONS = ['Sin comenzar', 'Borrador', 'En progreso', 'Finalizado', 'Importado']
 
 // ─── StatusBadge ─────────────────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ export function StatusBadge({ status }) {
   return <span className={`badge ${map.badge}`}>{t(`estado.${statusKey}`)}</span>
 }
 StatusBadge.propTypes = {
-  status: PropTypes.oneOf(['Sin comenzar', 'Borrador', 'En progreso', 'Finalizado']),
+  status: PropTypes.oneOf(['Sin comenzar', 'Borrador', 'En progreso', 'Finalizado', 'Importado']),
 };
 
 // ─── EditableTitle ────────────────────────────────────────────────────────────

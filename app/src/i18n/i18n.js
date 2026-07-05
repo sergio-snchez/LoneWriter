@@ -15,6 +15,8 @@ import aiES from './locales/es/ai.json';
 import aiEN from './locales/en/ai.json';
 import settingsES from './locales/es/settings.json';
 import settingsEN from './locales/en/settings.json';
+import importES from './locales/es/import.json';
+import importEN from './locales/en/import.json';
 
 const resources = {
   es: {
@@ -25,6 +27,7 @@ const resources = {
     resources: resourcesES,
     ai: aiES,
     settings: settingsES,
+    import: importES,
   },
   en: {
     common: commonEN,
@@ -34,6 +37,7 @@ const resources = {
     resources: resourcesEN,
     ai: aiEN,
     settings: settingsEN,
+    import: importEN,
   },
 };
 

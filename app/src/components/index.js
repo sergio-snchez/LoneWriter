@@ -1,6 +1,7 @@
 export { default as AIPanel } from './AIPanel'
 export { default as CustomDatePicker } from './CustomDatePicker'
 export { default as ErrorBoundary } from './ErrorBoundary'
+export { default as ImportWizard } from './ImportWizard'
 export { default as LanguageSelector } from './LanguageSelector'
 export { default as MarkdownRenderer } from './MarkdownRenderer'
 export { default as MergeOverlay } from './MergeOverlay'

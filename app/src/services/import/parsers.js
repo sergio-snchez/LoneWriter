@@ -1,0 +1,266 @@
+import mammoth from 'mammoth'
+import * as pdfjsLib from 'pdfjs-dist'
+import JSZip from 'jszip'
+
+// ── pdfjs-dist worker setup ─────────────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).href
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+const ALLOWED_EXTENSIONS = ['txt', 'md', 'docx', 'pdf', 'odt']
+
+function getExtension(fileName) {
+  const parts = fileName.split('.')
+  if (parts.length < 2) return ''
+  return parts.pop().toLowerCase()
+}
+
+function extractTitle(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+  return lines[0] || ''
+}
+
+function stripHtml(html) {
+  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+function htmlToTextWithMarkers(html) {
+  let text = html.replace(/<h([1-6])[^>]*>(.*?)<\/h\1>/gi, (_, level, content) => {
+    const clean = content.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').trim()
+    return '\n' + '#'.repeat(parseInt(level)) + ' ' + clean + '\n'
+  })
+  text = text.replace(/<[^>]+>/g, '')
+  text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+  text = text.replace(/\n{3,}/g, '\n\n')
+  return text.trim()
+}
+
+function countWords(text) {
+  return text.split(/\s+/).filter(Boolean).length
+}
+
+// ── Heading detection helpers ───────────────────────────────────────────────
+
+function findMarkdownHeadings(text) {
+  const headings = []
+  const lines = text.split('\n')
+  for (let i = 0; i < lines.length; i++) {
+    const match = lines[i].match(/^(#{1,6})\s+(.+)/)
+    if (match) {
+      headings.push({
+        text: match[2].trim(),
+        level: match[1].length,
+        lineIndex: i,
+      })
+    }
+  }
+  return headings
+}
+
+function findPdfHeadings(items) {
+  const headings = []
+  const fontSizes = items.map(i => i.height || 0).filter(h => h > 0)
+  if (fontSizes.length === 0) return headings
+
+  const avgSize = fontSizes.reduce((a, b) => a + b, 0) / fontSizes.length
+  const threshold = avgSize * 1.35
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i]
+    if ((item.height || 0) > threshold && item.str.trim().length > 0) {
+      headings.push({
+        text: item.str.trim(),
+        level: (item.height || 0) > threshold * 1.5 ? 1 : 2,
+        position: i,
+      })
+    }
+  }
+  return headings
+}
+
+function extractOdtTextAndHeadings(xmlDoc) {
+  const textNs = 'urn:oasis:names:tc:opendocument:xmlns:text:1.0'
+  const lines = []
+  const headings = []
+  let lineIndex = 0
+
+  function walk(node) {
+    if (node.nodeType === 1) {
+      const ns = node.namespaceURI || ''
+      const tag = node.tagName ? node.tagName.toLowerCase() : ''
+
+      if (ns === textNs && (tag === 'text:p' || tag === 'text:h')) {
+        const textContent = node.textContent.trim()
+        if (textContent) {
+          lines.push(textContent)
+
+          if (tag === 'text:h') {
+            const level = parseInt(node.getAttributeNS(textNs, 'outline-level')) || 1
+            headings.push({ text: textContent, level, lineIndex })
+          }
+
+          lineIndex++
+          return
+        }
+      }
+    }
+
+    for (let i = 0; i < node.childNodes.length; i++) {
+      walk(node.childNodes[i])
+    }
+  }
+
+  walk(xmlDoc.documentElement)
+
+  return { text: lines.join('\n'), headings }
+}
+
+// ── Individual format parsers ───────────────────────────────────────────────
+
+async function parseTxt(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const text = e.target.result
+      resolve({
+        pages: [{ text, headings: [] }],
+        metadata: { title: extractTitle(text), author: '' },
+        rawContent: text,
+      })
+    }
+    reader.onerror = () => reject(new Error('Error reading text file'))
+    reader.readAsText(file)
+  })
+}
+
+async function parseMd(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const text = e.target.result
+      const headings = findMarkdownHeadings(text)
+      const h1 = headings.find(h => h.level === 1)
+      resolve({
+        pages: [{ text, headings }],
+        metadata: { title: h1?.text || extractTitle(text), author: '' },
+        rawContent: text,
+      })
+    }
+    reader.onerror = () => reject(new Error('Error reading markdown file'))
+    reader.readAsText(file)
+  })
+}
+
+async function parseDocx(file) {
+  try {
+    const arrayBuffer = await file.arrayBuffer()
+    const result = await mammoth.convertToHtml({ arrayBuffer })
+    const html = result.value
+    const text = htmlToTextWithMarkers(html)
+    const headings = findMarkdownHeadings(text)
+    const h1 = headings.find(h => h.level === 1)
+
+    return {
+      pages: [{ text, headings }],
+      metadata: { title: h1?.text || extractTitle(text), author: '' },
+    }
+  } catch (err) {
+    throw new Error(`Error parsing DOCX: ${err.message}`)
+  }
+}
+
+async function parsePdf(file) {
+  try {
+    const arrayBuffer = await file.arrayBuffer()
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+    const pages = []
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i)
+      const content = await page.getTextContent()
+      const text = content.items.map(item => item.str).join(' ').trim()
+      const headings = findPdfHeadings(content.items)
+
+      pages.push({ text, headings })
+    }
+
+    const allText = pages.map(p => p.text).join('\n')
+    const pageOneHeadings = pages[0]?.headings || []
+
+    return {
+      pages,
+      metadata: {
+        title: pageOneHeadings.find(h => h.level === 1)?.text || extractTitle(allText),
+        author: '',
+      },
+    }
+  } catch (err) {
+    throw new Error(`Error parsing PDF: ${err.message}`)
+  }
+}
+
+async function parseOdt(file) {
+  try {
+    const arrayBuffer = await file.arrayBuffer()
+    const zip = await JSZip.loadAsync(arrayBuffer)
+    const contentXmlFile = zip.file('content.xml')
+    if (!contentXmlFile) throw new Error('Invalid ODT: missing content.xml')
+
+    const contentXml = await contentXmlFile.async('string')
+    const parser = new DOMParser()
+    const xmlDoc = parser.parseFromString(contentXml, 'text/xml')
+    const { text, headings } = extractOdtTextAndHeadings(xmlDoc)
+    const h1 = headings.find(h => h.level === 1)
+
+    return {
+      pages: [{ text, headings }],
+      metadata: { title: h1?.text || extractTitle(text), author: '' },
+    }
+  } catch (err) {
+    throw new Error(`Error parsing ODT: ${err.message}`)
+  }
+}
+
+// ── Public API ──────────────────────────────────────────────────────────────
+
+const PARSERS = {
+  txt: parseTxt,
+  md: parseMd,
+  docx: parseDocx,
+  pdf: parsePdf,
+  odt: parseOdt,
+}
+
+export function supportsFile(file) {
+  const ext = getExtension(file.name)
+  return ALLOWED_EXTENSIONS.includes(ext)
+}
+
+export async function parseFile(file) {
+  const ext = getExtension(file.name)
+  const parser = PARSERS[ext]
+  if (!parser) {
+    throw new Error(`Unsupported format: .${ext}`)
+  }
+
+  const result = await parser(file)
+
+  const totalWords = result.pages.reduce((sum, p) => sum + countWords(p.text), 0)
+
+  return {
+    ...result,
+    metadata: {
+      ...result.metadata,
+      format: ext.toUpperCase(),
+      fileName: file.name,
+      fileSize: file.size,
+      wordCount: totalWords,
+      pageCount: result.pages.length,
+    },
+  }
+}
+
+export { ALLOWED_EXTENSIONS }

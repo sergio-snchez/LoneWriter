@@ -305,9 +305,10 @@
     inset: 0;
     border-radius: 50%;
   }
-  .scene-row__meta .badge-green::after { background: var(--green); }
-  .scene-row__meta .badge-gold::after  { background: var(--gold); }
-  .scene-row__meta .badge-muted::after { background: var(--text-muted); opacity: 0.5; }
+  .scene-row__meta .badge-green::after  { background: var(--green); }
+  .scene-row__meta .badge-gold::after   { background: var(--gold); }
+  .scene-row__meta .badge-red::after    { background: var(--red); }
+  .scene-row__meta .badge-muted::after  { background: var(--text-muted); opacity: 0.5; }
 }
 
 @keyframes slideInRight {
