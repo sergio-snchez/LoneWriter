@@ -60,25 +60,71 @@ function findMarkdownHeadings(text) {
   return headings
 }
 
-function findPdfHeadings(items) {
-  const headings = []
-  const fontSizes = items.map(i => i.height || 0).filter(h => h > 0)
-  if (fontSizes.length === 0) return headings
+function reconstructPdfPage(items) {
+  const tolerance = 5
+  const yGroups = new Map()
 
-  const avgSize = fontSizes.reduce((a, b) => a + b, 0) / fontSizes.length
-  const threshold = avgSize * 1.35
+  for (const item of items) {
+    const str = (item.str || '').trim()
+    if (!str) continue
 
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i]
-    if ((item.height || 0) > threshold && item.str.trim().length > 0) {
-      headings.push({
-        text: item.str.trim(),
-        level: (item.height || 0) > threshold * 1.5 ? 1 : 2,
-        position: i,
-      })
+    const y = Math.round(item.transform[5] / tolerance) * tolerance
+
+    if (!yGroups.has(y)) yGroups.set(y, [])
+    yGroups.get(y).push(item)
+  }
+
+  if (yGroups.size === 0) {
+    return { lines: [], headings: [], text: '' }
+  }
+
+  const sortedYs = Array.from(yGroups.keys()).sort((a, b) => b - a)
+
+  const lines = []
+  const lineMaxSizes = []
+  const allSizes = []
+
+  for (const y of sortedYs) {
+    const group = yGroups.get(y)
+    group.sort((a, b) => a.transform[4] - b.transform[4])
+
+    let lineText = ''
+    let maxH = 0
+    for (const item of group) {
+      lineText += item.str
+      if (item.height > 0) {
+        allSizes.push(item.height)
+        if (item.height > maxH) maxH = item.height
+      }
+    }
+    lineText = lineText.trim()
+    if (lineText) {
+      lines.push(lineText)
+      lineMaxSizes.push(maxH)
     }
   }
-  return headings
+
+  if (allSizes.length === 0) {
+    return { lines, headings: [], text: lines.join('\n') }
+  }
+
+  const sizeCounts = new Map()
+  for (const s of allSizes) {
+    const key = Math.round(s * 10) / 10
+    sizeCounts.set(key, (sizeCounts.get(key) || 0) + 1)
+  }
+  const dominantSize = Array.from(sizeCounts.entries()).sort((a, b) => b[1] - a[1])[0][0]
+
+  const headings = []
+  for (let li = 0; li < lines.length; li++) {
+    const maxSize = lineMaxSizes[li]
+    if (maxSize > 0 && maxSize > dominantSize * 1.3) {
+      const level = maxSize > dominantSize * 1.8 ? 1 : 2
+      headings.push({ text: lines[li], level, lineIndex: li })
+    }
+  }
+
+  return { lines, headings, text: lines.join('\n') }
 }
 
 function extractOdtTextAndHeadings(xmlDoc) {
@@ -176,25 +222,43 @@ async function parsePdf(file) {
   try {
     const arrayBuffer = await file.arrayBuffer()
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-    const pages = []
+    const allLines = []
+    const allHeadings = []
 
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i)
       const content = await page.getTextContent()
-      const text = content.items.map(item => item.str).join(' ').trim()
-      const headings = findPdfHeadings(content.items)
+      const { lines, headings } = reconstructPdfPage(content.items)
 
-      pages.push({ text, headings })
+      if (lines.length === 0) continue
+
+      let pageStartIndex
+      if (allLines.length === 0) {
+        pageStartIndex = 0
+      } else {
+        allLines.push('')
+        pageStartIndex = allLines.length
+      }
+
+      allLines.push(...lines)
+
+      for (const h of headings) {
+        allHeadings.push({
+          text: h.text,
+          level: h.level,
+          lineIndex: pageStartIndex + h.lineIndex,
+        })
+      }
     }
 
-    const allText = pages.map(p => p.text).join('\n')
-    const pageOneHeadings = pages[0]?.headings || []
+    const fullText = allLines.join('\n')
 
     return {
-      pages,
+      pages: [{ text: fullText, headings: allHeadings }],
       metadata: {
-        title: pageOneHeadings.find(h => h.level === 1)?.text || extractTitle(allText),
+        title: allHeadings.find(h => h.level === 1)?.text || extractTitle(fullText),
         author: '',
+        pageCount: pdf.numPages,
       },
     }
   } catch (err) {
@@ -258,7 +322,7 @@ export async function parseFile(file) {
       fileName: file.name,
       fileSize: file.size,
       wordCount: totalWords,
-      pageCount: result.pages.length,
+      pageCount: result.metadata.pageCount ?? result.pages.length,
     },
   }
 }

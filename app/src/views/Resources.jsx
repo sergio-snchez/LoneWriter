@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   FileText, Upload, Search, FolderOpen, Calendar, HardDrive,
-  Trash2, Eye, Filter, Plus, Zap, X, Pin, Edit, ChevronDown, ChevronUp
+  Trash2, Eye, Filter, Plus, Zap, X, Pin, Edit, ChevronDown, ChevronUp, Download
 } from 'lucide-react'
 import { useNovel, useAI, useModal } from '../context'
 import { MarkdownRenderer, Tooltip, StopwordsModal, ImportWizard } from '../components'
@@ -43,7 +43,7 @@ function formatBytes(bytes, decimals = 2) {
 }
 
 
-function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
+function ResourceRow({ res, onDelete, onToggleIgnore, onView, onDownload }) {
   const { t } = useTranslation('resources')
   const dateStr = res.dateAdded ? new Date(res.dateAdded).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '--'
 
@@ -92,6 +92,13 @@ function ResourceRow({ res, onDelete, onToggleIgnore, onView }) {
             <Zap size={14} className={res.ignoredForOracle !== 1 ? 'resource-icon--active' : 'resource-icon--ignored'} />
           </button>
         </Tooltip>
+        {onDownload && (
+          <Tooltip content={t('descargar')}>
+            <button className="res-action-btn" aria-label={t('descargar')} onClick={() => onDownload(res)}>
+              <Download size={14} />
+            </button>
+          </Tooltip>
+        )}
         <Tooltip content={t('ver')}>
           <button className="res-action-btn" aria-label={t('ver')} onClick={() => onView(res)}>
             <Eye size={14} />
@@ -143,6 +150,19 @@ export default function ResourcesView() {
 
   const handleImportComplete = useCallback(() => {
     setImportOpen(false)
+  }, [])
+
+  const handleDownload = useCallback((res) => {
+    if (!res.fileData) return
+    const blob = res.fileData instanceof Blob ? res.fileData : new Blob([res.fileData], { type: res.type === 'PDF' ? 'application/pdf' : 'application/octet-stream' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = res.name
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }, [])
 
   return (
@@ -302,6 +322,7 @@ export default function ResourcesView() {
               onDelete={(id) => deleteCompendiumEntry('resources', id)}
               onToggleIgnore={(r) => updateCompendiumEntry('resources', r.id, { ignoredForOracle: r.ignoredForOracle ? 0 : 1 })}
               onView={(res) => openModal('custom', { render: (close) => <ViewerContent res={res} t={t} onClose={close} /> })}
+              onDownload={res.fileData ? handleDownload : null}
             />
           ))
         )}
