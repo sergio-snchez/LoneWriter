@@ -464,6 +464,84 @@
   margin-top: 8px;
 }
 
+/* ── Reimport dialog ─────────────────────── */
+
+.import-step--reimport {
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.reimport-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.reimport-header__icon {
+  color: var(--accent-light);
+}
+
+.reimport-header__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.reimport-header__desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 380px;
+  line-height: 1.5;
+}
+
+.reimport-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.reimport-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  cursor: pointer;
+  transition: all var(--trans-fast);
+  text-align: left;
+}
+
+.reimport-option:hover {
+  border-color: var(--border-accent);
+  background: var(--bg-hover);
+}
+
+.reimport-option--selected {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.reimport-option__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.reimport-option__desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 /* ============================================
    RESPONSIVE
    ============================================ */

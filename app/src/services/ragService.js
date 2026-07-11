@@ -120,13 +120,17 @@ export function chunkText(text, maxWords = 250, overlap = 30) {
  * @param {number} sceneId
  * @param {number} novelId
  * @param {string} text  - plain text (no HTML)
+ * @param {Object} [options] - Optional metadata
+ * @param {number} [options.chapterId] - Chapter ID for scoped RAG queries
+ * @param {number} [options.actId] - Act ID for scoped RAG queries
  */
-export async function upsertVector(sceneId, novelId, text) {
+export async function upsertVector(sceneId, novelId, text, options = {}) {
   if (!text || text.trim().length < 10) {
     await deleteVectorsForScene(sceneId);
     return;
   }
   const trimmed = text.trim();
+  const { chapterId, actId } = options;
   
   // Transform scene into chunks to avoid model truncation (limit 512 tokens) and improve granularity
   const chunks = chunkText(trimmed, 250, 30);
@@ -175,6 +179,8 @@ export async function upsertVector(sceneId, novelId, text) {
         text: pending.text,
         textHash: pending.hash,
         embedding,
+        chapterId: chapterId || null,
+        actId: actId || null,
         indexedAt: new Date().toISOString()
       });
     } catch (err) {
@@ -202,9 +208,15 @@ export async function deleteVectorsForNovel(novelId) {
  * @param {string} query     - The user's question
  * @param {number} novelId   - Scope to this novel
  * @param {number} topK      - How many fragments to return (default 4)
+ * @param {Object} [options] - Filter options
+ * @param {number} [options.excludeSceneId] - Exclude this scene from results
+ * @param {number} [options.chapterId] - Only search within this chapter
+ * @param {number} [options.actId] - Only search within this act
+ * @param {AbortSignal} [signal] - Abort signal
  * @returns {string[]} Array of plain-text fragments, sorted by relevance
  */
-export async function retrieveRelevantFragments(query, novelId, topK = 4, excludeSceneId = null, signal = null) {
+export async function retrieveRelevantFragments(query, novelId, topK = 4, options = {}) {
+  const { excludeSceneId, chapterId, actId, signal } = options;
   if (!query || query.trim().length < 3) return [];
   if (signal?.aborted) return [];
 
@@ -216,6 +228,12 @@ export async function retrieveRelevantFragments(query, novelId, topK = 4, exclud
 
     if (excludeSceneId != null) {
       allVectors = allVectors.filter(v => v.sceneId !== excludeSceneId);
+    }
+    if (chapterId != null) {
+      allVectors = allVectors.filter(v => v.chapterId === chapterId);
+    }
+    if (actId != null) {
+      allVectors = allVectors.filter(v => v.actId === actId);
     }
 
     if (allVectors.length === 0) return [];
@@ -257,7 +275,7 @@ export async function indexPendingScenes(novelId) {
           const plain = sc.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
           if (plain.length < 10) continue;
           if (!indexedSceneIds.has(sc.id)) {
-            await upsertVector(sc.id, novelId, plain);
+            await upsertVector(sc.id, novelId, plain, { chapterId: ch.id, actId: act.id });
           }
         }
       }
@@ -265,4 +283,24 @@ export async function indexPendingScenes(novelId) {
   } catch (err) {
     console.error('[RAG] Batch indexing error:', err);
   }
+}
+
+/**
+ * Get vector statistics for a novel.
+ * @param {number} novelId
+ * @returns {Promise<{ totalVectors: number, byChapter: Map<number, number>, byAct: Map<number, number> }>}
+ */
+export async function getVectorStats(novelId) {
+  const vectors = await db.vectors.where('novelId').equals(novelId).toArray();
+  const byChapter = new Map();
+  const byAct = new Map();
+  for (const v of vectors) {
+    if (v.chapterId != null) {
+      byChapter.set(v.chapterId, (byChapter.get(v.chapterId) || 0) + 1);
+    }
+    if (v.actId != null) {
+      byAct.set(v.actId, (byAct.get(v.actId) || 0) + 1);
+    }
+  }
+  return { totalVectors: vectors.length, byChapter, byAct };
 }

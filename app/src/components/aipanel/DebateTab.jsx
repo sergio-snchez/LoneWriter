@@ -31,7 +31,7 @@ function DebateTab({ activeScene }) {
   } = useAI()
   const { resources, activeNovel, acts } = useNovel()
   const { openModal } = useModal()
-  const activeSessionTitle = debateSessions.find(s => s.id === activeSessionId)?.title || 'Nuevo debate'
+  const activeSessionTitle = debateSessions.find(s => s.id === activeSessionId)?.title || t('oraculo.nuevo_debate')
 
   const {
     input, setInput,

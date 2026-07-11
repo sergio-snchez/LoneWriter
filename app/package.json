@@ -64,5 +64,10 @@
     "vite-plugin-node-polyfills": "^0.28.0",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.1.8"
+  },
+  "allowScripts": {
+    "onnxruntime-node@1.24.3": true,
+    "protobufjs@7.6.4": true,
+    "sharp@0.34.5": true
   }
 }

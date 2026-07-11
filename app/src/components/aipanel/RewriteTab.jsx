@@ -5,7 +5,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
-import i18n from '../../i18n/i18n'
 import './RewriteTab.css'
 import './Markdown.css'
 import {
@@ -127,10 +126,9 @@ export default function RewriteTab({ activeScene }) {
                   setActiveGoal(id);
                   // Populate the instruction textarea with the prompt template
                   const template = prompts[id] || '';
-                  const isSpanish = i18n.language === 'es';
-                  const defaultTone = isSpanish ? 'más dramático' : 'more dramatic';
-                  const defaultLength = isSpanish ? 'conciso' : 'concise';
-                  const defaultChar = activeScene?.pov || (isSpanish ? 'el protagonista' : 'the protagonist');
+                  const defaultTone = t('rewrite.default_tono');
+                  const defaultLength = t('rewrite.default_longitud');
+                  const defaultChar = activeScene?.pov || t('rewrite.default_personaje');
 
                   const processed = template
                     .replace(/\[TONO\]/g, defaultTone).replace(/\[TONE\]/g, defaultTone)

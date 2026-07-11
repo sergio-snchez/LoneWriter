@@ -12,6 +12,8 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 
 const ALLOWED_EXTENSIONS = ['txt', 'md', 'docx', 'pdf', 'odt']
 
+const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+
 function getExtension(fileName) {
   const parts = fileName.split('.')
   if (parts.length < 2) return ''
@@ -40,6 +42,22 @@ function htmlToTextWithMarkers(html) {
 
 function countWords(text) {
   return text.split(/\s+/).filter(Boolean).length
+}
+
+/**
+ * Compute FNV-1a hash of file content for re-import detection.
+ * @param {File} file
+ * @returns {Promise<string>} Hex string hash
+ */
+export async function computeFileHash(file) {
+  const buffer = await file.arrayBuffer()
+  const bytes = new Uint8Array(buffer)
+  let h = 2166136261
+  for (let i = 0; i < bytes.length; i++) {
+    h ^= bytes[i]
+    h = Math.imul(h, 16777619)
+  }
+  return (h >>> 0).toString(16)
 }
 
 // ── Heading detection helpers ───────────────────────────────────────────────
@@ -304,13 +322,19 @@ export function supportsFile(file) {
 }
 
 export async function parseFile(file) {
+  if (file.size > MAX_FILE_SIZE) {
+    const maxMB = Math.round(MAX_FILE_SIZE / (1024 * 1024))
+    const fileMB = (file.size / (1024 * 1024)).toFixed(1)
+    throw new Error(`File too large (${fileMB}MB). Maximum allowed size is ${maxMB}MB.`)
+  }
+
   const ext = getExtension(file.name)
   const parser = PARSERS[ext]
   if (!parser) {
     throw new Error(`Unsupported format: .${ext}`)
   }
 
-  const result = await parser(file)
+  const [result, contentHash] = await Promise.all([parser(file), computeFileHash(file)])
 
   const totalWords = result.pages.reduce((sum, p) => sum + countWords(p.text), 0)
 
@@ -323,8 +347,9 @@ export async function parseFile(file) {
       fileSize: file.size,
       wordCount: totalWords,
       pageCount: result.metadata.pageCount ?? result.pages.length,
+      contentHash,
     },
   }
 }
 
-export { ALLOWED_EXTENSIONS }
+export { ALLOWED_EXTENSIONS, MAX_FILE_SIZE }

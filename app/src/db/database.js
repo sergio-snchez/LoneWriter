@@ -80,6 +80,12 @@ db.version(14).stores({
   scenes: '++id, chapterId, title, order, status, pov, inGameDate'
 });
 
+// v15: Re-importación de documentos + filtrado RAG por capítulo/acto
+db.version(15).stores({
+  resources: '++id, novelId, name, type, ignoredForOracle, contentHash',
+  vectors: '++id, sceneId, novelId, textHash, text, chapterId, actId'
+});
+
 /**
  * Opens the database with error handling for migration failures.
  * Stores error info in sessionStorage if migration fails, so the App
