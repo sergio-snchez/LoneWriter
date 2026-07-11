@@ -1,5 +1,5 @@
 import { db } from '../../db/database'
-import { upsertVector } from '../ragService'
+import { upsertVector, deleteVectorsForScene } from '../ragService'
 import { parseFile } from './parsers'
 
 // ── Structure building ──────────────────────────────────────────────────────
@@ -170,6 +170,21 @@ function getLineIndex(heading) {
 
 // ── Public API ──────────────────────────────────────────────────────────────
 
+/**
+ * Check if a file was previously imported into a novel.
+ * @param {string} contentHash - Hash of the file content
+ * @param {number} novelId - Novel to search in
+ * @returns {Promise<Object|null>} Existing resource or null
+ */
+export async function findExistingImport(contentHash, novelId) {
+  if (!contentHash || !novelId) return null
+  const matches = await db.resources
+    .where('novelId').equals(novelId)
+    .and(r => r.contentHash === contentHash)
+    .toArray()
+  return matches[0] || null
+}
+
 export async function analyzeFile(file) {
   const parsed = await parseFile(file)
   const { sections, hasStructure } = buildSections(parsed.pages)
@@ -184,7 +199,7 @@ export async function analyzeFile(file) {
 
 export async function confirmImport(analysis, file, options) {
   const { metadata, sections, rawContent } = analysis
-  const { createNewNovel, existingNovelId, novelTitle } = options
+  const { createNewNovel, existingNovelId, novelTitle, importMode, existingResource } = options
 
   let novelId
   if (createNewNovel) {
@@ -204,6 +219,38 @@ export async function confirmImport(analysis, file, options) {
 
   const createdSceneIds = []
 
+  // Update mode: remove old scenes and vectors first
+  if (importMode === 'update' && existingResource?.importedSceneIds?.length > 0) {
+    for (const oldSceneId of existingResource.importedSceneIds) {
+      try {
+        await deleteVectorsForScene(oldSceneId)
+        await db.scenes.delete(oldSceneId)
+      } catch (err) {
+        console.error('[Import] Error deleting old scene', oldSceneId, err)
+      }
+    }
+    // Also delete old acts/chapters that were part of this import
+    if (existingResource.importedActIds?.length > 0) {
+      for (const oldActId of existingResource.importedActIds) {
+        try {
+          const oldChapters = await db.chapters.where('actId').equals(oldActId).toArray()
+          for (const ch of oldChapters) {
+            const chScenes = await db.scenes.where('chapterId').equals(ch.id).toArray()
+            for (const sc of chScenes) {
+              await deleteVectorsForScene(sc.id)
+            }
+            await db.chapters.delete(ch.id)
+          }
+          await db.acts.delete(oldActId)
+        } catch (err) {
+          console.error('[Import] Error deleting old act', oldActId, err)
+        }
+      }
+    }
+  }
+
+  const importedActIds = []
+
   for (let ai = 0; ai < sections.length; ai++) {
     const act = sections[ai]
     const actId = await db.acts.add({
@@ -212,6 +259,7 @@ export async function confirmImport(analysis, file, options) {
       order: ai + 1,
       wordCount: 0,
     })
+    importedActIds.push(actId)
 
     for (let ci = 0; ci < act.chapters.length; ci++) {
       const ch = act.chapters[ci]
@@ -245,7 +293,7 @@ export async function confirmImport(analysis, file, options) {
         try {
           const plain = htmlContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
           if (plain.length >= 10) {
-            await upsertVector(sceneId, novelId, plain)
+            await upsertVector(sceneId, novelId, plain, { chapterId, actId })
           }
         } catch (err) {
           console.error('[Import] RAG indexing error for scene', sceneId, err)
@@ -254,10 +302,10 @@ export async function confirmImport(analysis, file, options) {
     }
   }
 
-  // Save original file as resource with re-download capability
+  // Save or update the resource
   try {
     const displayContent = rawContent || metadata.fileName
-    await db.resources.add({
+    const resourceData = {
       novelId,
       name: metadata.fileName,
       description: `Imported ${metadata.format} document`,
@@ -271,7 +319,16 @@ export async function confirmImport(analysis, file, options) {
       ignoredForOracle: 0,
       content: displayContent,
       fileData: file,
-    })
+      contentHash: metadata.contentHash,
+      importedSceneIds: createdSceneIds,
+      importedActIds,
+    }
+
+    if (importMode === 'update' && existingResource?.id) {
+      await db.resources.update(existingResource.id, resourceData)
+    } else {
+      await db.resources.add(resourceData)
+    }
   } catch (err) {
     console.error('[Import] Error saving resource:', err)
   }

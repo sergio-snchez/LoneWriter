@@ -25,5 +25,13 @@
   "resumen_importacion": "Will import {{acts}} acts, {{chapters}} chapters, {{scenes}} scenes and {{words}} words.",
   "completado_titulo": "Import completed!",
   "completado_nueva": "The document has been imported as a new novel. You can start editing from the Editor.",
-  "completado_existente": "The document has been added to your current novel. Find the new chapters in the Editor."
+  "completado_existente": "The document has been added to your current novel. Find the new chapters in the Editor.",
+  "reimport_titulo": "Document already imported",
+  "reimport_descripcion": "This file was previously imported on {{date}} as \"{{name}}\". What would you like to do?",
+  "reimport_actualizar": "Update",
+  "reimport_actualizar_desc": "Delete the previous version and replace with current content",
+  "reimport_duplicar": "Duplicate",
+  "reimport_duplicar_desc": "Keep the previous version and import an independent copy",
+  "reimport_cancelar": "Cancel",
+  "reimport_error_filesize": "File exceeds the maximum size of {{maxMB}}MB."
 }

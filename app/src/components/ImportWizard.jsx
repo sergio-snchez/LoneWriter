@@ -6,7 +6,7 @@ import {
   File, FileType, ArrowLeft, HardDrive, Type, Columns,
 } from 'lucide-react'
 import PropTypes from 'prop-types'
-import { analyzeFile, confirmImport, supportsFile, ALLOWED_EXTENSIONS } from '../services'
+import { analyzeFile, confirmImport, findExistingImport, supportsFile, ALLOWED_EXTENSIONS } from '../services'
 import { useNovel } from '../context'
 import './ImportWizard.css'
 
@@ -259,7 +259,66 @@ StepPreview.propTypes = {
   onContinue: PropTypes.func.isRequired,
 }
 
-function StepConfirm({ analysis, file, onBack, onComplete, onCancel }) {
+function StepReimport({ existingResource, analysis, onSelect, onBack }) {
+  const { t } = useTranslation('import')
+  const [selected, setSelected] = useState(null)
+  const importedDate = existingResource.updatedAt || existingResource.createdAt
+
+  return (
+    <div className="import-step import-step--reimport">
+      <div className="reimport-header">
+        <AlertCircle size={24} className="reimport-header__icon" />
+        <h3 className="reimport-header__title">{t('reimport_titulo')}</h3>
+        <p className="reimport-header__desc">
+          {t('reimport_descripcion', {
+            date: importedDate ? new Date(importedDate).toLocaleDateString() : '—',
+            name: existingResource.name,
+          })}
+        </p>
+      </div>
+
+      <div className="reimport-options">
+        <button
+          className={`reimport-option ${selected === 'update' ? 'reimport-option--selected' : ''}`}
+          onClick={() => setSelected('update')}
+        >
+          <span className="reimport-option__title">{t('reimport_actualizar')}</span>
+          <span className="reimport-option__desc">{t('reimport_actualizar_desc')}</span>
+        </button>
+
+        <button
+          className={`reimport-option ${selected === 'duplicate' ? 'reimport-option--selected' : ''}`}
+          onClick={() => setSelected('duplicate')}
+        >
+          <span className="reimport-option__title">{t('reimport_duplicar')}</span>
+          <span className="reimport-option__desc">{t('reimport_duplicar_desc')}</span>
+        </button>
+      </div>
+
+      <div className="import-actions">
+        <button className="btn btn-ghost" onClick={onBack}>
+          <ArrowLeft size={14} /> {t('atras')}
+        </button>
+        <button
+          className="btn btn-primary"
+          disabled={!selected}
+          onClick={() => onSelect(selected)}
+        >
+          {t('continuar')}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+StepReimport.propTypes = {
+  existingResource: PropTypes.object.isRequired,
+  analysis: PropTypes.object.isRequired,
+  onSelect: PropTypes.func.isRequired,
+  onBack: PropTypes.func.isRequired,
+}
+
+function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode, existingResource }) {
   const { t } = useTranslation('import')
   const { activeNovel } = useNovel()
   const [destination, setDestination] = useState(activeNovel ? 'existing' : 'new')
@@ -286,6 +345,8 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel }) {
           createNewNovel: destination === 'new',
           existingNovelId: destination === 'existing' ? activeNovel?.id : null,
           novelTitle: novelTitle.trim(),
+          importMode,
+          existingResource,
         }
       )
       onComplete(destination === 'new', result.novelId)
@@ -294,7 +355,7 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel }) {
     } finally {
       setImporting(false)
     }
-  }, [analysis, file, destination, novelTitle, activeNovel, onComplete, t])
+  }, [analysis, file, destination, novelTitle, activeNovel, importMode, existingResource, onComplete, t])
 
   return (
     <div className="import-step">
@@ -382,6 +443,8 @@ StepConfirm.propTypes = {
   onBack: PropTypes.func.isRequired,
   onComplete: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
+  importMode: PropTypes.oneOf(['update', 'duplicate', null]),
+  existingResource: PropTypes.object,
 }
 
 function StepComplete({ createdNewNovel, onClose }) {
@@ -408,7 +471,7 @@ StepComplete.propTypes = {
 
 export default function ImportWizard({ novelId, onComplete, onCancel }) {
   const { t } = useTranslation('import')
-  const { refreshAllNovels, switchNovel } = useNovel()
+  const { refreshAllNovels, switchNovel, reloadData, activeNovel } = useNovel()
   const [step, setStep] = useState(1)
   const [file, setFile] = useState(null)
   const [analysis, setAnalysis] = useState(null)
@@ -416,34 +479,61 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
   const [error, setError] = useState(null)
   const [createdNewNovel, setCreatedNewNovel] = useState(false)
   const [importedNovelId, setImportedNovelId] = useState(null)
+  const [existingResource, setExistingResource] = useState(null)
+  const [importMode, setImportMode] = useState(null)
 
   const handleFileSelected = useCallback(async (selectedFile) => {
     setFile(selectedFile)
     setLoading(true)
     setError(null)
+    setExistingResource(null)
+    setImportMode(null)
     try {
       const result = await analyzeFile(selectedFile)
       setAnalysis(result)
+      const targetNovelId = novelId || activeNovel?.id
+      if (targetNovelId && result.metadata?.contentHash) {
+        const existing = await findExistingImport(result.metadata.contentHash, targetNovelId)
+        if (existing) {
+          setExistingResource(existing)
+          setStep(2)
+          return
+        }
+      }
       setStep(2)
     } catch (err) {
       setError(err.message || t('error_analisis'))
     } finally {
       setLoading(false)
     }
-  }, [t])
+  }, [t, novelId, activeNovel])
 
   const handleContinue = useCallback(() => setStep(3), [])
   const handleBack = useCallback(() => setStep(s => s - 1), [])
 
+  const handleReimportSelect = useCallback((mode) => {
+    setImportMode(mode)
+  }, [])
+
+  const handleReimportBack = useCallback(() => {
+    setFile(null)
+    setAnalysis(null)
+    setExistingResource(null)
+    setImportMode(null)
+    setStep(1)
+  }, [])
+
   const handleComplete = useCallback(async (isNewNovel, novelIdResult) => {
     setCreatedNewNovel(isNewNovel)
     setImportedNovelId(novelIdResult)
-    await refreshAllNovels()
     if (isNewNovel && novelIdResult) {
       await switchNovel(novelIdResult)
+    } else if (novelIdResult) {
+      await reloadData(novelIdResult)
     }
+    await refreshAllNovels()
     setStep(4)
-  }, [refreshAllNovels, switchNovel])
+  }, [refreshAllNovels, switchNovel, reloadData])
 
   const handleClose = useCallback(() => {
     onComplete(importedNovelId)
@@ -492,10 +582,17 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
           </div>
         ) : step === 1 ? (
           <StepFile onFileSelected={handleFileSelected} />
+        ) : step === 2 && existingResource && !importMode ? (
+          <StepReimport
+            existingResource={existingResource}
+            analysis={analysis}
+            onSelect={handleReimportSelect}
+            onBack={handleReimportBack}
+          />
         ) : step === 2 ? (
           <StepPreview
             analysis={analysis}
-            onBack={() => { setFile(null); setAnalysis(null); setStep(1) }}
+            onBack={handleReimportBack}
             onContinue={handleContinue}
           />
         ) : step === 3 ? (
@@ -505,6 +602,8 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
             onBack={handleBack}
             onComplete={handleComplete}
             onCancel={onCancel}
+            importMode={importMode}
+            existingResource={existingResource}
           />
         ) : (
           <StepComplete createdNewNovel={createdNewNovel} onClose={handleClose} />

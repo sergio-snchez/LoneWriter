@@ -13,7 +13,7 @@ export {
 export {
   getEmbedding, chunkText, upsertVector,
   deleteVectorsForScene, deleteVectorsForNovel,
-  retrieveRelevantFragments, indexPendingScenes
+  retrieveRelevantFragments, indexPendingScenes, getVectorStats
 } from './ragService'
 export {
   extractKeywords, searchCompendium, fetchDetectedEntityData,
@@ -22,4 +22,5 @@ export {
 } from './compendiumSearch'
 export { ExportService, compressToJson, decodeFromLwrt } from './exportService'
 export { GoogleDriveService } from './googleDriveService'
-export { analyzeFile, confirmImport, supportsFile, ALLOWED_EXTENSIONS } from './import'
+export { estimateTokens, truncateToBudget, buildContextWithBudget, PROVIDER_DEFAULTS } from './tokenBudget'
+export { analyzeFile, confirmImport, findExistingImport, supportsFile, computeFileHash, ALLOWED_EXTENSIONS, MAX_FILE_SIZE } from './import'

@@ -12,7 +12,7 @@ import {
 import './OracleTab.css'
 import './Markdown.css'
 import { useAI, useNovel, useModal } from '../../context'
-import { AIService, fetchDetectedEntityData, retrieveRelevantFragments } from '../../services'
+import { AIService, fetchDetectedEntityData, retrieveRelevantFragments, buildContextWithBudget, PROVIDER_DEFAULTS } from '../../services'
 import { MarkdownRenderer, Tooltip } from '../'
 import { normalizeTextForDisplay } from './aiPanelHelpers'
 import { copyToClipboard } from '../../utils/clipboard'
@@ -40,6 +40,7 @@ function OracleTab({ activeScene }) {
   const [expandedEntries, setExpandedEntries] = useState(new Set())
   const [isEntitiesExpanded, setIsEntitiesExpanded] = useState(true)
   const [includePrevScene, setIncludePrevScene] = useState(true)
+  const [ragScope, setRagScope] = useState('chapter')
   const historyEndRef = useRef(null)
 
   const getChapterInfo = (chapterId) => {
@@ -48,6 +49,18 @@ function OracleTab({ activeScene }) {
       if (!act.chapters) continue
       const ch = act.chapters.find(c => c.id === chapterId)
       if (ch) return { number: ch.number, title: ch.title }
+    }
+    return null
+  }
+
+  const getActForScene = (sceneId) => {
+    if (!acts || !sceneId) return null
+    for (const act of acts) {
+      if (!act.chapters) continue
+      for (const ch of act.chapters) {
+        if (!ch.scenes) continue
+        if (ch.scenes.some(s => s.id === sceneId)) return act.id
+      }
     }
     return null
   }
@@ -88,6 +101,15 @@ function OracleTab({ activeScene }) {
       const ragController = new AbortController()
       const ragTimeout = new Promise(resolve => setTimeout(() => { ragController.abort(); resolve([]) }, 15000))
 
+      // Build RAG scope filter (skip entirely when 'none')
+      const ragScopeFilter = {}
+      if (ragScope === 'chapter' && activeScene?.chapterId) {
+        ragScopeFilter.chapterId = activeScene.chapterId
+      } else if (ragScope === 'act') {
+        const actId = getActForScene(activeScene?.id)
+        if (actId) ragScopeFilter.actId = actId
+      }
+
       const [compResult, ragResult] = await Promise.allSettled([
         (activeNovel && oracleStatus.detectedEntities?.length > 0)
           ? (async () => {
@@ -99,8 +121,8 @@ function OracleTab({ activeScene }) {
             }
           })()
           : Promise.resolve(''),
-        activeNovel?.id
-          ? Promise.race([retrieveRelevantFragments(plainText, activeNovel.id, 4, activeScene?.id, ragController.signal), ragTimeout])
+        (ragScope !== 'none' && activeNovel?.id)
+          ? Promise.race([retrieveRelevantFragments(plainText, activeNovel.id, 4, { excludeSceneId: activeScene?.id, signal: ragController.signal, ...ragScopeFilter }), ragTimeout])
           : Promise.resolve([])
       ])
 
@@ -131,36 +153,48 @@ function OracleTab({ activeScene }) {
       }
 
       const oraclePrompt = t('oracle_prompt')
-      const isSpanish = i18n.language === 'es'
 
-      const tagLabel = isSpanish ? 'Fragmento' : 'Fragment'
-      const prevSceneLabel = isSpanish ? '--- ESCENA INMEDIATAMENTE ANTERIOR ---' : '--- IMMEDIATELY PRECEDING SCENE ---'
-      let ragContext = ''
+      const oracleCompendium = t('oraculo.prompt_compendium')
+      const oraclePrevCtx = t('oraculo.prompt_prev_ctx')
+      const oracleNoComp = t('oraculo.prompt_no_comp')
+      const oracleNoPrev = t('oraculo.prompt_no_prev')
+      const oracleText = t('oraculo.prompt_text')
+      const oracleAnswer = t('oraculo.prompt_answer')
+
+      const tagLabel = t('oraculo.prompt_tag')
+      const prevSceneLabel = t('oraculo.prompt_prev_scene')
+      let ragContextText = ''
       if (prevSceneText) {
-        ragContext += `${prevSceneLabel}\n${prevSceneText}`
+        ragContextText += `${prevSceneLabel}\n${prevSceneText}`
       }
       if (fragments.length > 0) {
-        if (ragContext) ragContext += '\n\n---\n\n'
-        ragContext += fragments.map((f, i) => `[${tagLabel} ${i + 1}]: ${f}`).join('\n\n')
+        if (ragContextText) ragContextText += '\n\n---\n\n'
+        ragContextText += fragments.map((f, i) => `[${tagLabel} ${i + 1}]: ${f}`).join('\n\n')
       }
 
-      const oracleCompendium = isSpanish ? '--- TEXTO DEL COMPENDIO (FUENTE DE VERDAD ABSOLUTA) ---' : '--- COMPENDIUM TEXT (ABSOLUTE SOURCE OF TRUTH) ---';
-      const oraclePrevCtx = isSpanish ? '--- CONTEXTO ANTERIOR DEL MANUSCRITO (SOLO COMO REFERENCIA, NUNCA DESMIENTE AL COMPENDIO) ---' : '--- PREVIOUS MANUSCRIPT CONTEXT (ONLY AS REFERENCE, NEVER DISPUTE THE COMPENDIUM) ---';
-      const oracleNoComp = isSpanish ? 'No se encontraron fichas relevantes del Compendio para este texto.' : 'No relevant Compendium entries found for this text.';
-      const oracleNoPrev = isSpanish ? 'No hay contexto anterior indexado aún (o se está usando sin RAG).' : 'No previous context indexed yet (or RAG is not being used).';
-      const oracleText = isSpanish ? '--- TEXTO A ANALIZAR ---' : '--- TEXT TO ANALYZE ---';
-      const oracleAnswer = isSpanish ? '--- TU RESPUESTA ---' : '--- YOUR ANSWER ---';
+      // Apply token budget — compendium always full, scene/RAG truncated if needed
+      const maxTokens = PROVIDER_DEFAULTS[provider] || 8000
+      const budget = buildContextWithBudget({
+        prompt: oraclePrompt,
+        compendium: compendiumInfo || oracleNoComp,
+        sceneText: plainText,
+        ragFragments: ragContextText ? [ragContextText] : [],
+      }, maxTokens)
 
-      const fullPrompt = `${oraclePrompt}
+      if (budget.warnings.length > 0) {
+        console.warn('[Oracle] Token budget warnings:', budget.warnings)
+      }
+
+      const fullPrompt = `${budget.prompt}
 
 ${oracleCompendium}
-${compendiumInfo || oracleNoComp}
+${budget.compendium}
 
 ${oraclePrevCtx}
-${ragContext || oracleNoPrev}
+${budget.ragFragments[0] || oracleNoPrev}
 
 ${oracleText}
-${plainText}
+${budget.sceneText}
 
 ${oracleAnswer}`
 
@@ -280,6 +314,21 @@ ${oracleAnswer}`
           />
           <span>{t('oraculo.include_prev_scene')}</span>
         </label>
+      </div>
+
+      <div className="oracle-rag-scope">
+        <label className="oracle-rag-scope__label">{t('oraculo.rag_scope')}</label>
+        <select
+          className="oracle-rag-scope__select"
+          value={ragScope}
+          onChange={(e) => setRagScope(e.target.value)}
+        >
+          <option value="chapter">{t('oraculo.rag_scope_chapter')}</option>
+          <option value="act">{t('oraculo.rag_scope_act')}</option>
+          <option value="all">{t('oraculo.rag_scope_all')}</option>
+          <option value="none">{t('oraculo.rag_scope_none')}</option>
+        </select>
+        <span className="oracle-rag-scope__hint">{t('oraculo.rag_scope_hint')}</span>
       </div>
 
       {activeScene && (

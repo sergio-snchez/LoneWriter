@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../../i18n/i18n'
-import { AIService, createDebouncedSearch, retrieveRelevantFragments } from '../../services'
+import { AIService, createDebouncedSearch, retrieveRelevantFragments, truncateToBudget, PROVIDER_DEFAULTS } from '../../services'
 
 export function useDebateOrchestrator({ activeScene, debateAgents, debateHistory, activeSessionId, activeSessionTitle, addDebateMessage, renameDebateSession, activeNovel, acts, resources, provider, apiKey, currentModel, localBaseUrl, logAIUsage }) {
   const { t } = useTranslation('ai')
@@ -56,7 +56,7 @@ export function useDebateOrchestrator({ activeScene, debateAgents, debateHistory
       try {
         const ragController = new AbortController()
         const ragTimeout = new Promise(resolve => setTimeout(() => { ragController.abort(); resolve([]) }, 8000))
-        const ragPromise = retrieveRelevantFragments(text, activeNovel.id, 4, null, ragController.signal)
+        const ragPromise = retrieveRelevantFragments(text, activeNovel.id, 4, { signal: ragController.signal })
 
         let compendiumPromise = Promise.resolve(null)
         if (useCompendiumContext) {
@@ -102,9 +102,21 @@ export function useDebateOrchestrator({ activeScene, debateAgents, debateHistory
           }
 
           const activeRes = resources?.filter(res => res.activeForAI && res.content) || []
-          const knowledgeBase = activeRes.length > 0
+          let knowledgeBase = activeRes.length > 0
             ? activeRes.map(res => `Archivo: [${res.name}]\nContenido:\n${res.content}`).join('\n\n')
             : null
+
+          // Truncate knowledgeBase to fit within token budget
+          if (knowledgeBase) {
+            const maxTokens = PROVIDER_DEFAULTS[provider] || 8000
+            // Reserve ~60% for history+scene+compendium, 40% for knowledgeBase
+            const kbBudget = Math.floor(maxTokens * 0.4)
+            const { text: truncatedKb, truncated } = truncateToBudget(knowledgeBase, kbBudget)
+            if (truncated) {
+              console.warn('[Debate] KnowledgeBase truncated to fit token budget')
+            }
+            knowledgeBase = truncatedKb
+          }
 
           const response = await AIService.agentChat(agent, historyWithUser, {
             provider, apiKey, model: currentModel, localBaseUrl, sceneContent, pov, roundInstruction, knowledgeBase,
