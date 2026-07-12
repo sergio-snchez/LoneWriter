@@ -17,7 +17,15 @@ const { mockAdd, mockUpdate, mockDelete, mockWhere } = vi.hoisted(() => ({
 vi.mock('../../db/database', () => ({
   db: {
     novels: { add: mockAdd },
-    acts: { add: mockAdd, delete: mockDelete },
+    acts: {
+      add: mockAdd,
+      delete: mockDelete,
+      where: vi.fn(() => ({
+        equals: vi.fn(() => ({
+          toArray: vi.fn(() => Promise.resolve([])),
+        })),
+      })),
+    },
     chapters: {
       add: mockAdd,
       delete: mockDelete,

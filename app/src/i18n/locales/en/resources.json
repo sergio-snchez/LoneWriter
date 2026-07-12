@@ -1,5 +1,5 @@
 {
-  "titulo": "Reference files",
+  "titulo": "Import Files",
   "subtitulo": "{{count}} files · {{size}} total",
   "filtros": "Filters",
   "limpiar_filtros": "Clear filters",
@@ -12,16 +12,14 @@
   "dropzone": "Drag a document here to import it into your narrative structure",
   "seleccionar": "Select files",
   "beta_titulo": "Document import",
-  "beta_texto": "You can now import <code>.txt</code>, <code>.md</code>, <code>.docx</code>, <code>.pdf</code> and <code>.odt</code> documents directly into your narrative structure. The wizard automatically detects chapters and scenes, and adds the original document as a reference. Activate the Lightning icon on each file to include it as a Knowledge Base for the AI.",
-  "tokens_titulo": "AI Token Impact",
-  "tokens_texto": "If you upload and activate very long text files (e.g., a 10,000-word lore document), all that content will be sent in <strong>every</strong> AI request, consuming significant tokens. Use it with moderation.",
+  "beta_texto": "You can import <code>.txt</code>, <code>.md</code>, <code>.docx</code>, <code>.pdf</code> and <code>.odt</code> documents directly into your narrative structure. The assistant will attempt to automatically detect acts, chapters and scenes.",
   "archivo_importado": "Imported file",
-  "excluido": "Excluded from coherence analysis",
-  "incluido": "Included in coherence analysis",
-  "contexto_ia": "AI Context",
   "descargar": "Download",
   "ver": "View",
   "eliminar": "Delete",
+  "eliminar_titulo": "Delete imported file",
+  "eliminar_mensaje": "The file \"{{name}}\" will be removed from the list, but the imported content will remain in the narrative structure (scenes, chapters, acts). Continue?",
+  "eliminar_boton": "Delete file",
   "vista_previa_no_disponible": "Preview not available for this file type.",
   "formato": "Format: {{type}}",
   "stopwords_titulo": "Oracle Filtered Words",
@@ -35,6 +33,13 @@
   "stopwords_empty": "No custom words.",
   "stopwords_personalizada_badge": "Custom",
   "archivo_sistema": "System file",
-  "mostrar_detalles": "Show details",
-  "ocultar_detalles": "Hide details"
+  "structure": {
+    "actos": "acts",
+    "capitulos": "chapters",
+    "escenas": "scenes",
+    "acto": "Act",
+    "capitulo": "Chapter",
+    "escena": "Scene",
+    "palabras": "words"
+  }
 }

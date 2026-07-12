@@ -34,6 +34,8 @@ function htmlToTextWithMarkers(html) {
     const clean = content.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').trim()
     return '\n' + '#'.repeat(parseInt(level)) + ' ' + clean + '\n'
   })
+  text = text.replace(/<br\s*\/?>/gi, '\n')
+  text = text.replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
   text = text.replace(/<[^>]+>/g, '')
   text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
   text = text.replace(/\n{3,}/g, '\n\n')
@@ -136,7 +138,8 @@ function reconstructPdfPage(items) {
   const headings = []
   for (let li = 0; li < lines.length; li++) {
     const maxSize = lineMaxSizes[li]
-    if (maxSize > 0 && maxSize > dominantSize * 1.3) {
+    const lineLen = lines[li].length
+    if (maxSize > 0 && maxSize > dominantSize * 1.3 && lineLen < 100 && lineLen > 2) {
       const level = maxSize > dominantSize * 1.8 ? 1 : 2
       headings.push({ text: lines[li], level, lineIndex: li })
     }

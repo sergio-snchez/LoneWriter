@@ -27,7 +27,7 @@
   "completado_nueva": "El documento se ha importado como una nueva novela. Puedes empezar a editarla desde el Editor.",
   "completado_existente": "El documento se ha añadido a tu novela actual. Encuentra los nuevos capítulos en el Editor.",
   "reimport_titulo": "Documento ya importado",
-  "reimport_descripcion": "Este archivo fue importado previamente el {{date}} como \"{{name}}\". ¿Qué deseas hacer?",
+  "reimport_descripcion": "Parece que este archivo fue importado previamente como \"{{name}}\". ¿Qué deseas hacer?",
   "reimport_actualizar": "Actualizar",
   "reimport_actualizar_desc": "Eliminar la versión anterior y reemplazar con el contenido actual",
   "reimport_duplicar": "Duplicar",

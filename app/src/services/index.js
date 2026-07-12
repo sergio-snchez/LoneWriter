@@ -23,4 +23,4 @@ export {
 export { ExportService, compressToJson, decodeFromLwrt } from './exportService'
 export { GoogleDriveService } from './googleDriveService'
 export { estimateTokens, truncateToBudget, buildContextWithBudget, PROVIDER_DEFAULTS } from './tokenBudget'
-export { analyzeFile, confirmImport, findExistingImport, supportsFile, computeFileHash, ALLOWED_EXTENSIONS, MAX_FILE_SIZE } from './import'
+export { analyzeFile, confirmImport, findExistingImport, loadImportedStructure, supportsFile, computeFileHash, ALLOWED_EXTENSIONS, MAX_FILE_SIZE } from './import'

@@ -120,7 +120,11 @@
     "ronda_inicial": "(SYSTEM NOTE: Round 1 of {{total}}. There are more rounds ahead, give your initial opinion and invite others to debate it).",
     "ronda_final": "(SYSTEM NOTE: FINAL round {{actual}} of {{total}}. Try to bring positions closer or reach a definitive conclusion based on what your colleagues have said).",
     "ronda_intermedia": "(SYSTEM NOTE: Round {{actual}} of {{total}}. Read your colleagues and respond, rebut or build on their arguments).",
-    "agente_asistente_prompt": "You are a creative writing specialist assistant called {{name}}. Always respond in English and concisely.\n\nIMPORTANT: Respond ONLY in valid HTML format. Use tags like <p>, <strong>, <em>, <ul>, <li>, etc. Do NOT use Markdown."
+    "agente_asistente_prompt": "You are a creative writing specialist assistant called {{name}}. Always respond in English and concisely.\n\nIMPORTANT: Respond ONLY in valid HTML format. Use tags like <p>, <strong>, <em>, <ul>, <li>, etc. Do NOT use Markdown.",
+    "error_nombre_requerido": "Name is required",
+    "error_nombre_max": "Name cannot exceed 100 characters",
+    "error_prompt_requerido": "Prompt is required",
+    "error_prompt_max": "Prompt cannot exceed 4000 characters"
   },
   "agentes": {
     "editor_nombre": "Editor",
@@ -135,6 +139,7 @@
   },
   "oraculo": {
     "titulo": "Oracle Verdict",
+    "cap_abbr": "Ch.",
     "sin_cap": "No ch.",
     "sin_escena": "No scene",
     "marcar_corregido": "Mark as corrected",

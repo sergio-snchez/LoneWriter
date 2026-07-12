@@ -457,7 +457,7 @@ function OracleEntry({ entry, isExpanded, isChecked, copiedId, stripJsonBlock, o
             </div>
             {(entry.chapterNumber || entry.sceneTitle) && (
               <span className="oracle-tab__entry-location">
-                {entry.chapterNumber ? `Cap. ${entry.chapterNumber}` : t('oraculo.sin_cap')} / {entry.sceneTitle || t('oraculo.sin_escena')}
+                {entry.chapterNumber ? `${t('oraculo.cap_abbr')} ${entry.chapterNumber}` : t('oraculo.sin_cap')} / {entry.sceneTitle || t('oraculo.sin_escena')}
               </span>
             )}
           </div>

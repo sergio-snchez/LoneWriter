@@ -4,6 +4,28 @@ import { parseFile } from './parsers'
 
 // ── Structure building ──────────────────────────────────────────────────────
 
+const CHAPTER_PATTERNS = /^(?:cap[ií]tulo|chapter)\s+(\d+|[IVXLCDM]+)$/i
+const ACT_PATTERNS = /^(?:acto?|part(?:e|s)?)\s+(\d+|[IVXLCDM]+)$/i
+
+function detectStructuralPatterns(lines) {
+  const headings = []
+  let chapterCount = 0
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
+    if (!line) continue
+
+    if (CHAPTER_PATTERNS.test(line)) {
+      chapterCount++
+      headings.push({ text: line, level: 2, lineIndex: i })
+    } else if (chapterCount > 0 && ACT_PATTERNS.test(line)) {
+      headings.push({ text: line, level: 1, lineIndex: i })
+    }
+  }
+
+  return headings
+}
+
 function buildSections(pages) {
   const allHeadings = []
 
@@ -18,6 +40,13 @@ function buildSections(pages) {
         level: h.level,
         lineIndex: h.lineIndex != null ? h.lineIndex : (h.position || 0),
       })
+    }
+  }
+
+  if (allHeadings.length === 0) {
+    const detectedHeadings = detectStructuralPatterns(lines)
+    if (detectedHeadings.length > 0) {
+      allHeadings.push(...detectedHeadings)
     }
   }
 
@@ -116,7 +145,7 @@ function buildChapters(lines, rangeStart, rangeEnd, h2List, h3List) {
   }
 
   const firstH2Line = getLineIndex(h2List[0])
-  if (firstH2Line > rangeStart) {
+  if (firstH2Line > rangeStart && rangeStart >= 0) {
     const orphanText = lines.slice(rangeStart, firstH2Line).join('\n').trim()
     if (orphanText) {
       chapters[0].scenes.unshift({
@@ -133,7 +162,40 @@ function buildChapters(lines, rangeStart, rangeEnd, h2List, h3List) {
 function buildScenes(lines, rangeStart, rangeEnd, h3List) {
   if (h3List.length === 0) {
     const scText = lines.slice(rangeStart, rangeEnd).join('\n').trim()
-    return [{ type: 'scene', title: '', text: scText }]
+    if (!scText) return [{ type: 'scene', title: '', text: '' }]
+
+    const paragraphs = scText.split(/\n{2,}/).filter(p => p.trim())
+    if (paragraphs.length <= 1) {
+      return [{ type: 'scene', title: '', text: scText }]
+    }
+
+    const MIN_SCENE_CHARS = 200
+    const scenes = []
+    let buffer = ''
+    let sceneIdx = 0
+
+    for (const para of paragraphs) {
+      buffer += (buffer ? '\n\n' : '') + para.trim()
+      if (buffer.length >= MIN_SCENE_CHARS) {
+        sceneIdx++
+        const firstLine = buffer.split('\n')[0].trim()
+        const title = firstLine.length <= 80 ? firstLine : ''
+        scenes.push({ type: 'scene', title, text: buffer })
+        buffer = ''
+      }
+    }
+
+    if (buffer.trim()) {
+      sceneIdx++
+      if (scenes.length === 0) {
+        scenes.push({ type: 'scene', title: '', text: buffer.trim() })
+      } else {
+        const lastScene = scenes[scenes.length - 1]
+        lastScene.text += '\n\n' + buffer.trim()
+      }
+    }
+
+    return scenes.length > 0 ? scenes : [{ type: 'scene', title: '', text: scText }]
   }
 
   const scenes = []
@@ -169,6 +231,35 @@ function getLineIndex(heading) {
 }
 
 // ── Public API ──────────────────────────────────────────────────────────────
+
+/**
+ * Load the narrative structure created by an import (acts → chapters → scenes).
+ * @param {number[]} actIds
+ * @returns {Promise<Object[]>} Array of acts with nested chapters and scenes
+ */
+export async function loadImportedStructure(actIds) {
+  if (!actIds || actIds.length === 0) return []
+
+  const acts = await db.acts.where('id').anyOf(actIds).toArray()
+  acts.sort((a, b) => (a.order || 0) - (b.order || 0))
+
+  const result = []
+  for (const act of acts) {
+    const chapters = await db.chapters.where('actId').equals(act.id).toArray()
+    chapters.sort((a, b) => (a.order || 0) - (b.order || 0))
+
+    const chaptersWithScenes = []
+    for (const ch of chapters) {
+      const scenes = await db.scenes.where('chapterId').equals(ch.id).toArray()
+      scenes.sort((a, b) => (a.order || 0) - (b.order || 0))
+      chaptersWithScenes.push({ ...ch, scenes })
+    }
+
+    result.push({ ...act, chapters: chaptersWithScenes })
+  }
+
+  return result
+}
 
 /**
  * Check if a file was previously imported into a novel.
@@ -251,22 +342,28 @@ export async function confirmImport(analysis, file, options) {
 
   const importedActIds = []
 
+  const existingActs = await db.acts.where('novelId').equals(novelId).toArray()
+  const maxActOrder = existingActs.reduce((max, a) => Math.max(max, a.order || 0), 0)
+
   for (let ai = 0; ai < sections.length; ai++) {
     const act = sections[ai]
     const actId = await db.acts.add({
       novelId,
       title: act.title || `Acto ${ai + 1}`,
-      order: ai + 1,
+      order: maxActOrder + ai + 1,
       wordCount: 0,
     })
     importedActIds.push(actId)
+
+    const existingChapters = await db.chapters.where('actId').equals(actId).toArray()
+    const maxChapterOrder = existingChapters.reduce((max, c) => Math.max(max, c.order || 0), 0)
 
     for (let ci = 0; ci < act.chapters.length; ci++) {
       const ch = act.chapters[ci]
       const chapterId = await db.chapters.add({
         actId,
         title: ch.title || `Capítulo ${ci + 1}`,
-        order: ci + 1,
+        order: maxChapterOrder + ci + 1,
         status: 'Completo',
         wordCount: 0,
       })

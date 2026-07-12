@@ -271,7 +271,6 @@ function StepReimport({ existingResource, analysis, onSelect, onBack }) {
         <h3 className="reimport-header__title">{t('reimport_titulo')}</h3>
         <p className="reimport-header__desc">
           {t('reimport_descripcion', {
-            date: importedDate ? new Date(importedDate).toLocaleDateString() : '—',
             name: existingResource.name,
           })}
         </p>

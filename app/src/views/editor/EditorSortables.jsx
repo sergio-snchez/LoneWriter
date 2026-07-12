@@ -102,7 +102,7 @@ export const SortableSceneRow = memo(function SortableSceneRow({ scene, chapterI
     transform: CSS.Transform.toString(transform),
     transition,
     zIndex: isDragging ? 100 : 1,
-    opacity: isDragging ? 0.3 : 1,
+    opacity: isDragging ? 0.5 : 1,
   }
 
   return (
@@ -169,7 +169,7 @@ export const SortableChapterAccordion = memo(function SortableChapterAccordion({
     transform: CSS.Transform.toString(transform),
     transition,
     zIndex: isDragging ? 50 : 1,
-    opacity: isDragging ? 0.4 : 1,
+    opacity: isDragging ? 0.6 : 1,
   }
 
   const isChapterCompleted = chapter.scenes?.length > 0 && chapter.scenes.every(s => s.status === 'Finalizado')

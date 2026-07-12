@@ -29,7 +29,7 @@ function DebateTab({ activeScene }) {
     debateSessions, activeSessionId, switchDebateSession, renameDebateSession, deleteDebateSession, addDebateSession,
     logAIUsage
   } = useAI()
-  const { resources, activeNovel, acts } = useNovel()
+  const { activeNovel, acts } = useNovel()
   const { openModal } = useModal()
   const activeSessionTitle = debateSessions.find(s => s.id === activeSessionId)?.title || t('oraculo.nuevo_debate')
 
@@ -44,7 +44,7 @@ function DebateTab({ activeScene }) {
     handleSend, handleKeyDown, getSceneChapterLabel,
   } = useDebateOrchestrator({
     activeScene, debateAgents, debateHistory, activeSessionId, activeSessionTitle,
-    addDebateMessage, renameDebateSession, activeNovel, acts, resources,
+    addDebateMessage, renameDebateSession, activeNovel, acts,
     provider, apiKey, currentModel, localBaseUrl, logAIUsage,
   })
 

@@ -11,7 +11,7 @@ import {
   Sparkles, Wand2, RefreshCw, Copy, Check, Trash2,
   Pencil, Zap, AlignLeft
 } from 'lucide-react'
-import { useAI, useNovel, useModal } from '../../context'
+import { useAI, useModal } from '../../context'
 import { AIService } from '../../services'
 import { MarkdownRenderer, Tooltip } from '../'
 import { QUICK_GOALS, normalizeHtmlForEditor, extractPreviousContext } from './aiPanelHelpers'
@@ -24,7 +24,6 @@ export default function RewriteTab({ activeScene }) {
     lastRewrite, setLastRewrite, saveLastRewrite, discardLastRewrite, updatePrompt,
     logAIUsage, oracleStatus
   } = useAI();
-  const { resources } = useNovel();
   const { openModal } = useModal();
 
   const [instruction, setInstruction] = useState('')
@@ -46,11 +45,6 @@ export default function RewriteTab({ activeScene }) {
 
     setIsGenerating(true);
     try {
-      const activeRes = resources?.filter(r => r.activeForAI && r.content) || [];
-      const knowledgeBase = activeRes.length > 0
-        ? activeRes.map(r => `Archivo: [${r.name}]\nContenido:\n${r.content}`).join('\n\n')
-        : null;
-
       const previousContext = includePreviousContext
         ? extractPreviousContext(activeScene?.content, selection, 240)
         : null;
@@ -62,7 +56,6 @@ export default function RewriteTab({ activeScene }) {
         localBaseUrl,
         customInstructions: instruction,
         pov: activeScene?.pov,
-        knowledgeBase,
         previousContext,
       });
       logAIUsage(response.usage);
@@ -203,7 +196,7 @@ export default function RewriteTab({ activeScene }) {
               {t('rewrite.propuesta')}
             </div>
             <div className="rewrite-result__actions">
-              <Tooltip content="Copiar">
+              <Tooltip content={t('rewrite.copiar')}>
                 <button
                   className="res-action-btn"
                   id="rewrite-copy-btn"
@@ -212,7 +205,7 @@ export default function RewriteTab({ activeScene }) {
                   {copied ? <Check size={12} /> : <Copy size={12} />}
                 </button>
               </Tooltip>
-              <Tooltip content="Regenerar">
+              <Tooltip content={t('rewrite.regenerar')}>
                 <button className="res-action-btn" id="rewrite-refresh-btn" onClick={handleRewrite}>
                   <RefreshCw size={12} />
                 </button>

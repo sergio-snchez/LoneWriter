@@ -1,9 +1,9 @@
 import { useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../../i18n/i18n'
-import { AIService, createDebouncedSearch, retrieveRelevantFragments, truncateToBudget, PROVIDER_DEFAULTS } from '../../services'
+import { AIService, createDebouncedSearch, retrieveRelevantFragments } from '../../services'
 
-export function useDebateOrchestrator({ activeScene, debateAgents, debateHistory, activeSessionId, activeSessionTitle, addDebateMessage, renameDebateSession, activeNovel, acts, resources, provider, apiKey, currentModel, localBaseUrl, logAIUsage }) {
+export function useDebateOrchestrator({ activeScene, debateAgents, debateHistory, activeSessionId, activeSessionTitle, addDebateMessage, renameDebateSession, activeNovel, acts, provider, apiKey, currentModel, localBaseUrl, logAIUsage }) {
   const { t } = useTranslation('ai')
   const [input, setInput] = useState('')
   const [loadingAgents, setLoadingAgents] = useState({})
@@ -30,11 +30,11 @@ export function useDebateOrchestrator({ activeScene, debateAgents, debateHistory
   const handleSend = useCallback(async () => {
     if (!input.trim() || isAnyLoading) return
 
-    if (activeSessionTitle === 'Nuevo debate') {
+    if (activeSessionTitle === t('oraculo.nuevo_debate')) {
       const sceneInfo = getSceneChapterLabel(activeScene)
       if (sceneInfo) {
         const newTitle = sceneInfo.chapterNumber
-          ? `Cap. ${sceneInfo.chapterNumber} / ${sceneInfo.sceneTitle}`
+          ? `${t('oraculo.cap_abbr')} ${sceneInfo.chapterNumber} / ${sceneInfo.sceneTitle}`
           : sceneInfo.sceneTitle
         renameDebateSession(activeSessionId, newTitle)
       }
@@ -101,25 +101,8 @@ export function useDebateOrchestrator({ activeScene, debateAgents, debateHistory
             else roundInstruction = t('debate.ronda_intermedia', { actual: r + 1, total: rounds })
           }
 
-          const activeRes = resources?.filter(res => res.activeForAI && res.content) || []
-          let knowledgeBase = activeRes.length > 0
-            ? activeRes.map(res => `Archivo: [${res.name}]\nContenido:\n${res.content}`).join('\n\n')
-            : null
-
-          // Truncate knowledgeBase to fit within token budget
-          if (knowledgeBase) {
-            const maxTokens = PROVIDER_DEFAULTS[provider] || 8000
-            // Reserve ~60% for history+scene+compendium, 40% for knowledgeBase
-            const kbBudget = Math.floor(maxTokens * 0.4)
-            const { text: truncatedKb, truncated } = truncateToBudget(knowledgeBase, kbBudget)
-            if (truncated) {
-              console.warn('[Debate] KnowledgeBase truncated to fit token budget')
-            }
-            knowledgeBase = truncatedKb
-          }
-
           const response = await AIService.agentChat(agent, historyWithUser, {
-            provider, apiKey, model: currentModel, localBaseUrl, sceneContent, pov, roundInstruction, knowledgeBase,
+            provider, apiKey, model: currentModel, localBaseUrl, sceneContent, pov, roundInstruction,
             compendiumContext: compendiumInfo || null,
             ragContext: ragInfo || null
           })
@@ -150,7 +133,7 @@ export function useDebateOrchestrator({ activeScene, debateAgents, debateHistory
         }
       }
     }
-  }, [input, isAnyLoading, activeSessionTitle, activeSessionId, debateHistory, activeScene, activeNovel, acts, resources, provider, apiKey, currentModel, localBaseUrl, logAIUsage, addDebateMessage, renameDebateSession, rounds, activeAgents, useSceneContext, useCompendiumContext, t, getSceneChapterLabel])
+  }, [input, isAnyLoading, activeSessionTitle, activeSessionId, debateHistory, activeScene, activeNovel, acts, provider, apiKey, currentModel, localBaseUrl, logAIUsage, addDebateMessage, renameDebateSession, rounds, activeAgents, useSceneContext, useCompendiumContext, t, getSceneChapterLabel])
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }

@@ -332,7 +332,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                       );
                     })}
                   </SortableContext>
-                  <DragOverlay dropAnimation={{ duration: 150, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
+                  <DragOverlay dropAnimation={{ duration: 100, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
                     {activeDragId ? (
                       <div className="drag-overlay-ghost">
                         <GripVertical size={14} />
@@ -416,7 +416,7 @@ export default function EditorView({ menuOpen = false, onNavigate }) {
                 );
               })}
             </SortableContext>
-            <DragOverlay dropAnimation={{ duration: 150, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
+            <DragOverlay dropAnimation={{ duration: 100, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
               {activeDragId ? (
                 <div className="drag-overlay-ghost">
                   <GripVertical size={14} />

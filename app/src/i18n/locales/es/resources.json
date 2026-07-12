@@ -1,5 +1,5 @@
 {
-  "titulo": "Archivos de referencia",
+  "titulo": "Importar Archivos",
   "subtitulo": "{{count}} archivos · {{size}} total",
   "filtros": "Filtros",
   "limpiar_filtros": "Limpiar filtros",
@@ -12,16 +12,14 @@
   "dropzone": "Arrastra un documento aquí para importarlo a tu estructura narrativa",
   "seleccionar": "Seleccionar archivos",
   "beta_titulo": "Importación de documentos",
-  "beta_texto": "Ahora puedes importar documentos <code>.txt</code>, <code>.md</code>, <code>.docx</code>, <code>.pdf</code> y <code>.odt</code> directamente a tu estructura narrativa. El asistente detecta automáticamente los capítulos y escenas, y añade el documento original como referencia. Activa el icono del Rayo en cada archivo para incluirlo como Base de Conocimiento para la IA.",
-  "tokens_titulo": "Impacto en Tokens de IA",
-  "tokens_texto": "Si subes y activas archivos de texto muy largos (ej: un documento de 10.000 palabras de lore), todo ese contenido se enviará en <strong>cada</strong> petición a la IA, consumiendo bastante tokens. Úsalo con moderación.",
+  "beta_texto": "Puedes importar documentos <code>.txt</code>, <code>.md</code>, <code>.docx</code>, <code>.pdf</code> y <code>.odt</code> directamente a tu estructura narrativa. El asistente intentará detectar automáticamente actos, capítulos y escenas.",
   "archivo_importado": "Archivo importado",
-  "excluido": "Excluido del análisis de coherencia",
-  "incluido": "Incluido en análisis de coherencia",
-  "contexto_ia": "Contexto IA",
   "descargar": "Descargar",
   "ver": "Ver",
   "eliminar": "Eliminar",
+  "eliminar_titulo": "Eliminar archivo importado",
+  "eliminar_mensaje": "Se eliminará el archivo \"{{name}}\" de la lista, pero el contenido importado permanecerá en la estructura narrativa (escenas, capítulos, actos). ¿Continuar?",
+  "eliminar_boton": "Eliminar archivo",
   "vista_previa_no_disponible": "Vista previa no disponible para este tipo de archivo.",
   "formato": "Formato: {{type}}",
   "stopwords_titulo": "Palabras filtradas del Oráculo",
@@ -35,6 +33,13 @@
   "stopwords_empty": "No hay palabras personalizadas.",
   "stopwords_personalizada_badge": "Personalizada",
   "archivo_sistema": "Archivo del sistema",
-  "mostrar_detalles": "Mostrar detalles",
-  "ocultar_detalles": "Ocultar detalles"
+  "structure": {
+    "actos": "actos",
+    "capitulos": "capítulos",
+    "escenas": "escenas",
+    "acto": "Acto",
+    "capitulo": "Capítulo",
+    "escena": "Escena",
+    "palabras": "palabras"
+  }
 }

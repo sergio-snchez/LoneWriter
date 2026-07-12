@@ -44,7 +44,7 @@ export function useEditorDnd({
 
   // ── Sensors ──────────────────────────────────────────────────────────────
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
@@ -89,7 +89,7 @@ export function useEditorDnd({
         if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current)
         hoverTimerRef.current = setTimeout(() => {
           setExpandedIds(prev => new Set([...prev, over.id]))
-        }, 600)
+        }, 350)
       }
     } else {
       if (hoverTimerRef.current) {

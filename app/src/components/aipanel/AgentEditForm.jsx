@@ -19,14 +19,14 @@ export default function AgentEditForm({ agent, colors, onSave, onCancel, isNew, 
   const handleSave = () => {
     const newErrors = {}
     if (!form.name || !form.name.trim()) {
-      newErrors.name = 'El nombre es obligatorio'
+      newErrors.name = t('debate.error_nombre_requerido')
     } else if (form.name.length > 100) {
-      newErrors.name = 'El nombre no puede superar los 100 caracteres'
+      newErrors.name = t('debate.error_nombre_max')
     }
     if (!form.systemPrompt || !form.systemPrompt.trim()) {
-      newErrors.systemPrompt = 'El prompt es obligatorio'
+      newErrors.systemPrompt = t('debate.error_prompt_requerido')
     } else if (form.systemPrompt.length > 4000) {
-      newErrors.systemPrompt = 'El prompt no puede superar los 4000 caracteres'
+      newErrors.systemPrompt = t('debate.error_prompt_max')
     }
     setErrors(newErrors)
     if (Object.keys(newErrors).length > 0) return

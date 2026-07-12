@@ -120,7 +120,11 @@
     "ronda_inicial": "(NOTA DE SISTEMA: Ronda 1 de {{total}}. Aún quedan más rondas, da tu opinión inicial e invita a los demás a debatirla).",
     "ronda_final": "(NOTA DE SISTEMA: Ronda FINAL {{actual}} de {{total}}. Trata de acercar posturas o sacar una conclusión definitiva basándote en lo que han dicho tus compañeros).",
     "ronda_intermedia": "(NOTA DE SISTEMA: Ronda {{actual}} de {{total}}. Lee a tus compañeros y responde, rebate o construye sobre sus argumentos).",
-    "agente_asistente_prompt": "Eres un asistente especializado en escritura creativa llamado {{name}}. Responde siempre en español y de forma concisa.\n\nIMPORTANTE: Responde ÚNICAMENTE en formato HTML válido. Usa etiquetas <p>, <strong>, <em>, <ul>, <li>, etc. NO uses Markdown."
+    "agente_asistente_prompt": "Eres un asistente especializado en escritura creativa llamado {{name}}. Responde siempre en español y de forma concisa.\n\nIMPORTANTE: Responde ÚNICAMENTE en formato HTML válido. Usa etiquetas <p>, <strong>, <em>, <ul>, <li>, etc. NO uses Markdown.",
+    "error_nombre_requerido": "El nombre es obligatorio",
+    "error_nombre_max": "El nombre no puede superar los 100 caracteres",
+    "error_prompt_requerido": "El prompt es obligatorio",
+    "error_prompt_max": "El prompt no puede superar los 4000 caracteres"
   },
   "agentes": {
     "editor_nombre": "Editor",
@@ -135,6 +139,7 @@
   },
   "oraculo": {
     "titulo": "Veredicto del Oráculo",
+    "cap_abbr": "Cap.",
     "sin_cap": "Sin cap.",
     "sin_escena": "Sin escena",
     "marcar_corregido": "Marcar como corregido",

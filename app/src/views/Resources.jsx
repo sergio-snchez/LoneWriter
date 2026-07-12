@@ -2,15 +2,86 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   FileText, Upload, Search, FolderOpen, Calendar, HardDrive,
-  Trash2, Eye, Filter, Plus, Zap, X, Pin, Edit, ChevronDown, ChevronUp, Download
+  Trash2, Eye, Filter, Plus, X, Pin, Edit, Download,
+  ChevronDown, ChevronRight,
 } from 'lucide-react'
 import { useNovel, useAI, useModal } from '../context'
 import { MarkdownRenderer, Tooltip, StopwordsModal, ImportWizard } from '../components'
 import { getAllCustomStopwords } from '../i18n/stopwords'
+import { loadImportedStructure } from '../services'
 import './Resources.css'
 
 
+function StructureTree({ acts }) {
+  const { t } = useTranslation('resources')
+  const [expanded, setExpanded] = useState(() => new Set(acts.map((_, i) => i)))
+
+  const toggle = (i) => {
+    setExpanded(prev => {
+      const next = new Set(prev)
+      if (next.has(i)) next.delete(i)
+      else next.add(i)
+      return next
+    })
+  }
+
+  const totalChapters = acts.reduce((acc, a) => acc + (a.chapters?.length || 0), 0)
+  const totalScenes = acts.reduce((acc, a) => acc + (a.chapters || []).reduce((cAcc, ch) => cAcc + (ch.scenes?.length || 0), 0), 0)
+  const totalWords = acts.reduce((acc, a) => acc + (a.chapters || []).reduce((cAcc, ch) => cAcc + (ch.scenes || []).reduce((sAcc, s) => sAcc + (s.wordCount || 0), 0), 0), 0)
+
+  return (
+    <div className="structure-tree">
+      <div className="structure-tree__summary">
+        {acts.length} {t('structure.actos')} · {totalChapters} {t('structure.capitulos')} · {totalScenes} {t('structure.escenas')} · {totalWords.toLocaleString()} {t('structure.palabras')}
+      </div>
+      {acts.map((act, ai) => (
+        <div key={act.id} className="structure-tree__act">
+          <div className="structure-tree__row structure-tree__row--act" onClick={() => toggle(ai)}>
+            {expanded.has(ai) ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+            <span className="structure-tree__label">{t('structure.acto')}</span>
+            <span className="structure-tree__title">{act.title || `Acto ${ai + 1}`}</span>
+            <span className="structure-tree__words">
+              {(act.chapters || []).reduce((acc, ch) => acc + (ch.scenes || []).reduce((sAcc, s) => sAcc + (s.wordCount || 0), 0), 0).toLocaleString()} {t('structure.palabras')}
+            </span>
+          </div>
+          {expanded.has(ai) && (act.chapters || []).map((ch, ci) => (
+            <div key={ch.id} className="structure-tree__chapter">
+              <div className="structure-tree__row structure-tree__row--chapter">
+                <span className="structure-tree__label">{t('structure.capitulo')}</span>
+                <span className="structure-tree__title">{ch.title || `Capítulo ${ci + 1}`}</span>
+                <span className="structure-tree__words">
+                  {(ch.scenes || []).reduce((acc, s) => acc + (s.wordCount || 0), 0).toLocaleString()} {t('structure.palabras')}
+                </span>
+              </div>
+              {(ch.scenes || []).map((sc, si) => (
+                <div key={sc.id} className="structure-tree__scene">
+                  <div className="structure-tree__row structure-tree__row--scene">
+                    <span className="structure-tree__label">{t('structure.escena')}</span>
+                    <span className="structure-tree__title">{sc.title || `Escena ${si + 1}`}</span>
+                    <span className="structure-tree__words">
+                      {(sc.wordCount || 0).toLocaleString()} {t('structure.palabras')}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+
 function ViewerContent({ res, t, onClose }) {
+  const [structure, setStructure] = useState(null)
+
+  useEffect(() => {
+    if (res.importedActIds?.length > 0) {
+      loadImportedStructure(res.importedActIds).then(setStructure).catch(() => {})
+    }
+  }, [res.importedActIds])
+
   return (
     <div className="resource-viewer">
       <div className="modal-header resource-viewer__header">
@@ -18,7 +89,9 @@ function ViewerContent({ res, t, onClose }) {
         <button className="btn btn-ghost btn-icon" onClick={onClose}><X size={16} /></button>
       </div>
       <div className="modal-body resource-viewer__body">
-        {res.content ? (
+        {structure && structure.length > 0 ? (
+          <StructureTree acts={structure} />
+        ) : res.content ? (
           <MarkdownRenderer className="resource-viewer__content" content={res.content} />
         ) : (
           <div className="resource-viewer__empty">
@@ -43,7 +116,7 @@ function formatBytes(bytes, decimals = 2) {
 }
 
 
-function ResourceRow({ res, onDelete, onToggleIgnore, onView, onDownload }) {
+function ResourceRow({ res, onDelete, onView, onDownload }) {
   const { t } = useTranslation('resources')
   const dateStr = res.dateAdded ? new Date(res.dateAdded).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '--'
 
@@ -57,13 +130,6 @@ function ResourceRow({ res, onDelete, onToggleIgnore, onView, onDownload }) {
         <div className="res-row__title-wrap">
           <span className="res-row__name res-row__name-flex">{res.name}</span>
         </div>
-        {res.ignoredForOracle !== 1 && (
-          <div className="res-row__badge-wrap">
-            <span className="res-row__badge">
-              <Zap size={10} className="resource-icon--active" /> {t('contexto_ia')}
-            </span>
-          </div>
-        )}
         <span className="res-row__desc">{res.description}</span>
         <div className="res-row__tags">
           {res.tags?.map(t => <span key={t} className="tag">{t}</span>)}
@@ -83,15 +149,6 @@ function ResourceRow({ res, onDelete, onToggleIgnore, onView, onDownload }) {
       </div>
 
       <div className="res-row__actions">
-        <Tooltip content={res.ignoredForOracle === 1 ? t('excluido') : t('contexto_ia')}>
-          <button 
-            className={`res-action-btn ${res.ignoredForOracle !== 1 ? 'res-action-btn--ai-active' : ''}`}
-            aria-label="Ignorar en coherencia del Oráculo" 
-            onClick={() => onToggleIgnore(res)}
-          >
-            <Zap size={14} className={res.ignoredForOracle !== 1 ? 'resource-icon--active' : 'resource-icon--ignored'} />
-          </button>
-        </Tooltip>
         {onDownload && (
           <Tooltip content={t('descargar')}>
             <button className="res-action-btn" aria-label={t('descargar')} onClick={() => onDownload(res)}>
@@ -122,7 +179,6 @@ export default function ResourcesView() {
   const [query, setQuery] = useState('')
   const [activeTag, setActiveTag] = useState(null)
   const [showFilters, setShowFilters] = useState(false)
-  const [alertsExpanded, setAlertsExpanded] = useState(false)
   const [wordCount, setWordCount] = useState(0)
   const [importOpen, setImportOpen] = useState(false)
 
@@ -195,32 +251,12 @@ export default function ResourcesView() {
         </div>
       </div>
 
-      <div className={`resources-alerts ${alertsExpanded ? 'resources-alerts--expanded' : 'resources-alerts--collapsed'}`}>
-        {/* Beta Warning + Formatos */}
-        <div className="resource-alert resource-alert--beta">
-          <span className="resource-alert__badge-wrap">
-            <span className="resource-alert__badge">Beta</span>
-          </span>
-          <div className="resource-alert__content">
-            <strong className="resource-alert__strong-red">{t('beta_titulo')}</strong>
-            <MarkdownRenderer className="resource-alert__text" content={t('beta_texto')} />
-          </div>
+      {/* Import info banner */}
+      <div className="resource-alert resource-alert--info">
+        <div className="resource-alert__content">
+          <strong className="resource-alert__strong-info">{t('beta_titulo')}</strong>
+          <MarkdownRenderer className="resource-alert__text" content={t('beta_texto')} />
         </div>
-        
-        <div className="resource-alert resource-alert--warning">
-          <Zap size={16} className="resource-alert__icon" />
-          <div className="resource-alert__content">
-            <strong className="resource-alert__strong-accent">{t('tokens_titulo')}</strong>
-            <MarkdownRenderer className="resource-alert__text" content={t('tokens_texto')} />
-          </div>
-        </div>
-
-        <button 
-          className="resources-alerts__toggle" 
-          onClick={() => setAlertsExpanded(!alertsExpanded)}
-        >
-          {alertsExpanded ? <><ChevronUp size={14} /> {t('ocultar_detalles')}</> : <><ChevronDown size={14} /> {t('mostrar_detalles')}</>}
-        </button>
       </div>
 
       {/* Filter panel */}
@@ -319,8 +355,16 @@ export default function ResourcesView() {
             <ResourceRow 
               key={res.id} 
               res={res} 
-              onDelete={(id) => deleteCompendiumEntry('resources', id)}
-              onToggleIgnore={(r) => updateCompendiumEntry('resources', r.id, { ignoredForOracle: r.ignoredForOracle ? 0 : 1 })}
+              onDelete={(id) => {
+                const res = filtered.find(r => r.id === id)
+                openModal('confirm', {
+                  title: t('eliminar_titulo'),
+                  message: t('eliminar_mensaje', { name: res?.name || '' }),
+                  isDanger: true,
+                  confirmLabel: t('eliminar_boton'),
+                  onConfirm: () => deleteCompendiumEntry('resources', id),
+                })
+              }}
               onView={(res) => openModal('custom', { render: (close) => <ViewerContent res={res} t={t} onClose={close} /> })}
               onDownload={res.fileData ? handleDownload : null}
             />
