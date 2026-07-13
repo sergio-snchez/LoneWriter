@@ -123,6 +123,22 @@ export async function computeFileHash(file) {
   return (h >>> 0).toString(16)
 }
 
+/**
+ * Compute FNV-1a hash of file content for re-import detection.
+ * @param {File} file
+ * @returns {Promise<string>} Hex string hash
+ */
+export async function computeFileHash(file) {
+  const buffer = await file.arrayBuffer()
+  const bytes = new Uint8Array(buffer)
+  let h = 2166136261
+  for (let i = 0; i < bytes.length; i++) {
+    h ^= bytes[i]
+    h = Math.imul(h, 16777619)
+  }
+  return (h >>> 0).toString(16)
+}
+
 // ── Heading detection helpers ───────────────────────────────────────────────
 
 function countWords(text) {
