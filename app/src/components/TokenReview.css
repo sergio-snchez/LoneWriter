@@ -1,0 +1,310 @@
+/* ============================================
+   TOKEN REVIEW
+   ============================================ */
+
+.token-review__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+
+.token-review__header-icon {
+  color: var(--accent-light);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.token-review__title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.token-review__desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.token-review__stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.token-review__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2px 0;
+}
+
+.token-review__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  transition: background var(--trans-fast);
+}
+
+.token-review__row:hover {
+  background: var(--bg-hover);
+}
+
+.token-review__row--heading {
+  background: rgba(212, 168, 83, 0.05);
+}
+
+.token-review__row--heading:hover {
+  background: rgba(212, 168, 83, 0.1);
+}
+
+.token-review__type-col {
+  flex-shrink: 0;
+  width: 80px;
+}
+
+.token-review__type-selector {
+  position: relative;
+}
+
+.token-review__type-badge {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all var(--trans-fast);
+}
+
+.token-review__type-badge:hover {
+  border-color: var(--border-accent);
+}
+
+.token-review__type-badge--h1 {
+  background: rgba(239, 83, 80, 0.1);
+  color: #ef5350;
+  border-color: rgba(239, 83, 80, 0.3);
+}
+
+.token-review__type-badge--h2 {
+  background: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
+  border-color: rgba(255, 152, 0, 0.3);
+}
+
+.token-review__type-badge--h3 {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+.token-review__type-badge--normal {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+}
+
+.token-review__type-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  min-width: 80px;
+}
+
+.token-review__type-option {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--trans-fast);
+}
+
+.token-review__type-option:hover {
+  background: var(--bg-hover);
+}
+
+.token-review__type-option--active {
+  color: var(--accent-light);
+  background: var(--accent-dim);
+}
+
+.token-review__text-col {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.token-review__text--empty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.token-review__actions-col {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.token-review__confidence {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--conf-color, #888) 15%, transparent);
+  color: var(--conf-color, #888);
+}
+
+.token-review__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--trans-fast);
+}
+
+.token-review__delete:hover {
+  background: rgba(239, 83, 80, 0.1);
+  color: #ef5350;
+}
+
+/* ── Search ──────────────────────────────── */
+
+.token-review__search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.token-review__search-box {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.token-review__search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.token-review__search-input {
+  width: 100%;
+  padding: 7px 28px 7px 30px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 12px;
+  outline: none;
+  transition: border-color var(--trans-fast);
+}
+
+.token-review__search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.token-review__search-input:focus {
+  border-color: var(--border-accent);
+}
+
+.token-review__search-clear {
+  position: absolute;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  font-size: 15px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.token-review__search-clear:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.token-review__search-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.token-review__highlight {
+  background: rgba(212, 168, 83, 0.3);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.token-review__empty-search {
+  text-align: center;
+  padding: 24px 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── Responsive ───────────────────────────── */
+
+@media (max-width: 767px) {
+  .token-review__type-col {
+    width: 70px;
+  }
+
+  .token-review__text-col {
+    font-size: 12px;
+  }
+}

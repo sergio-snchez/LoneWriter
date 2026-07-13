@@ -60,7 +60,7 @@ vi.mock('../ragService', () => ({
 vi.mock('./parsers', () => ({
   parseFile: vi.fn(() => Promise.resolve({
     metadata: { format: 'TXT', fileName: 'test.txt', fileSize: 100, wordCount: 10, contentHash: 'abc123' },
-    pages: [{ text: 'Hello world', headings: [] }],
+    tokens: [{ type: 'NORMAL', text: 'Hello world', confidence: 1.0 }],
     rawContent: 'Hello world',
   })),
   supportsFile: vi.fn(() => true),
@@ -75,11 +75,11 @@ import { db } from '../../db/database'
 describe('findExistingImport', () => {
   it('returns null for missing params', async () => {
     expect(await findExistingImport(null, 1)).toBeNull()
-    expect(await findExistingImport('hash', null)).toBeNull()
+    expect(await findExistingImport('test.txt', null)).toBeNull()
   })
 
   it('returns null when no match found', async () => {
-    const result = await findExistingImport('abc123', 1)
+    const result = await findExistingImport('test.txt', 1)
     expect(result).toBeNull()
   })
 })

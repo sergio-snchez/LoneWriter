@@ -14,11 +14,11 @@
 /* ── Header ────────────────────────────────── */
 
 .import-wizard__header {
-  padding: 18px 22px;
+  padding: 12px 22px;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
   flex-shrink: 0;
 }
 
@@ -37,20 +37,19 @@
 .import-steps {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 24px;
-  padding: 16px 22px 8px;
+  gap: 8px;
+  margin-left: auto;
   flex-shrink: 0;
 }
 
 .import-steps__dot {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
   background: var(--bg-elevated);
@@ -548,7 +547,7 @@
 
 @media (max-width: 767px) {
   .import-wizard__header {
-    padding: 14px 16px;
+    padding: 10px 16px;
   }
 
   .import-step {

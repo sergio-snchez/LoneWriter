@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import i18n from 'i18next'
 import {
   Upload, FileText, X, ChevronDown, ChevronRight,
   AlertCircle, CheckCircle2, Loader2, BookOpen, Plus,
@@ -7,7 +8,9 @@ import {
 } from 'lucide-react'
 import PropTypes from 'prop-types'
 import { analyzeFile, confirmImport, findExistingImport, supportsFile, ALLOWED_EXTENSIONS } from '../services'
+import { compileNarrativeStructure } from '../services/import/narrativeCompiler'
 import { useNovel } from '../context'
+import TokenReview from './TokenReview'
 import './ImportWizard.css'
 
 function truncateText(text, max = 60) {
@@ -15,11 +18,11 @@ function truncateText(text, max = 60) {
 }
 
 function formatBytes(bytes) {
-  if (!bytes) return '0 Bytes'
+  if (!bytes) return i18n.t('import:format_size_zero')
   const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const sizeKeys = ['format_size_bytes', 'format_size_kb', 'format_size_mb', 'format_size_gb']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + i18n.t(`import:${sizeKeys[i]}`)
 }
 
 function FormatBadge({ format }) {
@@ -43,11 +46,12 @@ function FormatBadge({ format }) {
 FormatBadge.propTypes = { format: PropTypes.string.isRequired }
 
 function SectionTree({ sections, level = 0 }) {
+  const { t } = useTranslation('import')
   const [expanded, setExpanded] = useState(true)
 
   const toggle = useCallback(() => setExpanded(v => !v), [])
 
-  const typeLabel = level === 0 ? 'Acto' : level === 1 ? 'Capítulo' : 'Escena'
+  const typeLabel = level === 0 ? t('token_type_H1') : level === 1 ? t('token_type_H2') : t('token_type_H3')
   const section = sections
 
   if (!section || (Array.isArray(section) && section.length === 0)) return null
@@ -88,9 +92,9 @@ function SectionTree({ sections, level = 0 }) {
         )}
         <span className="import-tree__type">{typeLabel}</span>
         <span className="import-tree__title">
-          {section.title || <span className="import-tree__title--empty">(sin título)</span>}
+          {section.title || <span className="import-tree__title--empty">{t('section_no_title')}</span>}
         </span>
-        <span className="import-tree__words">{totalWords.toLocaleString()} palabras</span>
+        <span className="import-tree__words">{totalWords.toLocaleString()} {t('palabras')}</span>
       </div>
       {hasChildren && expanded && (
         <div className="import-tree__children">
@@ -480,6 +484,7 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
   const [importedNovelId, setImportedNovelId] = useState(null)
   const [existingResource, setExistingResource] = useState(null)
   const [importMode, setImportMode] = useState(null)
+  const [reviewTokens, setReviewTokens] = useState(null)
 
   const handleFileSelected = useCallback(async (selectedFile) => {
     setFile(selectedFile)
@@ -487,17 +492,21 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
     setError(null)
     setExistingResource(null)
     setImportMode(null)
+    setReviewTokens(null)
     try {
       const result = await analyzeFile(selectedFile)
       setAnalysis(result)
       const targetNovelId = novelId || activeNovel?.id
-      if (targetNovelId && result.metadata?.contentHash) {
-        const existing = await findExistingImport(result.metadata.contentHash, targetNovelId)
+      if (targetNovelId && result.metadata?.fileName) {
+        const existing = await findExistingImport(result.metadata.fileName, targetNovelId)
         if (existing) {
           setExistingResource(existing)
           setStep(2)
           return
         }
+      }
+      if (result.tokens?.length > 0) {
+        setReviewTokens(result.tokens)
       }
       setStep(2)
     } catch (err) {
@@ -506,6 +515,19 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
       setLoading(false)
     }
   }, [t, novelId, activeNovel])
+
+  const handleTokenReviewConfirm = useCallback((confirmedTokens) => {
+    const { sections, hasStructure } = compileNarrativeStructure(confirmedTokens)
+    setAnalysis(prev => ({ ...prev, tokens: confirmedTokens, sections, hasStructure }))
+    setReviewTokens(null)
+  }, [])
+
+  const handleTokenReviewBack = useCallback(() => {
+    setReviewTokens(null)
+    setFile(null)
+    setAnalysis(null)
+    setStep(1)
+  }, [])
 
   const handleContinue = useCallback(() => setStep(3), [])
   const handleBack = useCallback(() => setStep(s => s - 1), [])
@@ -547,23 +569,22 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
           <Upload size={16} />
           {t('wizard_title')}
         </h2>
+        {step < 4 && (
+          <div className="import-steps">
+            {steps.map(s => (
+              <div
+                key={s}
+                className={`import-steps__dot ${s === step ? 'import-steps__dot--active' : ''} ${s < step ? 'import-steps__dot--done' : ''}`}
+              >
+                {s < step ? <CheckCircle2 size={12} /> : <span>{s}</span>}
+              </div>
+            ))}
+          </div>
+        )}
         <button className="btn btn-ghost btn-icon" onClick={onCancel}>
           <X size={16} />
         </button>
       </div>
-
-      {step < 4 && (
-        <div className="import-steps">
-          {steps.map(s => (
-            <div
-              key={s}
-              className={`import-steps__dot ${s === step ? 'import-steps__dot--active' : ''} ${s < step ? 'import-steps__dot--done' : ''}`}
-            >
-              {s < step ? <CheckCircle2 size={14} /> : <span>{s}</span>}
-            </div>
-          ))}
-        </div>
-      )}
 
       <div className="import-wizard__body">
         {loading ? (
@@ -581,6 +602,12 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
           </div>
         ) : step === 1 ? (
           <StepFile onFileSelected={handleFileSelected} />
+        ) : step === 2 && reviewTokens ? (
+          <TokenReview
+            tokens={reviewTokens}
+            onConfirm={handleTokenReviewConfirm}
+            onBack={handleTokenReviewBack}
+          />
         ) : step === 2 && existingResource && !importMode ? (
           <StepReimport
             existingResource={existingResource}

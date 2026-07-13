@@ -104,8 +104,11 @@ describe('parseFile', () => {
     expect(result.metadata.format).toBe('TXT')
     expect(result.metadata.fileName).toBe('chapter.txt')
     expect(result.metadata.contentHash).toBeDefined()
-    expect(result.pages).toBeDefined()
-    expect(result.pages.length).toBeGreaterThan(0)
+    expect(result.tokens).toBeDefined()
+    expect(result.tokens.length).toBe(2)
+    expect(result.tokens[0].type).toBe('NORMAL')
+    expect(result.tokens[0].text).toBe('First line')
+    expect(result.tokens[1].text).toBe('Second line')
   })
 
   it('parses .md files', async () => {

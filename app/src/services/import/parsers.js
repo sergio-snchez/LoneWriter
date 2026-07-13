@@ -29,21 +29,82 @@ function stripHtml(html) {
   return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
-function htmlToTextWithMarkers(html) {
-  let text = html.replace(/<h([1-6])[^>]*>(.*?)<\/h\1>/gi, (_, level, content) => {
-    const clean = content.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').trim()
-    return '\n' + '#'.repeat(parseInt(level)) + ' ' + clean + '\n'
-  })
+function decodeHtmlEntities(text) {
+  return text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+}
+
+function stripTags(html) {
+  return html.replace(/<[^>]+>/g, '')
+}
+
+function htmlToTokens(html) {
+  const tokens = []
+  const tagRegex = /<h([1-6])[^>]*>(.*?)<\/h\1>|<br\s*\/?>|<\/p>\s*<p[^>]*>|<[^>]+>/gi
+  let lastIndex = 0
+  let normalBuffer = ''
+
+  const flushNormal = () => {
+    const text = normalBuffer.trim()
+    if (text) {
+      tokens.push({ type: 'NORMAL', text, confidence: 1.0 })
+    }
+    normalBuffer = ''
+  }
+
+  let match
+  while ((match = tagRegex.exec(html)) !== null) {
+    const before = html.slice(lastIndex, match.index)
+    if (before) {
+      normalBuffer += before
+    }
+
+    const tag = match[0]
+
+    const headingMatch = tag.match(/^<h([1-6])[^>]*>(.*?)<\/h\1>$/i)
+    if (headingMatch) {
+      const level = parseInt(headingMatch[1])
+      const text = decodeHtmlEntities(stripTags(headingMatch[2])).trim()
+      if (text) {
+        flushNormal()
+        const type = level === 1 ? 'H1' : level === 2 ? 'H2' : 'H3'
+        tokens.push({ type, text, confidence: 1.0 })
+      }
+      lastIndex = match.index + tag.length
+      continue
+    }
+
+    if (/^<br\s*\/?>$/i.test(tag)) {
+      normalBuffer += '\n'
+      lastIndex = match.index + tag.length
+      continue
+    }
+
+    if (/^<\/p>\s*<p[^>]*>$/i.test(tag)) {
+      normalBuffer += '\n\n'
+      lastIndex = match.index + tag.length
+      continue
+    }
+
+    lastIndex = match.index + tag.length
+  }
+
+  const remaining = html.slice(lastIndex)
+  if (remaining) {
+    normalBuffer += remaining
+  }
+
+  flushNormal()
+
+  return tokens
+}
+
+function htmlToPlainText(html) {
+  let text = html
   text = text.replace(/<br\s*\/?>/gi, '\n')
   text = text.replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
   text = text.replace(/<[^>]+>/g, '')
   text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
-  text = text.replace(/\n{3,}/g, '\n\n')
   return text.trim()
-}
-
-function countWords(text) {
-  return text.split(/\s+/).filter(Boolean).length
 }
 
 /**
@@ -64,20 +125,8 @@ export async function computeFileHash(file) {
 
 // ── Heading detection helpers ───────────────────────────────────────────────
 
-function findMarkdownHeadings(text) {
-  const headings = []
-  const lines = text.split('\n')
-  for (let i = 0; i < lines.length; i++) {
-    const match = lines[i].match(/^(#{1,6})\s+(.+)/)
-    if (match) {
-      headings.push({
-        text: match[2].trim(),
-        level: match[1].length,
-        lineIndex: i,
-      })
-    }
-  }
-  return headings
+function countWords(text) {
+  return text.split(/\s+/).filter(Boolean).length
 }
 
 function reconstructPdfPage(items) {
@@ -95,64 +144,33 @@ function reconstructPdfPage(items) {
   }
 
   if (yGroups.size === 0) {
-    return { lines: [], headings: [], text: '' }
+    return { lines: [], text: '' }
   }
 
   const sortedYs = Array.from(yGroups.keys()).sort((a, b) => b - a)
 
   const lines = []
-  const lineMaxSizes = []
-  const allSizes = []
 
   for (const y of sortedYs) {
     const group = yGroups.get(y)
     group.sort((a, b) => a.transform[4] - b.transform[4])
 
     let lineText = ''
-    let maxH = 0
     for (const item of group) {
       lineText += item.str
-      if (item.height > 0) {
-        allSizes.push(item.height)
-        if (item.height > maxH) maxH = item.height
-      }
     }
     lineText = lineText.trim()
     if (lineText) {
       lines.push(lineText)
-      lineMaxSizes.push(maxH)
     }
   }
 
-  if (allSizes.length === 0) {
-    return { lines, headings: [], text: lines.join('\n') }
-  }
-
-  const sizeCounts = new Map()
-  for (const s of allSizes) {
-    const key = Math.round(s * 10) / 10
-    sizeCounts.set(key, (sizeCounts.get(key) || 0) + 1)
-  }
-  const dominantSize = Array.from(sizeCounts.entries()).sort((a, b) => b[1] - a[1])[0][0]
-
-  const headings = []
-  for (let li = 0; li < lines.length; li++) {
-    const maxSize = lineMaxSizes[li]
-    const lineLen = lines[li].length
-    if (maxSize > 0 && maxSize > dominantSize * 1.3 && lineLen < 100 && lineLen > 2) {
-      const level = maxSize > dominantSize * 1.8 ? 1 : 2
-      headings.push({ text: lines[li], level, lineIndex: li })
-    }
-  }
-
-  return { lines, headings, text: lines.join('\n') }
+  return { lines, text: lines.join('\n') }
 }
 
-function extractOdtTextAndHeadings(xmlDoc) {
+function extractOdtTokens(xmlDoc) {
   const textNs = 'urn:oasis:names:tc:opendocument:xmlns:text:1.0'
-  const lines = []
-  const headings = []
-  let lineIndex = 0
+  const tokens = []
 
   function walk(node) {
     if (node.nodeType === 1) {
@@ -162,16 +180,15 @@ function extractOdtTextAndHeadings(xmlDoc) {
       if (ns === textNs && (tag === 'text:p' || tag === 'text:h')) {
         const textContent = node.textContent.trim()
         if (textContent) {
-          lines.push(textContent)
-
           if (tag === 'text:h') {
             const level = parseInt(node.getAttributeNS(textNs, 'outline-level')) || 1
-            headings.push({ text: textContent, level, lineIndex })
+            const type = level === 1 ? 'H1' : level === 2 ? 'H2' : 'H3'
+            tokens.push({ type, text: textContent, confidence: 1.0 })
+          } else {
+            tokens.push({ type: 'NORMAL', text: textContent, confidence: 1.0 })
           }
-
-          lineIndex++
-          return
         }
+        return
       }
     }
 
@@ -181,8 +198,7 @@ function extractOdtTextAndHeadings(xmlDoc) {
   }
 
   walk(xmlDoc.documentElement)
-
-  return { text: lines.join('\n'), headings }
+  return tokens
 }
 
 // ── Individual format parsers ───────────────────────────────────────────────
@@ -192,8 +208,10 @@ async function parseTxt(file) {
     const reader = new FileReader()
     reader.onload = (e) => {
       const text = e.target.result
+      const lines = text.split('\n').filter(l => l.trim())
+      const tokens = lines.map(line => ({ type: 'NORMAL', text: line.trim(), confidence: 1.0 }))
       resolve({
-        pages: [{ text, headings: [] }],
+        tokens,
         metadata: { title: extractTitle(text), author: '' },
         rawContent: text,
       })
@@ -208,10 +226,23 @@ async function parseMd(file) {
     const reader = new FileReader()
     reader.onload = (e) => {
       const text = e.target.result
-      const headings = findMarkdownHeadings(text)
-      const h1 = headings.find(h => h.level === 1)
+      const lines = text.split('\n')
+      const tokens = []
+
+      for (const line of lines) {
+        const match = line.match(/^(#{1,6})\s+(.+)/)
+        if (match) {
+          const level = match[1].length
+          const type = level === 1 ? 'H1' : level === 2 ? 'H2' : 'H3'
+          tokens.push({ type, text: match[2].trim(), confidence: 1.0 })
+        } else if (line.trim()) {
+          tokens.push({ type: 'NORMAL', text: line.trim(), confidence: 1.0 })
+        }
+      }
+
+      const h1 = tokens.find(t => t.type === 'H1')
       resolve({
-        pages: [{ text, headings }],
+        tokens,
         metadata: { title: h1?.text || extractTitle(text), author: '' },
         rawContent: text,
       })
@@ -224,15 +255,22 @@ async function parseMd(file) {
 async function parseDocx(file) {
   try {
     const arrayBuffer = await file.arrayBuffer()
-    const result = await mammoth.convertToHtml({ arrayBuffer })
+    const result = await mammoth.convertToHtml({
+      arrayBuffer,
+      styleMap: [
+        "p[style-name='Title'] => h1:fresh",
+        "p.Title => h1:fresh",
+        "p[style-name='Subtitle'] => h2:fresh",
+        "p.Subtitle => h2:fresh",
+      ]
+    })
     const html = result.value
-    const text = htmlToTextWithMarkers(html)
-    const headings = findMarkdownHeadings(text)
-    const h1 = headings.find(h => h.level === 1)
+    const tokens = htmlToTokens(html)
+    const h1 = tokens.find(t => t.type === 'H1')
 
     return {
-      pages: [{ text, headings }],
-      metadata: { title: h1?.text || extractTitle(text), author: '' },
+      tokens,
+      metadata: { title: h1?.text || extractTitle(htmlToPlainText(html)), author: '' },
     }
   } catch (err) {
     throw new Error(`Error parsing DOCX: ${err.message}`)
@@ -244,40 +282,23 @@ async function parsePdf(file) {
     const arrayBuffer = await file.arrayBuffer()
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
     const allLines = []
-    const allHeadings = []
 
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i)
       const content = await page.getTextContent()
-      const { lines, headings } = reconstructPdfPage(content.items)
+      const { lines } = reconstructPdfPage(content.items)
 
       if (lines.length === 0) continue
 
-      let pageStartIndex
-      if (allLines.length === 0) {
-        pageStartIndex = 0
-      } else {
-        allLines.push('')
-        pageStartIndex = allLines.length
-      }
-
       allLines.push(...lines)
-
-      for (const h of headings) {
-        allHeadings.push({
-          text: h.text,
-          level: h.level,
-          lineIndex: pageStartIndex + h.lineIndex,
-        })
-      }
     }
 
-    const fullText = allLines.join('\n')
+    const tokens = linesToTokens(allLines)
 
     return {
-      pages: [{ text: fullText, headings: allHeadings }],
+      tokens,
       metadata: {
-        title: allHeadings.find(h => h.level === 1)?.text || extractTitle(fullText),
+        title: tokens.find(t => t.type === 'H1')?.text || extractTitle(allLines.join('\n')),
         author: '',
         pageCount: pdf.numPages,
       },
@@ -285,6 +306,32 @@ async function parsePdf(file) {
   } catch (err) {
     throw new Error(`Error parsing PDF: ${err.message}`)
   }
+}
+
+function linesToTokens(lines) {
+  const tokens = []
+  const CHAPTER_PATTERNS = /^(?:cap[ií]tulo|chapter)\s+(\d+|[IVXLCDM]+)$/i
+  const ACT_PATTERNS = /^(?:acto?|part(?:e|s)?)\s+(\d+|[IVXLCDM]+)$/i
+
+  let chapterCount = 0
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed) continue
+
+    if (trimmed.length > 100 || trimmed.length <= 2) {
+      tokens.push({ type: 'NORMAL', text: trimmed, confidence: 1.0 })
+    } else if (CHAPTER_PATTERNS.test(trimmed)) {
+      chapterCount++
+      tokens.push({ type: 'H2', text: trimmed, confidence: 0.85 })
+    } else if (chapterCount > 0 && ACT_PATTERNS.test(trimmed)) {
+      tokens.push({ type: 'H1', text: trimmed, confidence: 0.8 })
+    } else {
+      tokens.push({ type: 'NORMAL', text: trimmed, confidence: 1.0 })
+    }
+  }
+
+  return tokens
 }
 
 async function parseOdt(file) {
@@ -297,12 +344,14 @@ async function parseOdt(file) {
     const contentXml = await contentXmlFile.async('string')
     const parser = new DOMParser()
     const xmlDoc = parser.parseFromString(contentXml, 'text/xml')
-    const { text, headings } = extractOdtTextAndHeadings(xmlDoc)
-    const h1 = headings.find(h => h.level === 1)
+    const tokens = extractOdtTokens(xmlDoc)
+    const h1 = tokens.find(t => t.type === 'H1')
+
+    const plainText = tokens.map(t => t.text).join('\n')
 
     return {
-      pages: [{ text, headings }],
-      metadata: { title: h1?.text || extractTitle(text), author: '' },
+      tokens,
+      metadata: { title: h1?.text || extractTitle(plainText), author: '' },
     }
   } catch (err) {
     throw new Error(`Error parsing ODT: ${err.message}`)
@@ -339,7 +388,11 @@ export async function parseFile(file) {
 
   const [result, contentHash] = await Promise.all([parser(file), computeFileHash(file)])
 
-  const totalWords = result.pages.reduce((sum, p) => sum + countWords(p.text), 0)
+  const tokenTexts = result.tokens || []
+  const pageTexts = result.pages || []
+  const totalWords = tokenTexts.length > 0
+    ? tokenTexts.reduce((sum, t) => sum + countWords(t.text), 0)
+    : pageTexts.reduce((sum, p) => sum + countWords(p.text), 0)
 
   return {
     ...result,
@@ -349,7 +402,7 @@ export async function parseFile(file) {
       fileName: file.name,
       fileSize: file.size,
       wordCount: totalWords,
-      pageCount: result.metadata.pageCount ?? result.pages.length,
+      pageCount: result.metadata.pageCount ?? (pageTexts.length || 1),
       contentHash,
     },
   }
