@@ -63,7 +63,7 @@ export async function analyzeFile(file) {
 }
 
 export async function confirmImport(analysis, file, options, onProgress) {
-  const { metadata, sections, rawContent } = analysis
+  const { metadata, sections, rawContent, tokens } = analysis
   const { createNewNovel, existingNovelId, novelTitle, importMode, existingResource } = options
   const emit = typeof onProgress === 'function' ? onProgress : () => {}
 
@@ -217,6 +217,7 @@ export async function confirmImport(analysis, file, options, onProgress) {
       contentHash: metadata.contentHash,
       importedSceneIds: createdSceneIds,
       importedActIds,
+      parsedTokens: tokens || null,
     }
 
     if (importMode === 'update' && existingResource?.id) {

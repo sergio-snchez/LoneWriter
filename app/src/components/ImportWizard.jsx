@@ -571,10 +571,15 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
 
   const handleReimportSelect = useCallback((mode) => {
     setImportMode(mode)
-    if (mode === 'update' && analysis?.tokens?.length > 0) {
-      setReviewTokens(analysis.tokens)
+    if (mode === 'update') {
+      const savedTokens = existingResource?.parsedTokens
+      if (savedTokens?.length > 0) {
+        setReviewTokens(savedTokens)
+      } else if (analysis?.tokens?.length > 0) {
+        setReviewTokens(analysis.tokens)
+      }
     }
-  }, [analysis])
+  }, [analysis, existingResource])
 
   const handleReimportBack = useCallback(() => {
     setFile(null)
