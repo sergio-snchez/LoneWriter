@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from 'i18next'
 import {
@@ -331,12 +331,18 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
   const [error, setError] = useState(null)
   const [progress, setProgress] = useState(null)
 
+  const isUpdateMode = importMode === 'update'
+
   const { metadata, sections } = analysis
 
   const totalScenes = sections.reduce((sum, act) =>
     sum + act.chapters.reduce((s, ch) => s + ch.scenes.length, 0), 0
   )
   const totalChapters = sections.reduce((sum, act) => sum + act.chapters.length, 0)
+
+  useEffect(() => {
+    if (isUpdateMode) setDestination('existing')
+  }, [isUpdateMode])
 
   const handleImport = useCallback(async () => {
     setImporting(true)
@@ -372,21 +378,23 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
   return (
     <div className="import-step">
       <div className="import-destination">
-        <p className="import-destination__label">{t('destino_pregunta')}</p>
+        <p className="import-destination__label">{t(isUpdateMode ? 'destino_actualizar_pregunta' : 'destino_pregunta')}</p>
 
-        <label className={`import-radio ${destination === 'new' ? 'import-radio--active' : ''}`}>
-          <input
-            type="radio"
-            name="destination"
-            value="new"
-            checked={destination === 'new'}
-            onChange={() => setDestination('new')}
-          />
-          <BookOpen size={16} />
-          <span>{t('destino_nueva')}</span>
-        </label>
+        {!isUpdateMode && (
+          <label className={`import-radio ${destination === 'new' ? 'import-radio--active' : ''}`}>
+            <input
+              type="radio"
+              name="destination"
+              value="new"
+              checked={destination === 'new'}
+              onChange={() => setDestination('new')}
+            />
+            <BookOpen size={16} />
+            <span>{t('destino_nueva')}</span>
+          </label>
+        )}
 
-        {destination === 'new' && (
+        {!isUpdateMode && destination === 'new' && (
           <div className="import-title-input-wrap">
             <input
               className="import-title-input"
@@ -407,8 +415,11 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
               checked={destination === 'existing'}
               onChange={() => setDestination('existing')}
             />
-            <Plus size={16} />
-            <span>{t('destino_existente', { title: activeNovel.title })}</span>
+            {importMode === 'update' ? <ArrowLeft size={16} /> : <Plus size={16} />}
+            <span>{importMode === 'update'
+              ? t('destino_actualizar', { title: activeNovel.title })
+              : t('destino_existente', { title: activeNovel.title })
+            }</span>
           </label>
         )}
       </div>
@@ -441,7 +452,7 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
           {importing ? (
             <><Loader2 size={14} className="spinner" /> {t('importando')}</>
           ) : (
-            <><Upload size={14} /> {t('importar')}</>
+            <><Upload size={14} /> {isUpdateMode ? t('actualizar') : t('importar')}</>
           )}
         </button>
       </div>
@@ -560,7 +571,10 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
 
   const handleReimportSelect = useCallback((mode) => {
     setImportMode(mode)
-  }, [])
+    if (mode === 'update' && analysis?.tokens?.length > 0) {
+      setReviewTokens(analysis.tokens)
+    }
+  }, [analysis])
 
   const handleReimportBack = useCallback(() => {
     setFile(null)
