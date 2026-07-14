@@ -39,7 +39,7 @@ function stripTags(html) {
 
 function htmlToTokens(html) {
   const tokens = []
-  const tagRegex = /<h([1-6])[^>]*>(.*?)<\/h\1>|<br\s*\/?>|<\/p>\s*<p[^>]*>|<[^>]+>/gi
+  const tagRegex = /<h([1-6])[^>]*>(.*?)<\/h\1>|<br\s*\/?>|<\/p>\s*<p[^>]*>|<li[^>]*>|<[^>]+>/gi
   let lastIndex = 0
   let normalBuffer = ''
 
@@ -79,6 +79,12 @@ function htmlToTokens(html) {
       continue
     }
 
+    if (/^<li[^>]*>$/i.test(tag)) {
+      normalBuffer += '\n- '
+      lastIndex = match.index + tag.length
+      continue
+    }
+
     if (/^<\/p>\s*<p[^>]*>$/i.test(tag)) {
       normalBuffer += '\n\n'
       lastIndex = match.index + tag.length
@@ -102,6 +108,7 @@ function htmlToPlainText(html) {
   let text = html
   text = text.replace(/<br\s*\/?>/gi, '\n')
   text = text.replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
+  text = text.replace(/<li[^>]*>/gi, '\n- ')
   text = text.replace(/<[^>]+>/g, '')
   text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
   return text.trim()

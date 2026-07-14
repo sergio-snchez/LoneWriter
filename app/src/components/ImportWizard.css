@@ -430,6 +430,56 @@
   margin-top: auto;
 }
 
+/* ── Progress bar ─────────────────────────── */
+
+.import-progress {
+  padding: 10px 0 0;
+  flex-shrink: 0;
+}
+
+.import-progress__info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.import-progress__phase {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.import-progress__pct {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-light);
+}
+
+.import-progress__bar {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-elevated);
+  border-radius: 99px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.import-progress__fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 99px;
+  transition: width 0.2s ease;
+}
+
+.import-progress__detail {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
 /* ── Complete step ──────────────────────────── */
 
 .import-step--complete {

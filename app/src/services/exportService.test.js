@@ -12,6 +12,19 @@ vi.mock('html-to-docx', () => ({
   default: vi.fn(() => Promise.resolve(new ArrayBuffer(8))),
 }));
 
+// Mock jszip
+const { mockGenerateAsync } = vi.hoisted(() => ({
+  mockGenerateAsync: vi.fn(() => Promise.resolve(new Blob(['fake-odt'], { type: 'application/vnd.oasis.opendocument.text' }))),
+}));
+
+vi.mock('jszip', () => {
+  function MockJSZip() {
+    this.file = vi.fn();
+    this.generateAsync = mockGenerateAsync;
+  }
+  return { default: MockJSZip };
+});
+
 // Mock pako — must provide `default` because import pako from 'pako' expects it
 const { mockGzip, mockUngzip } = vi.hoisted(() => ({
   mockGzip: vi.fn((data) => {
@@ -170,6 +183,49 @@ describe('ExportService.exportFullNovel', () => {
 
   it('throws when no novel is provided', async () => {
     await expect(ExportService.exportFullNovel(null, [], {})).rejects.toThrow('NO_ACTIVE_NOVEL');
+  });
+});
+
+describe('ExportService.exportToODT', () => {
+  it('returns true on success', async () => {
+    const result = await ExportService.exportToODT('Test', '<p>Hello</p>', 'Empty');
+    expect(result).toBe(true);
+  });
+
+  it('throws for empty content', async () => {
+    await expect(ExportService.exportToODT('Test', '<p></p>', 'Empty')).rejects.toThrow('SCENE_EMPTY');
+    await expect(ExportService.exportToODT('Test', '', 'Empty')).rejects.toThrow('SCENE_EMPTY');
+    await expect(ExportService.exportToODT('Test', '   ', 'Empty')).rejects.toThrow('SCENE_EMPTY');
+  });
+});
+
+describe('ExportService.exportFullNovelODT', () => {
+  it('returns true on success', async () => {
+    const novel = { title: 'My Novel', author: 'Me' };
+    const acts = [
+      {
+        title: 'Act 1',
+        chapters: [
+          {
+            number: 1,
+            title: 'Chapter 1',
+            scenes: [{ title: 'Scene 1', content: '<p>Text</p>', pov: 'Hero' }],
+          },
+        ],
+      },
+    ];
+    const result = await ExportService.exportFullNovelODT(novel, acts, {});
+    expect(result).toBe(true);
+  });
+
+  it('throws when no novel is provided', async () => {
+    await expect(ExportService.exportFullNovelODT(null, [], {})).rejects.toThrow('NO_ACTIVE_NOVEL');
+  });
+
+  it('handles novel with no acts', async () => {
+    const novel = { title: 'Empty Novel' };
+    const result = await ExportService.exportFullNovelODT(novel, [], {});
+    expect(result).toBe(true);
   });
 });
 

@@ -70,7 +70,9 @@
   },
   "editor": {
     "exportar_word": "Export scene to Word",
+    "exportar_odt": "Export scene to ODT",
     "word": "Word",
+    "odt": "ODT",
     "sin_pov": "No POV",
     "sin_fecha": "No Date / Day X",
     "mostrar_selector_fecha": "Show date picker",

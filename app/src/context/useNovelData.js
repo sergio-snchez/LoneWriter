@@ -24,6 +24,7 @@ export function useNovelData() {
   const [resources, setResources] = useState([])
   const [nexusLinks, setNexusLinks] = useState([])
   const [expandedIds, setExpandedIds] = useState(new Set())
+  const [headerExpanded, setHeaderExpanded] = useState(false)
 
   // ── Data loading helpers ───────────────────────────────────────────────────
   const refreshAllNovels = useCallback(async () => {
@@ -69,16 +70,23 @@ export function useNovelData() {
     const novel = await db.novels.get(novelId)
     if (novel?.uiExpanded) {
       try {
-        return new Set(JSON.parse(novel.uiExpanded))
+        const parsed = JSON.parse(novel.uiExpanded)
+        if (Array.isArray(parsed)) {
+          return { tree: new Set(parsed), header: false }
+        }
+        return {
+          tree: new Set(parsed.tree || []),
+          header: !!parsed.header,
+        }
       } catch {
-        return new Set()
+        return { tree: new Set(), header: false }
       }
     }
-    return new Set()
+    return { tree: new Set(), header: false }
   }, [])
 
-  const updateNovelUIExpanded = useCallback(async (novelId, ids) => {
-    const data = { uiExpanded: JSON.stringify([...ids]) }
+  const updateNovelUIExpanded = useCallback(async (novelId, treeIds, header) => {
+    const data = { uiExpanded: JSON.stringify({ tree: [...treeIds], header: !!header }) }
     await db.novels.update(novelId, data)
     setActiveNovel(prev => (prev?.id === novelId ? { ...prev, ...data } : prev))
   }, [])
@@ -102,8 +110,9 @@ export function useNovelData() {
     setResources(await db.resources.where('novelId').equals(novelId).toArray())
     setNexusLinks(await db.nexusLinks.where('novelId').equals(novelId).toArray())
 
-    const savedExpanded = await getNovelUIExpanded(novelId)
-    setExpandedIds(savedExpanded)
+    const savedUI = await getNovelUIExpanded(novelId)
+    setExpandedIds(savedUI.tree)
+    setHeaderExpanded(savedUI.header)
 
     const updatedNovel = await db.novels.get(novelId)
     setActiveNovel(updatedNovel)
@@ -179,14 +188,14 @@ export function useNovelData() {
     return () => window.removeEventListener('navigate-to-scene', handleGlobalNavigate)
   }, [acts])
 
-  // ── Persist expanded IDs when they change ─────────────────────────────────
+  // ── Persist expanded IDs and header state when they change ────────────────
   useEffect(() => {
     if (!activeNovel?.id) return
     const timer = setTimeout(() => {
-      updateNovelUIExpanded(activeNovel.id, expandedIds)
+      updateNovelUIExpanded(activeNovel.id, expandedIds, headerExpanded)
     }, 1000)
     return () => clearTimeout(timer)
-  }, [expandedIds, activeNovel?.id, updateNovelUIExpanded])
+  }, [expandedIds, headerExpanded, activeNovel?.id, updateNovelUIExpanded])
 
   return useMemo(() => ({
     allNovels, setAllNovels,
@@ -201,6 +210,7 @@ export function useNovelData() {
     resources,
     nexusLinks,
     expandedIds, setExpandedIds,
+    headerExpanded, setHeaderExpanded,
     reloadData,
     refreshAllNovels,
     refreshAfterRestore,
@@ -210,7 +220,8 @@ export function useNovelData() {
   }), [
     allNovels, activeNovel, activeScene, loading,
     acts, characters, locations, objects, lore, resources, nexusLinks, expandedIds,
-    setAllNovels, setActiveNovel, setActiveScene, setExpandedIds,
+    headerExpanded,
+    setAllNovels, setActiveNovel, setActiveScene, setExpandedIds, setHeaderExpanded,
     reloadData, refreshAllNovels, refreshAfterRestore,
     syncNovelWordCount, getNovelUIExpanded, updateNovelUIExpanded,
   ])

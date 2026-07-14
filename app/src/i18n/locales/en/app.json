@@ -45,6 +45,7 @@
     "importar": "Import Projects (.lwrt)",
     "exportar_lwrt": "Export Projects (.lwrt)",
     "exportar_docx": "Export Manuscript (.docx)",
+    "exportar_odt": "Export Manuscript (.odt)",
     "sin_titulo": "Untitled"
   },
   "topbar": {

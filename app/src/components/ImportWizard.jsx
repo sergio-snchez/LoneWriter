@@ -329,6 +329,7 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
   const [novelTitle, setNovelTitle] = useState(defaultTitle)
   const [importing, setImporting] = useState(false)
   const [error, setError] = useState(null)
+  const [progress, setProgress] = useState(null)
 
   const { metadata, sections } = analysis
 
@@ -340,6 +341,7 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
   const handleImport = useCallback(async () => {
     setImporting(true)
     setError(null)
+    setProgress(null)
     try {
       const result = await confirmImport(
         analysis,
@@ -350,15 +352,22 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
           novelTitle: novelTitle.trim(),
           importMode,
           existingResource,
-        }
+        },
+        setProgress
       )
       onComplete(destination === 'new', result.novelId)
     } catch (err) {
       setError(err.message || t('error_inesperado'))
     } finally {
       setImporting(false)
+      setProgress(null)
     }
   }, [analysis, file, destination, novelTitle, activeNovel, importMode, existingResource, onComplete, t])
+
+  const progressPhase = progress ? t(`progress_${progress.phase}`) : ''
+  const progressPct = progress && progress.total > 0
+    ? Math.round((progress.current / progress.total) * 100)
+    : 0
 
   return (
     <div className="import-step">
@@ -436,6 +445,23 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
           )}
         </button>
       </div>
+      {importing && progress && (
+        <div className="import-progress">
+          <div className="import-progress__info">
+            <span className="import-progress__phase">{progressPhase}</span>
+            <span className="import-progress__pct">{progressPct}%</span>
+          </div>
+          <div className="import-progress__bar">
+            <div
+              className="import-progress__fill"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+          <span className="import-progress__detail">
+            {progress.current} / {progress.total}
+          </span>
+        </div>
+      )}
     </div>
   )
 }

@@ -19,6 +19,7 @@ export const NovelProvider = ({ children }) => {
     resources,
     nexusLinks,
     expandedIds, setExpandedIds,
+    headerExpanded, setHeaderExpanded,
     reloadData,
     refreshAllNovels,
     refreshAfterRestore,
@@ -113,6 +114,7 @@ export const NovelProvider = ({ children }) => {
     refreshAllNovels, reloadData, refreshAfterRestore,
     ...merge,
     expandedIds, setExpandedIds,
+    headerExpanded, setHeaderExpanded,
   }), [
     activeNovel, activeScene, setActiveScene,
     allNovels, acts, characters, locations, objects, lore, resources, nexusLinks,
@@ -141,6 +143,7 @@ export const NovelProvider = ({ children }) => {
     merge.scanForMergeDuplicates, merge.handleMergeSelection,
     merge.confirmMerge, merge.skipMerge, merge.closeMergeOverlay,
     expandedIds, setExpandedIds,
+    headerExpanded, setHeaderExpanded,
   ]);
 
   return <NovelContext.Provider value={value}>{children}</NovelContext.Provider>;

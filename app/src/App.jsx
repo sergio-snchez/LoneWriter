@@ -48,6 +48,7 @@ export default function App() {
   const {
     handleExportProject,
     handleExportFullWord,
+    handleExportFullODT,
     handleImportClick,
     handleFileChange,
     handleCreateProject,
@@ -188,6 +189,10 @@ export default function App() {
                 <button onClick={() => { handleExportFullWord(); setMenuOpen(false); }}>
                   <FileDown size={14} />
                   {t('menu.exportar_docx')}
+                </button>
+                <button onClick={() => { handleExportFullODT(); setMenuOpen(false); }}>
+                  <FileDown size={14} />
+                  {t('menu.exportar_odt')}
                 </button>
               </div>
             )}

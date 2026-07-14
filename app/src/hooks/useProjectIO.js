@@ -36,6 +36,21 @@ export function useProjectIO({ openModal, activeNovel, acts, createNovel, fileIn
     }
   }
 
+  const handleExportFullODT = () => {
+    if (activeNovel && acts) {
+      const strings = {
+        unknownAuthor: t('exportar.autor_desconocido'),
+        chapterLabel: t('exportar.capitulo'),
+        sceneLabel: t('exportar.escena'),
+        emptyScene: t('exportar.escena_vacia'),
+        generatedBy: t('exportar.generado_por'),
+      };
+      ExportService.exportFullNovelODT(activeNovel, acts, strings).catch(err => {
+        console.error('[LoneWriter] exportFullNovelODT error:', err);
+      });
+    }
+  }
+
   const handleImportClick = () => {
     fileInputRef.current?.click();
   }
@@ -82,6 +97,7 @@ export function useProjectIO({ openModal, activeNovel, acts, createNovel, fileIn
   return {
     handleExportProject,
     handleExportFullWord,
+    handleExportFullODT,
     handleImportClick,
     handleFileChange,
     handleCreateProject,

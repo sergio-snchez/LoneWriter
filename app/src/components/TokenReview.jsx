@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Trash2, ChevronDown, Eye, Search } from 'lucide-react'
+import { ArrowLeft, Trash2, ChevronDown, Eye, Search, CheckSquare, Square, Tag } from 'lucide-react'
 import PropTypes from 'prop-types'
 import './TokenReview.css'
 
@@ -42,7 +42,7 @@ HighlightedText.propTypes = {
   search: PropTypes.string.isRequired,
 }
 
-function TokenRow({ token, index, onChangeType, onDelete, search }) {
+function TokenRow({ token, index, onChangeType, onDelete, search, selected, onSelect }) {
   const { t } = useTranslation('import')
   const [showTypeMenu, setShowTypeMenu] = useState(false)
 
@@ -57,7 +57,14 @@ function TokenRow({ token, index, onChangeType, onDelete, search }) {
     : token.text
 
   return (
-    <div className={`token-review__row ${isHeading ? 'token-review__row--heading' : ''}`}>
+    <div className={`token-review__row ${isHeading ? 'token-review__row--heading' : ''} ${selected ? 'token-review__row--selected' : ''}`}>
+      <button
+        className="token-review__select-btn"
+        onClick={() => onSelect(index)}
+        title={selected ? t('token_deselect') : t('token_select')}
+      >
+        {selected ? <CheckSquare size={14} /> : <Square size={14} />}
+      </button>
       <div className="token-review__type-col">
         <div className="token-review__type-selector">
           <button
@@ -108,18 +115,37 @@ TokenRow.propTypes = {
   onChangeType: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   search: PropTypes.string.isRequired,
+  selected: PropTypes.bool.isRequired,
+  onSelect: PropTypes.func.isRequired,
 }
 
 export default function TokenReview({ tokens: initialTokens, onConfirm, onBack }) {
   const { t } = useTranslation('import')
   const [tokens, setTokens] = useState(initialTokens)
   const [search, setSearch] = useState('')
+  const [typeFilter, setTypeFilter] = useState(null)
+  const [selectedIndices, setSelectedIndices] = useState(new Set())
+  const [bulkTypeMenu, setBulkTypeMenu] = useState(false)
 
   const filteredTokens = useMemo(() => {
-    if (!search.trim()) return tokens
-    const q = search.toLowerCase()
-    return tokens.filter(tk => tk.text.toLowerCase().includes(q))
-  }, [tokens, search])
+    let result = tokens
+    if (typeFilter) {
+      result = result.filter(tk => tk.type === typeFilter)
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      result = result.filter(tk => tk.text.toLowerCase().includes(q))
+    }
+    return result
+  }, [tokens, search, typeFilter])
+
+  const typeCounts = useMemo(() => {
+    const counts = { H1: 0, H2: 0, H3: 0, NORMAL: 0 }
+    for (const tk of tokens) {
+      counts[tk.type] = (counts[tk.type] || 0) + 1
+    }
+    return counts
+  }, [tokens])
 
   const handleChangeType = useCallback((index, newType) => {
     setTokens(prev => prev.map((tk, i) =>
@@ -129,9 +155,49 @@ export default function TokenReview({ tokens: initialTokens, onConfirm, onBack }
 
   const handleDelete = useCallback((index) => {
     setTokens(prev => prev.filter((_, i) => i !== index))
+    setSelectedIndices(prev => {
+      const next = new Set()
+      for (const i of prev) {
+        if (i < index) next.add(i)
+        else if (i > index) next.add(i - 1)
+      }
+      return next
+    })
   }, [])
 
+  const handleSelect = useCallback((index) => {
+    setSelectedIndices(prev => {
+      const next = new Set(prev)
+      if (next.has(index)) next.delete(index)
+      else next.add(index)
+      return next
+    })
+  }, [])
+
+  const handleSelectAll = useCallback(() => {
+    if (selectedIndices.size === filteredTokens.length) {
+      setSelectedIndices(new Set())
+    } else {
+      setSelectedIndices(new Set(filteredTokens.map(tk => tokens.indexOf(tk))))
+    }
+  }, [filteredTokens, tokens, selectedIndices.size])
+
+  const handleBulkTypeChange = useCallback((newType) => {
+    setTokens(prev => prev.map((tk, i) =>
+      selectedIndices.has(i) ? { ...tk, type: newType } : tk
+    ))
+    setSelectedIndices(new Set())
+    setBulkTypeMenu(false)
+  }, [selectedIndices])
+
+  const handleBulkDelete = useCallback(() => {
+    setTokens(prev => prev.filter((_, i) => !selectedIndices.has(i)))
+    setSelectedIndices(new Set())
+  }, [selectedIndices])
+
   const headingCount = tokens.filter(t => t.type !== 'NORMAL').length
+  const allTypes = ['H1', 'H2', 'H3', 'NORMAL']
+  const hasSelection = selectedIndices.size > 0
 
   return (
     <div className="import-step token-review">
@@ -141,6 +207,24 @@ export default function TokenReview({ tokens: initialTokens, onConfirm, onBack }
           <h3 className="token-review__title">{t('token_review_titulo')}</h3>
           <p className="token-review__desc">{t('token_review_desc')}</p>
         </div>
+      </div>
+
+      <div className="token-review__filter-row">
+        <button
+          className={`token-review__filter-btn ${typeFilter === null ? 'token-review__filter-btn--active' : ''}`}
+          onClick={() => setTypeFilter(null)}
+        >
+          {t('token_filter_all')} <span className="token-review__filter-count">{tokens.length}</span>
+        </button>
+        {allTypes.map(type => (
+          <button
+            key={type}
+            className={`token-review__filter-btn token-review__filter-btn--${type.toLowerCase()} ${typeFilter === type ? 'token-review__filter-btn--active' : ''}`}
+            onClick={() => setTypeFilter(typeFilter === type ? null : type)}
+          >
+            {t(`token_type_${type}`)} <span className="token-review__filter-count">{typeCounts[type]}</span>
+          </button>
+        ))}
       </div>
 
       <div className="token-review__search-row">
@@ -169,7 +253,48 @@ export default function TokenReview({ tokens: initialTokens, onConfirm, onBack }
         )}
       </div>
 
+      {hasSelection && (
+        <div className="token-review__bulk-bar">
+          <span className="token-review__bulk-count">
+            {selectedIndices.size} {t('token_review_tokens')} seleccionados
+          </span>
+          <div className="token-review__bulk-actions">
+            <div className="token-review__bulk-type-wrap">
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => setBulkTypeMenu(v => !v)}
+              >
+                <Tag size={13} /> {t('token_bulk_change', { count: selectedIndices.size })}
+              </button>
+              {bulkTypeMenu && (
+                <div className="token-review__type-menu token-review__type-menu--bulk">
+                  {TYPE_OPTIONS.map(type => (
+                    <button
+                      key={type}
+                      className="token-review__type-option"
+                      onClick={() => handleBulkTypeChange(type)}
+                    >
+                      {t(`token_type_${type}`)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button className="btn btn-ghost btn-sm token-review__bulk-delete" onClick={handleBulkDelete}>
+              <Trash2 size={13} /> {t('token_bulk_delete', { count: selectedIndices.size })}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="token-review__stats">
+        <button
+          className="token-review__select-all"
+          onClick={handleSelectAll}
+          title={selectedIndices.size === filteredTokens.length ? 'Deselect all' : 'Select all'}
+        >
+          {selectedIndices.size === filteredTokens.length ? <CheckSquare size={14} /> : <Square size={14} />}
+        </button>
         <span>{tokens.length} {t('token_review_tokens')}</span>
         <span>·</span>
         <span>{headingCount} {t('token_review_headings')}</span>
@@ -191,6 +316,8 @@ export default function TokenReview({ tokens: initialTokens, onConfirm, onBack }
                 onChangeType={handleChangeType}
                 onDelete={handleDelete}
                 search={search}
+                selected={selectedIndices.has(realIndex)}
+                onSelect={handleSelect}
               />
             )
           })

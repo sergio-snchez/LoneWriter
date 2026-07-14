@@ -14,6 +14,7 @@ import './EditorToolbar.css'
 const EditorToolbar = memo(function EditorToolbar({ onNavigate, menuOpen, handleManualMpcScan }) {
   const {
     activeScene, activeNovel, characters, updateScene,
+    headerExpanded, setHeaderExpanded,
   } = useNovel();
 
   const {
@@ -22,7 +23,6 @@ const EditorToolbar = memo(function EditorToolbar({ onNavigate, menuOpen, handle
   } = useAI();
 
   const { t } = useTranslation('editor')
-  const [isHeaderExpanded, setIsHeaderExpanded] = useState(false)
   const [generatingSynopsis, setGeneratingSynopsis] = useState(false)
   const [localSynopsis, setLocalSynopsis] = useState('')
   const [localChronology, setLocalChronology] = useState('')
@@ -89,6 +89,23 @@ const EditorToolbar = memo(function EditorToolbar({ onNavigate, menuOpen, handle
     }
   }
 
+  const handleExportSceneODT = async () => {
+    if (!activeScene) return
+    try {
+      await ExportService.exportToODT(
+        activeScene.title,
+        activeScene.content,
+        t('exportar.escena_vacia_word')
+      )
+    } catch (err) {
+      if (err.message === 'SCENE_EMPTY') {
+        console.warn('[LoneWriter] ODT export aborted: scene is empty.')
+      } else {
+        console.error('[LoneWriter] exportToODT error:', err)
+      }
+    }
+  }
+
   if (!activeScene) return null
 
   return (
@@ -105,13 +122,13 @@ const EditorToolbar = memo(function EditorToolbar({ onNavigate, menuOpen, handle
             <h2 className="editor-header__title">{activeScene.title}</h2>
             <button
               className="header-toggle"
-              onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+              onClick={() => setHeaderExpanded(!headerExpanded)}
             >
-              {isHeaderExpanded ? <ChevronDown size={20} className="toggle-icon--rotated" /> : <ChevronDown size={20} />}
+              {headerExpanded ? <ChevronDown size={20} className="toggle-icon--rotated" /> : <ChevronDown size={20} />}
             </button>
           </div>
 
-          <div className={`editor-header__metadata ${!isHeaderExpanded ? 'header-collapsed' : ''}`}>
+          <div className={`editor-header__metadata ${!headerExpanded ? 'header-collapsed' : ''}`}>
             <div className="meta-field">
               <Clock size={12} />
               <select
@@ -155,11 +172,17 @@ const EditorToolbar = memo(function EditorToolbar({ onNavigate, menuOpen, handle
           </div>
         </div>
       </div>
-      <div className={`editor-header__status-row ${!isHeaderExpanded ? 'header-collapsed' : ''}`}>
+      <div className={`editor-header__status-row ${!headerExpanded ? 'header-collapsed' : ''}`}>
         <Tooltip content={t('editor.exportar_word')}>
           <button className="btn btn-ghost btn-sm" onClick={handleExportScene}>
             <FileDown size={14} />
             {t('editor.word')}
+          </button>
+        </Tooltip>
+        <Tooltip content={t('editor.exportar_odt')}>
+          <button className="btn btn-ghost btn-sm" onClick={handleExportSceneODT}>
+            <FileDown size={14} />
+            {t('editor.odt')}
           </button>
         </Tooltip>
         <Tooltip content={t('editor.tooltip_oraculo')}>
@@ -204,7 +227,7 @@ const EditorToolbar = memo(function EditorToolbar({ onNavigate, menuOpen, handle
           </Tooltip>
         )}
       </div>
-      <div className={`editor-header__synopsis-container ${!isHeaderExpanded ? 'header-collapsed' : ''}`}>
+      <div className={`editor-header__synopsis-container ${!headerExpanded ? 'header-collapsed' : ''}`}>
         <Tooltip content={t('editor.generar_sinopsis')}>
           <button className="synopsis-ai-btn" onClick={handleGenerateSynopsis} disabled={generatingSynopsis}>
             {generatingSynopsis ? <Loader2 size={14} className="spin" /> : <Sparkles size={14} />}

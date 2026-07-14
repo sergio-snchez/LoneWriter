@@ -62,9 +62,20 @@ export async function analyzeFile(file) {
   }
 }
 
-export async function confirmImport(analysis, file, options) {
+export async function confirmImport(analysis, file, options, onProgress) {
   const { metadata, sections, rawContent } = analysis
   const { createNewNovel, existingNovelId, novelTitle, importMode, existingResource } = options
+  const emit = typeof onProgress === 'function' ? onProgress : () => {}
+
+  // Count total scenes for progress
+  let totalScenes = 0
+  for (const act of sections) {
+    for (const ch of act.chapters) {
+      totalScenes += ch.scenes.length
+    }
+  }
+
+  emit({ phase: 'novel', current: 0, total: 1 })
 
   let novelId
   if (createNewNovel) {
@@ -86,6 +97,8 @@ export async function confirmImport(analysis, file, options) {
 
   // Update mode: remove old scenes and vectors first
   if (importMode === 'update' && existingResource?.importedSceneIds?.length > 0) {
+    emit({ phase: 'cleanup', current: 0, total: existingResource.importedSceneIds.length })
+    let cleanupIdx = 0
     for (const oldSceneId of existingResource.importedSceneIds) {
       try {
         await deleteVectorsForScene(oldSceneId)
@@ -93,6 +106,8 @@ export async function confirmImport(analysis, file, options) {
       } catch (err) {
         console.error('[Import] Error deleting old scene', oldSceneId, err)
       }
+      cleanupIdx++
+      emit({ phase: 'cleanup', current: cleanupIdx, total: existingResource.importedSceneIds.length })
     }
     // Also delete old acts/chapters that were part of this import
     if (existingResource.importedActIds?.length > 0) {
@@ -118,6 +133,10 @@ export async function confirmImport(analysis, file, options) {
 
   const existingActs = await db.acts.where('novelId').equals(novelId).toArray()
   const maxActOrder = existingActs.reduce((max, a) => Math.max(max, a.order || 0), 0)
+
+  let sceneIdx = 0
+
+  emit({ phase: 'scenes', current: 0, total: totalScenes })
 
   for (let ai = 0; ai < sections.length; ai++) {
     const act = sections[ai]
@@ -169,9 +188,14 @@ export async function confirmImport(analysis, file, options) {
         } catch (err) {
           console.error('[Import] RAG indexing error for scene', sceneId, err)
         }
+
+        sceneIdx++
+        emit({ phase: 'scenes', current: sceneIdx, total: totalScenes })
       }
     }
   }
+
+  emit({ phase: 'resource', current: 0, total: 1 })
 
   // Save or update the resource
   try {
@@ -203,6 +227,8 @@ export async function confirmImport(analysis, file, options) {
   } catch (err) {
     console.error('[Import] Error saving resource:', err)
   }
+
+  emit({ phase: 'resource', current: 1, total: 1 })
 
   return { novelId, createdSceneIds }
 }
