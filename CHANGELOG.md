@@ -6,6 +6,21 @@
 
 </div>
 
+## [LoneWriter v2.2.3] - 2026-07-14
+### Added
+- **ODT export**: Single scene and full novel export to OpenDocument Text format with proper heading hierarchy (h1-h4).
+- **Import progress bar**: Animated progress bar with phase labels (novel preparation, cleanup, scene import, resource saving) during document import.
+- **Token Review filters**: Type filter buttons (Act, Chapter, Scene, Text) with token counts in the import review step.
+- **Bulk token editing**: Multi-select with checkboxes, bulk type change, and bulk delete in Token Review.
+- **Header persistence**: Editor toolbar synopsis/timeline panel state now persists in IndexedDB across view navigation.
+- **Re-import token memory**: User's Token Review edits (type assignments, deletions) are saved to the resource and restored when re-importing the same file.
+
+### Fixed
+- **DOCX list line breaks**: Numbered and bulleted lists now import with proper line breaks and "- " prefix instead of concatenating all items into a single line.
+- **Update mode UI clarity**: "Actualizar [Novela]" text now differs from "Añadir a [Novela]" when re-importing. The "Create new novel" option is hidden in update mode.
+- **Token Review in update mode**: Token Review is now shown when choosing "Actualizar", giving users full control over structure before update.
+- **Header collapse on navigation**: Editor toolbar header no longer collapses when switching between Editor, Compendium, and Nexus views.
+
 ## [LoneWriter v2.1.0] - 2026-06-30
 ### Added
 - **ThemeContext**: New React context wrapping `useAppPreferences()` eliminating prop-drilling of `theme`, `setTheme`, `editorFont`, `setEditorFont`, `meshEnabled`, `setMeshEnabled` across 6 components (App, WelcomeScreen, MeshBackground, SettingsUITab, SettingsModal, Nexus).

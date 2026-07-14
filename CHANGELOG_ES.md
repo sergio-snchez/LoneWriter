@@ -6,6 +6,21 @@
 
 </div>
 
+## [LoneWriter v2.2.3] - 2026-07-14
+### Añadido
+- **Exportación a ODT**: Exportación de escena individual y novela completa a formato OpenDocument Text con jerarquía de encabezados correcta (h1-h4).
+- **Barra de progreso de importación**: Barra de progreso animada con etiquetas de fase (preparación de novela, limpieza, importación de escenas, guardado de recurso) durante la importación de documentos.
+- **Filtros en Token Review**: Botones de filtro por tipo (Acto, Capítulo, Escena, Texto) con conteo de tokens en el paso de revisión.
+- **Edición en bloque de tokens**: Selección múltiple con checkboxes, cambio de tipo en bloque y eliminación en bloque en Token Review.
+- **Persistencia del header**: El estado del panel de sinopsis/timeline del toolbar del editor ahora persiste en IndexedDB al navegar entre vistas.
+- **Memoria de tokens en re-importación**: Las ediciones del usuario en Token Review (asignaciones de tipo, eliminaciones) se guardan en el recurso y se restauran al re-importar el mismo archivo.
+
+### Corregido
+- **Saltos de línea en listas DOCX**: Las listas numeradas y con viñetas ahora se importan con saltos de línea correctos y prefijo "- " en vez de concatenar todos los elementos en una sola línea.
+- **Claridad del texto en modo actualizar**: El texto "Actualizar [Novela]" ahora se diferencia de "Añadir a [Novela]" al re-importar. La opción "Crear nueva novela" se oculta en modo actualizar.
+- **Token Review en modo actualizar**: Token Review ahora se muestra al elegir "Actualizar", dando al usuario control total sobre la estructura antes de la actualización.
+- **Header se colapsa al navegar**: El header del toolbar del editor ya no se colapsa al cambiar entre las vistas Editor, Compendio y Nexus.
+
 ## [LoneWriter v2.1.0] - 2026-06-30
 ### Añadido
 - **ThemeContext**: Nuevo contexto de React envolviendo `useAppPreferences()` que elimina el prop-drilling de `theme`, `setTheme`, `editorFont`, `setEditorFont`, `meshEnabled`, `setMeshEnabled` en 6 componentes (App, WelcomeScreen, MeshBackground, SettingsUITab, SettingsModal, Nexus).
