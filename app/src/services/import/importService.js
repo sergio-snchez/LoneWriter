@@ -93,6 +93,51 @@ export async function confirmImport(analysis, file, options, onProgress) {
     novelId = existingNovelId
   }
 
+  // ── Lore import mode ──────────────────────────────────────────────────────
+  if (importMode === 'lore') {
+    emit({ phase: 'lore', current: 0, total: 1 })
+
+    const loreEntry = {
+      novelId,
+      title: options.loreTitle || metadata.fileName.replace(/\.[^.]+$/, ''),
+      category: options.loreCategory || '',
+      summary: rawContent || '',
+      tags: options.loreTags || [],
+      ignoredForOracle: 0,
+    }
+
+    const loreId = await db.lore.add(loreEntry)
+    emit({ phase: 'lore', current: 1, total: 1 })
+
+    emit({ phase: 'resource', current: 0, total: 1 })
+
+    const resourceData = {
+      novelId,
+      name: metadata.fileName,
+      description: `Lore import: ${metadata.format}`,
+      type: metadata.format,
+      icon: 'book-open',
+      size: formatBytes(metadata.fileSize),
+      sizeRaw: metadata.fileSize,
+      dateAdded: new Date().toISOString(),
+      tags: ['imported', 'lore'],
+      activeForAI: true,
+      ignoredForOracle: 0,
+      content: rawContent || metadata.fileName,
+      fileData: file,
+      contentHash: metadata.contentHash,
+      importedSceneIds: [],
+      importedActIds: [],
+      importedLoreId: loreId,
+      parsedTokens: tokens || null,
+    }
+
+    await db.resources.add(resourceData)
+    emit({ phase: 'resource', current: 1, total: 1 })
+
+    return { novelId, loreId }
+  }
+
   const createdSceneIds = []
 
   // Update mode: remove old scenes and vectors first

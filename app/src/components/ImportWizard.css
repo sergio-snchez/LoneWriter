@@ -592,6 +592,189 @@
 }
 
 /* ============================================
+   IMPORT MODE SELECTION
+   ============================================ */
+
+.import-step--mode {
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.import-mode__title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.import-mode__subtitle {
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.import-mode__options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 440px;
+}
+
+.import-mode__option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  cursor: pointer;
+  transition: all var(--trans-fast);
+  text-align: left;
+  width: 100%;
+}
+
+.import-mode__option:hover {
+  border-color: var(--border-accent);
+  background: var(--bg-hover);
+}
+
+.import-mode__option:hover .import-mode__option-arrow {
+  color: var(--accent-light);
+}
+
+.import-mode__option-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.import-mode__option:hover .import-mode__option-icon {
+  color: var(--accent-light);
+}
+
+.import-mode__option-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.import-mode__option-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.import-mode__option-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.import-mode__option-arrow {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color var(--trans-fast);
+}
+
+/* ============================================
+   LORE CONFIG
+   ============================================ */
+
+.lore-config__title {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.lore-config__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.lore-config__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lore-config__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.lore-config__input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color var(--trans-fast);
+}
+
+.lore-config__input:focus {
+  border-color: var(--accent);
+}
+
+.lore-config__preview {
+  margin-bottom: 16px;
+}
+
+.lore-config__preview-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.lore-config__preview-text {
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* ============================================
+   LORE CONFIRM
+   ============================================ */
+
+.lore-confirm__details {
+  padding: 12px 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.lore-confirm__detail {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.lore-confirm__detail:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================
    RESPONSIVE
    ============================================ */
 

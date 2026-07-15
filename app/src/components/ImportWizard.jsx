@@ -5,6 +5,7 @@ import {
   Upload, FileText, X, ChevronDown, ChevronRight,
   AlertCircle, CheckCircle2, Loader2, BookOpen, Plus,
   File, FileType, ArrowLeft, HardDrive, Type, Columns,
+  BookMarked,
 } from 'lucide-react'
 import PropTypes from 'prop-types'
 import { analyzeFile, confirmImport, findExistingImport, supportsFile, ALLOWED_EXTENSIONS } from '../services'
@@ -184,6 +185,70 @@ StepFile.propTypes = {
   onFileSelected: PropTypes.func.isRequired,
 }
 
+function StepImportMode({ analysis, onSelect, onBack }) {
+  const { t } = useTranslation('import')
+  const { metadata } = analysis
+
+  return (
+    <div className="import-step import-step--mode">
+      <div className="import-meta">
+        <div className="import-meta__item">
+          <FileType size={14} />
+          <FormatBadge format={metadata.format} />
+        </div>
+        <div className="import-meta__item">
+          <FileText size={14} />
+          <span>{truncateText(metadata.fileName, 40)}</span>
+        </div>
+        <div className="import-meta__item">
+          <Type size={14} />
+          <span>{metadata.wordCount.toLocaleString()} {t('palabras')}</span>
+        </div>
+        <div className="import-meta__item">
+          <HardDrive size={14} />
+          <span>{formatBytes(metadata.fileSize)}</span>
+        </div>
+      </div>
+
+      <h3 className="import-mode__title">{t('import_mode_title')}</h3>
+      <p className="import-mode__subtitle">{t('import_mode_subtitle')}</p>
+
+      <div className="import-mode__options">
+        <button className="import-mode__option" onClick={() => onSelect('narrative')}>
+          <FileText size={24} className="import-mode__option-icon" />
+          <div className="import-mode__option-content">
+            <span className="import-mode__option-title">{t('import_mode_narrative')}</span>
+            <span className="import-mode__option-desc">{t('import_mode_narrative_desc')}</span>
+          </div>
+          <ChevronRight size={16} className="import-mode__option-arrow" />
+        </button>
+
+        <button className="import-mode__option" onClick={() => onSelect('lore')}>
+          <BookMarked size={24} className="import-mode__option-icon" />
+          <div className="import-mode__option-content">
+            <span className="import-mode__option-title">{t('import_mode_lore')}</span>
+            <span className="import-mode__option-desc">{t('import_mode_lore_desc')}</span>
+          </div>
+          <ChevronRight size={16} className="import-mode__option-arrow" />
+        </button>
+      </div>
+
+      <div className="import-actions">
+        <button className="btn btn-ghost" onClick={onBack}>
+          <ArrowLeft size={14} /> {t('atras')}
+        </button>
+        <span />
+      </div>
+    </div>
+  )
+}
+
+StepImportMode.propTypes = {
+  analysis: PropTypes.object.isRequired,
+  onSelect: PropTypes.func.isRequired,
+  onBack: PropTypes.func.isRequired,
+}
+
 function StepPreview({ analysis, onBack, onContinue }) {
   const { t } = useTranslation('import')
   const { metadata, sections, hasStructure } = analysis
@@ -321,7 +386,99 @@ StepReimport.propTypes = {
   onBack: PropTypes.func.isRequired,
 }
 
-function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode, existingResource }) {
+function StepLoreConfig({ analysis, loreTitle, onLoreTitleChange, loreCategory, onLoreCategoryChange, loreTags, onLoreTagsChange, onBack, onContinue }) {
+  const { t } = useTranslation('import')
+  const { metadata, rawContent } = analysis
+  const previewText = rawContent ? rawContent.slice(0, 500) : ''
+
+  return (
+    <div className="import-step">
+      <div className="import-meta">
+        <div className="import-meta__item">
+          <FileType size={14} />
+          <FormatBadge format={metadata.format} />
+        </div>
+        <div className="import-meta__item">
+          <FileText size={14} />
+          <span>{truncateText(metadata.fileName, 40)}</span>
+        </div>
+        <div className="import-meta__item">
+          <Type size={14} />
+          <span>{metadata.wordCount.toLocaleString()} {t('palabras')}</span>
+        </div>
+        <div className="import-meta__item">
+          <HardDrive size={14} />
+          <span>{formatBytes(metadata.fileSize)}</span>
+        </div>
+      </div>
+
+      <h3 className="lore-config__title">{t('lore_config_title')}</h3>
+
+      <div className="lore-config__fields">
+        <div className="lore-config__field">
+          <label className="lore-config__label">{t('lore_config_entry_title')}</label>
+          <input
+            className="lore-config__input"
+            value={loreTitle}
+            onChange={(e) => onLoreTitleChange(e.target.value)}
+            placeholder={t('lore_config_title_placeholder')}
+            autoFocus
+          />
+        </div>
+
+        <div className="lore-config__field">
+          <label className="lore-config__label">{t('lore_config_category')}</label>
+          <input
+            className="lore-config__input"
+            value={loreCategory}
+            onChange={(e) => onLoreCategoryChange(e.target.value)}
+            placeholder={t('lore_config_category_placeholder')}
+          />
+        </div>
+
+        <div className="lore-config__field">
+          <label className="lore-config__label">{t('lore_config_tags')}</label>
+          <input
+            className="lore-config__input"
+            value={loreTags}
+            onChange={(e) => onLoreTagsChange(e.target.value)}
+            placeholder={t('lore_config_tags_placeholder')}
+          />
+        </div>
+      </div>
+
+      {previewText && (
+        <div className="lore-config__preview">
+          <span className="lore-config__preview-label">{t('lore_config_preview')}</span>
+          <div className="lore-config__preview-text">{previewText}...</div>
+        </div>
+      )}
+
+      <div className="import-actions">
+        <button className="btn btn-ghost" onClick={onBack}>
+          <ArrowLeft size={14} /> {t('atras')}
+        </button>
+        <button className="btn btn-primary" onClick={onContinue} disabled={!loreTitle.trim()}>
+          {t('continuar')}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+StepLoreConfig.propTypes = {
+  analysis: PropTypes.object.isRequired,
+  loreTitle: PropTypes.string.isRequired,
+  onLoreTitleChange: PropTypes.func.isRequired,
+  loreCategory: PropTypes.string.isRequired,
+  onLoreCategoryChange: PropTypes.func.isRequired,
+  loreTags: PropTypes.string.isRequired,
+  onLoreTagsChange: PropTypes.func.isRequired,
+  onBack: PropTypes.func.isRequired,
+  onContinue: PropTypes.func.isRequired,
+}
+
+function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode, existingResource, importDestination, loreTitle, loreCategory, loreTags }) {
   const { t } = useTranslation('import')
   const { activeNovel } = useNovel()
   const [destination, setDestination] = useState(activeNovel ? 'existing' : 'new')
@@ -332,6 +489,7 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
   const [progress, setProgress] = useState(null)
 
   const isUpdateMode = importMode === 'update'
+  const isLoreMode = importDestination === 'lore'
 
   const { metadata, sections } = analysis
 
@@ -349,26 +507,47 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
     setError(null)
     setProgress(null)
     try {
-      const result = await confirmImport(
-        analysis,
-        file,
-        {
-          createNewNovel: destination === 'new',
-          existingNovelId: destination === 'existing' ? activeNovel?.id : null,
-          novelTitle: novelTitle.trim(),
-          importMode,
-          existingResource,
-        },
-        setProgress
-      )
-      onComplete(destination === 'new', result.novelId)
+      if (isLoreMode) {
+        const parsedTags = loreTags
+          .split(',')
+          .map(t => t.trim())
+          .filter(Boolean)
+        const result = await confirmImport(
+          analysis,
+          file,
+          {
+            createNewNovel: false,
+            existingNovelId: activeNovel?.id,
+            importMode: 'lore',
+            loreTitle: loreTitle.trim(),
+            loreCategory: loreCategory.trim(),
+            loreTags: parsedTags,
+          },
+          setProgress
+        )
+        onComplete(false, result.novelId)
+      } else {
+        const result = await confirmImport(
+          analysis,
+          file,
+          {
+            createNewNovel: destination === 'new',
+            existingNovelId: destination === 'existing' ? activeNovel?.id : null,
+            novelTitle: novelTitle.trim(),
+            importMode,
+            existingResource,
+          },
+          setProgress
+        )
+        onComplete(destination === 'new', result.novelId)
+      }
     } catch (err) {
       setError(err.message || t('error_inesperado'))
     } finally {
       setImporting(false)
       setProgress(null)
     }
-  }, [analysis, file, destination, novelTitle, activeNovel, importMode, existingResource, onComplete, t])
+  }, [analysis, file, destination, novelTitle, activeNovel, importMode, existingResource, isLoreMode, loreTitle, loreCategory, loreTags, onComplete, t])
 
   const progressPhase = progress ? t(`progress_${progress.phase}`) : ''
   const progressPct = progress && progress.total > 0
@@ -377,61 +556,76 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
 
   return (
     <div className="import-step">
-      <div className="import-destination">
-        <p className="import-destination__label">{t(isUpdateMode ? 'destino_actualizar_pregunta' : 'destino_pregunta')}</p>
-
-        {!isUpdateMode && (
-          <label className={`import-radio ${destination === 'new' ? 'import-radio--active' : ''}`}>
-            <input
-              type="radio"
-              name="destination"
-              value="new"
-              checked={destination === 'new'}
-              onChange={() => setDestination('new')}
-            />
-            <BookOpen size={16} />
-            <span>{t('destino_nueva')}</span>
-          </label>
-        )}
-
-        {!isUpdateMode && destination === 'new' && (
-          <div className="import-title-input-wrap">
-            <input
-              className="import-title-input"
-              placeholder={t('titulo_placeholder')}
-              value={novelTitle}
-              onChange={(e) => setNovelTitle(e.target.value)}
-              autoFocus
-            />
+      {isLoreMode ? (
+        <>
+          <div className="import-destination">
+            <p className="import-destination__label">{t('lore_confirm_summary', { novelTitle: activeNovel?.title || '' })}</p>
+            <div className="lore-confirm__details">
+              <p className="lore-confirm__detail">{t('lore_confirm_entry', { title: loreTitle })}</p>
+              {loreCategory && <p className="lore-confirm__detail">{t('lore_confirm_category', { category: loreCategory })}</p>}
+              <p className="lore-confirm__detail">{t('lore_confirm_words', { count: metadata.wordCount.toLocaleString() })}</p>
+            </div>
           </div>
-        )}
+        </>
+      ) : (
+        <>
+          <div className="import-destination">
+            <p className="import-destination__label">{t(isUpdateMode ? 'destino_actualizar_pregunta' : 'destino_pregunta')}</p>
 
-        {activeNovel && (
-          <label className={`import-radio ${destination === 'existing' ? 'import-radio--active' : ''}`}>
-            <input
-              type="radio"
-              name="destination"
-              value="existing"
-              checked={destination === 'existing'}
-              onChange={() => setDestination('existing')}
-            />
-            {importMode === 'update' ? <ArrowLeft size={16} /> : <Plus size={16} />}
-            <span>{importMode === 'update'
-              ? t('destino_actualizar', { title: activeNovel.title })
-              : t('destino_existente', { title: activeNovel.title })
-            }</span>
-          </label>
-        )}
-      </div>
+            {!isUpdateMode && (
+              <label className={`import-radio ${destination === 'new' ? 'import-radio--active' : ''}`}>
+                <input
+                  type="radio"
+                  name="destination"
+                  value="new"
+                  checked={destination === 'new'}
+                  onChange={() => setDestination('new')}
+                />
+                <BookOpen size={16} />
+                <span>{t('destino_nueva')}</span>
+              </label>
+            )}
 
-      <div className="import-summary import-summary--confirm">
-        <span>{t('resumen_importacion', {
-          acts: sections.length,
-          chapters: totalChapters,
-          scenes: totalScenes,
-          words: metadata.wordCount.toLocaleString(),
-        })}</span>
-      </div>
+            {!isUpdateMode && destination === 'new' && (
+              <div className="import-title-input-wrap">
+                <input
+                  className="import-title-input"
+                  placeholder={t('titulo_placeholder')}
+                  value={novelTitle}
+                  onChange={(e) => setNovelTitle(e.target.value)}
+                  autoFocus
+                />
+              </div>
+            )}
+
+            {activeNovel && (
+              <label className={`import-radio ${destination === 'existing' ? 'import-radio--active' : ''}`}>
+                <input
+                  type="radio"
+                  name="destination"
+                  value="existing"
+                  checked={destination === 'existing'}
+                  onChange={() => setDestination('existing')}
+                />
+                {importMode === 'update' ? <ArrowLeft size={16} /> : <Plus size={16} />}
+                <span>{importMode === 'update'
+                  ? t('destino_actualizar', { title: activeNovel.title })
+                  : t('destino_existente', { title: activeNovel.title })
+                }</span>
+              </label>
+            )}
+          </div>
+
+          <div className="import-summary import-summary--confirm">
+            <span>{t('resumen_importacion', {
+              acts: sections.length,
+              chapters: totalChapters,
+              scenes: totalScenes,
+              words: metadata.wordCount.toLocaleString(),
+            })}</span>
+          </div>
+        </>
+      )}
 
       {error && (
         <div className="import-error">
@@ -447,10 +641,12 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
         <button
           className="btn btn-primary"
           onClick={handleImport}
-          disabled={importing || (destination === 'new' && !novelTitle.trim())}
+          disabled={importing || (!isLoreMode && destination === 'new' && !novelTitle.trim())}
         >
           {importing ? (
             <><Loader2 size={14} className="spinner" /> {t('importando')}</>
+          ) : isLoreMode ? (
+            <><BookMarked size={14} /> {t('lore_confirm_button')}</>
           ) : (
             <><Upload size={14} /> {isUpdateMode ? t('actualizar') : t('importar')}</>
           )}
@@ -485,17 +681,22 @@ StepConfirm.propTypes = {
   onCancel: PropTypes.func.isRequired,
   importMode: PropTypes.oneOf(['update', 'duplicate', null]),
   existingResource: PropTypes.object,
+  importDestination: PropTypes.oneOf(['narrative', 'lore', null]),
+  loreTitle: PropTypes.string,
+  loreCategory: PropTypes.string,
+  loreTags: PropTypes.string,
 }
 
-function StepComplete({ createdNewNovel, onClose }) {
+function StepComplete({ createdNewNovel, onClose, importDestination }) {
   const { t } = useTranslation('import')
+  const isLoreMode = importDestination === 'lore'
 
   return (
     <div className="import-step import-step--complete">
       <CheckCircle2 size={48} className="import-complete__icon" />
-      <h2 className="import-complete__title">{t('completado_titulo')}</h2>
+      <h2 className="import-complete__title">{isLoreMode ? t('completado_lore_titulo') : t('completado_titulo')}</h2>
       <p className="import-complete__text">
-        {createdNewNovel ? t('completado_nueva') : t('completado_existente')}
+        {isLoreMode ? t('completado_lore_text') : createdNewNovel ? t('completado_nueva') : t('completado_existente')}
       </p>
       <button className="btn btn-primary" onClick={onClose}>
         {t('cerrar')}
@@ -507,6 +708,7 @@ function StepComplete({ createdNewNovel, onClose }) {
 StepComplete.propTypes = {
   createdNewNovel: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
+  importDestination: PropTypes.oneOf(['narrative', 'lore', null]),
 }
 
 export default function ImportWizard({ novelId, onComplete, onCancel }) {
@@ -522,6 +724,10 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
   const [existingResource, setExistingResource] = useState(null)
   const [importMode, setImportMode] = useState(null)
   const [reviewTokens, setReviewTokens] = useState(null)
+  const [importDestination, setImportDestination] = useState(null)
+  const [loreTitle, setLoreTitle] = useState('')
+  const [loreCategory, setLoreCategory] = useState('')
+  const [loreTags, setLoreTags] = useState('')
 
   const handleFileSelected = useCallback(async (selectedFile) => {
     setFile(selectedFile)
@@ -530,6 +736,10 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
     setExistingResource(null)
     setImportMode(null)
     setReviewTokens(null)
+    setImportDestination(null)
+    setLoreTitle('')
+    setLoreCategory('')
+    setLoreTags('')
     try {
       const result = await analyzeFile(selectedFile)
       setAnalysis(result)
@@ -542,9 +752,6 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
           return
         }
       }
-      if (result.tokens?.length > 0) {
-        setReviewTokens(result.tokens)
-      }
       setStep(2)
     } catch (err) {
       setError(err.message || t('error_analisis'))
@@ -552,6 +759,21 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
       setLoading(false)
     }
   }, [t, novelId, activeNovel])
+
+  const handleImportModeSelect = useCallback((mode) => {
+    setImportDestination(mode)
+    setLoreTitle(file?.name?.replace(/\.[^.]+$/, '') || '')
+    if (mode === 'narrative' && analysis?.tokens?.length > 0) {
+      setReviewTokens(analysis.tokens)
+    }
+  }, [analysis, file])
+
+  const handleLoreConfigBack = useCallback(() => {
+    setImportDestination(null)
+    setLoreTitle('')
+    setLoreCategory('')
+    setLoreTags('')
+  }, [])
 
   const handleTokenReviewConfirm = useCallback((confirmedTokens) => {
     const { sections, hasStructure } = compileNarrativeStructure(confirmedTokens)
@@ -563,11 +785,24 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
     setReviewTokens(null)
     setFile(null)
     setAnalysis(null)
+    setImportDestination(null)
     setStep(1)
   }, [])
 
   const handleContinue = useCallback(() => setStep(3), [])
   const handleBack = useCallback(() => setStep(s => s - 1), [])
+
+  const handleModeBack = useCallback(() => {
+    if (importDestination === 'lore') {
+      setImportDestination(null)
+      setLoreTitle('')
+      setLoreCategory('')
+      setLoreTags('')
+    } else {
+      setImportDestination(null)
+      setReviewTokens(null)
+    }
+  }, [importDestination])
 
   const handleReimportSelect = useCallback((mode) => {
     setImportMode(mode)
@@ -586,6 +821,7 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
     setAnalysis(null)
     setExistingResource(null)
     setImportMode(null)
+    setImportDestination(null)
     setStep(1)
   }, [])
 
@@ -647,6 +883,24 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
           </div>
         ) : step === 1 ? (
           <StepFile onFileSelected={handleFileSelected} />
+        ) : step === 2 && !importDestination && !existingResource ? (
+          <StepImportMode
+            analysis={analysis}
+            onSelect={handleImportModeSelect}
+            onBack={handleReimportBack}
+          />
+        ) : step === 2 && importDestination === 'lore' ? (
+          <StepLoreConfig
+            analysis={analysis}
+            loreTitle={loreTitle}
+            onLoreTitleChange={setLoreTitle}
+            loreCategory={loreCategory}
+            onLoreCategoryChange={setLoreCategory}
+            loreTags={loreTags}
+            onLoreTagsChange={setLoreTags}
+            onBack={handleLoreConfigBack}
+            onContinue={handleContinue}
+          />
         ) : step === 2 && reviewTokens ? (
           <TokenReview
             tokens={reviewTokens}
@@ -663,7 +917,7 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
         ) : step === 2 ? (
           <StepPreview
             analysis={analysis}
-            onBack={handleReimportBack}
+            onBack={handleModeBack}
             onContinue={handleContinue}
           />
         ) : step === 3 ? (
@@ -675,9 +929,17 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
             onCancel={onCancel}
             importMode={importMode}
             existingResource={existingResource}
+            importDestination={importDestination}
+            loreTitle={loreTitle}
+            loreCategory={loreCategory}
+            loreTags={loreTags}
           />
         ) : (
-          <StepComplete createdNewNovel={createdNewNovel} onClose={handleClose} />
+          <StepComplete
+            createdNewNovel={createdNewNovel}
+            onClose={handleClose}
+            importDestination={importDestination}
+          />
         )}
       </div>
     </div>

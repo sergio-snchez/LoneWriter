@@ -182,4 +182,47 @@ describe('confirmImport', () => {
     })
     expect(deleteVectorsForScene).not.toHaveBeenCalled()
   })
+
+  it('in lore mode, creates lore entry and resource without narrative structure', async () => {
+    const mockLoreAdd = vi.fn(() => Promise.resolve(42))
+    db.lore = { add: mockLoreAdd }
+
+    const analysis = {
+      metadata: { format: 'TXT', fileName: 'magic-rules.txt', fileSize: 500, wordCount: 200, contentHash: 'abc' },
+      sections: [{
+        title: 'Act 1',
+        chapters: [{
+          title: 'Ch 1',
+          scenes: [{ title: 'Scene 1', text: 'Some content' }],
+        }],
+      }],
+      rawContent: 'Magic rules content here',
+      tokens: [{ type: 'NORMAL', text: 'Magic rules', confidence: 1.0 }],
+    }
+    const file = new File(['test'], 'magic-rules.txt')
+    const result = await confirmImport(analysis, file, {
+      createNewNovel: false,
+      existingNovelId: 5,
+      importMode: 'lore',
+      loreTitle: 'Magic Rules',
+      loreCategory: 'Regla',
+      loreTags: ['magic', 'rules'],
+    })
+
+    expect(result.novelId).toBe(5)
+    expect(result.loreId).toBe(42)
+    expect(mockLoreAdd).toHaveBeenCalledWith(expect.objectContaining({
+      novelId: 5,
+      title: 'Magic Rules',
+      category: 'Regla',
+      summary: 'Magic rules content here',
+      tags: ['magic', 'rules'],
+    }))
+    expect(mockAdd).toHaveBeenCalledWith(expect.objectContaining({
+      tags: ['imported', 'lore'],
+      importedLoreId: 42,
+      importedSceneIds: [],
+      importedActIds: [],
+    }))
+  })
 })
