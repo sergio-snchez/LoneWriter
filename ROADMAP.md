@@ -26,4 +26,8 @@ This roadmap outlines the future of LoneWriter. We prioritize features based on 
 - **[x] Mobile PWA Polish**: Improved touch gestures and offline reliability for writing on the go.
 - **[x] Technical Debt Audit**: Comprehensive codebase audit covering linting, testing, refactoring, dependency updates, and code quality improvements — see [`technical-debt-audit.md`](./technical-debt-audit.md).
 
+## ✅ Completed in v2.2.4
+- **[x] Extended Import**: Support for direct parsing of .pdf, .docx, and .odt documents into the application.
+- **[x] Smart Bootstrap**: Map and import Markdown files directly into the narrative structure tree.
+
 *Note: This roadmap is a living document that evolves with the feedback of our community on Reddit.*

@@ -26,4 +26,8 @@ Esta hoja de ruta detalla el futuro de LoneWriter. Priorizamos las funciones bas
 - **[x] Pulido de la PWA Móvil**: Mejora de gestos táctiles y fiabilidad offline para escribir en cualquier lugar.
 - **[x] Auditoría de Deuda Técnica**: Auditoría integral del código fuente que cubre linting, tests, refactorización, actualización de dependencias y mejoras de calidad — consulta [`technical-debt-audit.md`](./technical-debt-audit.md).
 
+## ✅ Completado en v2.2.4
+- **[x] Importación Extendida**: Soporte para parseo directo de documentos .pdf, .docx y .odt en la aplicación.
+- **[x] Smart Bootstrap**: Funcionalidad para mapear e importar archivos Markdown directamente en el árbol de estructura narrativa.
+
 *Nota: Esta hoja de ruta es un documento vivo que evoluciona con el feedback de nuestra comunidad en Reddit.*

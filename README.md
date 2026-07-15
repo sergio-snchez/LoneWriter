@@ -6,7 +6,7 @@
 
 </div>
 
-# LoneWriter v2.2.3 🖋️
+# LoneWriter v2.2.4 🖋️
 
 > **Your "Narrative Operating System": The AI that listens to you, organizes your chaos, and monitors your world's coherence while you only worry about writing.**
 >
@@ -128,7 +128,7 @@ Designed and developed with ♥ by **Sergio Sánchez** with Antigravity.
 
 ---
 
-*LoneWriter v2.2.3 - Your personal space to bring great stories to life.*
+*LoneWriter v2.2.4 - Your personal space to bring great stories to life.*
 
 ---
 

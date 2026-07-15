@@ -698,6 +698,15 @@
   margin-bottom: 16px;
 }
 
+.lore-config__fields-row {
+  display: flex;
+  gap: 12px;
+}
+
+.lore-config__fields-row .lore-config__field {
+  flex: 1;
+}
+
 .lore-config__field {
   display: flex;
   flex-direction: column;

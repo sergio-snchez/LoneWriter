@@ -87,7 +87,7 @@
   "general": {
     "seccion_titulo": "Application Information",
     "version": "Version",
-    "version_valor": "2.2.3",
+    "version_valor": "2.2.4",
     "base_datos": "Database",
     "base_datos_valor": "IndexedDB (Dexie.js)",
     "plataforma": "Platform",

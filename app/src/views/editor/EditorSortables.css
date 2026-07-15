@@ -469,3 +469,23 @@
 .edit-input--bold {
   font-weight: 600;
 }
+
+/* ---- Editable title icon ---- */
+
+.editable-title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: default;
+}
+
+.editable-title-icon {
+  opacity: 0;
+  transition: opacity var(--trans-fast);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.editable-title-wrap:hover .editable-title-icon {
+  opacity: 0.6;
+}

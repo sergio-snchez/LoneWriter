@@ -12,7 +12,7 @@
   "dropzone": "Arrastra un documento aquí para importarlo a tu estructura narrativa",
   "seleccionar": "Seleccionar archivos",
   "beta_titulo": "Importación de documentos",
-  "beta_texto": "Puedes importar documentos <code>.txt</code>, <code>.md</code>, <code>.docx</code>, <code>.pdf</code> y <code>.odt</code> directamente a tu estructura narrativa. El asistente intentará detectar automáticamente actos, capítulos y escenas.",
+  "beta_texto": "Puedes importar documentos <code>.txt</code>, <code>.md</code>, <code>.docx</code>, <code>.pdf</code> y <code>.odt</code> directamente a tu estructura narrativa o como entradas del Lore en el Compendio. El asistente intentará detectar automáticamente actos, capítulos y escenas.",
   "archivo_importado": "Archivo importado",
   "descargar": "Descargar",
   "ver": "Ver",

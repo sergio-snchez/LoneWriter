@@ -84,11 +84,16 @@
   "lore_config_preview": "Content preview",
   "lore_config_words": "{{count}} words",
   "lore_confirm_summary": "A Lore entry will be created in \"{{novelTitle}}\":",
+  "lore_confirm_summary_update": "The Lore entry in \"{{novelTitle}}\" will be updated:",
   "lore_confirm_entry": "Title: {{title}}",
   "lore_confirm_category": "Category: {{category}}",
   "lore_confirm_words": "{{count}} words of content",
   "lore_confirm_button": "Add to Lore",
+  "lore_confirm_button_update": "Update Lore",
   "progress_lore": "Creating lore entry...",
+  "progress_lore_update": "Updating lore entry...",
   "completado_lore_titulo": "Lore added!",
-  "completado_lore_text": "The lore entry has been created successfully. Find it in the Compendium."
+  "completado_lore_titulo_update": "Lore updated!",
+  "completado_lore_text": "The lore entry has been created successfully. Find it in the Compendium.",
+  "completado_lore_text_update": "The lore entry has been updated successfully."
 }

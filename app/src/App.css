@@ -107,10 +107,24 @@
   max-width: 200px;
   cursor: pointer;
   transition: opacity 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .app-topbar__novel:hover {
   opacity: 0.8;
+}
+
+.app-topbar__novel .editable-title-icon {
+  opacity: 0;
+  transition: opacity var(--trans-fast);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.app-topbar__novel:hover .editable-title-icon {
+  opacity: 0.6;
 }
 
 .app-topbar__novel-input {

@@ -427,24 +427,26 @@ function StepLoreConfig({ analysis, loreTitle, onLoreTitleChange, loreCategory, 
           />
         </div>
 
-        <div className="lore-config__field">
-          <label className="lore-config__label">{t('lore_config_category')}</label>
-          <input
-            className="lore-config__input"
-            value={loreCategory}
-            onChange={(e) => onLoreCategoryChange(e.target.value)}
-            placeholder={t('lore_config_category_placeholder')}
-          />
-        </div>
+        <div className="lore-config__fields-row">
+          <div className="lore-config__field">
+            <label className="lore-config__label">{t('lore_config_category')}</label>
+            <input
+              className="lore-config__input"
+              value={loreCategory}
+              onChange={(e) => onLoreCategoryChange(e.target.value)}
+              placeholder={t('lore_config_category_placeholder')}
+            />
+          </div>
 
-        <div className="lore-config__field">
-          <label className="lore-config__label">{t('lore_config_tags')}</label>
-          <input
-            className="lore-config__input"
-            value={loreTags}
-            onChange={(e) => onLoreTagsChange(e.target.value)}
-            placeholder={t('lore_config_tags_placeholder')}
-          />
+          <div className="lore-config__field">
+            <label className="lore-config__label">{t('lore_config_tags')}</label>
+            <input
+              className="lore-config__input"
+              value={loreTags}
+              onChange={(e) => onLoreTagsChange(e.target.value)}
+              placeholder={t('lore_config_tags_placeholder')}
+            />
+          </div>
         </div>
       </div>
 
@@ -491,6 +493,7 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
 
   const isUpdateMode = importMode === 'update'
   const isLoreMode = importDestination === 'lore'
+  const isLoreUpdate = isLoreMode && existingResource?.importedLoreId
 
   const { metadata, sections } = analysis
 
@@ -509,10 +512,10 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
     setProgress(null)
     try {
       if (isLoreMode) {
-        const parsedTags = loreTags
+        const parsedTags = ['Importado', ...loreTags
           .split(',')
           .map(t => t.trim())
-          .filter(Boolean)
+          .filter(t => t && t !== 'Importado')]
         const result = await confirmImport(
           analysis,
           file,
@@ -520,6 +523,7 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
             createNewNovel: false,
             existingNovelId: activeNovel?.id,
             importMode: 'lore',
+            existingResource,
             loreTitle: loreTitle.trim(),
             loreCategory: loreCategory.trim(),
             loreTags: parsedTags,
@@ -550,7 +554,7 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
     }
   }, [analysis, file, destination, novelTitle, activeNovel, importMode, existingResource, isLoreMode, loreTitle, loreCategory, loreTags, onComplete, t])
 
-  const progressPhase = progress ? t(`progress_${progress.phase}`) : ''
+  const progressPhase = progress ? t(isLoreUpdate && progress.phase === 'lore' ? 'progress_lore_update' : `progress_${progress.phase}`) : ''
   const progressPct = progress && progress.total > 0
     ? Math.round((progress.current / progress.total) * 100)
     : 0
@@ -560,7 +564,7 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
       {isLoreMode ? (
         <>
           <div className="import-destination">
-            <p className="import-destination__label">{t('lore_confirm_summary', { novelTitle: activeNovel?.title || '' })}</p>
+            <p className="import-destination__label">{t(isLoreUpdate ? 'lore_confirm_summary_update' : 'lore_confirm_summary', { novelTitle: activeNovel?.title || '' })}</p>
             <div className="lore-confirm__details">
               <p className="lore-confirm__detail">{t('lore_confirm_entry', { title: loreTitle })}</p>
               {loreCategory && <p className="lore-confirm__detail">{t('lore_confirm_category', { category: loreCategory })}</p>}
@@ -647,7 +651,7 @@ function StepConfirm({ analysis, file, onBack, onComplete, onCancel, importMode,
           {importing ? (
             <><Loader2 size={14} className="spinner" /> {t('importando')}</>
           ) : isLoreMode ? (
-            <><BookMarked size={14} /> {t('lore_confirm_button')}</>
+            <><BookMarked size={14} /> {t(isLoreUpdate ? 'lore_confirm_button_update' : 'lore_confirm_button')}</>
           ) : (
             <><Upload size={14} /> {isUpdateMode ? t('actualizar') : t('importar')}</>
           )}
@@ -688,16 +692,17 @@ StepConfirm.propTypes = {
   loreTags: PropTypes.string,
 }
 
-function StepComplete({ createdNewNovel, onClose, importDestination }) {
+function StepComplete({ createdNewNovel, onClose, importDestination, existingResource }) {
   const { t } = useTranslation('import')
   const isLoreMode = importDestination === 'lore'
+  const isLoreUpdate = isLoreMode && existingResource?.importedLoreId
 
   return (
     <div className="import-step import-step--complete">
       <CheckCircle2 size={48} className="import-complete__icon" />
-      <h2 className="import-complete__title">{isLoreMode ? t('completado_lore_titulo') : t('completado_titulo')}</h2>
+      <h2 className="import-complete__title">{isLoreUpdate ? t('completado_lore_titulo_update') : isLoreMode ? t('completado_lore_titulo') : t('completado_titulo')}</h2>
       <p className="import-complete__text">
-        {isLoreMode ? t('completado_lore_text') : createdNewNovel ? t('completado_nueva') : t('completado_existente')}
+        {isLoreUpdate ? t('completado_lore_text_update') : isLoreMode ? t('completado_lore_text') : createdNewNovel ? t('completado_nueva') : t('completado_existente')}
       </p>
       <button className="btn btn-primary" onClick={onClose}>
         {t('cerrar')}
@@ -710,6 +715,7 @@ StepComplete.propTypes = {
   createdNewNovel: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   importDestination: PropTypes.oneOf(['narrative', 'lore', null]),
+  existingResource: PropTypes.object,
 }
 
 export default function ImportWizard({ novelId, onComplete, onCancel }) {
@@ -959,6 +965,7 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
             createdNewNovel={createdNewNovel}
             onClose={handleClose}
             importDestination={importDestination}
+            existingResource={existingResource}
           />
         )}
       </div>

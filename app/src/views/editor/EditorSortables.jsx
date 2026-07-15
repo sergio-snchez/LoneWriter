@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import {
   ChevronDown, ChevronRight, Plus, CheckCircle2, Circle,
-  AlertCircle, Trash2, GripVertical, FileDown,
+  AlertCircle, Trash2, GripVertical, FileDown, PenLine,
 } from 'lucide-react'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -76,10 +76,11 @@ export function EditableTitle({ title, onSave, className, isPlayfair, isBold }) 
   return (
     <Tooltip content={t('editable.doble_clic')}>
       <span
-        className={className}
+        className={`${className} editable-title-wrap`}
         onDoubleClick={(e) => { e.stopPropagation(); setIsEditing(true) }}
       >
         {title}
+        <PenLine size={12} className="editable-title-icon" />
       </span>
     </Tooltip>
   )

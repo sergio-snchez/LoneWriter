@@ -6,6 +6,22 @@
 
 </div>
 
+## [LoneWriter v2.2.4] - 2026-07-15
+### Añadido
+- **Importar al Lore**: Nueva opción "Añadir al Lore" en el Asistente de Importación — importa un archivo como una entrada de Lore del compendio con título, categoría y etiquetas en vez de crear estructura narrativa. Ideal para reglas de world-building, sistemas de magia y lenguas ficticias.
+- **Re-importación de Lore**: Re-importar un archivo que fue importado como Lore ahora actualiza la entrada existente, preservando su registro en BD. Título y etiquetas se pre-rellenan desde la entrada existente.
+- **Icono de título editable**: Icono PenLine aparece al pasar el cursor sobre actos, capítulos, escenas y título de la novela, haciendo los campos editables más visibles.
+- **Etiqueta "Importado" por defecto**: Las importaciones al Lore incluyen automáticamente la etiqueta "Importado", manteniendo las entradas importadas visualmente distintas en el compendio.
+
+### Cambiado
+- **Diseño de config de Lore**: Los campos de categoría y etiquetas ahora se muestran en la misma fila para un formulario más compacto.
+- **UX de importación Lore**: Distinción clara entre flujos de creación y actualización con texto de botón, etiquetas de progreso y mensajes de completado separados.
+
+### Corregido
+- **rawContent en parsers**: Todos los parsers (DOCX, PDF, ODT) ahora devuelven `rawContent` para previsualización de texto plano durante la importación.
+- **Saltos de línea en tarjetas del compendio**: Las descripciones de lore y las tarjetas de personajes/ubicaciones/objetos ahora preservan saltos de línea `\n` via `white-space: pre-wrap`.
+- **Error en re-importación Lore**: Corregido `existingResource` faltante en la rama de lore del `handleImport`.
+
 ## [LoneWriter v2.2.3] - 2026-07-14
 ### Añadido
 - **Exportación a ODT**: Exportación de escena individual y novela completa a formato OpenDocument Text con jerarquía de encabezados correcta (h1-h4).

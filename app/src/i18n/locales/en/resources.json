@@ -12,7 +12,7 @@
   "dropzone": "Drag a document here to import it into your narrative structure",
   "seleccionar": "Select files",
   "beta_titulo": "Document import",
-  "beta_texto": "You can import <code>.txt</code>, <code>.md</code>, <code>.docx</code>, <code>.pdf</code> and <code>.odt</code> documents directly into your narrative structure. The assistant will attempt to automatically detect acts, chapters and scenes.",
+  "beta_texto": "You can import <code>.txt</code>, <code>.md</code>, <code>.docx</code>, <code>.pdf</code> and <code>.odt</code> documents directly into your narrative structure or as Lore entries in the Compendium. The assistant will attempt to automatically detect acts, chapters and scenes.",
   "archivo_importado": "Imported file",
   "descargar": "Download",
   "ver": "View",

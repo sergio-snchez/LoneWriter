@@ -84,11 +84,16 @@
   "lore_config_preview": "Vista previa del contenido",
   "lore_config_words": "{{count}} palabras",
   "lore_confirm_summary": "Se creará una entrada de Lore en \"{{novelTitle}}\":",
+  "lore_confirm_summary_update": "Se actualizará la entrada de Lore en \"{{novelTitle}}\":",
   "lore_confirm_entry": "Título: {{title}}",
   "lore_confirm_category": "Categoría: {{category}}",
   "lore_confirm_words": "{{count}} palabras de contenido",
   "lore_confirm_button": "Añadir al Lore",
+  "lore_confirm_button_update": "Actualizar Lore",
   "progress_lore": "Creando entrada de lore...",
+  "progress_lore_update": "Actualizando entrada de lore...",
   "completado_lore_titulo": "¡Lore añadido!",
-  "completado_lore_text": "La entrada de lore se ha creado correctamente. Encuéntrala en el Compendio."
+  "completado_lore_titulo_update": "¡Lore actualizado!",
+  "completado_lore_text": "La entrada de lore se ha creado correctamente. Encuéntrala en el Compendio.",
+  "completado_lore_text_update": "La entrada de lore se ha actualizado correctamente."
 }

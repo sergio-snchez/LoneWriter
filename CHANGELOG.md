@@ -6,6 +6,22 @@
 
 </div>
 
+## [LoneWriter v2.2.4] - 2026-07-15
+### Added
+- **Import to Lore**: New "Add to Lore" option in the Import Wizard — imports a file as a compendium Lore entry with title, category, and tags instead of narrative structure. Ideal for world-building rules, magic systems, and fictional languages.
+- **Lore reimport**: Re-importing a file that was previously imported as Lore now updates the existing entry, preserving its DB record. Title and tags are pre-filled from the existing entry.
+- **Editable title icon**: PenLine icon appears on hover for acts, chapters, scenes, and novel title, making editable fields more discoverable.
+- **Default "Importado" tag**: Lore imports automatically include the "Importado" tag, keeping imported entries visually distinct in the compendium.
+
+### Changed
+- **Lore config layout**: Category and tags fields now display on the same row for a more compact form.
+- **Lore import UX**: Clear distinction between create and update flows with separate button text, progress labels, and completion messages.
+
+### Fixed
+- **rawContent in parsers**: All parsers (DOCX, PDF, ODT) now return `rawContent` for plain-text preview during import.
+- **Compendium card line breaks**: Lore descriptions and character/location/object card descriptions now preserve `\n` line breaks via `white-space: pre-wrap`.
+- **Lore reimport error**: Fixed missing `existingResource` in the lore branch of `handleImport`.
+
 ## [LoneWriter v2.2.3] - 2026-07-14
 ### Added
 - **ODT export**: Single scene and full novel export to OpenDocument Text format with proper heading hierarchy (h1-h4).

@@ -127,6 +127,7 @@
   color: var(--text-secondary);
   line-height: 1.7;
   margin-top: 12px;
+  white-space: pre-wrap;
 }
 .char-card__traits {
   display: flex;
@@ -200,6 +201,7 @@
   line-height: 1.7;
   margin-top: 12px;
   margin-bottom: 10px;
+  white-space: pre-wrap;
 }
 .loc-card__climate { margin-bottom: 8px; }
 .loc-card__climate-val { font-size: 12px; color: var(--text-secondary); }
@@ -248,6 +250,7 @@
   line-height: 1.7;
   margin-top: 12px;
   margin-bottom: 6px;
+  white-space: pre-wrap;
 }
 .obj-card__meta { margin-bottom: 8px; }
 .obj-card__origin { font-size: 12px; color: var(--text-secondary); }
@@ -301,6 +304,7 @@
   color: var(--text-secondary);
   line-height: 1.7;
   margin-top: 12px;
+  white-space: pre-wrap;
 }
 .lore-card__all-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 14px; }
 

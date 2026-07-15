@@ -213,13 +213,14 @@ export default function App() {
           ) : (
             <Tooltip content={t('topbar.doble_clic_renombrar') || 'Doble clic para renombrar'}>
               <span 
-                className="app-topbar__novel" 
+                className="app-topbar__novel editable-title-wrap" 
                 onDoubleClick={() => {
                   setEditedNovelTitle(activeNovel?.title || '');
                   setIsEditingNovelTitle(true);
                 }}
               >
                 {activeNovel?.title || t('menu.sin_titulo')}
+                <PenLine size={12} className="editable-title-icon" />
               </span>
             </Tooltip>
           )}
