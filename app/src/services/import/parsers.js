@@ -278,6 +278,7 @@ async function parseDocx(file) {
     return {
       tokens,
       metadata: { title: h1?.text || extractTitle(htmlToPlainText(html)), author: '' },
+      rawContent: htmlToPlainText(html),
     }
   } catch (err) {
     throw new Error(`Error parsing DOCX: ${err.message}`)
@@ -309,6 +310,7 @@ async function parsePdf(file) {
         author: '',
         pageCount: pdf.numPages,
       },
+      rawContent: allLines.join('\n'),
     }
   } catch (err) {
     throw new Error(`Error parsing PDF: ${err.message}`)
@@ -359,6 +361,7 @@ async function parseOdt(file) {
     return {
       tokens,
       metadata: { title: h1?.text || extractTitle(plainText), author: '' },
+      rawContent: plainText,
     }
   } catch (err) {
     throw new Error(`Error parsing ODT: ${err.message}`)

@@ -97,7 +97,7 @@ export async function confirmImport(analysis, file, options, onProgress) {
   if (importMode === 'lore') {
     emit({ phase: 'lore', current: 0, total: 1 })
 
-    const loreEntry = {
+    const loreData = {
       novelId,
       title: options.loreTitle || metadata.fileName.replace(/\.[^.]+$/, ''),
       category: options.loreCategory || '',
@@ -106,7 +106,13 @@ export async function confirmImport(analysis, file, options, onProgress) {
       ignoredForOracle: 0,
     }
 
-    const loreId = await db.lore.add(loreEntry)
+    let loreId
+    if (existingResource?.importedLoreId) {
+      await db.lore.update(existingResource.importedLoreId, loreData)
+      loreId = existingResource.importedLoreId
+    } else {
+      loreId = await db.lore.add(loreData)
+    }
     emit({ phase: 'lore', current: 1, total: 1 })
 
     emit({ phase: 'resource', current: 0, total: 1 })
@@ -132,7 +138,11 @@ export async function confirmImport(analysis, file, options, onProgress) {
       parsedTokens: tokens || null,
     }
 
-    await db.resources.add(resourceData)
+    if (existingResource?.id) {
+      await db.resources.update(existingResource.id, resourceData)
+    } else {
+      await db.resources.add(resourceData)
+    }
     emit({ phase: 'resource', current: 1, total: 1 })
 
     return { novelId, loreId }

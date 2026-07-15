@@ -10,6 +10,7 @@ import {
 import PropTypes from 'prop-types'
 import { analyzeFile, confirmImport, findExistingImport, supportsFile, ALLOWED_EXTENSIONS } from '../services'
 import { compileNarrativeStructure } from '../services/import/narrativeCompiler'
+import { db } from '../db/database'
 import { useNovel } from '../context'
 import TokenReview from './TokenReview'
 import './ImportWizard.css'
@@ -748,6 +749,19 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
         const existing = await findExistingImport(result.metadata.fileName, targetNovelId)
         if (existing) {
           setExistingResource(existing)
+          if (existing.importedLoreId) {
+            try {
+              const loreEntry = await db.lore.get(existing.importedLoreId)
+              if (loreEntry) {
+                setImportDestination('lore')
+                setLoreTitle(loreEntry.title || selectedFile.name.replace(/\.[^.]+$/, ''))
+                setLoreCategory(loreEntry.category || '')
+                setLoreTags(Array.isArray(loreEntry.tags) ? loreEntry.tags.join(', ') : '')
+              }
+            } catch (err) {
+              console.error('[Import] Error loading lore entry:', err)
+            }
+          }
           setStep(2)
           return
         }
@@ -773,7 +787,13 @@ export default function ImportWizard({ novelId, onComplete, onCancel }) {
     setLoreTitle('')
     setLoreCategory('')
     setLoreTags('')
-  }, [])
+    if (existingResource) {
+      setExistingResource(null)
+      setFile(null)
+      setAnalysis(null)
+      setStep(1)
+    }
+  }, [existingResource])
 
   const handleTokenReviewConfirm = useCallback((confirmedTokens) => {
     const { sections, hasStructure } = compileNarrativeStructure(confirmedTokens)
