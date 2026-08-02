@@ -6,6 +6,10 @@
 
 </div>
 
+## Hotfix - 2026-08-02
+### Fixed
+- **Local server (Ollama/LM Studio)**: The base URL now auto-adds `/v1` when missing, and the connection test supports Ollama's native endpoint. The key status in the AI panel only turns green after a verified connection.
+
 ## [LoneWriter v2.2.4] - 2026-07-15
 ### Added
 - **Import to Lore**: New "Add to Lore" option in the Import Wizard — imports a file as a compendium Lore entry with title, category, and tags instead of narrative structure. Ideal for world-building rules, magic systems, and fictional languages.
