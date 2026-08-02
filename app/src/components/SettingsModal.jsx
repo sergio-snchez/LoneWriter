@@ -21,7 +21,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', openModal }) => 
 
   useEffect(() => { if (isOpen) setActiveTab(initialTab) }, [isOpen, initialTab])
 
-  const { provider, apiKey, allConfigs, testConnection } = useAI()
+  const { provider, apiKey, allConfigs, testConnection, setProviderVerified } = useAI()
   const { isCloudSyncEnabled, cloudSyncStatus, lastCloudSync, toggleCloudSync, performCloudSync } = useNovel()
 
   const [isSyncing, setIsSyncing] = useState(false)
@@ -120,6 +120,7 @@ const SettingsModal = ({ isOpen, onClose, initialTab = 'cloud', openModal }) => 
     setTestConnStatus('testing')
     const result = await testConnection(config)
     updateTestConnection(result.success ? 'success' : 'error', result.error)
+    if (result.success) setProviderVerified(provider, true)
   }
 
   return (

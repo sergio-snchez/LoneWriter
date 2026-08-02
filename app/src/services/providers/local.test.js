@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { callLocal, callLocalChat } from './local';
+import { callLocal, callLocalChat, normalizeBaseUrl } from './local';
 
 beforeEach(() => {
   vi.restoreAllMocks();
@@ -32,6 +32,40 @@ describe('callLocal', () => {
     globalThis.fetch = vi.fn().mockResolvedValue(mockResponse);
 
     await callLocal('Test', 'my-model', 'http://localhost:11434/v1');
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:11434/v1/chat/completions',
+      expect.any(Object),
+    );
+  });
+
+  it('auto-adds /v1 when baseUrl lacks it (e.g. Ollama raw port)', async () => {
+    const mockResponse = {
+      ok: true,
+      json: () => Promise.resolve({
+        choices: [{ message: { content: 'ok' } }],
+        usage: {},
+      }),
+    };
+    globalThis.fetch = vi.fn().mockResolvedValue(mockResponse);
+
+    await callLocal('Test', 'model', 'http://localhost:11434');
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:11434/v1/chat/completions',
+      expect.any(Object),
+    );
+  });
+
+  it('does not duplicate /v1 when baseUrl already includes it', async () => {
+    const mockResponse = {
+      ok: true,
+      json: () => Promise.resolve({
+        choices: [{ message: { content: 'ok' } }],
+        usage: {},
+      }),
+    };
+    globalThis.fetch = vi.fn().mockResolvedValue(mockResponse);
+
+    await callLocal('Test', 'model', 'http://localhost:11434/v1');
     expect(fetch).toHaveBeenCalledWith(
       'http://localhost:11434/v1/chat/completions',
       expect.any(Object),
@@ -91,6 +125,29 @@ describe('callLocal', () => {
     await expect(callLocal('Test', 'model')).rejects.toThrow(
       'no devolvió contenido',
     );
+  });
+});
+
+describe('normalizeBaseUrl', () => {
+  it('appends /v1 when missing', () => {
+    expect(normalizeBaseUrl('http://localhost:11434')).toBe('http://localhost:11434/v1');
+  });
+
+  it('keeps URL unchanged when it already ends with /v1', () => {
+    expect(normalizeBaseUrl('http://localhost:11434/v1')).toBe('http://localhost:11434/v1');
+  });
+
+  it('strips trailing slashes before appending /v1', () => {
+    expect(normalizeBaseUrl('http://localhost:11434/')).toBe('http://localhost:11434/v1');
+    expect(normalizeBaseUrl('http://localhost:11434/v1/')).toBe('http://localhost:11434/v1');
+  });
+
+  it('respects /V1 case-insensitively without duplicating', () => {
+    expect(normalizeBaseUrl('http://localhost:11434/V1')).toBe('http://localhost:11434/V1');
+  });
+
+  it('falls back to the default URL when empty', () => {
+    expect(normalizeBaseUrl('')).toBe('http://localhost:1234/v1');
   });
 });
 

@@ -8,8 +8,17 @@
 
 const DEFAULT_BASE_URL = 'http://localhost:1234/v1';
 
+/**
+ * Normaliza la URL base del servidor local añadiendo el prefijo `/v1`
+ * (compatible con la API OpenAI) únicamente si no lo incluye ya.
+ */
+export function normalizeBaseUrl(baseUrl) {
+  const base = (baseUrl || DEFAULT_BASE_URL).trim().replace(/\/+$/, '');
+  return /\/v1$/i.test(base) ? base : `${base}/v1`;
+}
+
 function buildUrl(baseUrl) {
-  return `${(baseUrl || DEFAULT_BASE_URL).replace(/\/$/, '')}/chat/completions`;
+  return `${normalizeBaseUrl(baseUrl)}/chat/completions`;
 }
 
 /**

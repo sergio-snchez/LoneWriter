@@ -9,7 +9,7 @@ import { loadUserStopwords } from '../i18n/stopwords'
 import { encryptValue, decryptValue } from '../utils/crypto'
 
 const AI_PROVIDERS = ['google', 'openai', 'anthropic', 'openrouter', 'local']
-const emptyProviderConfig = { model: '', apiKey: '', localBaseUrl: '' }
+const emptyProviderConfig = { model: '', apiKey: '', localBaseUrl: '', verified: false }
 
 export const DEFAULT_MODELS = {
   google:      'gemini-2.0-flash',
@@ -58,6 +58,7 @@ export function useAIConfig() {
               model:        loaded[row.provider].model        || row.model        || '',
               apiKey:       loaded[row.provider].apiKey       || (row.apiKey ? await decryptValue(row.apiKey) : ''),
               localBaseUrl: loaded[row.provider].localBaseUrl || row.localBaseUrl || '',
+              verified:     loaded[row.provider].verified     || !!row.verified,
             }
           }
         }
@@ -109,22 +110,34 @@ export function useAIConfig() {
 
   const setApiKey = useCallback(async (val, prov) => {
     const target = prov || provider
-    setAllConfigs(prev => ({ ...prev, [target]: { ...prev[target], apiKey: val } }))
-    await saveProviderConfig(target, { apiKey: val })
+    setAllConfigs(prev => ({ ...prev, [target]: { ...prev[target], apiKey: val, verified: false } }))
+    await saveProviderConfig(target, { apiKey: val, verified: false })
   }, [provider])
 
   const setModelForProvider = useCallback(async (prov, modelId) => {
-    setAllConfigs(prev => ({ ...prev, [prov]: { ...prev[prov], model: modelId } }))
-    await saveProviderConfig(prov, { model: modelId })
+    setAllConfigs(prev => ({ ...prev, [prov]: { ...prev[prov], model: modelId, verified: false } }))
+    await saveProviderConfig(prov, { model: modelId, verified: false })
   }, [])
 
   const setLocalBaseUrl = useCallback(async (val) => {
-    setAllConfigs(prev => ({ ...prev, local: { ...prev.local, localBaseUrl: val } }))
-    await saveProviderConfig('local', { localBaseUrl: val })
+    setAllConfigs(prev => ({ ...prev, local: { ...prev.local, localBaseUrl: val, verified: false } }))
+    await saveProviderConfig('local', { localBaseUrl: val, verified: false })
+  }, [])
+
+  const setProviderVerified = useCallback(async (prov, verified) => {
+    setAllConfigs(prev => ({ ...prev, [prov]: { ...prev[prov], verified } }))
+    await saveProviderConfig(prov, { verified })
   }, [])
 
   const updatePrompt = (id, value) => setPrompts(prev => ({ ...prev, [id]: value }))
   const resetPrompt  = (id)        => setPrompts(prev => ({ ...prev, [id]: DEFAULT_PROMPTS()[id] }))
+
+  // ── Derived values ─────────────────────────────────────────────────────────
+  const verifiedByProvider = useMemo(() => {
+    const map = {}
+    for (const p of AI_PROVIDERS) map[p] = !!allConfigs[p]?.verified
+    return map
+  }, [allConfigs])
 
   // ── Exports ────────────────────────────────────────────────────────────────
   return useMemo(() => ({
@@ -134,11 +147,13 @@ export function useAIConfig() {
     localBaseUrl, setLocalBaseUrl,
     setModelForProvider,
     currentModel, selectedModel,
+    verifiedByProvider, setProviderVerified,
     prompts, updatePrompt, resetPrompt,
   }), [
     provider, allConfigs, configsLoaded, apiKey, localBaseUrl,
-    currentModel, selectedModel, prompts,
+    currentModel, selectedModel, verifiedByProvider, prompts,
     setProvider, setApiKey, setLocalBaseUrl,
-    setModelForProvider, updatePrompt, resetPrompt,
+    setModelForProvider, setProviderVerified,
+    updatePrompt, resetPrompt,
   ])
 }
