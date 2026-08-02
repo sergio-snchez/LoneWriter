@@ -14,7 +14,10 @@ import './AIPanel.css'
 const AIPanel = memo(function AIPanel({ open, onClose, activeScene, defaultTab = 'rewrite', onOpenSettings }) {
   const { t } = useTranslation('ai')
   const [activeTab, setActiveTab] = useState(defaultTab)
-  const { apiKey, currentModel } = useAI()
+  const { apiKey, currentModel, provider, verifiedByProvider } = useAI()
+
+  const isVerified = verifiedByProvider?.[provider] ?? false
+  const needsKey = provider === 'local' ? !isVerified : (!apiKey || !isVerified)
 
   const [panelWidth, setPanelWidth] = useState(380)
   const [isDragging, setIsDragging] = useState(false)
@@ -82,7 +85,7 @@ const AIPanel = memo(function AIPanel({ open, onClose, activeScene, defaultTab =
           <div className="ai-panel__header-right">
             <Tooltip content={t('configurar_api')}>
               <button
-                className={`ai-panel__api-btn ${!apiKey ? 'needs-key' : ''}`}
+                className={`ai-panel__api-btn ${needsKey ? 'needs-key' : ''}`}
                 onClick={() => onOpenSettings('ia')}
               >
                 <Key size={13} />

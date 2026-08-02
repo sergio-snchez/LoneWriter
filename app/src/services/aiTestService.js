@@ -1,3 +1,5 @@
+import { normalizeBaseUrl } from './providers/local';
+
 export async function testConnection(config) {
   const { provider, apiKey, model, localBaseUrl } = config;
   const startTime = Date.now();
@@ -144,24 +146,35 @@ export async function testConnection(config) {
     }
 
     if (provider === 'local') {
-      const url = `${(localBaseUrl || 'http://localhost:1234/v1').replace(/\/$/, '')}/models`;
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
+      const base = normalizeBaseUrl(localBaseUrl);
+      const root = base.replace(/\/v1$/i, '');
+      const fetchWithTimeout = (url) => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timeout));
+      };
 
       try {
-        const response = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeout);
-        const latency = Date.now() - startTime;
-
-        if (response.ok) {
-          const data = await response.json().catch(() => ({}));
-          if (data.data && Array.isArray(data.data) && data.data.length > 0) return { success: true, latency };
-          return { success: false, error: 'No se pudieron obtener modelos', latency };
+        const openAiRes = await fetchWithTimeout(`${base}/models`);
+        if (openAiRes.ok) {
+          const data = await openAiRes.json().catch(() => ({}));
+          if (Array.isArray(data.data) && data.data.length > 0) return { success: true, latency: Date.now() - startTime };
+          return { success: false, error: 'Servidor conectado pero sin modelos cargados', latency: Date.now() - startTime };
         }
-        const err = await response.json().catch(() => ({}));
-        return { success: false, error: err.error?.message || `Error ${response.status}`, latency };
+
+        const ollamaRes = await fetchWithTimeout(`${root}/api/tags`);
+        if (ollamaRes.ok) {
+          const data = await ollamaRes.json().catch(() => ({}));
+          if (Array.isArray(data.models) && data.models.length > 0) return { success: true, latency: Date.now() - startTime };
+          return { success: false, error: 'Servidor conectado pero sin modelos cargados', latency: Date.now() - startTime };
+        }
+
+        const err = await openAiRes.json().catch(() => ({}));
+        if (openAiRes.status === 404) {
+          return { success: false, error: 'Error 404: el servidor no reconoce la ruta. Verifica la URL base (ej. http://localhost:11434/v1)', latency: Date.now() - startTime };
+        }
+        return { success: false, error: err.error?.message || `Error ${openAiRes.status}`, latency: Date.now() - startTime };
       } catch (err) {
-        clearTimeout(timeout);
         const latency = Date.now() - startTime;
         if (err.name === 'AbortError') return { success: false, error: 'Sin respuesta (servidor caído)', latency };
         return { success: false, error: 'No se pudo conectar', latency };

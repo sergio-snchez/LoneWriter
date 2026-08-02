@@ -64,11 +64,12 @@ describe('useAIConfig', () => {
 
   it('loads aiProviderConfigs from Dexie on mount', async () => {
     mockToArray.mockResolvedValue([
-      { provider: 'openai', model: 'gpt-4', apiKey: 'enc_sk-123', localBaseUrl: '' },
+      { provider: 'openai', model: 'gpt-4', apiKey: 'enc_sk-123', localBaseUrl: '', verified: true },
     ])
     const { result } = renderHook(() => useAIConfig())
     await vi.waitFor(() => expect(result.current.configsLoaded).toBe(true))
     expect(result.current.allConfigs.openai.model).toBe('gpt-4')
+    expect(result.current.verifiedByProvider.openai).toBe(true)
   })
 
   it('handles Dexie load error gracefully', async () => {
@@ -111,6 +112,38 @@ describe('useAIConfig', () => {
     const { result } = renderHook(() => useAIConfig())
     act(() => { result.current.setLocalBaseUrl('http://localhost:8080/v1') })
     await vi.waitFor(() => expect(result.current.allConfigs.local.localBaseUrl).toBe('http://localhost:8080/v1'))
+  })
+
+  it('setProviderVerified persists verified state and reflects in verifiedByProvider', async () => {
+    const { result } = renderHook(() => useAIConfig())
+    act(() => { result.current.setProviderVerified('local', true) })
+    await vi.waitFor(() => expect(result.current.verifiedByProvider.local).toBe(true))
+    await vi.waitFor(() => expect(mockPut).toHaveBeenCalledWith(expect.objectContaining({ provider: 'local', verified: true })))
+  })
+
+  it('setApiKey clears verified for the affected provider', async () => {
+    const { result } = renderHook(() => useAIConfig())
+    act(() => { result.current.setProviderVerified('openai', true) })
+    await vi.waitFor(() => expect(result.current.verifiedByProvider.openai).toBe(true))
+    act(() => { result.current.setApiKey('sk-new', 'openai') })
+    await vi.waitFor(() => expect(result.current.verifiedByProvider.openai).toBe(false))
+    await vi.waitFor(() => expect(mockPut).toHaveBeenCalledWith(expect.objectContaining({ provider: 'openai', verified: false })))
+  })
+
+  it('setModelForProvider clears verified for the affected provider', async () => {
+    const { result } = renderHook(() => useAIConfig())
+    act(() => { result.current.setProviderVerified('anthropic', true) })
+    await vi.waitFor(() => expect(result.current.verifiedByProvider.anthropic).toBe(true))
+    act(() => { result.current.setModelForProvider('anthropic', 'claude-3-opus') })
+    await vi.waitFor(() => expect(result.current.verifiedByProvider.anthropic).toBe(false))
+  })
+
+  it('setLocalBaseUrl clears verified for the local provider', async () => {
+    const { result } = renderHook(() => useAIConfig())
+    act(() => { result.current.setProviderVerified('local', true) })
+    await vi.waitFor(() => expect(result.current.verifiedByProvider.local).toBe(true))
+    act(() => { result.current.setLocalBaseUrl('http://localhost:8080/v1') })
+    await vi.waitFor(() => expect(result.current.verifiedByProvider.local).toBe(false))
   })
 
   it('selectedModel returns default model for current provider', () => {
